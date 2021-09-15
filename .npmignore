@@ -1,0 +1,9 @@
+node_modules/
+old-example/
+example/
+example-js-code/
+example-ios/
+example-android/
+android/build/
+img/
+ios/lib/DerivedData/
