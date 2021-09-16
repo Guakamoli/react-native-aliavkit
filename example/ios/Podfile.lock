@@ -1,4 +1,10 @@
 PODS:
+  - AlivcConan (1.0.5):
+    - AlivcConan/AlivcConan (= 1.0.5)
+  - AlivcConan/AlivcConan (1.0.5)
+  - AliyunOSSiOS (2.10.10)
+  - AliyunVideoSDKPro (3.24.0):
+    - QuCore-ThirdParty (~> 4.3.0)
   - boost-for-react-native (1.63.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.63.4)
@@ -19,6 +25,8 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
+  - QuCore-ThirdParty (4.3.0)
+  - Queen (1.3.1-official-pro)
   - RCTRequired (0.63.4)
   - RCTTypeSafety (0.63.4):
     - FBLazyVector (= 0.63.4)
@@ -246,7 +254,13 @@ PODS:
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
   - ReactNativeCameraKit (11.2.0):
+    - AlivcConan (= 1.0.5)
+    - AliyunVideoSDKPro (= 3.24.0)
+    - Queen (= 1.3.1-official-pro)
     - React-Core
+    - VODUpload
+  - VODUpload (1.6.1):
+    - AliyunOSSiOS
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -282,7 +296,13 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AlivcConan
+    - AliyunOSSiOS
+    - AliyunVideoSDKPro
     - boost-for-react-native
+    - QuCore-ThirdParty
+    - Queen
+    - VODUpload
 
 EXTERNAL SOURCES:
   DoubleConversion:
@@ -341,12 +361,17 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
+  AliyunOSSiOS: b8f1dfc229cd9abf68c8ee0cb245c2d66e00dd96
+  AliyunVideoSDKPro: a1ea93591ffc337559c8ebf9b0f79786cf81ccf8
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cde416483dac037923206447da6e1454df403714
   FBLazyVector: 3bb422f41b18121b71783a905c10e58606f7dc3e
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
+  QuCore-ThirdParty: 41f690f29346438eb58a0f6c994fd33ab9c59dd4
+  Queen: be44c3caca2cc04045f294735260202217dc149b
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
   RCTTypeSafety: 8c9c544ecbf20337d069e4ae7fd9a377aadf504b
   React: b0a957a2c44da4113b0c4c9853d8387f8e64e615
@@ -367,7 +392,8 @@ SPEC CHECKSUMS:
   React-RCTText: 5c51df3f08cb9dedc6e790161195d12bac06101c
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
-  ReactNativeCameraKit: c25ef4c32abd8918578a9ece01c90233f478c97c
+  ReactNativeCameraKit: 64ce5c8bd18b0a16408c67581860f826bf65fb10
+  VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
 
 PODFILE CHECKSUM: 9ef70319966ccd0b331b82a0f046a00fcf8b99bd
