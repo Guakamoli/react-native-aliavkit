@@ -41,6 +41,8 @@
 	<string>For taking photos</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>For recording</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>For saving photos</string>
 	<key>UILaunchStoryboardName</key>
