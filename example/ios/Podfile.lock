@@ -253,12 +253,12 @@ PODS:
     - React-Core (= 0.63.4)
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
-  - ReactNativeCameraKit (11.2.0):
+  - ReactNativeAliAVKit (1.0.0):
     - AlivcConan (= 1.0.5)
     - AliyunVideoSDKPro (= 3.24.0)
     - Queen (= 1.3.1-official-pro)
     - React-Core
-    - VODUpload
+    - VODUpload (= 1.6.1)
   - VODUpload (1.6.1):
     - AliyunOSSiOS
   - Yoga (1.14.0)
@@ -291,7 +291,7 @@ DEPENDENCIES:
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - ReactNativeCameraKit (from `../..`)
+  - ReactNativeAliAVKit (from `../..`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -355,7 +355,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  ReactNativeCameraKit:
+  ReactNativeAliAVKit:
     :path: "../.."
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
@@ -392,10 +392,10 @@ SPEC CHECKSUMS:
   React-RCTText: 5c51df3f08cb9dedc6e790161195d12bac06101c
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
-  ReactNativeCameraKit: 64ce5c8bd18b0a16408c67581860f826bf65fb10
+  ReactNativeAliAVKit: 4324176f9dbb7fe0dc33624e6090a14666cce437
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
 
-PODFILE CHECKSUM: 9ef70319966ccd0b331b82a0f046a00fcf8b99bd
+PODFILE CHECKSUM: 6da0105e7ffa1f676d9438b1a2324bccdd353495
 
 COCOAPODS: 1.11.0
