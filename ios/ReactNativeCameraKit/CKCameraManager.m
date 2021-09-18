@@ -37,8 +37,8 @@ RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject) {
-
+                  reject:(RCTPromiseRejectBlock)reject)
+{
     [self.camera snapStillImage:options success:^(NSDictionary *imageObject) {
         resolve(imageObject);
     } onError:^(NSString* error) {
@@ -47,9 +47,8 @@ RCT_EXPORT_METHOD(capture:(NSDictionary*)options
 }
 
 RCT_EXPORT_METHOD(checkDeviceCameraAuthorizationStatus:(RCTPromiseResolveBlock)resolve
-                  reject:(__unused RCTPromiseRejectBlock)reject) {
-
-
+                  reject:(__unused RCTPromiseRejectBlock)reject)
+{
     AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
     if(authStatus == AVAuthorizationStatusAuthorized) {
         resolve(@YES);
@@ -61,7 +60,8 @@ RCT_EXPORT_METHOD(checkDeviceCameraAuthorizationStatus:(RCTPromiseResolveBlock)r
 }
 
 RCT_EXPORT_METHOD(requestDeviceCameraAuthorization:(RCTPromiseResolveBlock)resolve
-                  reject:(__unused RCTPromiseRejectBlock)reject) {
+                  reject:(__unused RCTPromiseRejectBlock)reject)
+{
     __block NSString *mediaType = AVMediaTypeVideo;
 
     [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
@@ -69,6 +69,11 @@ RCT_EXPORT_METHOD(requestDeviceCameraAuthorization:(RCTPromiseResolveBlock)resol
             resolve(@(granted));
         }
     }];
+}
+
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
 }
 
 @end
