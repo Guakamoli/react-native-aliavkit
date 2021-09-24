@@ -12,8 +12,11 @@
 
 RCT_EXPORT_MODULE()
 
-- (UIView *)view {
-    self.camera = [CKCamera new];
+- (UIView *)view
+{
+    if(!self.camera){
+        self.camera = [[CKCamera alloc] initWithManager:self bridge:self.bridge];
+    }
     return self.camera;
 }
 
@@ -30,8 +33,8 @@ RCT_EXPORT_VIEW_PROPERTY(onOrientationChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(showFrame, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(laserColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(frameColor, UIColor)
-RCT_EXPORT_VIEW_PROPERTY(resetFocusTimeout, NSInteger)
-RCT_EXPORT_VIEW_PROPERTY(resetFocusWhenMotionDetected, BOOL)
+//RCT_EXPORT_VIEW_PROPERTY(resetFocusTimeout, NSInteger)
+//RCT_EXPORT_VIEW_PROPERTY(resetFocusWhenMotionDetected, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 
@@ -43,6 +46,28 @@ RCT_EXPORT_METHOD(capture:(NSDictionary*)options
         resolve(imageObject);
     } onError:^(NSString* error) {
         reject(@"capture_error", error, nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(startRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    [self.camera startRecording:options success:^(BOOL successStart) {
+        resolve(@(successStart));
+    } onError:^(NSString *error) {
+        reject(@"record_error", error, nil);
+    }];
+}
+
+RCT_EXPORT_METHOD(stopRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    [self.camera stopRecording:options success:^(NSString *path) {
+        resolve(path);
+    } onError:^(NSString *error) {
+        reject(@"stop_record_error", error, nil);
     }];
 }
 
@@ -74,6 +99,13 @@ RCT_EXPORT_METHOD(requestDeviceCameraAuthorization:(RCTPromiseResolveBlock)resol
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
+}
+
+- (NSArray<NSString *> *)customBubblingEventTypes
+{
+    return @[
+        @"startVideoRecord"
+      ];
 }
 
 @end

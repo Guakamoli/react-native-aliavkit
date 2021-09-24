@@ -231,12 +231,14 @@
 				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
 				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework/queen-ios.Bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ReactNativeAliAVKit/ReactNativeAliAVKit.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AliyunVideoSDKPro.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/queen-ios.Bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ReactNativeAliAVKit.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -334,7 +336,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.paiyatalent.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.avengine;
 				PRODUCT_NAME = CameraKitExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CameraKitExample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -362,7 +364,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.paiyatalent.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.avengine;
 				PRODUCT_NAME = CameraKitExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CameraKitExample-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

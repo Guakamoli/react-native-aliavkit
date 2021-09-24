@@ -13,6 +13,7 @@ import {
 import _ from 'lodash';
 import Camera from './Camera';
 
+
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
 const FLASH_MODE_OFF = 'off';
@@ -44,15 +45,17 @@ export type Props = {
 }
 
 type State = {
-  captureImages: any[],
-  flashData: any,
-  torchMode: boolean,
-  ratios: any[],
-  ratioArrayPosition: number,
-  imageCaptured: any,
-  captured: boolean,
-  cameraType: CameraType,
-}
+  captureImages: any[];
+  flashData: any;
+  torchMode: boolean;
+  focusMode: boolean;
+  ratios: any[];
+  ratioArrayPosition: number;
+  imageCaptured: any;
+  captured: boolean;
+  cameraType: CameraType;
+  videoRecording: boolean;
+};
 
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
@@ -89,11 +92,12 @@ export default class CameraScreen extends Component<Props, State> {
       captureImages: [],
       flashData: this.flashArray[this.currentFlashArrayPosition],
       torchMode: false,
+      focusMode: true,
       ratios: [],
       ratioArrayPosition: -1,
       imageCaptured: false,
       captured: false,
-      cameraType: CameraType.Back,
+      cameraType: CameraType.Front,
     };
   }
 
@@ -119,7 +123,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Image
             style={{ flex: 1, justifyContent: 'center' }}
             source={this.state.flashData.image}
-            resizeMode="contain"
+            resizeMode='contain'
           />
         </TouchableOpacity>
       )
@@ -133,7 +137,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Image
             style={{ flex: 1, justifyContent: 'center' }}
             source={this.state.torchMode ? this.props.torchOnImage : this.props.torchOffImage}
-            resizeMode="contain"
+            resizeMode='contain'
           />
         </TouchableOpacity>
       )
@@ -148,7 +152,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Image
             style={{ flex: 1, justifyContent: 'center' }}
             source={this.props.cameraFlipImage}
-            resizeMode="contain"
+            resizeMode='contain'
           />
         </TouchableOpacity>
       )
@@ -179,8 +183,8 @@ export default class CameraScreen extends Component<Props, State> {
             cameraType={this.state.cameraType}
             flashMode={this.state.flashData.mode}
             torchMode={this.state.torchMode ? 'on' : 'off'}
-            focusMode={this.props.focusMode}
-            zoomMode={this.props.zoomMode}
+            focusMode={'on'}
+            zoomMode={'on'}
             ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
             saveToCameraRoll={!this.props.allowCaptureRetake}
             showFrame={this.props.showFrame}
@@ -211,10 +215,28 @@ export default class CameraScreen extends Component<Props, State> {
       !this.isCaptureRetakeMode() && (
         <View style={styles.captureButtonContainer}>
           <TouchableOpacity onPress={() => this.onCaptureImagePressed()}>
-            <Image source={this.props.captureButtonImage} resizeMode="contain" />
+            <Image source={this.props.captureButtonImage} resizeMode='contain' />
             {this.props.showCapturedImageCount && (
               <View style={styles.textNumberContainer}>
                 <Text>{this.numberOfImagesTaken()}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      )
+    );
+  }
+
+  renderRecordButton() {
+    return (
+      this.props.captureButtonImage &&
+      !this.isCaptureRetakeMode() && (
+        <View style={styles.captureButtonContainer}>
+          <TouchableOpacity onPress={() => this.onRecordVideoPressed()}>
+            <Image source={this.props.captureButtonImage} resizeMode='contain' />
+            {this.props.showCapturedImageCount && (
+              <View style={styles.textNumberContainer}>
+                <Text>record</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -283,6 +305,7 @@ export default class CameraScreen extends Component<Props, State> {
         <SafeAreaView style={[styles.bottomButtons, { backgroundColor: '#ffffff00' }]}>
           {this.renderBottomButton('left')}
           {this.renderCaptureButton()}
+          {this.renderRecordButton()}
         </SafeAreaView>
       )
     );
@@ -317,6 +340,18 @@ export default class CameraScreen extends Component<Props, State> {
         });
       }
       this.sendBottomButtonPressedAction('capture', false, image);
+    }
+  }
+
+  async onRecordVideoPressed() {
+    if (this.state.videoRecording) {
+      this.setState({ videoRecording: false });
+      const path = await this.camera.stopRecording();
+      console.log('video saved to ', path);
+    } else {
+      const success = await this.camera.startRecording();
+      console.log('---- success: ', success);
+      this.setState({ videoRecording: success });
     }
   }
 

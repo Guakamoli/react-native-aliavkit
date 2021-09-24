@@ -28,6 +28,7 @@ export default class CameraScreenExample extends Component {
         torchOnImage={require('../images/torchOn.png')}
         torchOffImage={require('../images/torchOff.png')}
         showCapturedImageCount
+        
       />
     );
   }

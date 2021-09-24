@@ -14,7 +14,13 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/Guakamoli/react-native-aliavkit", :tag => "v#{s.version}" }
   s.source_files  = "ios/**/*.{h,m,mm}"
-
+  s.ios.resource_bundles = {
+    'ReactNativeAliAVKit' => ['ReactNativeAliAVKit/AliCamera/AVAssets/Filter/*']
+  }
+  
+  
+  
+  
   s.dependency 'React-Core'
   
   # 柯南SDK-短视频SDK依赖的数据埋点
@@ -23,4 +29,7 @@ Pod::Spec.new do |s|
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
   s.dependency 'Queen', '1.3.1-official-pro'
+  
+  s.dependency 'FMDB'
+  s.dependency 'JSONModel'
 end
