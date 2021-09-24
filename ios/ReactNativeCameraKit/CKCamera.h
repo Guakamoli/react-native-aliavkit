@@ -1,14 +1,16 @@
 #import <UIKit/UIKit.h>
-@import AVFoundation;
-
 #if __has_include(<React/RCTBridge.h>)
 #import <React/RCTConvert.h>
 #else
 #import "RCTConvert.h"
 #endif
-
+@import AVFoundation;
+@class CKCameraManager;
+@class RCTBridge;
 
 typedef void (^CaptureBlock)(NSDictionary *imageObject);
+typedef void (^VideoRecordBlock)(BOOL successStart);
+typedef void (^VideoStopBlock)(NSString *path);
 typedef void (^CallbackBlock)(BOOL success);
 
 typedef NS_ENUM(NSInteger, CKCameraType) {
@@ -73,9 +75,20 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 @property (nonatomic, readonly) AVCaptureDeviceInput *videoDeviceInput;
 
 
-// api
+- (instancetype)initWithManager:(CKCameraManager *)manager bridge:(RCTBridge *)bridge;
+/// take photo
 - (void)snapStillImage:(NSDictionary*)options success:(CaptureBlock)block onError:(void (^)(NSString*))onError;
++ (NSURL *)saveToTmpFolder:(NSData*)data;
 
-+ (NSURL*)saveToTmpFolder:(NSData*)data;
+///start record video
+- (void)startRecording:(NSDictionary*)options
+               success:(VideoRecordBlock)onSuccess
+               onError:(void (^)(NSString*))onError;
+
+///stop record video
+- (void)stopRecording:(NSDictionary*)options
+               success:(VideoStopBlock)onSuccess
+              onError:(void (^)(NSString*))onError;
+
 
 @end

@@ -45,7 +45,7 @@ export default class App extends Component {
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: BarcodeScreenExample })}>
             <Text style={styles.buttonText}>
-              Barcode Scanner
+            Video Play
             </Text>
           </TouchableOpacity>
         </View>

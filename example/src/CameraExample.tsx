@@ -17,8 +17,8 @@ export default class CameraExample extends Component {
           torchMode="off" // on/off(default)
           ratioOverlay="1:1" // optional
           ratioOverlayColor="#00000077" // optional
-          resetFocusTimeout={0}
-          resetFocusWhenMotionDetected={false}
+          // resetFocusTimeout={0}
+          // resetFocusWhenMotionDetected={false}
           saveToCameraRole={false} // iOS only
           scanBarcode={false} // optional
           showFrame={false} // Barcode only, optional
