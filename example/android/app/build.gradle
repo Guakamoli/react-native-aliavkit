@@ -69,6 +69,19 @@ android {
             jniLibs.srcDirs = ['src/main/jniLibs']
         }
     }
+    lintOptions {
+        abortOnError false
+    }
+    dexOptions {
+        preDexLibraries true
+        javaMaxHeapSize "8g"
+        maxProcessCount 8
+        dexInProcess = true
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {

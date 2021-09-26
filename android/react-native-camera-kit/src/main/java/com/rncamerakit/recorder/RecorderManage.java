@@ -4,10 +4,12 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.aliyun.common.utils.CommonUtil;
 import com.aliyun.svideo.base.Constants;
 import com.aliyun.svideo.common.utils.ScreenUtils;
 import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface;
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder;
+import com.aliyun.svideo.recorder.util.FixedToastUtils;
 import com.aliyun.svideo.recorder.util.RecordCommon;
 import com.aliyun.svideo.recorder.util.SharedPreferenceUtils;
 import com.aliyun.svideosdk.common.struct.common.AliyunSnapVideoParam;
@@ -18,9 +20,12 @@ import com.aliyun.svideosdk.common.struct.recorder.CameraParam;
 import com.aliyun.svideosdk.common.struct.recorder.CameraType;
 import com.aliyun.svideosdk.common.struct.recorder.FlashType;
 import com.aliyun.svideosdk.recorder.AliyunIClipManager;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.rncamerakit.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -68,7 +73,7 @@ public class RecorderManage {
         mRecorder.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE);
 
         mClipManager = mRecorder.getClipManager();
-        mClipManager.setMinDuration(10);
+        mClipManager.setMinDuration(100);
         mClipManager.setMaxDuration(1000 * 15);
 
         mRecordCallback = new ImplRecordCallback(context);
@@ -199,12 +204,16 @@ public class RecorderManage {
      * 开始录制
      */
     public void startRecording(ReactApplicationContext reactContext, Promise promise) {
+        if (CommonUtil.SDFreeSize() < 50 * 1000 * 1000) {
+            FixedToastUtils.show(reactContext, reactContext.getResources().getString(R.string.alivc_music_no_free_memory));
+            return;
+        }
         if (mRecorder != null) {
             if (mRecordCallback != null) {
                 mRecordCallback.setOnRecorderCallbacks(new OnRecorderCallbacks() {
                     @Override
                     public void onProgress(long duration) {
-                        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("video-recording", "" + duration);
+                        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("startVideoRecord", ""+duration);
                     }
 
                     @Override

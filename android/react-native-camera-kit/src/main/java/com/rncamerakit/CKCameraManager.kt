@@ -51,6 +51,23 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         )
     }
 
+
+    @ReactProp(name = "normalBeautyLevel")
+    fun setBeautyLevel(view: CKCamera, normalBeautyLevel: Int) {
+        var beautyLevel = when (normalBeautyLevel) {
+            0 -> 0
+            10 -> 1
+            20 -> 2
+            30 -> 3
+            40 -> 4
+            50 -> 5
+            else -> {
+                3
+            }
+        }
+        view.recorderManage.setBeautyLevel(beautyLevel)
+    }
+
     //摄像头方向  back 后置摄像头，front 前置摄像头
     @ReactProp(name = "cameraType")
     fun setCameraType(view: CKCamera, type: String) {

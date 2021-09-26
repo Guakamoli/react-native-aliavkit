@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { requireNativeComponent, findNodeHandle, NativeModules, processColor } from 'react-native';
+import { requireNativeComponent, findNodeHandle, NativeModules, processColor , DeviceEventEmitter} from 'react-native';
 
 const { RNCameraKitModule } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCameraManager');
@@ -14,10 +14,25 @@ const Camera = React.forwardRef((props, ref) => {
       // we must use the general module and tell it what View it's supposed to be using
       return await RNCameraKitModule.capture(options, findNodeHandle(nativeRef.current));
     },
+    startRecording: async (options = {}) => {
+      return await RNCameraKitModule.startRecording(findNodeHandle(nativeRef.current));
+    },
+    stopRecording: async (options = {}) => {
+      return await RNCameraKitModule.stopRecording(findNodeHandle(nativeRef.current));
+    },
     requestDeviceCameraAuthorization: async () => {
       return await RNCameraKitModule.requestDeviceCameraAuthorization();
     },
   }));
+
+  React.useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
+      console.log("duration",duration);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));

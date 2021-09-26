@@ -74,4 +74,28 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    @ReactMethod
+    fun startRecording(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKCamera
+            if(!view.isPermissions){
+                view.getPermissions()
+                return@runOnUiQueueThread
+            }
+            view.recorderManage.startRecording(context,promise)
+        }
+    }
+
+    @ReactMethod
+    fun stopRecording(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKCamera
+            view.recorderManage.stopRecording(promise)
+        }
+    }
+
 }
