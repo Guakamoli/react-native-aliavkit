@@ -318,6 +318,7 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   onSetFlash() {
+    // 1231
     this.currentFlashArrayPosition = (this.currentFlashArrayPosition + 1) % 3;
     const newFlashData = this.flashArray[this.currentFlashArrayPosition];
     this.setState({ flashData: newFlashData });
