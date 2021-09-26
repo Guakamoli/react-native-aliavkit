@@ -1,0 +1,14 @@
+<resources>
+
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="delete">delete</string>
+    <string name="save">Save</string>
+    <string name="to">To</string>
+    <string name="goBack">GoBack</string>
+    <string name="iSee">ISee</string>
+
+
+
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <paths>
+        <files-path name="my_images" path="images"/>
+        <files-path name="my_docs" path="docs"/>
+        <external-files-path name="my_video" path="video" />
+    </paths>
+</resources>

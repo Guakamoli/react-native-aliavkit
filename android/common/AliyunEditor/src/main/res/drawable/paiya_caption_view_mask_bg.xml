@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <gradient
+        android:angle="90"
+        android:centerColor="#E6141414"
+        android:endColor="#1A141414"
+        android:startColor="#141414" />
+    <!--    <solid android:color="#E6202122" />-->
+    <!--    <stroke-->
+    <!--        android:width="@dimen/alivc_common_line_1dp"-->
+    <!--        android:color="@color/alivc_common_bg_white_alpha_10" />-->
+    <!-- 圆角 -->
+    <!--    <corners android:topLeftRadius="@dimen/alivc_common_radius_20"-->
+    <!--        android:topRightRadius="@dimen/alivc_common_radius_20"-->
+    <!--        />-->
+
+</shape>

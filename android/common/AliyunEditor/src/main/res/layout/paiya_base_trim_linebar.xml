@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#141414">
+
+    <include
+        android:id="@+id/topTittle"
+        layout="@layout/alivc_editor_include_effect_title1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/timelineRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/alivc_common_height_group_20"
+        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/thumbRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alivc_common_height_group_200"
+        android:paddingTop="60dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/overlayRecyclerView"
+        android:layout_width="match_parent"
+        android:visibility="visible"
+        android:layout_height="@dimen/alivc_common_height_group_200"
+        android:paddingTop="@dimen/alivc_common_height_group_68"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <View
+        android:id="@+id/indicatorView"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/paiya_thumb_layout_indicator_bg"
+        app:layout_constraintBottom_toBottomOf="@+id/thumbRecyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/thumbRecyclerView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

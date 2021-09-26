@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="style_custom_dialog" parent="@android:style/Theme.Dialog">
+        <!--去掉边框-->
+        <item name="android:windowFrame">@null</item>
+        <!--悬浮-->
+        <item name="android:windowIsFloating">true</item>
+        <!--是否半透明-->
+        <item name="android:windowIsTranslucent">false</item>
+        <!--不需要标题-->
+        <item name="windowNoTitle">true</item>
+        <!--背景透明-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--允许模糊-->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!--全屏-->
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowLightStatusBar">true</item><!--背景颜色强制设为亮色-->
+        <!--不设置，8.0、魅族手机为蓝色-->
+        <item name="android:statusBarColor">@color/transparent</item>
+    </style>
+</resources>

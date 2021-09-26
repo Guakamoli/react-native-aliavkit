@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/baseLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#141414"
+    android:paddingBottom="@dimen/alivc_common_margin_12">
+
+    <include
+        android:id="@+id/topTittle"
+        layout="@layout/alivc_editor_include_effect_title1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/timelineRecyclerView"
+        android:layout_width="0dp"
+        android:layout_marginTop="5dp"
+        android:layout_height="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/thumbRecyclerView"
+        android:layout_width="match_parent"
+        android:paddingTop="25dp"
+        android:layout_height="140dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <com.aliyun.svideo.editor.effects.captions.TouchRecyclerView
+        android:id="@+id/overlayRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:paddingTop="90dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTittle" />
+
+    <View
+        android:id="@+id/indicatorView"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/paiya_thumb_layout_indicator_bg"
+        app:layout_constraintBottom_toBottomOf="@+id/thumbRecyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/thumbRecyclerView" />
+
+
+    <com.aliyun.svideo.editor.effects.captions.CaptionView
+        android:id="@+id/toolsLayout"
+        android:layout_width="0dp"
+        android:layout_height="122dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/thumbRecyclerView">
+
+    </com.aliyun.svideo.editor.effects.captions.CaptionView>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:background="@drawable/paiya_caption_view_mask_bg"
+        app:layout_constraintBottom_toBottomOf="@+id/toolsLayout"
+        app:layout_constraintEnd_toEndOf="@+id/toolsLayout"
+        app:layout_constraintStart_toStartOf="@+id/toolsLayout"
+        app:layout_constraintTop_toTopOf="@+id/toolsLayout"
+        app:layout_constraintVertical_bias="1" />
+
+    <TextView
+        android:id="@+id/tvCaptionAddedHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/paiya_caption_added"
+        android:textColor="#ffffffff"
+        android:textSize="15sp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/toolsLayout"
+        app:layout_constraintEnd_toEndOf="@+id/toolsLayout"
+        app:layout_constraintStart_toStartOf="@+id/toolsLayout"
+        app:layout_constraintTop_toTopOf="@+id/toolsLayout"
+        app:layout_constraintVertical_bias="0.1" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

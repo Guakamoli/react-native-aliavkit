@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/baseLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/leftOverlayLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:background="#99141414" />
+
+    <View
+        android:id="@+id/imgLeftThumb"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/paiya_thumb_overlay_bg" />
+
+    <FrameLayout
+        android:id="@+id/overlayLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alivc_common_line_2dp"
+            android:background="@color/white" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alivc_common_line_2dp"
+            android:layout_gravity="bottom"
+            android:background="@color/white" />
+
+    </FrameLayout>
+
+    <View
+        android:id="@+id/imgRightThumb"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/paiya_thumb_overlay_right_bg" />
+
+    <View
+        android:id="@+id/rightOverlayLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:background="#99141414" />
+</LinearLayout>

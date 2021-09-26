@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/alivc_common_padding_6">
+
+        <FrameLayout
+            android:id="@+id/trimLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/tab_trim"
+                style="@style/alivc_svideo_effect_tab"
+                android:layout_marginTop="@dimen/alivc_common_margin_20"
+                android:text="@string/alivc_editor_effect_trim" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="16dp"
+                android:layout_gravity="right|top"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:src="@mipmap/paiya_ic_new_msg">
+
+            </ImageView>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/captionLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tab_effect_caption"
+                style="@style/alivc_svideo_effect_tab"
+                android:layout_marginTop="@dimen/alivc_common_margin_20"
+                android:text="@string/alivc_editor_effect_caption" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="16dp"
+                android:layout_gravity="right|top"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:src="@mipmap/paiya_ic_new_msg">
+
+            </ImageView>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tab_effect_audio_mix"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_music" />
+
+        <TextView
+            android:id="@+id/tab_effect_filter"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_effect" />
+
+        <TextView
+            android:id="@+id/tab_filter"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_filter" />
+
+        <TextView
+            android:id="@+id/tab_effect_overlay"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_sticker" />
+
+        <TextView
+            android:id="@+id/tab_effect_text"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_text" />
+
+        <TextView
+            android:id="@+id/tab_effect_mv"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_mv" />
+
+        <TextView
+            android:id="@+id/tab_effect_sound"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_sound" />
+
+        <TextView
+            android:id="@+id/tab_effect_time"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_time" />
+
+        <TextView
+            android:id="@+id/tab_effect_transition"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_transition" />
+
+        <TextView
+            android:id="@+id/tab_paint"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_paint" />
+
+        <TextView
+            android:id="@+id/tab_cover"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_cover" />
+
+        <TextView
+            android:id="@+id/tab_videoeq"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_videoeq" />
+
+        <TextView
+            android:id="@+id/tab_roll_caption"
+            style="@style/alivc_svideo_effect_tab"
+            android:layout_marginTop="@dimen/alivc_common_margin_20"
+            android:text="@string/alivc_editor_effect_roll_caption" />
+
+    </LinearLayout>
+</HorizontalScrollView>

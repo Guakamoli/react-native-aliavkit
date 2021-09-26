@@ -1,0 +1,115 @@
+apply plugin: 'com.android.library'
+
+android {
+
+    compileSdkVersion externalCompileSdkVersion
+    buildToolsVersion externalBuildToolsVersion
+    defaultConfig {
+        minSdkVersion externalMinSdkVersion
+        targetSdkVersion externalTargetSdkVersion
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            consumerProguardFiles file('.').listFiles(new FilenameFilter() {
+                @Override
+                boolean accept(File file, String s) {
+                    return s.endsWith('.pro')
+                }
+            })
+        }
+        release {
+            minifyEnabled false
+            consumerProguardFiles file('.').listFiles(new FilenameFilter() {
+                @Override
+                boolean accept(File file, String s) {
+                    return s.endsWith('.pro')
+                }
+            })
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        encoding "UTF-8"
+    }
+
+    lintOptions {
+        warning 'InvalidPackage'
+    }
+}
+
+dependencies {
+
+
+    def androidxVersions = [
+            activity : '1.1.0',//androidx.activity:activity:
+            fragment : '1.2.5',//androidx.fragment:fragment:
+            lifecycle: '2.2.0',//androidx.core:core:
+    ]
+
+    def androidxs = [
+            'androidx.appcompat:appcompat:1.2.0',
+            "androidx.appcompat:appcompat-resources:1.2.0",
+            'androidx.multidex:multidex:2.0.1',
+            'com.google.android.material:material:1.2.1',
+            "androidx.activity:activity:${androidxVersions.activity}",
+            "androidx.fragment:fragment:${androidxVersions.fragment}",
+
+            "androidx.lifecycle:lifecycle-common:${androidxVersions.lifecycle}",
+            "androidx.lifecycle:lifecycle-livedata:${androidxVersions.lifecycle}",
+            "androidx.lifecycle:lifecycle-livedata-core:${androidxVersions.lifecycle}",
+            "androidx.lifecycle:lifecycle-runtime:${androidxVersions.lifecycle}",
+            "androidx.lifecycle:lifecycle-viewmodel:${androidxVersions.lifecycle}",
+            "androidx.lifecycle:lifecycle-viewmodel-savedstate:${androidxVersions.lifecycle}",
+
+            "androidx.exifinterface:exifinterface:1.3.1",
+            "androidx.core:core:1.3.2",
+
+            "androidx.documentfile:documentfile:1.0.1",
+
+            'androidx.constraintlayout:constraintlayout:2.0.3',
+            'androidx.coordinatorlayout:coordinatorlayout:1.1.0',
+            'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01',
+            'androidx.cardview:cardview:1.0.0',
+            'androidx.viewpager2:viewpager2:1.0.0',
+            "androidx.drawerlayout:drawerlayout:1.1.1",
+            "androidx.transition:transition:1.3.1",
+
+    ]
+
+     api androidxs
+
+//    //注解
+//    api 'com.google.dagger:dagger:2.12'
+//    annotationProcessor 'com.google.dagger:dagger-compiler:2.12'
+
+    api 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+
+//    implementation 'com.alibaba:arouter-api:1.5.1'
+//    annotationProcessor 'com.alibaba:arouter-compiler:1.5.1'
+
+    api 'com.google.code.gson:gson:2.8.6'
+
+    api 'io.reactivex.rxjava3:rxjava:3.0.6'
+    api 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    api 'com.squareup.okio:okio:2.9.0'
+    api 'com.squareup.okhttp3:okhttp:4.9.0'
+    api 'com.squareup.okhttp3:okhttp-urlconnection:4.9.0'
+    api 'com.squareup.retrofit2:retrofit:2.9.0'
+    // 数据解析器,和 retrofit 版本一致
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+//    //日志拦截器，需要和 okHttp 版本一致
+//    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+    api 'com.github.tbruyelle:rxpermissions:0.12'
+
+    // https://blankj.com/2016/07/31/android-utils-code/
+    api 'com.blankj:utilcodex:1.30.1'
+
+}

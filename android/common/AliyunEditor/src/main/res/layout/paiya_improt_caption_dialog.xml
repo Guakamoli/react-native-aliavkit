@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/captionLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_music_volume_dialog_bg"
+    android:paddingTop="@dimen/alivc_common_margin_30">
+
+    <TextView
+        android:id="@+id/captionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginStart="@dimen/alivc_common_margin_20"
+        android:layout_marginEnd="@dimen/alivc_common_margin_20"
+        android:text="@string/paiya_caption_title"
+        android:textColor="#ffffffff"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/editCaption"
+        android:layout_width="0dp"
+        android:minHeight="@dimen/alivc_common_height_group_200"
+        android:maxHeight="280dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/alivc_common_margin_20"
+        android:gravity="top"
+        android:lineSpacingExtra="5dp"
+        android:layout_marginTop="@dimen/alivc_common_margin_25"
+        android:layout_marginEnd="@dimen/alivc_common_margin_20"
+        android:background="@drawable/improt_caption_edit_dialog_bg"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:text=""
+        android:textColor="#b3ffffff"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/captionTitle" />
+
+    <TextView
+        android:id="@+id/tvConfirmCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/alivc_common_height_group_40"
+        android:layout_marginTop="@dimen/alivc_common_margin_25"
+        android:layout_marginEnd="@dimen/alivc_common_margin_20"
+        android:layout_marginBottom="@dimen/alivc_common_margin_30"
+        android:background="@drawable/improt_caption_confirm_dialog_bg"
+        android:gravity="center"
+        android:paddingStart="@dimen/alivc_common_margin_40"
+        android:paddingEnd="@dimen/alivc_common_margin_40"
+        android:text="@string/paiya_caption_import"
+        android:textColor="#ffffffff"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editCaption" />
+
+    <TextView
+        android:id="@+id/tvCleanCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/alivc_common_height_group_40"
+        android:layout_marginStart="@dimen/alivc_common_margin_20"
+        android:gravity="center"
+        android:paddingStart="@dimen/alivc_common_margin_12"
+        android:paddingEnd="@dimen/alivc_common_margin_12"
+        android:text="@string/paiya_caption_cancel"
+        android:textColor="#ffffffff"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvConfirmCaption"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvConfirmCaption" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,16 @@
+include ':react-native-camera-kit'
+
+include ':common:AliyunVideoCommon'
+include ':common:AlivcMedia'
+include ':common:AliyunSVideoBase'
+include ':common:AliyunFileDownLoader'
+include ':common:AliyunSvideoMusic'
+include ':common:AliyunCrop:crop'
+include ':common:AliyunEditor'
+include ':common:QueenBeauty'
+include ':common:FaceunityBeauty'
+include ':common:AliyunRecorder:record'
+include ':common:AliyunRecorder:pro_record'
+include ':common:AliyunResample'
+
+include ':lib:lib-base'
