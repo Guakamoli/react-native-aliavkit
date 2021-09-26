@@ -30,44 +30,44 @@ typedef NS_ENUM( NSInteger, CKSetupResult ) {
 @implementation RCTConvert(CKCameraType)
 
 RCT_ENUM_CONVERTER(CKCameraType, (@{
-                                         @"back": @(AVCaptureDevicePositionBack),
-                                         @"front": @(AVCaptureDevicePositionFront),
-                                         }), AVCaptureDevicePositionBack, integerValue)
+    @"back": @(AVCaptureDevicePositionBack),
+    @"front": @(AVCaptureDevicePositionFront),
+}), AVCaptureDevicePositionBack, integerValue)
 @end
 
 @implementation RCTConvert(CKCameraTorchMode)
 
 RCT_ENUM_CONVERTER(CKCameraTorchMode, (@{
-                                         @"on": @(AVCaptureTorchModeOn),
-                                         @"off": @(AVCaptureTorchModeOff)
-                                         }), AVCaptureTorchModeAuto, integerValue)
+    @"on": @(AVCaptureTorchModeOn),
+    @"off": @(AVCaptureTorchModeOff)
+}), AVCaptureTorchModeAuto, integerValue)
 @end
 
 @implementation RCTConvert(CKCameraFlashMode)
 
 RCT_ENUM_CONVERTER(CKCameraFlashMode, (@{
-                                         @"auto": @(AVCaptureFlashModeAuto),
-                                         @"on": @(AVCaptureFlashModeOn),
-                                         @"off": @(AVCaptureFlashModeOff)
-                                         }), AVCaptureFlashModeAuto, integerValue)
+    @"auto": @(AVCaptureFlashModeAuto),
+    @"on": @(AVCaptureFlashModeOn),
+    @"off": @(AVCaptureFlashModeOff)
+}), AVCaptureFlashModeAuto, integerValue)
 
 @end
 
 @implementation RCTConvert(CKCameraFocusMode)
 
 RCT_ENUM_CONVERTER(CKCameraFocusMode, (@{
-                                          @"on": @(CKCameraFocusModeOn),
-                                          @"off": @(CKCameraFocusModeOff)
-                                          }), CKCameraFocusModeOn, integerValue)
+    @"on": @(CKCameraFocusModeOn),
+    @"off": @(CKCameraFocusModeOff)
+}), CKCameraFocusModeOn, integerValue)
 
 @end
 
 @implementation RCTConvert(CKCameraZoomMode)
 
 RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
-                                        @"on": @(CKCameraZoomModeOn),
-                                        @"off": @(CKCameraZoomModeOff)
-                                        }), CKCameraZoomModeOn, integerValue)
+    @"on": @(CKCameraZoomModeOn),
+    @"off": @(CKCameraZoomModeOff)
+}), CKCameraZoomModeOn, integerValue)
 
 @end
 
@@ -125,6 +125,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic, weak) CKCameraManager *manager;
 @property (nonatomic, weak) RCTBridge *bridge;
 
+@property (nonatomic) NSUInteger normalBeautyLevel;
+
 @end
 
 @implementation CKCamera
@@ -138,7 +140,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 -(PHFetchOptions *)fetchOptions
 {
-
+    
     PHFetchOptions *fetchOptions = [PHFetchOptions new];
     fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     fetchOptions.predicate = [NSPredicate predicateWithFormat:@"mediaType = %d && creationDate <= %@",PHAssetMediaTypeImage, [NSDate date]];
@@ -146,7 +148,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if ([fetchOptions respondsToSelector:@selector(fetchLimit)]) {
         fetchOptions.fetchLimit = 1;
     }
-
+    
     return fetchOptions;
 }
 
@@ -171,18 +173,27 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (instancetype)initWithManager:(CKCameraManager*)manager bridge:(RCTBridge *)bridge
 {
-  if ((self = [super init])) {
-    self.manager = manager;
-    self.bridge = bridge;
-    [self.cameraAction startFrontPreview];
-  }
-  return self;
+    if ((self = [super init])) {
+        self.manager = manager;
+        self.bridge = bridge;
+        [self.cameraAction startFrontPreview];
+    }
+    return self;
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
     [self addSubview:self.cameraAction.cameraPreview];
+}
+
+
+- (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
+{
+    if (normalBeautyLevel != _normalBeautyLevel) {
+        _normalBeautyLevel = normalBeautyLevel;
+        self.cameraAction.normalBeautyLevel = normalBeautyLevel;
+    }
 }
 
 - (void)setCameraType:(AVCaptureDevicePosition)cameraType
@@ -265,7 +276,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (!self.onOrientationChange) {
         return;
     }
-
+    
     // PORTRAIT: 0, // ⬆️
     // LANDSCAPE_LEFT: 1, // ⬅️
     // PORTRAIT_UPSIDE_DOWN: 2, // ⬇️
@@ -294,24 +305,24 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         if ( self.setupResult != CKSetupResultSuccess ) {
             return;
         }
-
+        
         self.backgroundRecordingID = UIBackgroundTaskInvalid;
         NSError *error = nil;
-
+        
         AVCaptureDevice *videoDevice = [CKCamera deviceWithMediaType:AVMediaTypeVideo preferringPosition:AVCaptureDevicePositionBack];
         AVCaptureDeviceInput *videoDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
-
+        
         [self.session beginConfiguration];
-
+        
         if ( [self.session canAddInput:videoDeviceInput] ) {
             [self.session addInput:videoDeviceInput];
             self.videoDeviceInput = videoDeviceInput;
-//            [CKCamera setFlashMode:self.flashMode forDevice:self.videoDeviceInput.device];
+            //            [CKCamera setFlashMode:self.flashMode forDevice:self.videoDeviceInput.device];
         }
         else {
             self.setupResult = CKSetupResultSessionConfigurationFailed;
         }
-
+        
         AVCaptureMovieFileOutput *movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
         if ( [self.session canAddOutput:movieFileOutput] ) {
             [self.session addOutput:movieFileOutput];
@@ -324,7 +335,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         else {
             self.setupResult = CKSetupResultSessionConfigurationFailed;
         }
-
+        
         AVCaptureStillImageOutput *stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
         if ( [self.session canAddOutput:stillImageOutput] ) {
             stillImageOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
@@ -334,7 +345,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         else {
             self.setupResult = CKSetupResultSessionConfigurationFailed;
         }
-
+        
         AVCaptureMetadataOutput * output = [[AVCaptureMetadataOutput alloc] init];
         if ([self.session canAddOutput:output]) {
             self.metadataOutput = output;
@@ -342,14 +353,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
             [self.metadataOutput setMetadataObjectTypes:[self.metadataOutput availableMetadataObjectTypes]];
         }
-
+        
         [self.session commitConfiguration];
-
+        
     } );
 }
 
 -(void)handleCameraPermission {
-
+    
     switch ( [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] )
     {
         case AVAuthorizationStatusAuthorized:
@@ -406,14 +417,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 + (AVCaptureDevice *)deviceWithMediaType:(NSString *)mediaType preferringPosition:(AVCaptureDevicePosition)position {
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:mediaType];
     AVCaptureDevice *captureDevice = devices.firstObject;
-
+    
     for (AVCaptureDevice *device in devices) {
         if (device.position == position) {
             captureDevice = device;
             break;
         }
     }
-
+    
     return captureDevice;
 }
 
@@ -435,8 +446,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 - (void)stopRecording:(NSDictionary*)options
-               success:(VideoStopBlock)onSuccess
-               onError:(void (^)(NSString*))onError
+              success:(VideoStopBlock)onSuccess
+              onError:(void (^)(NSString*))onError
 {
     NSString *path = [self.cameraAction stopRecordVideo];
     onSuccess(path);
@@ -444,11 +455,11 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)snapStillImage:(NSDictionary*)options success:(CaptureBlock)onSuccess onError:(void (^)(NSString*))onError {
     
-    #if TARGET_IPHONE_SIMULATOR
+#if TARGET_IPHONE_SIMULATOR
     [self capturePreviewLayer:options success:onSuccess onError:onError];
     return;
-    #endif
-
+#endif
+    
     [self.cameraAction takePhotos:^(NSData *imageData) {
         [self writeCapturedImageData:imageData onSuccess:onSuccess onError:onError];
     }];
@@ -471,10 +482,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 /*
  {
-     "size": 1.0,
-     "id": "xxxxxxxxxxxxxxx",
-     "uri": "ph://",
-     "name": "名字"
+ "size": 1.0,
+ "id": "xxxxxxxxxxxxxxx",
+ "uri": "ph://",
+ "name": "名字"
  }
  */
 - (void)writeCapturedImageData:(NSData *)imageData
@@ -482,12 +493,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                        onError:(void (^)(NSString *))onError
 {
     NSMutableDictionary *imageInfoDict = [[NSMutableDictionary alloc] init];
-
+    
     NSNumber *length = [NSNumber numberWithInteger:imageData.length];
     if (length) {
         imageInfoDict[@"size"] = length;
     }
-
+    
     if (self.saveToCameraRoll) {
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
             if (status != PHAuthorizationStatusAuthorized) {
@@ -505,16 +516,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                     onError(@"Photo library asset creation failed");
                     return;
                 }
-
+                
                 // Get local identifier
                 PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:self.fetchOptions];
                 PHAsset *firstAsset = [fetchResult firstObject];
                 NSString *localIdentifier = firstAsset.localIdentifier;
-
+                
                 if (localIdentifier) {
                     imageInfoDict[@"id"] = localIdentifier;
                 }
-
+                
                 // 'ph://' is a rnc/cameraroll URL scheme for loading PHAssets by localIdentifier
                 // which are loaded via RNCAssetsLibraryRequestHandler module that conforms to RCTURLRequestHandler
                 if (self.saveToCameraRollWithPhUrl) {
@@ -527,7 +538,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                     [options setNetworkAccessAllowed:YES];
                     [firstAsset requestContentEditingInputWithOptions:options completionHandler:^(PHContentEditingInput * _Nullable contentEditingInput, NSDictionary * _Nonnull info) {
                         imageInfoDict[@"uri"] = contentEditingInput.fullSizeImageURL.absoluteString;
-
+                        
                         dispatch_async(dispatch_get_main_queue(), ^{
                             onSuccess(imageInfoDict);
                         });
@@ -541,7 +552,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             imageInfoDict[@"uri"] = temporaryFileURL.description;
             imageInfoDict[@"name"] = temporaryFileURL.lastPathComponent;
         }
-
+        
         onSuccess(imageInfoDict);
     }
 }
@@ -551,7 +562,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     NSString *temporaryFileName = [NSProcessInfo processInfo].globallyUniqueString;
     NSString *temporaryFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[temporaryFileName stringByAppendingPathExtension:@"jpg"]];
     NSURL *temporaryFileURL = [NSURL fileURLWithPath:temporaryFilePath];
-
+    
     NSError *error = nil;
     [data writeToURL:temporaryFileURL options:NSDataWritingAtomic error:&error];
     if (error) {
@@ -687,7 +698,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (!self.isAddedOberver) {
         [self.session addObserver:self forKeyPath:@"running" options:NSKeyValueObservingOptionNew context:SessionRunningContext];
         [self.stillImageOutput addObserver:self forKeyPath:@"capturingStillImage" options:NSKeyValueObservingOptionNew context:CapturingStillImageContext];
-
+        
         [self.videoDeviceInput.device addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionNew context:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(subjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:self.videoDeviceInput.device];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionRuntimeError:) name:AVCaptureSessionRuntimeErrorNotification object:self.session];
@@ -704,7 +715,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                                                  selector:@selector(willEnterForeground:)
                                                      name:UIApplicationWillEnterForegroundNotification
                                                    object:nil];
-
+        
         self.isAddedOberver = YES;
     }
 }
@@ -720,12 +731,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     // Note that stopping music playback in control center will not automatically resume the session running.
     // Also note that it is not always possible to resume, see -[resumeInterruptedSession:].
     BOOL showResumeButton = NO;
-
+    
     // In iOS 9 and later, the userInfo dictionary contains information on why the session was interrupted.
     if ( &AVCaptureSessionInterruptionReasonKey ) {
         AVCaptureSessionInterruptionReason reason = [notification.userInfo[AVCaptureSessionInterruptionReasonKey] integerValue];
         //NSLog( @"Capture session was interrupted with reason %ld", (long)reason );
-
+        
         if ( reason == AVCaptureSessionInterruptionReasonAudioDeviceInUseByAnotherClient ||
             reason == AVCaptureSessionInterruptionReasonVideoDeviceInUseByAnotherClient ) {
             showResumeButton = YES;
@@ -749,7 +760,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     NSError *error = notification.userInfo[AVCaptureSessionErrorKey];
     //NSLog( @"Capture session runtime error: %@", error );
-
+    
     // Automatically try to restart the session running if media services were reset and the last start running succeeded.
     // Otherwise, enable the user to try to resume the session running.
     if ( error.code == AVErrorMediaServicesWereReset ) {
@@ -767,7 +778,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)subjectAreaDidChange:(NSNotification *)notification
 {
-//    [self resetFocus];
+    //    [self resetFocus];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -775,42 +786,42 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (context == CapturingStillImageContext)
     {
         // Flash/dim preview to indicate shutter action
-//        BOOL isCapturingStillImage = [change[NSKeyValueChangeNewKey] boolValue];
-//        if ( isCapturingStillImage )
-//        {
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                self.alpha = 0.0;
-//                [UIView animateWithDuration:0.35 animations:^{
-//                    self.alpha = 1.0;
-//                }];
-//            });
-//        }
+        //        BOOL isCapturingStillImage = [change[NSKeyValueChangeNewKey] boolValue];
+        //        if ( isCapturingStillImage )
+        //        {
+        //            dispatch_async(dispatch_get_main_queue(), ^{
+        //                self.alpha = 0.0;
+        //                [UIView animateWithDuration:0.35 animations:^{
+        //                    self.alpha = 1.0;
+        //                }];
+        //            });
+        //        }
     }
     else if ([keyPath isEqualToString:@"adjustingFocus"])
     {
         // Note: oldKey is not available (value is always NO it seems) so we only check on newKey
-//        BOOL isFocusing = [change[NSKeyValueChangeNewKey] boolValue];
-//        if (self.startFocusResetTimerAfterFocusing == YES && !isFocusing && self.resetFocusTimeout > 0)
-//        {
-//            self.startFocusResetTimerAfterFocusing = NO;
-//
-//            // Disengage manual focus after focusTimeout milliseconds
-//            NSTimeInterval focusTimeoutSeconds = self.resetFocusTimeout / 1000;
-//            self.focusResetTimer = [NSTimer scheduledTimerWithTimeInterval:focusTimeoutSeconds repeats:NO block:^(NSTimer *timer) {
-////                [self resetFocus];
-//            }];
-//        }
+        //        BOOL isFocusing = [change[NSKeyValueChangeNewKey] boolValue];
+        //        if (self.startFocusResetTimerAfterFocusing == YES && !isFocusing && self.resetFocusTimeout > 0)
+        //        {
+        //            self.startFocusResetTimerAfterFocusing = NO;
+        //
+        //            // Disengage manual focus after focusTimeout milliseconds
+        //            NSTimeInterval focusTimeoutSeconds = self.resetFocusTimeout / 1000;
+        //            self.focusResetTimer = [NSTimer scheduledTimerWithTimeInterval:focusTimeoutSeconds repeats:NO block:^(NSTimer *timer) {
+        ////                [self resetFocus];
+        //            }];
+        //        }
     }
     else if (context == SessionRunningContext)
     {
-//        BOOL isSessionRunning = [change[NSKeyValueChangeNewKey] boolValue];
-//
-//        dispatch_async( dispatch_get_main_queue(), ^{
-//            // Only enable the ability to change camera if the device has more than one camera.
-//            self.cameraButton.enabled = isSessionRunning && ( [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo].count > 1 );
-//            self.recordButton.enabled = isSessionRunning;
-//            self.stillButton.enabled = isSessionRunning;
-//        } );
+        //        BOOL isSessionRunning = [change[NSKeyValueChangeNewKey] boolValue];
+        //
+        //        dispatch_async( dispatch_get_main_queue(), ^{
+        //            // Only enable the ability to change camera if the device has more than one camera.
+        //            self.cameraButton.enabled = isSessionRunning && ( [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo].count > 1 );
+        //            self.recordButton.enabled = isSessionRunning;
+        //            self.stillButton.enabled = isSessionRunning;
+        //        } );
     }
     else
     {
@@ -823,15 +834,15 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)captureOutput:(AVCaptureOutput *)output
 didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects
        fromConnection:(AVCaptureConnection *)connection {
-
+    
     for(AVMetadataObject *metadataObject in metadataObjects)
     {
         if ([metadataObject isKindOfClass:[AVMetadataMachineReadableCodeObject class]] && [self isSupportedBarCodeType:metadataObject.type]) {
-
+            
             AVMetadataMachineReadableCodeObject *code = (AVMetadataMachineReadableCodeObject*)[self.previewLayer transformedMetadataObjectForMetadataObject:metadataObject];
             if (self.onReadCode && code.stringValue && ![code.stringValue isEqualToString:self.codeStringValue]) {
                 self.onReadCode(@{@"codeStringValue": code.stringValue});
-//                [self stopAnimatingScanner];
+                //                [self stopAnimatingScanner];
             }
         }
     }
