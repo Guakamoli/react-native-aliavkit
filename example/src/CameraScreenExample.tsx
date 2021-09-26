@@ -42,7 +42,6 @@ export default class CameraScreenExample extends Component {
         volumeImage={require('../images/volume.png')}
         showCapturedImageCount
 
-
       />
     );
   }

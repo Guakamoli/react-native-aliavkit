@@ -535,102 +535,102 @@ export default class CameraScreen extends Component<Props, State> {
     )
   }
 
-  // 切换道具
-  switchProp() {
-    let img = { width: 64, height: 64, borderRadius: 64 }
-    return (
-      <>
-        <Carousel
-          data={[1, 2, 3, 4, 5, 6, 7]}
-          itemWidth={83}
-          sliderWidth={width}
-          contentContainerCustomStyle={styles.slider}
-          firstItem={this.state.currentIndex}
-          onBeforeSnapToItem={slideIndex => {
-            this.setState({
-              currentIndex: slideIndex
-            })
-          }}
+  // // 切换道具
+  // switchProp() {
+  //   let img = { width: 64, height: 64, borderRadius: 64 }
+  //   return (
+  //     <>
+  //       <Carousel
+  //         data={[1, 2, 3, 4, 5, 6, 7]}
+  //         itemWidth={83}
+  //         sliderWidth={width}
+  //         contentContainerCustomStyle={styles.slider}
+  //         firstItem={this.state.currentIndex}
+  //         onBeforeSnapToItem={slideIndex => {
+  //           this.setState({
+  //             currentIndex: slideIndex
+  //           })
+  //         }}
 
-          renderItem={({ index, item }) => {
-            if (this.state.currentIndex === index) {
-              img = { width: 64, height: 64, borderRadius: 64 }
-            } else {
-              img = { width: 52, height: 52, borderRadius: 52 }
-            }
-            return (
+  //         renderItem={({ index, item }) => {
+  //           if (this.state.currentIndex === index) {
+  //             img = { width: 64, height: 64, borderRadius: 64 }
+  //           } else {
+  //             img = { width: 52, height: 52, borderRadius: 52 }
+  //           }
+  //           return (
 
-              <TouchableOpacity
-                style={{ width: 64, height: 64, borderRadius: 64 }}
-                delayLongPress={500}
-                disabled={!(this.state.currentIndex === index)}
-                // 长按
-                onLongPress={() => {
-                  console.log('onLongPress');
-                  clearInterval(this.state.timer)
-                  this.setState({ startShoot: true })
-                  // 调用进度条
-                  setTimeout(() => {
-                    this.animate();
-                  }, 500);
+  //             <TouchableOpacity
+  //               style={{ width: 64, height: 64, borderRadius: 64 }}
+  //               delayLongPress={500}
+  //               disabled={!(this.state.currentIndex === index)}
+  //               // 长按
+  //               onLongPress={() => {
+  //                 console.log('onLongPress');
+  //                 clearInterval(this.state.timer)
+  //                 this.setState({ startShoot: true })
+  //                 // 调用进度条
+  //                 setTimeout(() => {
+  //                   this.animate();
+  //                 }, 500);
 
-                  Animated.timing(                        // 随时间变化而执行动画
-                    this.state.fadeInOpacity,             // 动画中的变量值
-                    {
-                      toValue: 122,                       // 透明度最终变为1，即完全不透明
-                      duration: 500,                       // 让动画持续一段时间
-                    }
-                  ).start();
-                }}
-                // 长按结束
-                onPressOut={() => {
-                  console.log('onPressOut');
-                  if (this.state.startShoot) {
-                    this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
+  //                 Animated.timing(                        // 随时间变化而执行动画
+  //                   this.state.fadeInOpacity,             // 动画中的变量值
+  //                   {
+  //                     toValue: 122,                       // 透明度最终变为1，即完全不透明
+  //                     duration: 500,                       // 让动画持续一段时间
+  //                   }
+  //                 ).start();
+  //               }}
+  //               // 长按结束
+  //               onPressOut={() => {
+  //                 console.log('onPressOut');
+  //                 if (this.state.startShoot) {
+  //                   this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
 
-                    setTimeout(() => {
-                      if (this.state.timer != null) {
-                        clearInterval(this.state.timer);
-                      }
-                    }, 500);
-                  }
+  //                   setTimeout(() => {
+  //                     if (this.state.timer != null) {
+  //                       clearInterval(this.state.timer);
+  //                     }
+  //                   }, 500);
+  //                 }
 
-                }}
-                // 单击
-                onPress={() => {
-                  console.log('onPress');
+  //               }}
+  //               // 单击
+  //               onPress={() => {
+  //                 console.log('onPress');
 
-                  const { startShoot, progress } = this.state
-                  // console.log('1313');
-                  if (!startShoot || progress === 0) {
-                    // 拍照
-                    this.onCaptureImagePressed()
-                    this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-                  }
-                }}
-              >
-                <View style={{ position: 'relative' }}>
-                  {/* <TouchableOpacity onPress={() => {
+  //                 const { startShoot, progress } = this.state
+  //                 // console.log('1313');
+  //                 if (!startShoot || progress === 0) {
+  //                   // 拍照
+  //                   this.onCaptureImagePressed()
+  //                   this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
+  //                 }
+  //               }}
+  //             >
+  //               <View style={{ position: 'relative' }}>
+  //                 {/* <TouchableOpacity onPress={() => {
 
-                  this.myRef.current.show('1231312', 2000);
-                }} style={{ position: 'absolute', backgroundColor: "red", top: -50 }}>
-                  <Image
-                    style={styles.closeIcon}
-                    source={this.props.closeImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity> */}
-                  <View style={[{ backgroundColor: "green", },
-                    img
-                  ]}></View>
-                </View>
-              </TouchableOpacity>
-            )
-          }}
-        />
-      </>
-    )
-  }
+  //                 this.myRef.current.show('1231312', 2000);
+  //               }} style={{ position: 'absolute', backgroundColor: "red", top: -50 }}>
+  //                 <Image
+  //                   style={styles.closeIcon}
+  //                   source={this.props.closeImage}
+  //                   resizeMode="contain"
+  //                 />
+  //               </TouchableOpacity> */}
+  //                 <View style={[{ backgroundColor: "green", },
+  //                   img
+  //                 ]}></View>
+  //               </View>
+  //             </TouchableOpacity>
+  //           )
+  //         }}
+  //       />
+  //     </>
+  //   )
+  // }
   // ？？？
   renderRatioStrip() {
     if (this.state.ratios.length === 0 || this.props.hideControls) {
