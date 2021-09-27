@@ -25,7 +25,6 @@ export default class CameraScreenExample extends Component {
         }}
         // 1
         cameraFlipImage={require('../images/cameraFlipIcon.png')}
-        // 1
         captureButtonImage={require('../images/cameraButton.png')}
         torchOnImage={require('../images/torchOn.png')}
         torchOffImage={require('../images/torchOff.png')}
@@ -35,13 +34,14 @@ export default class CameraScreenExample extends Component {
         beautyAdjustImag={require('../images/beautyAdjust.png')}
         AaImage={require('../images/Aa.png')}
         filterImage={require('../images/filter.png')}
-        GifImage={require('../images/gif.png')}
+        musicRevampImage={require('../images/musicRevamp.png')}
         giveUpImage={require('../images/giveUp.png')}
         noVolumeImage={require('../images/noVolume.png')}
         tailorImage={require('../images/tailor.png')}
         volumeImage={require('../images/volume.png')}
         showCapturedImageCount
-
+        isstory={true}
+        ispost={false}
       />
     );
   }

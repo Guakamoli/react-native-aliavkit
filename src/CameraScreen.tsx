@@ -26,6 +26,7 @@ const FLASH_MODE_OFF = 'off';
 
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2
+const captureIcon2 = (width - 20) / 2
 export enum CameraType {
   Front = 'front',
   Back = 'back'
@@ -52,16 +53,19 @@ export type Props = {
   beautyAdjustImag: any,
   AaImage: any
   filterImage: any
-  GifImage: any
+  musicRevampImage: any
   giveUpImage: any
   noVolumeImage: any
   tailorImage: any
   volumeImage: any
   onReadCode: (any) => void;
   onBottomButtonPressed: (any) => void;
+  isstory: boolean
+  ispost: boolean
 }
 
 type State = {
+  // 照片数据
   captureImages: any[],
   flashData: any,
   torchMode: boolean,
@@ -70,6 +74,7 @@ type State = {
   imageCaptured: any,
   captured: boolean,
   cameraType: CameraType,
+  // ---
   videoRecording: boolean;
 
   currentIndex: number,
@@ -88,7 +93,8 @@ type State = {
 
   //
   progressListen: any,
-  path: any,
+  // 视频路径
+  videoPath: any,
   // 区分story/post 
   storyShow: boolean,
   postShow: boolean,
@@ -151,37 +157,24 @@ export default class CameraScreen extends Component<Props, State> {
 
       startShoot: false,
       ShootSuccess: false,
-
+      // 是否静音
       mute: false,
 
       showFilterLens: false,
       filterLensSelect: 0,
 
       timer: null,
+
       fadeInOpacity: new Animated.Value(60),
 
       //进度条监听
       progressListen: null,
       // 视频 照片地址
-      path: null,
+      videoPath: null,
       //
-      storyShow: true,
+      storyShow: false,
       postShow: false,
     };
-  }
-
-  // React.useEffect(() => {
-  //   const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
-  //     //{ target: 65, duration: 5.769999980926514 }
-  //     console.log('---- recordProgress: ', duration);
-  //   });
-  //   return () => {
-  //     subscription.remove();
-  //   };
-  // }, []);
-
-  componentWillUnmount() {
-    this.state.progressListen.remove();
   }
 
   componentDidMount() {
@@ -189,18 +182,14 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-    let a = 0
+
+    const { isstory, ispost } = this.props
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
-      // progressListen: NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
-      //   if (duration <= 15) {
-      //     this.setState({ progress: Number(Number(duration / 15).toFixed(2)) })
-      //   }
-      //   console.log('---- 23223: ', duration);
-      // }),
+      storyShow: isstory,
+      postShow: ispost,
     });
-
 
   }
   // ？？？？ 
@@ -320,7 +309,7 @@ export default class CameraScreen extends Component<Props, State> {
       // 'tailor': 
       { 'img': this.props.tailorImage, 'onPress': () => { } },
       // 'git':
-      { 'img': this.props.GifImage, 'onPress': () => { } },
+      { 'img': this.props.musicRevampImage, 'onPress': () => { } },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
     ]
@@ -369,6 +358,7 @@ export default class CameraScreen extends Component<Props, State> {
               this.setState({ showFilterLens: false, showBeautify: false })
             }}
             activeOpacity={1}
+            disabled={!this.state.showBeautify}
           >
             {this.state.ShootSuccess ? this.renderUpdateTop() : this.renderLeftButtons()}
             <Camera
@@ -412,13 +402,14 @@ export default class CameraScreen extends Component<Props, State> {
     let progress = 0;
     this.setState({ progress: 0 });
     const stopRecording = async () => {
-      const path = await this.camera.stopRecording();
-      console.log('video saved to ', path);
-      this.setState({ path })
+      const videoPath = await this.camera.stopRecording();
+      console.log('video saved to ', videoPath);
+      this.setState({ videoPath })
     }
     this.setState({
       timer: setInterval(() => {
         progress += 1 / 14;
+        console.log('进度条');
         if (progress > 1) {
           progress = 1;
           this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
@@ -430,7 +421,7 @@ export default class CameraScreen extends Component<Props, State> {
     })
 
   }
-  //  摄按钮
+  //  拍摄按钮
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess } = this.state
     if (ShootSuccess) {
@@ -441,15 +432,14 @@ export default class CameraScreen extends Component<Props, State> {
       !this.isCaptureRetakeMode() && (
         <View style={[styles.captureButtonContainer]}>
           {
-
             <>
-
-              <View style={[styles.startShootBox, this.state.startShoot ? {} : { display: 'none' }]} >
+              {/* 长按按钮 */}
+              <View style={[styles.startShootBox, this.state.startShoot ? {} : { opacity: 0 }]} >
                 <Animated.View style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}>
                 </Animated.View>
                 <View style={styles.captureButton}></View>
                 <Progress.Circle
-                  style={[styles.progress, { position: 'absolute', }]}
+                  style={[styles.progress, { position: 'absolute' }]}
                   progress={this.state.progress}
                   indeterminate={false}
                   size={122}
@@ -458,14 +448,13 @@ export default class CameraScreen extends Component<Props, State> {
                   thickness={6}
                 />
               </View>
-              <View style={!this.state.startShoot ? {} : { display: 'none' }}>
+              {/* 普通的切换按钮 */}
+              <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
                 {this.switchProp()}
-                < Image source={this.props.captureButtonImage} style={styles.captureButtonImage} resizeMode="contain" />
               </View>
             </>
           }
         </View >
-
       )
     );
   }
@@ -474,12 +463,11 @@ export default class CameraScreen extends Component<Props, State> {
   switchProp() {
     let img = { width: 64, height: 64, borderRadius: 64 }
     return (
-      <>
+      <View style={{ position: "relative" }} >
         <Carousel
           data={[1, 2, 3, 4, 5, 6, 7]}
           itemWidth={83}
           sliderWidth={width}
-          contentContainerCustomStyle={styles.slider}
           firstItem={this.state.currentIndex}
           onBeforeSnapToItem={slideIndex => {
             this.setState({
@@ -496,7 +484,7 @@ export default class CameraScreen extends Component<Props, State> {
             return (
 
               <TouchableOpacity
-                style={{ width: 64, height: 64, borderRadius: 64 }}
+                style={{ width: 64, height: 64, borderRadius: 64, }}
                 delayLongPress={500}
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
@@ -513,13 +501,14 @@ export default class CameraScreen extends Component<Props, State> {
                   ).start();
                   const success = await this.camera.startRecording();
                   this.setState({ startShoot: success })
+                  console.log('success', success);
                   if (success) {
                     // 调用进度条 开始拍摄
                     this.animate();
                   } else {
                     this.myRef.current.show('摄像失败,请重试', 2000);
                   }
-                  console.log('---- success: ', success);
+
                 }}
                 // 长按结束
                 onPressOut={async () => {
@@ -527,9 +516,9 @@ export default class CameraScreen extends Component<Props, State> {
 
                   if (this.state.startShoot) {
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-                    const path = await this.camera.stopRecording();
-                    console.log('video saved to ', path);
-                    this.setState({ path })
+                    const videoPath = await this.camera.stopRecording();
+                    console.log('video saved to ', videoPath);
+                    this.setState({ videoPath })
                     setTimeout(() => {
                       if (this.state.timer != null) {
                         clearInterval(this.state.timer);
@@ -552,16 +541,6 @@ export default class CameraScreen extends Component<Props, State> {
                 }}
               >
                 <View style={{ position: 'relative' }}>
-                  {/* <TouchableOpacity onPress={() => {
-
-                  this.myRef.current.show('1231312', 2000);
-                }} style={{ position: 'absolute', backgroundColor: "red", top: -50 }}>
-                  <Image
-                    style={styles.closeIcon}
-                    source={this.props.closeImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity> */}
                   <View style={[{ backgroundColor: "green", },
                     img
                   ]}></View>
@@ -570,106 +549,75 @@ export default class CameraScreen extends Component<Props, State> {
             )
           }}
         />
-      </>
+
+
+        {/* 临时方案  安卓 拍摄不会触发 */}
+        <TouchableOpacity
+          style={styles.captureButtonImage}
+          delayLongPress={500}
+          disabled={Platform.OS !== 'android'}
+          // 长按
+          onLongPress={async () => {
+            console.log('onLongPress');
+            clearInterval(this.state.timer)
+            // 按钮动画
+            Animated.timing(                        // 随时间变化而执行动画
+              this.state.fadeInOpacity,             // 动画中的变量值
+              {
+                toValue: 122,                       // 透明度最终变为1，即完全不透明
+                duration: 500,                       // 让动画持续一段时间
+              }
+            ).start();
+            console.log('--------this.camera', this.camera);
+            const success = await this.camera.startRecording();
+            this.setState({ startShoot: success })
+            // let success = true
+            console.log('success', success);
+            console.log(13132);
+
+            if (success) {
+              // 调用进度条 开始拍摄
+              this.animate();
+            } else {
+              this.myRef.current.show('摄像失败,请重试', 2000);
+            }
+
+          }}
+          // 长按结束
+          onPressOut={async () => {
+            console.log('onPressOut');
+
+            if (this.state.startShoot) {
+              this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
+              const videoPath = await this.camera.stopRecording();
+              console.log('video saved to ', videoPath);
+              this.setState({ videoPath })
+              setTimeout(() => {
+                if (this.state.timer != null) {
+                  clearInterval(this.state.timer);
+                }
+              }, 500);
+            }
+
+          }}
+          // 单击
+          onPress={() => {
+            console.log('onPress');
+            const { startShoot, progress } = this.state
+            if (!startShoot || progress === 0) {
+              // 拍照
+              this.onCaptureImagePressed()
+              this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
+            }
+          }}
+        >
+          < Image source={this.props.captureButtonImage} />
+        </TouchableOpacity>
+      </View >
     )
   }
 
-  // // 切换道具
-  // switchProp() {
-  //   let img = { width: 64, height: 64, borderRadius: 64 }
-  //   return (
-  //     <>
-  //       <Carousel
-  //         data={[1, 2, 3, 4, 5, 6, 7]}
-  //         itemWidth={83}
-  //         sliderWidth={width}
-  //         contentContainerCustomStyle={styles.slider}
-  //         firstItem={this.state.currentIndex}
-  //         onBeforeSnapToItem={slideIndex => {
-  //           this.setState({
-  //             currentIndex: slideIndex
-  //           })
-  //         }}
 
-  //         renderItem={({ index, item }) => {
-  //           if (this.state.currentIndex === index) {
-  //             img = { width: 64, height: 64, borderRadius: 64 }
-  //           } else {
-  //             img = { width: 52, height: 52, borderRadius: 52 }
-  //           }
-  //           return (
-
-  //             <TouchableOpacity
-  //               style={{ width: 64, height: 64, borderRadius: 64 }}
-  //               delayLongPress={500}
-  //               disabled={!(this.state.currentIndex === index)}
-  //               // 长按
-  //               onLongPress={() => {
-  //                 console.log('onLongPress');
-  //                 clearInterval(this.state.timer)
-  //                 this.setState({ startShoot: true })
-  //                 // 调用进度条
-  //                 setTimeout(() => {
-  //                   this.animate();
-  //                 }, 500);
-
-  //                 Animated.timing(                        // 随时间变化而执行动画
-  //                   this.state.fadeInOpacity,             // 动画中的变量值
-  //                   {
-  //                     toValue: 122,                       // 透明度最终变为1，即完全不透明
-  //                     duration: 500,                       // 让动画持续一段时间
-  //                   }
-  //                 ).start();
-  //               }}
-  //               // 长按结束
-  //               onPressOut={() => {
-  //                 console.log('onPressOut');
-  //                 if (this.state.startShoot) {
-  //                   this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-
-  //                   setTimeout(() => {
-  //                     if (this.state.timer != null) {
-  //                       clearInterval(this.state.timer);
-  //                     }
-  //                   }, 500);
-  //                 }
-
-  //               }}
-  //               // 单击
-  //               onPress={() => {
-  //                 console.log('onPress');
-
-  //                 const { startShoot, progress } = this.state
-  //                 // console.log('1313');
-  //                 if (!startShoot || progress === 0) {
-  //                   // 拍照
-  //                   this.onCaptureImagePressed()
-  //                   this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-  //                 }
-  //               }}
-  //             >
-  //               <View style={{ position: 'relative' }}>
-  //                 {/* <TouchableOpacity onPress={() => {
-
-  //                 this.myRef.current.show('1231312', 2000);
-  //               }} style={{ position: 'absolute', backgroundColor: "red", top: -50 }}>
-  //                 <Image
-  //                   style={styles.closeIcon}
-  //                   source={this.props.closeImage}
-  //                   resizeMode="contain"
-  //                 />
-  //               </TouchableOpacity> */}
-  //                 <View style={[{ backgroundColor: "green", },
-  //                   img
-  //                 ]}></View>
-  //               </View>
-  //             </TouchableOpacity>
-  //           )
-  //         }}
-  //       />
-  //     </>
-  //   )
-  // }
   // ？？？
   renderRatioStrip() {
     if (this.state.ratios.length === 0 || this.props.hideControls) {
@@ -725,20 +673,11 @@ export default class CameraScreen extends Component<Props, State> {
     }
   }
 
-  renderBottomButtons() {
-    return (
-      !this.props.hideControls && (
-        <SafeAreaView style={[styles.bottomButtons, { backgroundColor: '#ffffff00' }]}>
-          {this.renderBottomButton('left')}
-          {this.renderCaptureButton()}
-          {this.renderRecordButton()}
-        </SafeAreaView>
-      )
-    );
-  }
 
   // 相机切换
   onSwitchCameraPressed() {
+    console.log('13131');
+
     const direction = this.state.cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
     this.setState({ cameraType: direction });
   }
@@ -752,7 +691,7 @@ export default class CameraScreen extends Component<Props, State> {
   onSetTorch() {
     this.setState({ torchMode: !this.state.torchMode });
   }
-  // 拍照工呢
+  // 拍照功能
   async onCaptureImagePressed() {
     const image = await this.camera.capture();
 
@@ -773,14 +712,14 @@ export default class CameraScreen extends Component<Props, State> {
   renderbeautifyBox() {
     const list = [
       { title: "123" },
-      { title: "1234" },
-      { title: "12345" },
-      { title: "12345" },
-      { title: "12345" },
-      { title: "12345" },
-      { title: "12345" },
-      { title: "12345" },
-      { title: "12345" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
+      { title: "123" },
     ]
     return (
       <View style={{ height: 189, backgroundColor: "#000" }}>
@@ -853,8 +792,8 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.state.videoRecording) {
       console.log('stopRecording');
       this.setState({ videoRecording: false });
-      const path = await this.camera.stopRecording();
-      console.log('video saved to ', path);
+      const videoPath = await this.camera.stopRecording();
+      console.log('video saved to ', videoPath);
     } else {
       console.log('startRecording');
 
@@ -880,15 +819,15 @@ export default class CameraScreen extends Component<Props, State> {
     }
     return (
       <>
-        <View >
-          {/* {this.renderCameraBtn()} */}
+        <View style={{ position: 'relative', }}>
+          {/* 拍摄按钮 */}
           {!this.props.hideControls && (
-            <SafeAreaView style={[styles.bottomButtons]}>
-              {this.renderCaptureButton()}
-            </SafeAreaView>
+            // <View style={[styles.bottomButtons]}>
+            this.renderCaptureButton()
+            // </View>
           )}
         </View>
-        <View style={{ height: 100, backgroundColor: "blue", }}>
+        <View style={{ height: 100, backgroundColor: "#000", }}>
           {this.renderswitchModule()}
         </View>
       </>
@@ -899,7 +838,13 @@ export default class CameraScreen extends Component<Props, State> {
     const newRatiosArrayPosition = (this.state.ratioArrayPosition + 1) % this.state.ratios.length;
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
+  // postHead() {
+  //   return(
+  //     <View>
 
+  //       </View>
+  //   )
+  // }
   render() {
     return (
       <>
@@ -911,23 +856,25 @@ export default class CameraScreen extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         />
-        {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         {/* story */}
         <View style={{ height: 44, backgroundColor: "red" }}></View>
         {
           this.state.storyShow && (
             <>
-              {/* // <View style={{ flex: 1, backgroundColor: 'black', }} >
-            // {Platform.OS === 'android' && this.renderCamera()}*/}
+              {Platform.OS === 'android' && this.renderCamera()}
               {Platform.OS !== 'android' && this.renderCamera()}
+              {Platform.OS === 'android' && <View style={styles.gap} />}
               {this.renderBottom()}
-              {/* // </View> */}
             </>
           )
         }
         {/* post */}
         {
           this.state.postShow && (
+            // <>
+            //   {this.postHead()}
+            // </>
+
             null
           )
         }
@@ -940,12 +887,7 @@ export default class CameraScreen extends Component<Props, State> {
 const styles = StyleSheet.create(
   {
     bottomButtons: {
-      flex: 2,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 14,
-      position: "absolute",
-      bottom: 0,
+      flex: 1
     },
     textStyle: {
       color: 'white',
@@ -982,17 +924,7 @@ const styles = StyleSheet.create(
         },
       }),
     },
-    captureButtonContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      // alignItems: 'center',
-      flexDirection: "row",
-      position: 'relative',
-      // marginBottom: 10,
 
-      height: 120
-      // bottom: 0
-    },
     textNumberContainer: {
       position: 'absolute',
       top: 0,
@@ -1036,13 +968,7 @@ const styles = StyleSheet.create(
     switchScreen: {
       position: "absolute",
       right: 20,
-      top: 20
-    },
-    slider: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      display: "flex"
+      top: 25,
     },
     musicIcon: {
       width: 28,
@@ -1144,11 +1070,6 @@ const styles = StyleSheet.create(
       color: '#fff',
       lineHeight: 18,
     },
-    startShootBox: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      position: 'relative',
-    },
     startShootAnnulus: {
       backgroundColor: "rgba(255,255,255,0.5)",
       borderRadius: 122,
@@ -1161,11 +1082,34 @@ const styles = StyleSheet.create(
       borderRadius: 49,
       position: 'absolute'
     },
+    captureButtonContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: "row",
+      position: 'absolute',
+      bottom: 30,
+
+    },
     captureButtonImage: {
       position: 'absolute',
       left: captureIcon,
-      zIndex: -1,
-      top: 21
+      zIndex: -11,
+      elevation: 1,
+      top: - 7,
+    },
+    slider: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: "flex",
+      zIndex: 99,
+      elevation: 10,
+    },
+    startShootBox: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+      left: captureIcon2,
     },
   });
 

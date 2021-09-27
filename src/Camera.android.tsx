@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import { requireNativeComponent, findNodeHandle, NativeModules, processColor , DeviceEventEmitter} from 'react-native';
+import { requireNativeComponent, findNodeHandle, NativeModules, processColor, DeviceEventEmitter } from 'react-native';
 
 const { RNCameraKitModule } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCameraManager');
@@ -27,7 +27,7 @@ const Camera = React.forwardRef((props, ref) => {
 
   React.useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
-      console.log("duration",duration);
+      // console.log("duration", duration);
     });
     return () => {
       subscription.remove();
