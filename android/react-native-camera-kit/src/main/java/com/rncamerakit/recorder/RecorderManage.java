@@ -73,8 +73,8 @@ public class RecorderManage {
         mRecorder.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE);
 
         mClipManager = mRecorder.getClipManager();
-        mClipManager.setMinDuration(100);
-        mClipManager.setMaxDuration(1000 * 15);
+//        mClipManager.setMinDuration(100);
+//        mClipManager.setMaxDuration(1000 * 15);
 
         mRecordCallback = new ImplRecordCallback(context);
         mRecorder.setRecordCallback(mRecordCallback);
@@ -205,48 +205,18 @@ public class RecorderManage {
      */
     public void startRecording(ReactApplicationContext reactContext, Promise promise) {
         if (CommonUtil.SDFreeSize() < 50 * 1000 * 1000) {
+            promise.reject("startRecording", "error:" + reactContext.getResources().getString(R.string.alivc_music_no_free_memory));
             FixedToastUtils.show(reactContext, reactContext.getResources().getString(R.string.alivc_music_no_free_memory));
             return;
         }
         if (mRecorder != null) {
-            if (mRecordCallback != null) {
-                mRecordCallback.setOnRecorderCallbacks(new OnRecorderCallbacks() {
-                    @Override
-                    public void onProgress(long duration) {
-                        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("startVideoRecord", ""+duration);
-                    }
-
-                    @Override
-                    public void onComplete(boolean validClip, long clipDuration) {
-                        if (clipDuration < 2000) {
-                            mRecorder.cancelRecording();
-                            promise.reject("startRecording", "recording duration" + clipDuration + "ms");
-                            return;
-                        }
-                        if (mRecorder != null) {
-                            //片段合成视频
-                            mRecorder.finishRecording();
-                        }
-                        if (mClipManager != null) {
-                            mClipManager.deleteAllPart();
-                        }
-                    }
-
-                    @Override
-                    public void onFinish(String outputPath) {
-                        promise.resolve(outputPath);
-                    }
-
-                    @Override
-                    public void onError(int errorCode) {
-                        promise.reject("startRecording", "errorCode:" + errorCode);
-                    }
-                });
-            }
             if (mClipManager != null) {
                 mClipManager.deleteAllPart();
             }
             mRecorder.startRecording();
+            promise.resolve(true);
+        } else {
+            promise.reject("startRecording", "recorder is null");
         }
     }
 
@@ -264,9 +234,7 @@ public class RecorderManage {
                             promise.reject("startRecording", "recording duration" + clipDuration + "ms");
                             return;
                         }
-                        if (mRecorder != null) {
-                            mRecorder.finishRecording();
-                        }
+                        mRecorder.finishRecording();
                         if (mClipManager != null) {
                             mClipManager.deleteAllPart();
                         }
