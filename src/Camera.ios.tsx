@@ -29,7 +29,7 @@ const Camera = React.forwardRef((props, ref) => {
   React.useEffect(() => {
     const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
       //{ target: 65, duration: 5.769999980926514 }
-      // console.log('---- recordProgress: ', duration);
+      console.log('---- recordProgress: ', duration);
     });
     return () => {
       subscription.remove();
@@ -45,6 +45,7 @@ const Camera = React.forwardRef((props, ref) => {
 Camera.defaultProps = {
   // resetFocusTimeout: 0,
   // resetFocusWhenMotionDetected: true,
+  normalBeautyLevel: 30, //
   saveToCameraRoll: true,
 };
 

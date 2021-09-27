@@ -128,6 +128,7 @@ static AliCameraAction *_instance = nil;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
+        _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
     }
     return _mediaConfig;
 }
@@ -315,14 +316,22 @@ static AliCameraAction *_instance = nil;
 - (void)recorderDidFinishRecording
 {
     NSLog(@"----完成录制");
-    self.recordStartHandler = nil;
+    
+
 }
 
 - (void)finishRecording
 {
     NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    [self.recorder stopPreview];
     [self.recorder stopRecording];
     self.isRecording = NO;
+    self.shouldStartPreviewWhenActive = YES;
+    //跳转处理
+    NSString *outputPath = self.mediaConfig.outputPath;
+    [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
+    self.recordStartHandler = nil;
+    
 }
 
 ///当录至最大时长时回调
@@ -330,6 +339,7 @@ static AliCameraAction *_instance = nil;
 {
     NSLog(@"录制到最大时长");
     [self finishRecording];
+    
 }
 
 - (void)recorderDidStartPreview

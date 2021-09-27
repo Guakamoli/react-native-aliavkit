@@ -5,11 +5,12 @@
 //  Created by jimmy on 2021/9/24.
 //
 
-#import "RNMovieView.h"
+#import "RNEditView.h"
 
 #import <AliyunVideoSDKPro/AliyunImporter.h>
 #import <AliyunVideoSDKPro/AliyunEditor.h>
 #import <AliyunVideoSDKPro/AliyunPasterManager.h>
+#import <AliyunVideoSDKPro/AliyunErrorCode.h>
 
 #import "RNEditViewManager.h"
 #import "AliyunMediaConfig.h"
@@ -17,8 +18,10 @@
 #import "AliyunPathManager.h"
 #import "AliyunEditZoneView.h"
 
-@interface RNMovieView()<
-AliyunIPlayerCallback
+@interface RNEditView()<
+AliyunIPlayerCallback,
+AliyunIRenderCallback,
+AliyunEditZoneViewDelegate
 >
 {
     BOOL _prePlaying;
@@ -35,13 +38,31 @@ AliyunIPlayerCallback
 @property (nonatomic, weak) RNEditViewManager *manager;
 @property (nonatomic, weak) RCTBridge *bridge;
 
+@property (nonatomic, strong) UIView *preview;
 @end
 
-@implementation RNMovieView
+@implementation RNEditView
 
 - (void)dealloc
 {
     [_editor stopEdit];
+}
+
+- (AliyunMediaConfig *)mediaConfig
+{
+    //{ mediaType: 'video', cameraType: 'front', allowsEditing: true, videoQuality: 'high' },
+    if (!_mediaConfig) {//默认配置
+        _mediaConfig = [AliyunMediaConfig defaultConfig];
+        //录制时长，最小2s,最多3min
+        _mediaConfig.minDuration = 2.0f;
+        _mediaConfig.maxDuration = 15.f;
+        _mediaConfig.gop = 30;
+        _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
+        _mediaConfig.videoOnly = YES;
+        _mediaConfig.backgroundColor = [UIColor blackColor];
+        _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
+    }
+    return _mediaConfig;
 }
 
 - (instancetype)initWithManager:(RNEditViewManager*)manager bridge:(RCTBridge *)bridge
@@ -49,8 +70,8 @@ AliyunIPlayerCallback
     if ((self = [super init])) {
         self.manager = manager;
         self.bridge = bridge;
-        [self initBaseData];
-        [self initSDKAbout];
+        self.backgroundColor = [UIColor orangeColor];
+      
     }
     return self;
 }
@@ -58,13 +79,13 @@ AliyunIPlayerCallback
 ///设置初始值
 - (void)initBaseData
 {
-    AliyunEffectPrestoreManager *pm = [AliyunEffectPrestoreManager new];
+    AliyunEffectPrestoreManager *pm = [[AliyunEffectPrestoreManager alloc] init];
     [pm insertInitialData];
     
     // 校验视频分辨率，如果首段视频是横屏录制，则outputSize的width和height互换
-    _inputOutputSize = _config.outputSize;
-    _outputSize = [_config fixedSize];
-    _config.outputSize = _outputSize;
+    self.inputOutputSize = self.mediaConfig.outputSize;
+    self.outputSize = [self.mediaConfig fixedSize];
+    self.mediaConfig.outputSize = _outputSize;
     
     [self _setVideoTaskPath];
     
@@ -82,24 +103,26 @@ AliyunIPlayerCallback
         return;
     }
     _taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:_taskPath outputSize:_outputSize];
+    
+    ///var/mobile/Containers/Data/Application/36AEA03E-5E83-416E-A9BC-74816248C72F/Documents/com.guakamoli.engine/record/C3A7626E-AF4A-4FD4-BE71-7FF35AE759DD/03B70EB2-8D9B-4ED2-839D-3B270E5006A5.mp4
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
-    param.fps = _config.fps;
-    param.gop = _config.gop;
-    if (_config.videoQuality == AliyunVideoQualityVeryHight) {
+    param.fps = self.mediaConfig.fps;
+    param.gop = self.mediaConfig.gop;
+    if (self.mediaConfig.videoQuality == AliyunMediaQualityVeryHight) {
         param.bitrate = 10*1000*1000; // 10Mbps
     } else {
-        param.videoQuality = (AliyunVideoQuality)_config.videoQuality;
+        param.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
     }
-    if (_config.cutMode == AliyunMediaCutModeScaleAspectCut) {
+    if (self.mediaConfig.cutMode == AliyunMediaCutModeScaleAspectCut) {
         param.scaleMode = AliyunScaleModeFit;
     } else {
         param.scaleMode = AliyunScaleModeFill;
     }
     // 编码模式
-    if (_config.encodeMode ==  AliyunEncodeModeHardH264) {
+    if (self.mediaConfig.encodeMode ==  AliyunEncodeModeHardH264) {
         param.codecType = AliyunVideoCodecHardware;
-    }else if(_config.encodeMode == AliyunEncodeModeSoftFFmpeg) {
+    }else if(self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) {
         param.codecType = AliyunVideoCodecOpenh264;
     }
     
@@ -107,15 +130,30 @@ AliyunIPlayerCallback
     AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:_videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-    _config.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    NSLog(@"---------->clip.duration:%f",clip.duration);
+    self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+}
+
+- (UIView *)preview
+{
+    if (!_preview) {
+        CGFloat factor = _outputSize.height / _outputSize.width;
+        CGRect frame;
+        frame.size.width = [UIScreen mainScreen].bounds.size.width;
+        frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
+        _preview = [[UIView alloc] initWithFrame:frame];
+        _preview.backgroundColor = [UIColor lightGrayColor];
+    }
+    return _preview;
 }
 
 /// 初始化sdk相关
 - (void)initSDKAbout
 {
     // editor
-    self.editor = [[AliyunEditor alloc] initWithPath:_taskPath preview:self];
-
+    
+    self.editor = [[AliyunEditor alloc] initWithPath:self.taskPath preview:self.preview];
+    
     self.editor.playerCallback =  (id)self;
     self.editor.renderCallback =  (id)self;
     // player
@@ -125,9 +163,9 @@ AliyunIPlayerCallback
     self.clipConstructor = [self.editor getClipConstructor];
     
     // setup pasterEditZoneView
-    self.editZoneView = [[AliyunEditZoneView alloc] initWithFrame:self.bounds];
+    self.editZoneView = [[AliyunEditZoneView alloc] initWithFrame:self.preview.bounds];
     self.editZoneView.delegate = (id)self;
-    [self addSubview:self.editZoneView];
+    [self.preview addSubview:self.editZoneView];
     
     // setup pasterManager
     self.pasterManager = [self.editor getPasterManager];
@@ -140,17 +178,29 @@ AliyunIPlayerCallback
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    //播放视图
-    if (_outputSize.width && _outputSize.height) {
-        CGFloat factor = _outputSize.height / _outputSize.width;
-        CGRect frame = self.frame;
-        frame.size.width = [UIScreen mainScreen].bounds.size.width;
-        frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
-        self.frame = frame;
+//    [self addSubview:self.preview];
+    NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+    self.videoPath = videoSavePath;
+    [self initBaseData];
+    ///
+    NSLog(@"----- videoSavePath: %@",videoSavePath);
+    [self addSubview:self.preview];
+    [self initSDKAbout];
+    
+    [self.editor startEdit];
+    [self play];
+
+}
+
+- (void)setVideoPath:(NSString *)videoPath
+{
+    if (_videoPath != videoPath) {
+        _videoPath = videoPath;
+        
     }
 }
 
-#pragma mark - AliyunIPlayerCallback
+#pragma mark - AliyunIPlayerCallback --播放器回调
 
 ///播放结束
 - (void)playerDidEnd
@@ -160,22 +210,68 @@ AliyunIPlayerCallback
 
 /**
  播放进度
-
+ 
  @param playSec 播放时间
  @param streamSec 播放流时间
  */
 - (void)playProgress:(double)playSec streamProgress:(double)streamSec
 {
+    NSLog(@"--- %s: %lf",__PRETTY_FUNCTION__, playSec);
+}
+
+/**
+ 播放异常
+
+ @param errorCode 错误码
+ 状态错误 ALIVC_FRAMEWORK_MEDIA_POOL_WRONG_STATE
+ DEMUXER重复创建 ALIVC_FRAMEWORK_DEMUXER_INIT_MULTI_TIMES
+ DEMUXER打开失败 ALIVC_FRAMEWORK_DEMUXER_OPEN_FILE_FAILED
+ DEMUXER获取流信息失败 ALIVC_FRAMEWORK_DEMUXER_FIND_STREAM_INFO_FAILED
+ 解码器创建失败 ALIVC_FRAMEWORK_AUDIO_DECODER_CREATE_DECODER_FAILED
+ 解码器状态错误 ALIVC_FRAMEWORK_AUDIO_DECODER_ERROR_STATE
+ 解码器输入错误 ALIVC_FRAMEWORK_AUDIO_DECODER_ERROR_INPUT
+ 解码器参数SPSPPS为空 ALIVC_FRAMEWORK_VIDEO_DECODER_SPS_PPS_NULL,
+ 解码H264参数创建失败 ALIVC_FRAMEWORK_VIDEO_DECODER_CREATE_H264_PARAM_SET_FAILED
+ 解码HEVC参数创建失败 ALIVC_FRAMEWORK_VIDEO_DECODER_CREATE_HEVC_PARAM_SET_FAILED
+ 缓存数据已满 ALIVC_FRAMEWORK_MEDIA_POOL_CACHE_DATA_SIZE_OVERFLOW
+ 解码器内部返回错误码
+ */
+- (void)playError:(int)errorCode
+{
+    NSLog(@"--- %s:  %d",__PRETTY_FUNCTION__,errorCode);
+}
+
+#pragma mark - AliyunIRenderCallback
+- (int)customRender:(int)srcTexture size:(CGSize)size {
+    // 自定义滤镜渲染
+    return srcTexture;
+}
+
+#pragma mark - AliyunEditZoneViewDelegate
+- (void)currentTouchPoint:(CGPoint)point
+{
     
 }
 
-/// 播放异常
-- (void)playError:(int)errorCode
+/// 接收到移动触摸事件的代理方法
+/// @param fp 起点
+/// @param tp 终点
+- (void)mv:(CGPoint)fp to:(CGPoint)tp
+{
+    
+}
+
+/// 触摸事件结束
+- (void)touchEnd
 {
     
 }
 
 
+/*
+ 渲染编排构建异常
+ ALIVC_FRAMEWORK_RENDER_ERROR_LAYOUT_NOT_INIT =                  -10007009,
+ */
 /// 尝试播放视频
 - (void)play {
     if (self.player.isPlaying) {
@@ -185,6 +281,16 @@ AliyunIPlayerCallback
         NSLog(@"短视频编辑播放器测试:调用了play接口");
         if (returnValue == 0) {
             NSLog(@"短视频编辑播放器测试:play返回0成功");
+        } else {
+            switch (returnValue) {
+                case ALIVC_COMMON_INVALID_STATE: //-4
+                    
+                    NSLog(@"------播放失败： 状态错误");
+                    break;
+                    
+                default:
+                    break;
+            }
         }
         [self updateUIAndDataWhenPlayStatusChanged];
     }
@@ -198,7 +304,7 @@ AliyunIPlayerCallback
         int returnValue = [self.player resume];
         NSLog(@"短视频编辑播放器测试:调用了resume接口");
         if (returnValue == 0) {
-//            [self forceFinishLastEditPasterView];
+            //            [self forceFinishLastEditPasterView];
             NSLog(@"短视频编辑播放器测试:resume返回0成功");
         } else {
             [self.player play];
