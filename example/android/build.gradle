@@ -12,6 +12,7 @@ buildscript {
         google()
         jcenter()
         maven { url "https://maven.aliyun.com/repository/releases" }
+        maven { url 'https://jitpack.io' }
     }
     apply from: 'thirdparty-lib/config.gradle'
     apply from: 'thirdparty-lib/base.gradle'
