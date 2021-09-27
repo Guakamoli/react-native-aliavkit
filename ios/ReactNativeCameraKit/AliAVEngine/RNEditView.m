@@ -71,7 +71,14 @@ AliyunEditZoneViewDelegate
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor orangeColor];
-      
+        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+        self.videoPath = videoSavePath;
+        [self initBaseData];
+        [self addSubview:self.preview];
+        [self initSDKAbout];
+        
+        [self.editor startEdit];
+        [self play];
     }
     return self;
 }
@@ -97,6 +104,11 @@ AliyunEditZoneViewDelegate
     }
 }
 
+/*
+ 
+ /var/mobile/Containers/Data/Application/F6191174-AB01-4C14-BFBB-4D8B055FA4A8/Documents/com.guakamoli.engine/record/CB762E23-D7A7-4F16-B211-00454C824D41/853E9ABF-525D-4F4A-8C8B-E59ADD17C672.mp4
+ */
+
 /// 单视频接入编辑页面，生成一个新的taskPath
 - (void)_setVideoTaskPath {
     if (_taskPath) {
@@ -104,7 +116,6 @@ AliyunEditZoneViewDelegate
     }
     _taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
     
-    ///var/mobile/Containers/Data/Application/36AEA03E-5E83-416E-A9BC-74816248C72F/Documents/com.guakamoli.engine/record/C3A7626E-AF4A-4FD4-BE71-7FF35AE759DD/03B70EB2-8D9B-4ED2-839D-3B270E5006A5.mp4
     AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
@@ -179,16 +190,7 @@ AliyunEditZoneViewDelegate
 {
     [super layoutSubviews];
 //    [self addSubview:self.preview];
-    NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-    self.videoPath = videoSavePath;
-    [self initBaseData];
-    ///
-    NSLog(@"----- videoSavePath: %@",videoSavePath);
-    [self addSubview:self.preview];
-    [self initSDKAbout];
     
-    [self.editor startEdit];
-    [self play];
 
 }
 

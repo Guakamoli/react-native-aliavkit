@@ -84,24 +84,27 @@ static AliCameraAction *_instance = nil;
     if (!_recorder) {
         //清除之前生成的录制路径
         NSString *recordDir = [AliyunPathManager createRecrodDir];
-        [AliyunPathManager makeDirExist:recordDir];
+        [AliyunPathManager clearDir:recordDir];
         //生成这次的存储路径
         NSString *taskPath = [recordDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
         //视频存储路径
         NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
         _videoSavePath = videoSavePath;
-        NSLog(@"------ :%@",videoSavePath);
+        
+        
+        NSLog(@"------recorderoutputPath :%@",videoSavePath);
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
-        _recorder.clipManager.deleteVideoClipsOnExit = self.mediaConfig.deleteVideoClipOnExit;
         _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
         _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK自带人脸识别只支持YUV格式
         _recorder.useFaceDetect = YES;
         _recorder.faceDetectCount = 2;
         _recorder.faceDectectSync = NO;
-        _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
+        _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
         _recorder.encodeMode = (self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) ? 0 : 1;
         _recorder.GOP = self.mediaConfig.gop;
         _recorder.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
+        _recorder.bitrate = 15*1000*1000; // 15Mbps
+        _recorder.encodeMode = 1; // Force hardware encoding
         _recorder.recordFps = self.mediaConfig.fps;
         _recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
         self.mediaConfig.outputPath = _recorder.outputPath;
@@ -129,6 +132,7 @@ static AliCameraAction *_instance = nil;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
         _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
+        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
     }
     return _mediaConfig;
 }
@@ -278,7 +282,7 @@ static AliCameraAction *_instance = nil;
 
 - (NSString *)stopRecordVideo
 {
-    [self finishRecording];
+    [self.recorder stopRecording];
     return _videoSavePath;
 }
 
@@ -310,41 +314,34 @@ static AliCameraAction *_instance = nil;
 - (void)recorderDidStopRecording
 {
     NSLog(@"---- 停止录制 ");
-    [self finishRecording];
+    [self _recorderFinishRecording];
 }
 
 - (void)recorderDidFinishRecording
 {
-    NSLog(@"----完成录制");
+    NSLog(@"----完成录制！！！！");
     
-
 }
 
-- (void)finishRecording
+- (void)_recorderFinishRecording
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
-    [self.recorder stopPreview];
-    [self.recorder stopRecording];
-    self.isRecording = NO;
-    self.shouldStartPreviewWhenActive = YES;
+    [self.recorder finishRecording];  //后面代理会回调recorderDidFinishRecording
     //跳转处理
     NSString *outputPath = self.mediaConfig.outputPath;
+//    NSLog(@"---- outputPath: %@",outputPath);
     [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
-    
 }
-
 ///当录至最大时长时回调
 - (void)recorderDidStopWithMaxDuration
 {
     NSLog(@"录制到最大时长");
-    [self finishRecording];
+    [self _recorderFinishRecording];
     
 }
 
 - (void)recorderDidStartPreview
 {
-//    [self.sliderButtonsView setSwitchRationButtonEnabled:(self.recorderDuration == 0)];
     NSLog(@"-------->开始预览");
 }
 
