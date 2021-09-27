@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   Animated,
   FlatList,
-  TouchableHighlightBase,
+  NativeAppEventEmitter
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
@@ -74,7 +74,7 @@ type State = {
 
   currentIndex: number,
   showBeautify: boolean,
-  beautifySelect: number,
+  normalBeautyLevel: number,
 
   progress: number,
   startShoot: boolean,
@@ -85,6 +85,10 @@ type State = {
   timer: any,
   fadeInOpacity: any,
 
+
+  //
+  progressListen: any,
+  path: any,
   // 区分story/post 
   storyShow: boolean,
   postShow: boolean,
@@ -131,6 +135,7 @@ export default class CameraScreen extends Component<Props, State> {
       flashData: this.flashArray[this.currentFlashArrayPosition],
       torchMode: false,
       focusMode: true,
+      videoRecording: false,
       ratios: [],
       ratioArrayPosition: -1,
       imageCaptured: false,
@@ -140,7 +145,7 @@ export default class CameraScreen extends Component<Props, State> {
       currentIndex: 0,
 
       showBeautify: false,
-      beautifySelect: 0,
+      normalBeautyLevel: 3,
 
       progress: 0,
 
@@ -155,10 +160,28 @@ export default class CameraScreen extends Component<Props, State> {
       timer: null,
       fadeInOpacity: new Animated.Value(60),
 
+      //进度条监听
+      progressListen: null,
+      // 视频 照片地址
+      path: null,
       //
       storyShow: true,
       postShow: false,
     };
+  }
+
+  // React.useEffect(() => {
+  //   const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
+  //     //{ target: 65, duration: 5.769999980926514 }
+  //     console.log('---- recordProgress: ', duration);
+  //   });
+  //   return () => {
+  //     subscription.remove();
+  //   };
+  // }, []);
+
+  componentWillUnmount() {
+    this.state.progressListen.remove();
   }
 
   componentDidMount() {
@@ -166,10 +189,19 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
+    let a = 0
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
+      // progressListen: NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
+      //   if (duration <= 15) {
+      //     this.setState({ progress: Number(Number(duration / 15).toFixed(2)) })
+      //   }
+      //   console.log('---- 23223: ', duration);
+      // }),
     });
+
+
   }
   // ？？？？ 
   isCaptureRetakeMode() {
@@ -339,10 +371,6 @@ export default class CameraScreen extends Component<Props, State> {
             activeOpacity={1}
           >
             {this.state.ShootSuccess ? this.renderUpdateTop() : this.renderLeftButtons()}
-            {/* <TouchableOpacity>
-
-
-            </TouchableOpacity> */}
             <Camera
               ref={(cam) => (this.camera = cam)}
               style={{ flex: 1, borderRadius: 20, }}
@@ -358,6 +386,7 @@ export default class CameraScreen extends Component<Props, State> {
               laserColor={this.props.laserColor}
               frameColor={this.props.frameColor}
               onReadCode={this.props.onReadCode}
+              normalBeautyLevel={this.state.normalBeautyLevel * 10}
             />
 
           </TouchableOpacity>
@@ -382,15 +411,18 @@ export default class CameraScreen extends Component<Props, State> {
   animate() {
     let progress = 0;
     this.setState({ progress: 0 });
-
-    console.log('12313113');
+    const stopRecording = async () => {
+      const path = await this.camera.stopRecording();
+      console.log('video saved to ', path);
+      this.setState({ path })
+    }
     this.setState({
       timer: setInterval(() => {
-        console.log('定时器');
-        progress += 0.07;
+        progress += 1 / 14;
         if (progress > 1) {
           progress = 1;
-          this.setState({ startShoot: false, ShootSuccess: true })
+          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
+          stopRecording()
           clearInterval(this.state.timer)
         }
         this.setState({ progress, });
@@ -468,15 +500,10 @@ export default class CameraScreen extends Component<Props, State> {
                 delayLongPress={500}
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
-                onLongPress={() => {
+                onLongPress={async () => {
                   console.log('onLongPress');
                   clearInterval(this.state.timer)
-                  this.setState({ startShoot: true })
-                  // 调用进度条
-                  setTimeout(() => {
-                    this.animate();
-                  }, 500);
-
+                  // 按钮动画
                   Animated.timing(                        // 随时间变化而执行动画
                     this.state.fadeInOpacity,             // 动画中的变量值
                     {
@@ -484,13 +511,25 @@ export default class CameraScreen extends Component<Props, State> {
                       duration: 500,                       // 让动画持续一段时间
                     }
                   ).start();
+                  const success = await this.camera.startRecording();
+                  this.setState({ startShoot: success })
+                  if (success) {
+                    // 调用进度条 开始拍摄
+                    this.animate();
+                  } else {
+                    this.myRef.current.show('摄像失败,请重试', 2000);
+                  }
+                  console.log('---- success: ', success);
                 }}
                 // 长按结束
-                onPressOut={() => {
+                onPressOut={async () => {
                   console.log('onPressOut');
+
                   if (this.state.startShoot) {
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-
+                    const path = await this.camera.stopRecording();
+                    console.log('video saved to ', path);
+                    this.setState({ path })
                     setTimeout(() => {
                       if (this.state.timer != null) {
                         clearInterval(this.state.timer);
@@ -744,7 +783,7 @@ export default class CameraScreen extends Component<Props, State> {
       { title: "12345" },
     ]
     return (
-      <View style={{ height: 189, }}>
+      <View style={{ height: 189, backgroundColor: "#000" }}>
         <View style={styles.beautifyBoxHead}>
           <Text style={styles.beautifyTitle}>{this.state.showFilterLens ? `滤镜` : `美颜`}</Text>
           {!this.state.showFilterLens &&
@@ -788,40 +827,47 @@ export default class CameraScreen extends Component<Props, State> {
             {[0, 1, 2, 3, 4, 5].map(item => {
               return (
                 <TouchableOpacity onPress={() => {
-                  this.setState({ beautifySelect: item })
+                  this.setState({ normalBeautyLevel: item })
                 }}
                 >
                   <View style={[
                     styles.beautifySelect,
-                    this.state.beautifySelect === item && styles.beautifySelecin
+                    this.state.normalBeautyLevel === item && styles.beautifySelecin
                   ]}>
                     <Text style={styles.beautifySelectTitle}>{item}</Text>
                   </View>
                 </TouchableOpacity>
               )
             })}
-
           </View>
         }
 
       </View >
     )
   }
+  // 拍摄
+  async onRecordVideoPressed() {
+    console.log('12313123');
+    console.log(this.state.videoRecording);
+
+    if (this.state.videoRecording) {
+      console.log('stopRecording');
+      this.setState({ videoRecording: false });
+      const path = await this.camera.stopRecording();
+      console.log('video saved to ', path);
+    } else {
+      console.log('startRecording');
+
+      const success = await this.camera.startRecording();
+      console.log('---- success: ', success);
+      this.setState({ videoRecording: true });
+    }
+  }
   // 底部切换 和捕获
   renderSwitchCapture() {
     return (
       <>
-        <View >
-          {/* {this.renderCameraBtn()} */}
-          {!this.props.hideControls && (
-            <SafeAreaView style={[styles.bottomButtons]}>
-              {this.renderCaptureButton()}
-            </SafeAreaView>
-          )}
-        </View>
-        <View style={{ height: 100 }}>
-          {this.renderswitchModule()}
-        </View>
+
       </>
     )
   }
@@ -833,7 +879,19 @@ export default class CameraScreen extends Component<Props, State> {
       )
     }
     return (
-      this.renderSwitchCapture()
+      <>
+        <View >
+          {/* {this.renderCameraBtn()} */}
+          {!this.props.hideControls && (
+            <SafeAreaView style={[styles.bottomButtons]}>
+              {this.renderCaptureButton()}
+            </SafeAreaView>
+          )}
+        </View>
+        <View style={{ height: 100, backgroundColor: "blue", }}>
+          {this.renderswitchModule()}
+        </View>
+      </>
     )
   }
   // ？？？
@@ -858,11 +916,13 @@ export default class CameraScreen extends Component<Props, State> {
         <View style={{ height: 44, backgroundColor: "red" }}></View>
         {
           this.state.storyShow && (
-            <View style={{ flex: 1, backgroundColor: 'black', }} {...this.props}>
-              {Platform.OS === 'android' && this.renderCamera()}
+            <>
+              {/* // <View style={{ flex: 1, backgroundColor: 'black', }} >
+            // {Platform.OS === 'android' && this.renderCamera()}*/}
               {Platform.OS !== 'android' && this.renderCamera()}
               {this.renderBottom()}
-            </View>
+              {/* // </View> */}
+            </>
           )
         }
         {/* post */}
@@ -917,7 +977,7 @@ const styles = StyleSheet.create(
           height,
         },
         default: {
-          flex: 10,
+          flex: 1,
           flexDirection: 'column',
         },
       }),
