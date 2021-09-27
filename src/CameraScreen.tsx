@@ -18,7 +18,7 @@ import Camera from './Camera';
 import Carousel from 'react-native-snap-carousel';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
-
+import CameraRoll from "@react-native-community/cameraroll";
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -838,13 +838,52 @@ export default class CameraScreen extends Component<Props, State> {
     const newRatiosArrayPosition = (this.state.ratioArrayPosition + 1) % this.state.ratios.length;
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
-  // postHead() {
-  //   return(
-  //     <View>
+  postHead() {
+    return (
+      <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
+        <Image
+          style={styles.closeIcon}
+          source={this.props.closeImage}
+          resizeMode="contain"
+        />
+        <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
+        <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
+      </View>
+    )
+  }
+  postContent() {
 
-  //       </View>
-  //   )
-  // }
+  }
+  postFileUploadHead() {
+    return (
+      <View style={{ height: 50, backgroundColor: "red", flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
+        <View>
+          <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
+        </View>
+        <View style={{ flexDirection: "row", justifyContent: 'space-between', alignItems: 'center' }}>
+          <Image
+            style={styles.closeIcon}
+            source={this.props.closeImage}
+            resizeMode="contain"
+          />
+          <Image
+            style={styles.closeIcon}
+            source={this.props.closeImage}
+            resizeMode="contain"
+          />
+        </View>
+      </View>
+    )
+  }
+  postFileUpload() {
+    // const aa = CameraRoll.getAlbums({ assetType: 'All' });
+    // console.log(aa);
+    return (
+      <>
+        {this.postFileUploadHead()}
+      </>
+    )
+  }
   render() {
     return (
       <>
@@ -871,11 +910,13 @@ export default class CameraScreen extends Component<Props, State> {
         {/* post */}
         {
           this.state.postShow && (
-            // <>
-            //   {this.postHead()}
-            // </>
+            <>
+              {this.postHead()}
+              {/* {this.postContent()} */}
+              {this.postFileUpload()}
+            </>
 
-            null
+            // null
           )
         }
 

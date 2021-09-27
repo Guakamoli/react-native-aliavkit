@@ -40,8 +40,8 @@ export default class CameraScreenExample extends Component {
         tailorImage={require('../images/tailor.png')}
         volumeImage={require('../images/volume.png')}
         showCapturedImageCount
-        isstory={true}
-        ispost={false}
+        isstory={false}
+        ispost={true}
       />
     );
   }

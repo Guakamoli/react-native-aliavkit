@@ -21,11 +21,12 @@
   },
   "main": "src/index.js",
   "dependencies": {
+    "@react-native-community/cameraroll": "^4.0.4",
     "lodash": "^4.14.2",
+    "react-native-easy-toast": "^2.0.0",
     "react-native-progress": "^5.0.0",
     "react-native-snap-carousel": "^3.9.1",
-    "react-native-svg": "^12.1.1",
-    "react-native-easy-toast": "^2.0.0"
+    "react-native-svg": "^12.1.1"
   },
   "license": "MIT",
   "devDependencies": {
