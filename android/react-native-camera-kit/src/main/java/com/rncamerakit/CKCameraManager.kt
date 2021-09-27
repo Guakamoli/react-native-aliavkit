@@ -76,13 +76,13 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
     //是否开启闪光灯
     @ReactProp(name = "flashMode")
-    fun setFlashMode(view: CKCamera, mode: String?) {
+    fun setFlashMode(view: CKCamera, mode: String) {
         view.recorderManage.setLight(mode)
     }
 
     //手电筒
     @ReactProp(name = "torchMode")
-    fun setTorchMode(view: CKCamera, mode: String?) {
+    fun setTorchMode(view: CKCamera, mode: String) {
         view.recorderManage.setTorchMode(mode)
     }
 

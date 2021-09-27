@@ -61,6 +61,7 @@ public class RecorderQueenManage implements OnFrameCallBack, OnTextureIdCallBack
         mQueenManager = QueenManager.getInstance(mContext);
         SharedPreferenceUtils.setIsQueenMode(mContext, true);
         initBeautyParam();
+        queenDefaultParam();
         recorderInterface.setBeautyStatus(false);
         recorderInterface.setOnFrameCallback(this);
         recorderInterface.setOnTextureIdCallback(this);
@@ -149,9 +150,9 @@ public class RecorderQueenManage implements OnFrameCallBack, OnTextureIdCallBack
         isQueenDrawed = true;
         if (texture2D == null) {
             texture2D = mQueenManager.initEngine(false, textureId, textureWidth, textureHeight, true);
-            if (mHandler != null) {
-                mHandler.sendEmptyMessage(0);
-            }
+//            if (mHandler != null) {
+//                mHandler.sendEmptyMessage(0);
+//            }
         }
         return mQueenManager.draw(frameBytes, frameWidth, frameHeight, mCameraInfo, matrix, texture2D);
     }
@@ -198,25 +199,25 @@ public class RecorderQueenManage implements OnFrameCallBack, OnTextureIdCallBack
         mQueenManager.setShapeParam(shapeParams);
     }
 
-    private MyHandler mHandler = new MyHandler(this);
-
-    private static class MyHandler extends Handler {
-
-        private WeakReference<RecorderQueenManage> weakReference;
-
-        public MyHandler(RecorderQueenManage manage) {
-            weakReference = new WeakReference<>(manage);
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            super.handleMessage(msg);
-            RecorderQueenManage manage = weakReference.get();
-            if (manage != null) {
-                manage.queenDefaultParam();
-            }
-        }
-    }
+//    private MyHandler mHandler = new MyHandler(this);
+//
+//    private static class MyHandler extends Handler {
+//
+//        private WeakReference<RecorderQueenManage> weakReference;
+//
+//        public MyHandler(RecorderQueenManage manage) {
+//            weakReference = new WeakReference<>(manage);
+//        }
+//
+//        @Override
+//        public void handleMessage(@NonNull Message msg) {
+//            super.handleMessage(msg);
+//            RecorderQueenManage manage = weakReference.get();
+//            if (manage != null) {
+//
+//            }
+//        }
+//    }
 
 
     public void setBeautyLevel(int level) {
