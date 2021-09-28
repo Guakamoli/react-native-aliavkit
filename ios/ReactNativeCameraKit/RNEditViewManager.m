@@ -29,7 +29,10 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_EXPORT_VIEW_PROPERTY(videoPath, NSString)
-
+RCT_EXPORT_VIEW_PROPERTY(onExportVideo, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(filterName, NSString)
+RCT_EXPORT_VIEW_PROPERTY(startExportVideo, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(saveToPhotoLibrary,BOOL)
 
 - (dispatch_queue_t)methodQueue
 {

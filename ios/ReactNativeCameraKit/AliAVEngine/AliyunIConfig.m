@@ -50,7 +50,7 @@ static AliyunIConfig *uiConfig;
 - (NSString *)imageName:(NSString *)imageName {
     
 
-    NSString *path = [NSString stringWithFormat:@"AlivcCore.bundle/%@",imageName];
+    NSString *path = [NSString stringWithFormat:@"ReactNativeAliAVKit.bundle/%@",imageName];
     
     return path;
 }

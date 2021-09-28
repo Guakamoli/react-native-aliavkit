@@ -26,26 +26,21 @@ const Camera = React.forwardRef((props, ref) => {
     },
   }));
 
-  React.useEffect(() => {
-    const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
-      //{ target: 65, duration: 5.769999980926514 }
-      console.log('---- recordProgress: ', duration);
-    });
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));
 
-  return <NativeCamera style={{ minWidth: 100, minHeight: 100 }} ref={nativeRef} {...transformedProps} />;
+  return (
+    <NativeCamera
+      style={{ minWidth: 100, minHeight: 100 }}
+      ref={nativeRef}
+      {...transformedProps}
+      onRecordingProgress={(event) => props.onRecordingProgress(event.nativeEvent)}
+    />
+  );
 });
 
 Camera.defaultProps = {
-  // resetFocusTimeout: 0,
-  // resetFocusWhenMotionDetected: true,
-  normalBeautyLevel: 30, //
+  normalBeautyLevel: 30, 
   saveToCameraRoll: true,
 };
 

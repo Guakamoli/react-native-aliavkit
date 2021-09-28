@@ -6,6 +6,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <React/RCTView.h>
 @class RNEditViewManager;
 @class RCTBridge;
 @class AliyunMediaConfig;
@@ -17,6 +18,7 @@
 @property (nonatomic, strong) NSString *taskPath;
 ///单个视频的本地路径 - 录制进入编辑传这个值
 @property (nonatomic, strong) NSString *videoPath;
+@property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
 
 - (instancetype)initWithManager:(RNEditViewManager *)manager bridge:(RCTBridge *)bridge;
 

@@ -122,10 +122,11 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic) BOOL isAddedOberver;
 
 @property (nonatomic, strong) AliCameraAction *cameraAction;
-@property (nonatomic, weak) CKCameraManager *manager;
-@property (nonatomic, weak) RCTBridge *bridge;
+//@property (nonatomic, weak) CKCameraManager *manager;
+//@property (nonatomic, weak) RCTBridge *bridge;
 
 @property (nonatomic) NSUInteger normalBeautyLevel;
+@property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
 @end
 
@@ -140,7 +141,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 -(PHFetchOptions *)fetchOptions
 {
-    
     PHFetchOptions *fetchOptions = [PHFetchOptions new];
     fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     fetchOptions.predicate = [NSPredicate predicateWithFormat:@"mediaType = %d && creationDate <= %@",PHAssetMediaTypeImage, [NSDate date]];
@@ -171,11 +171,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     return _cameraAction;
 }
 
-- (instancetype)initWithManager:(CKCameraManager*)manager bridge:(RCTBridge *)bridge
+- (instancetype)init
 {
-    if ((self = [super init])) {
-        self.manager = manager;
-        self.bridge = bridge;
+    if (self = [super init]) {
         [self.cameraAction startFrontPreview];
     }
     return self;
@@ -186,7 +184,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super layoutSubviews];
     [self addSubview:self.cameraAction.cameraPreview];
 }
-
 
 - (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
 {
@@ -268,6 +265,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)setFrameColor:(UIColor *)color {
     if (color != nil) {
         _frameColor = color;
+    }
+}
+
+- (void)setOnRecordingProgress:(RCTBubblingEventBlock)onRecordingProgress
+{
+    if (_onRecordingProgress != onRecordingProgress) {
+        _onRecordingProgress = onRecordingProgress;
     }
 }
 
@@ -435,12 +439,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                success:(VideoRecordBlock)onSuccess
                onError:(void (^)(NSString*))onError
 {
+    __weak typeof(self) weakSelf = self;
     BOOL isRecording = [self.cameraAction startRecordVideo:^(CGFloat duration) {
         NSDictionary *event = @{
             @"target": self.reactTag,
             @"duration": @(duration)
         };
-        [self.bridge.eventDispatcher sendAppEventWithName:@"startVideoRecord" body:event];
+        weakSelf.onRecordingProgress(event);
     }];
     onSuccess(isRecording);
 }
@@ -570,125 +575,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
     return temporaryFileURL;
 }
-
-//#pragma mark - Frame for Scanner Settings
-//
-//- (void)didMoveToWindow {
-//    [super didMoveToWindow];
-//    if (self.sessionRunning && self.dataReadingFrame) {
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            [self startAnimatingScanner:self.dataReadingFrame];
-//        });
-//    }
-//}
-//
-//- (void)addFrameForScanner {
-//    CGFloat frameWidth = self.bounds.size.width - 2 * self.frameOffset;
-//    if (!self.dataReadingFrame) {
-//        self.dataReadingFrame = [[UIView alloc] initWithFrame:CGRectMake(0, 0, frameWidth, self.frameHeight)]; //
-//        self.dataReadingFrame.center = self.center;
-//        self.dataReadingFrame.backgroundColor = [UIColor clearColor];
-//        [self createCustomFramesForView:self.dataReadingFrame];
-//        [self addSubview:self.dataReadingFrame];
-//
-//        [self startAnimatingScanner:self.dataReadingFrame];
-//
-//        [self addVisualEffects:self.dataReadingFrame.frame];
-//
-//        CGRect visibleRect = [self.previewLayer metadataOutputRectOfInterestForRect:self.dataReadingFrame.frame];
-//        self.metadataOutput.rectOfInterest = visibleRect;
-//    }
-//}
-//
-//- (void)createCustomFramesForView:(UIView *)frameView {
-//    CGFloat cornerSize = 20.f;
-//    CGFloat cornerWidth = 2.f;
-//    for (int i = 0; i < 8; i++) {
-//        CGFloat x = 0.0;
-//        CGFloat y = 0.0;
-//        CGFloat width = 0.0;
-//        CGFloat height = 0.0;
-//        switch (i) {
-//            case 0:
-//                x = 0; y = 0; width = cornerWidth; height = cornerSize;
-//                break;
-//            case 1:
-//                x = 0; y = 0; width = cornerSize; height = cornerWidth;
-//                break;
-//            case 2:
-//                x = CGRectGetWidth(frameView.bounds) - cornerSize; y = 0; width = cornerSize; height = cornerWidth;
-//                break;
-//            case 3:
-//                x = CGRectGetWidth(frameView.bounds) - cornerWidth; y = 0; width = cornerWidth; height = cornerSize;
-//                break;
-//            case 4:
-//                x = CGRectGetWidth(frameView.bounds) - cornerWidth;
-//                y = CGRectGetHeight(frameView.bounds) - cornerSize; width = cornerWidth; height = cornerSize;
-//                break;
-//            case 5:
-//                x = CGRectGetWidth(frameView.bounds) - cornerSize;
-//                y = CGRectGetHeight(frameView.bounds) - cornerWidth; width = cornerSize; height = cornerWidth;
-//                break;
-//            case 6:
-//                x = 0; y = CGRectGetHeight(frameView.bounds) - cornerWidth; width = cornerSize; height = cornerWidth;
-//                break;
-//            case 7:
-//                x = 0; y = CGRectGetHeight(frameView.bounds) - cornerSize; width = cornerWidth; height = cornerSize;
-//                break;
-//        }
-//        UIView * cornerView = [[UIView alloc] initWithFrame:CGRectMake(x, y, width, height)];
-//        cornerView.backgroundColor = self.frameColor;
-//        [frameView addSubview:cornerView];
-//    }
-//}
-//
-//- (void)addVisualEffects:(CGRect)inputRect {
-//    UIView *topView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, inputRect.origin.y)];
-//    topView.backgroundColor = [UIColor colorWithRed:0.0/255.0 green:0.0/255.0 blue:0.0/255.0 alpha:0.4];
-//    [self addSubview:topView];
-//
-//    UIView *leftSideView = [[UIView alloc] initWithFrame:CGRectMake(0, inputRect.origin.y, self.frameOffset, self.frameHeight)]; //paddingForScanner scannerHeight
-//    leftSideView.backgroundColor = [UIColor colorWithRed:0.0/255.0 green:0.0/255.0 blue:0.0/255.0 alpha:0.4];
-//    [self addSubview:leftSideView];
-//
-//    UIView *rightSideView = [[UIView alloc] initWithFrame:CGRectMake(inputRect.size.width + self.frameOffset, inputRect.origin.y, self.frameOffset, self.frameHeight)];
-//    rightSideView.backgroundColor = [UIColor colorWithRed:0.0/255.0 green:0.0/255.0 blue:0.0/255.0 alpha:0.4];
-//    [self addSubview:rightSideView];
-//
-//    UIView *bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, inputRect.origin.y + self.frameHeight, self.frame.size.width,
-//                                                                  self.frame.size.height - inputRect.origin.y - self.frameHeight)];
-//    bottomView.backgroundColor = [UIColor colorWithRed:0.0/255.0 green:0.0/255.0 blue:0.0/255.0 alpha:0.4];
-//    [self addSubview:bottomView];
-//}
-//
-//- (void)startAnimatingScanner:(UIView *)inputView {
-//    if (!self.scannerView) {
-//        self.scannerView = [[UIView alloc] initWithFrame:CGRectMake(2, 0, inputView.frame.size.width - 4, 2)];
-//        self.scannerView.backgroundColor = self.laserColor;
-//    }
-//    if (self.scannerView.frame.origin.y != 0) {
-//        [self.scannerView setFrame:CGRectMake(2, 0, inputView.frame.size.width - 4, 2)];
-//    }
-//    [inputView addSubview:self.scannerView];
-//    [UIView animateWithDuration:3 delay:0 options:(UIViewAnimationOptionAutoreverse | UIViewAnimationOptionRepeat) animations:^{
-//        CGFloat middleX = inputView.frame.size.width / 2;
-//        self.scannerView.center = CGPointMake(middleX, inputView.frame.size.height - 1);
-//    } completion:^(BOOL finished) {}];
-//}
-//
-//- (void)stopAnimatingScanner {
-//    [self.scannerView removeFromSuperview];
-//}
-
-//Observer actions
-
-//- (void)didEnterBackground:(NSNotification *)notification {
-//    [self stopAnimatingScanner];
-//}
-//
-//- (void)willEnterForeground:(NSNotification *)notification {
-//    [self startAnimatingScanner:self.dataReadingFrame];
-//}
 
 #pragma mark - observers
 

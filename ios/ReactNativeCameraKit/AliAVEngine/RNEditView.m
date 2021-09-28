@@ -11,17 +11,24 @@
 #import <AliyunVideoSDKPro/AliyunEditor.h>
 #import <AliyunVideoSDKPro/AliyunPasterManager.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
+#import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
 
 #import "RNEditViewManager.h"
 #import "AliyunMediaConfig.h"
 #import "AliyunEffectPrestoreManager.h"
 #import "AliyunPathManager.h"
 #import "AliyunEditZoneView.h"
+#import "AliyunEffectFilterInfo.h"
+#import "AliyunDBHelper.h"
+#import "AliyunEffectMvGroup.h"
+#import "AliyunEffectResourceModel.h"
+#import <Photos/Photos.h>
 
 @interface RNEditView()<
 AliyunIPlayerCallback,
 AliyunIRenderCallback,
-AliyunEditZoneViewDelegate
+AliyunEditZoneViewDelegate,
+AliyunIExporterCallback
 >
 {
     BOOL _prePlaying;
@@ -39,6 +46,13 @@ AliyunEditZoneViewDelegate
 @property (nonatomic, weak) RCTBridge *bridge;
 
 @property (nonatomic, strong) UIView *preview;
+
+@property (nonatomic, strong) AliyunVodPublishManager *publishManager;
+
+@property (nonatomic, strong) NSString *filterName;
+@property (nonatomic) BOOL startExportVideo;
+@property (nonatomic) BOOL saveToPhotoLibrary;
+
 @end
 
 @implementation RNEditView
@@ -65,12 +79,20 @@ AliyunEditZoneViewDelegate
     return _mediaConfig;
 }
 
+- (AliyunVodPublishManager *)publishManager{
+    if (!_publishManager) {
+        _publishManager =[[AliyunVodPublishManager alloc]init];
+        _publishManager.exportCallback = self;
+    }
+    return _publishManager;
+}
+
 - (instancetype)initWithManager:(RNEditViewManager*)manager bridge:(RCTBridge *)bridge
 {
     if ((self = [super init])) {
         self.manager = manager;
         self.bridge = bridge;
-        self.backgroundColor = [UIColor orangeColor];
+        self.backgroundColor = [UIColor blackColor];
         NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
         self.videoPath = videoSavePath;
         [self initBaseData];
@@ -104,11 +126,6 @@ AliyunEditZoneViewDelegate
     }
 }
 
-/*
- 
- /var/mobile/Containers/Data/Application/F6191174-AB01-4C14-BFBB-4D8B055FA4A8/Documents/com.guakamoli.engine/record/CB762E23-D7A7-4F16-B211-00454C824D41/853E9ABF-525D-4F4A-8C8B-E59ADD17C672.mp4
- */
-
 /// 单视频接入编辑页面，生成一个新的taskPath
 - (void)_setVideoTaskPath {
     if (_taskPath) {
@@ -141,7 +158,7 @@ AliyunEditZoneViewDelegate
     AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:_videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-    NSLog(@"---------->clip.duration:%f",clip.duration);
+//    NSLog(@"----------clip.duration:%f",clip.duration);
     self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 }
 
@@ -162,7 +179,6 @@ AliyunEditZoneViewDelegate
 - (void)initSDKAbout
 {
     // editor
-    
     self.editor = [[AliyunEditor alloc] initWithPath:self.taskPath preview:self.preview];
     
     self.editor.playerCallback =  (id)self;
@@ -189,25 +205,104 @@ AliyunEditZoneViewDelegate
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-//    [self addSubview:self.preview];
-    
+}
 
+
+- (void)prepareForExport
+{
+    [self.player stop];
+    [self.editor stopEdit];
+    
+    int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
+    if (result != 0) {
+        NSLog(@"合成失败");
+    }
 }
 
 - (void)setVideoPath:(NSString *)videoPath
 {
     if (_videoPath != videoPath) {
         _videoPath = videoPath;
-        
+        NSLog(@"------videoPath：%@",videoPath);
     }
 }
+
+- (void)setOnExportVideo:(RCTBubblingEventBlock)onExportVideo
+{
+    if (_onExportVideo != onExportVideo) {
+        _onExportVideo = onExportVideo;
+    }
+}
+
+- (void)setFilterName:(NSString *)filterName
+{
+    if (_filterName != filterName) {
+        _filterName = filterName;
+        [self changeFilterByName:filterName];
+    }
+}
+
+- (void)setStartExportVideo:(BOOL)startExportVideo
+{
+    if (_startExportVideo != startExportVideo) {
+        _startExportVideo = startExportVideo;
+        if (startExportVideo) {
+            [self prepareForExport];
+        }
+    }
+}
+
+- (void)setSaveToPhotoLibrary:(BOOL)saveToPhotoLibrary
+{
+    if (_saveToPhotoLibrary != saveToPhotoLibrary) {
+        _saveToPhotoLibrary = saveToPhotoLibrary;
+    }
+}
+
+- (void)requestAuthorization:(void(^)(void))completion
+{
+    PHAuthorizationStatus authStatus = [PHPhotoLibrary authorizationStatus];
+    if (authStatus == AVAuthorizationStatusNotDetermined) {
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (status == PHAuthorizationStatusAuthorized) {
+                    completion();
+                }
+            });
+        }];
+    }else if (authStatus == PHAuthorizationStatusAuthorized) {
+        completion();
+    }
+}
+
+- (void)saveVideoWithPath:(NSString *)videoPath
+{
+    [self requestAuthorization:^{
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+            PHAssetCreationRequest *cr = [PHAssetCreationRequest creationRequestForAsset];
+            [cr addResourceWithType:PHAssetResourceTypeVideo fileURL:[NSURL fileURLWithPath:videoPath] options:nil];
+        } completionHandler:^(BOOL success, NSError * _Nullable error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (success) {
+                    NSLog(@"保存视频成功!");
+//                    [MBProgressHUD showWarningMessage:NSLocalizedString(@"video_local_save_edit",nil) inView:self.view];
+                } else {
+                    NSLog(@"保存视频失败:%@", error);
+//                    [MBProgressHUD showWarningMessage:NSLocalizedString(@"video_exporting_check_autho",nil) inView:self.view];
+                }
+            });
+        }];
+    }];
+}
+
 
 #pragma mark - AliyunIPlayerCallback --播放器回调
 
 ///播放结束
 - (void)playerDidEnd
 {
-    
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    [self replay];
 }
 
 /**
@@ -218,11 +313,65 @@ AliyunEditZoneViewDelegate
  */
 - (void)playProgress:(double)playSec streamProgress:(double)streamSec
 {
-    NSLog(@"--- %s: %lf",__PRETTY_FUNCTION__, playSec);
+    
+}
+
+- (void)changeFilterByName:(NSString *)filterName
+{
+    [self.editor removeFilter];
+    AliyunEffectFilterInfo *info = [self getFilterInfoByName:filterName];
+    NSString *filePath = [info localFilterResourcePath];
+    AliyunEffectFilter *effectFilter = [[AliyunEffectFilter alloc] initWithFile:filePath];
+    [self.editor applyFilter:effectFilter];
+}
+
+- (AliyunEffectFilterInfo *)getFilterInfoByName:(NSString *)name
+{
+    AliyunEffectFilterInfo *info = [[AliyunEffectFilterInfo alloc] init];
+    info.name = name;
+    info.resourcePath = [NSString stringWithFormat:@"Filter/%@",name];
+    info.icon = @"icon";
+    return info;
+}
+
+- (void)playError:(int)errorCode
+{
+    NSLog(@"--- %s:  %d",__PRETTY_FUNCTION__,errorCode);
+}
+
+#pragma mark - AliyunIRenderCallback
+- (int)customRender:(int)srcTexture size:(CGSize)size {
+    // 自定义滤镜渲染
+    return srcTexture;
+}
+
+#pragma mark - AliyunIExporterCallback -合成导出回调
+
+///导出结束
+- (void)exporterDidEnd:(NSString *)outputPath
+{
+    if (_saveToPhotoLibrary) {
+        [self saveVideoWithPath:outputPath];
+    }
+    id event = @{@"exportProgress": @(1.0), @"outputPath":outputPath};
+    _onExportVideo(event);
+}
+
+///导出取消
+- (void)exporterDidCancel
+{
+    
+}
+
+///导出进度
+- (void)exportProgress:(float)progress
+{
+    id event = @{@"exportProgress": @(progress)};
+    _onExportVideo(event);
 }
 
 /**
- 播放异常
+ 导出异常
 
  @param errorCode 错误码
  状态错误 ALIVC_FRAMEWORK_MEDIA_POOL_WRONG_STATE
@@ -238,15 +387,9 @@ AliyunEditZoneViewDelegate
  缓存数据已满 ALIVC_FRAMEWORK_MEDIA_POOL_CACHE_DATA_SIZE_OVERFLOW
  解码器内部返回错误码
  */
-- (void)playError:(int)errorCode
+- (void)exportError:(int)errorCode
 {
-    NSLog(@"--- %s:  %d",__PRETTY_FUNCTION__,errorCode);
-}
-
-#pragma mark - AliyunIRenderCallback
-- (int)customRender:(int)srcTexture size:(CGSize)size {
-    // 自定义滤镜渲染
-    return srcTexture;
+    
 }
 
 #pragma mark - AliyunEditZoneViewDelegate
@@ -286,10 +429,8 @@ AliyunEditZoneViewDelegate
         } else {
             switch (returnValue) {
                 case ALIVC_COMMON_INVALID_STATE: //-4
-                    
                     NSLog(@"------播放失败： 状态错误");
                     break;
-                    
                 default:
                     break;
             }
@@ -341,10 +482,8 @@ AliyunEditZoneViewDelegate
 /// 更新UI 当状态改变的时候，播放的状态下是暂停按钮，其余都是播放按钮
 - (void)updateUIAndDataWhenPlayStatusChanged {
     if (self.player.isPlaying) {
-        
         _prePlaying = YES;
     } else {
-        
         _prePlaying = NO;
     }
 }

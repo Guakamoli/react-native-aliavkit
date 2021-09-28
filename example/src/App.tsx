@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import CameraScreenExample from './CameraScreenExample';
 import CameraExample from './CameraExample';
-import PlayerExample from './PlayerExample';
+import VideoEditorExample from './VideoEditorExample';
 
 function HomeScreen({ navigation, route }) {
   return (
@@ -22,7 +22,10 @@ function HomeScreen({ navigation, route }) {
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CameraScreen')}>
           <Text style={styles.buttonText}>Camera Screen</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('VideoPlay')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('VideoEditor')}
+        >
           <Text style={styles.buttonText}>Video Play</Text>
         </TouchableOpacity>
       </View>
@@ -34,7 +37,7 @@ function CameraScreen({ navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: 'Camera',
-      headerRight: () => <Button title='play' onPress={() => navigation.navigate('VideoPlay')} />,
+      headerRight: () => <Button title='play' onPress={() => navigation.navigate('VideoEditor')} />,
     });
   }, [navigation]);
 
@@ -45,7 +48,7 @@ function Camera({ navigation }) {
   return <CameraExample />;
 }
 
-function VideoPlay({ navigation }) {
+function VideoEditor({ navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: 'Camera',
@@ -53,7 +56,7 @@ function VideoPlay({ navigation }) {
     });
   }, [navigation]);
 
-  return <PlayerExample />;
+  return <VideoEditorExample />;
 }
 
 const Stack = createNativeStackNavigator();
@@ -65,7 +68,7 @@ export default function App() {
         <Stack.Screen name='Home' component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name='Camera' component={Camera} />
         <Stack.Screen name='CameraScreen' component={CameraScreen} />
-        <Stack.Screen name='VideoPlay' component={VideoPlay} />
+        <Stack.Screen name='VideoEditor' component={VideoEditor} />
       </Stack.Navigator>
     </NavigationContainer>
   );

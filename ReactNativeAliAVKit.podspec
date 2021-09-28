@@ -14,12 +14,8 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/Guakamoli/react-native-aliavkit", :tag => "v#{s.version}" }
   s.source_files  = "ios/**/*.{h,m,mm}"
-  s.ios.resource_bundles = {
-    'ReactNativeAliAVKit' => ['ReactNativeAliAVKit/AliCamera/AVAssets/Filter/*']
-  }
   
-  
-  
+  s.resource_bundles = {'AliAVResources' => ['ReactNativeAliAVKit/AliAVEngine/Filter/*.*']}
   
   s.dependency 'React-Core'
   

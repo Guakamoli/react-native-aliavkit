@@ -91,8 +91,6 @@ static AliCameraAction *_instance = nil;
         NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
         _videoSavePath = videoSavePath;
         
-        
-        NSLog(@"------recorderoutputPath :%@",videoSavePath);
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
         _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
         _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK自带人脸识别只支持YUV格式
@@ -320,7 +318,7 @@ static AliCameraAction *_instance = nil;
 - (void)recorderDidFinishRecording
 {
     NSLog(@"----完成录制！！！！");
-    
+    [self.recorder stopPreview];
 }
 
 - (void)_recorderFinishRecording

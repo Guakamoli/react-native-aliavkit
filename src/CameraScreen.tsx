@@ -1,18 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Platform,
-  SafeAreaView,
-} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, Platform, SafeAreaView } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
-
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -22,27 +12,27 @@ const { width, height } = Dimensions.get('window');
 
 export enum CameraType {
   Front = 'front',
-  Back = 'back'
+  Back = 'back',
 }
 
 export type Props = {
-  ratioOverlay?: string,
-  ratioOverlayColor?: string,
-  allowCaptureRetake: boolean,
-  cameraRatioOverlay: any,
-  showCapturedImageCount?: boolean,
-  captureButtonImage: any,
-  cameraFlipImage: any,
-  hideControls: any,
-  showFrame: any,
-  scanBarcode: any,
-  laserColor: any,
-  frameColor: any,
-  torchOnImage: any,
-  torchOffImage: any,
+  ratioOverlay?: string;
+  ratioOverlayColor?: string;
+  allowCaptureRetake: boolean;
+  cameraRatioOverlay: any;
+  showCapturedImageCount?: boolean;
+  captureButtonImage: any;
+  cameraFlipImage: any;
+  hideControls: any;
+  showFrame: any;
+  scanBarcode: any;
+  laserColor: any;
+  frameColor: any;
+  torchOnImage: any;
+  torchOffImage: any;
   onReadCode: (any) => void;
   onBottomButtonPressed: (any) => void;
-}
+};
 
 type State = {
   captureImages: any[];
@@ -99,6 +89,7 @@ export default class CameraScreen extends Component<Props, State> {
       captured: false,
       cameraType: CameraType.Front,
     };
+    
   }
 
   componentDidMount() {
@@ -106,9 +97,11 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
+    
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
+      cameraType: CameraType.Front,
     });
   }
 
@@ -171,6 +164,10 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
+  _onRecordingDuration(event){
+    console.log('duration: ',event.duration)
+  }
+
   renderCamera() {
     return (
       <View style={styles.cameraContainer}>
@@ -192,6 +189,7 @@ export default class CameraScreen extends Component<Props, State> {
             laserColor={this.props.laserColor}
             frameColor={this.props.frameColor}
             onReadCode={this.props.onReadCode}
+            onRecordingProgress={this._onRecordingDuration}
           />
         )}
       </View>
@@ -218,7 +216,10 @@ export default class CameraScreen extends Component<Props, State> {
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
             {this.props.showCapturedImageCount && (
               <View style={styles.textNumberContainer}>
-                <Text>{this.numberOfImagesTaken()}</Text>
+                <Text>
+                  拍照
+                  <Text>{this.numberOfImagesTaken()}</Text>
+                </Text>
               </View>
             )}
           </TouchableOpacity>
@@ -236,7 +237,7 @@ export default class CameraScreen extends Component<Props, State> {
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
             {this.props.showCapturedImageCount && (
               <View style={styles.textNumberContainer}>
-                <Text>record</Text>
+                <Text>录制</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -281,29 +282,10 @@ export default class CameraScreen extends Component<Props, State> {
     }
   }
 
-  renderBottomButton(type) {
-    const showButton = true;
-    if (showButton) {
-      const buttonNameSuffix = this.isCaptureRetakeMode() ? 'CaptureRetakeButtonText' : 'ButtonText';
-      const buttonText = _(this.props).get(`actions.${type}${buttonNameSuffix}`);
-      return (
-        <TouchableOpacity
-          style={[styles.bottomButton, { justifyContent: type === 'left' ? 'flex-start' : 'flex-end' }]}
-          onPress={() => this.onButtonPressed(type)}
-        >
-          <Text style={styles.textStyle}>{buttonText}</Text>
-        </TouchableOpacity>
-      );
-    } else {
-      return <View style={styles.bottomContainerGap} />;
-    }
-  }
-
   renderBottomButtons() {
     return (
       !this.props.hideControls && (
         <SafeAreaView style={[styles.bottomButtons, { backgroundColor: '#ffffff00' }]}>
-          {this.renderBottomButton('left')}
           {this.renderCaptureButton()}
           {this.renderRecordButton()}
         </SafeAreaView>
@@ -374,77 +356,76 @@ export default class CameraScreen extends Component<Props, State> {
   }
 }
 
-const styles = StyleSheet.create(
-  {
-    bottomButtons: {
-      flex: 2,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 14,
-    },
-    textStyle: {
-      color: 'white',
-      fontSize: 20,
-    },
-    ratioBestText: {
-      color: 'white',
-      fontSize: 18,
-    },
-    ratioText: {
-      color: '#ffc233',
-      fontSize: 18,
-    },
-    topButtons: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingTop: 8,
-      paddingBottom: 0,
-    },
-    cameraContainer: {
-      ...Platform.select({
-        android: {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width,
-          height,
-        },
-        default: {
-          flex: 10,
-          flexDirection: 'column',
-        },
-      }),
-    },
-    captureButtonContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    textNumberContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      right: 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    bottomButton: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 10,
-    },
-    bottomContainerGap: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      padding: 10,
-    },
-    gap: {
-      flex: 10,
-      flexDirection: 'column',
-    },
-  });
+const styles = StyleSheet.create({
+  bottomButtons: {
+    flex: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 14,
+  },
+  textStyle: {
+    color: 'white',
+    fontSize: 20,
+  },
+  ratioBestText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  ratioText: {
+    color: '#ffc233',
+    fontSize: 18,
+  },
+  topButtons: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    paddingBottom: 0,
+  },
+  cameraContainer: {
+    ...Platform.select({
+      android: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width,
+        height,
+      },
+      default: {
+        flex: 10,
+        flexDirection: 'column',
+      },
+    }),
+  },
+  captureButtonContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textNumberContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottomButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  bottomContainerGap: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 10,
+  },
+  gap: {
+    flex: 10,
+    flexDirection: 'column',
+  },
+});

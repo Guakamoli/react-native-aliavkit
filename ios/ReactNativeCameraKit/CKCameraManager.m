@@ -15,7 +15,7 @@ RCT_EXPORT_MODULE()
 - (UIView *)view
 {
     if(!self.camera){
-        self.camera = [[CKCamera alloc] initWithManager:self bridge:self.bridge];
+        self.camera = [[CKCamera alloc] init];
     }
     return self.camera;
 }
@@ -33,10 +33,9 @@ RCT_EXPORT_VIEW_PROPERTY(onOrientationChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(showFrame, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(laserColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(frameColor, UIColor)
-//RCT_EXPORT_VIEW_PROPERTY(resetFocusTimeout, NSInteger)
-//RCT_EXPORT_VIEW_PROPERTY(resetFocusWhenMotionDetected, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
 
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
