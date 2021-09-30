@@ -1083,10 +1083,10 @@ export default class CameraScreen extends Component<Props, State> {
       // 获取视频文件 url 
       console.log(myAssetId, 'myAssetId');
 
-      let returnedAssetInfo = await CameraRoll.getPhotoInfo(myAssetId, {});
-      console.log('videoFile', returnedAssetInfo.localUri);
+      let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+      console.log('videoFile', localUri);
 
-      this.setState({ videoFile: returnedAssetInfo.localUri })
+      this.setState({ videoFile: localUri })
     }
     return (
       <>
