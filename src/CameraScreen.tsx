@@ -950,11 +950,12 @@ export default class CameraScreen extends Component<Props, State> {
             this.state.multipleData.map(async (multipleDataItem) => {
               const { image: { uri, width, height, filename, fileSize, playableDuration }, type } = multipleDataItem
               let image_type = type + '/' + filename.split('.')[1]
+              let localUri = await CameraRoll.requestPhotoAccess(uri.slice(5));
               if (this.state.photoSelectType === 'image') {
                 uplaodFile.push({
                   image_type,
                   image_dimensions: { width, height },
-                  image_url: uri,
+                  image_url: localUri,
                   image_size: fileSize,
                   title: filename
                 })
@@ -962,7 +963,7 @@ export default class CameraScreen extends Component<Props, State> {
                 uplaodFile.push({
                   video_type: image_type,
                   type: "file",
-                  title_link: uri,
+                  title_link: localUri,
                   video_size: fileSize,
                   title: filename
                 })
@@ -1084,7 +1085,7 @@ export default class CameraScreen extends Component<Props, State> {
       console.log(myAssetId, 'myAssetId');
 
       let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-      console.log('videoFile', localUri);
+      // console.log('videoFile', localUri);
 
       this.setState({ videoFile: localUri })
     }
@@ -1219,8 +1220,7 @@ export default class CameraScreen extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         />
-
-        {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null}
+        {/* {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null} */}
         {
           this.state.storyShow ? (
             <>
