@@ -8,11 +8,6 @@
 #import "AliCameraAction.h"
 #import <AliyunVideoSDKPro/AliyunIRecorder.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
-#import "AliyunPathManager.h"
-#import "AliyunMediaConfig.h"
-#import "BeautyEngineManager.h"
-#import "AlivcRecordFocusView.h"
-
 #if __has_include(<React/RCTBridge.h>)
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
@@ -22,6 +17,12 @@
 #import "UIView+React.h"
 #import "RCTConvert.h"
 #endif
+#import "AliyunPathManager.h"
+#import "AliyunMediaConfig.h"
+#import "BeautyEngineManager.h"
+#import "AlivcRecordFocusView.h"
+#import "AliyunPasterInfo.h"
+#import "AliyunDownloadManager.h"
 
 #define IS_IPHONEX (([[UIScreen mainScreen] bounds].size.height<812)?NO:YES)
 #define NoStatusBarSafeTop (IS_IPHONEX ? 44 : 0)
@@ -34,13 +35,16 @@
 }
 @property (nonatomic, strong) AliyunIRecorder *recorder;        //录制
 @property (nonatomic, assign) BOOL shouldStartPreviewWhenActive;    //跳转其他页面停止预览，返回开始预览，退后台进入前台则一直在预览。这2种情况通过此变量区别。
-@property (nonatomic, readwrite) AVCaptureDevicePosition devicePositon;
+
 @property (nonatomic, strong) AlivcRecordFocusView *focusView;
 @property (nonatomic, strong) UITapGestureRecognizer *focusGesture;
 @property (nonatomic, strong) UIPinchGestureRecognizer *zoomGesture;
 @property (nonatomic, strong) VideoRecordStartBlk_t recordStartHandler;
 @property (nonatomic, strong) VideoRecordEndBlk_t recordEndHandler;
 @property (nonatomic, readwrite) BOOL isRecording;
+@property (nonatomic, strong) AliyunDownloadManager *downloadManager;
+@property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //当前的人脸动图
+
 @end
 
 @implementation AliCameraAction
@@ -68,7 +72,6 @@ static AliCameraAction *_instance = nil;
 - (void)setupDefault
 {
     self.normalBeautyLevel = 30;
-    self.devicePositon = AVCaptureDevicePositionFront;
     self.isRecording = NO;
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
 }
@@ -147,7 +150,15 @@ static AliCameraAction *_instance = nil;
     return _focusView;
 }
 
- - (void)addFocusGesture
+- (AliyunDownloadManager *)downloadManager
+{
+    if (!_downloadManager) {
+        _downloadManager = [[AliyunDownloadManager alloc] init];
+    }
+    return _downloadManager;
+}
+
+- (void)addFocusGesture
 {
     self.focusGesture =
     [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(focusAndExposeTap:)];
@@ -197,18 +208,13 @@ static AliCameraAction *_instance = nil;
     self.zoomGesture = nil;
 }
 
-- (void)setCameraPreviewFrame:(CGRect)frame
-{
-    
-}
-
 - (void)takePhotos:(void (^)(NSData *imageData))handler
 {
     if([self.recorder respondsToSelector:@selector(takePhoto:)]) {
         ///image 采集的渲染后图片
         ///rawImage 采集的原始图片
         [self.recorder takePhoto:^(UIImage *image, UIImage *rawImage) {
-//            NSData *imageData = UIImageJPEGRepresentation(rawImage, 1.0);
+            //            NSData *imageData = UIImageJPEGRepresentation(rawImage, 1.0);
             NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
             handler ? handler(imageData) : nil;
         }];
@@ -239,18 +245,13 @@ static AliCameraAction *_instance = nil;
     [self.recorder stopPreview];
 }
 
-- (AVCaptureDevicePosition)switchCameraPosition
+- (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position
 {
-    AliyunIRecorderCameraPosition position = [self.recorder switchCameraPosition];
-    switch (position) {
-        case AliyunIRecorderCameraPositionFront:
-            self.devicePositon = AVCaptureDevicePositionFront;
-            break;
-        case AliyunIRecorderCameraPositionBack:
-            self.devicePositon = AVCaptureDevicePositionBack;
-            break;
+    AliyunIRecorderCameraPosition cameraPosition =
+    (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
+    if (cameraPosition != self.recorder.cameraPosition) {
+        [self.recorder switchCameraPosition];
     }
-    return self.devicePositon;
 }
 
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
@@ -267,21 +268,95 @@ static AliCameraAction *_instance = nil;
             tMode = AliyunIRecorderTorchModeAuto;
             break;
     }
-    return [self.recorder switchTorchWithMode:tMode];
+    if (self.recorder.hasTorch) {
+        return NO;
+    }
+    if (self.recorder.torchMode != tMode) {
+        return [self.recorder switchTorchWithMode:tMode];
+    }
+    return NO;
 }
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
 {
     self.recordStartHandler = handler;
-    int num = [self.recorder startRecording];
-//    NSLog(@"----: %d", num);
-    return num == 0; // ==0 YES
+    return ([self.recorder startRecording]) == 0; // ==0 YES
 }
 
 - (NSString *)stopRecordVideo
 {
     [self.recorder stopRecording];
     return _videoSavePath;
+}
+
+#pragma mark - face paster
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo
+{
+    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
+        return;
+    }
+    if (pasterInfo.eid <= 0 || [pasterInfo.bundlePath isEqualToString:@"icon"]) {//remove
+        [self deletePreviousEffectPaster];
+        //        [self.pasterView refreshUIWhenThePasterInfoApplyedWithPasterInfo:pasterInfo];
+        return;
+    }
+    
+    if (pasterInfo.bundlePath != nil) {
+        [self deletePreviousEffectPaster]; //delete pre
+        [self addPasterInfo:pasterInfo path:pasterInfo.bundlePath];
+        return;
+    }
+    
+    [self deletePreviousEffectPaster];
+    
+    if (![pasterInfo fileExist]) {
+        AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
+        [self.downloadManager addTask:task];
+        task.progressBlock = ^(NSProgress *progress) {
+            CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
+            NSLog(@"------download progress: %lf",pgs);
+        };
+        __weak typeof(self) weakSelf = self;
+        task.completionHandler = ^(NSString *path, NSError *err) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (err) {
+                    NSLog(@"---- download paster error:%@",err.localizedDescription);
+                }else{
+                    [weakSelf addPasterInfo:pasterInfo path:path];
+                    NSLog(@"");
+                }
+            });
+        };
+    } else {
+        [self addPasterInfo:pasterInfo path:[pasterInfo filePath]];
+    }
+}
+
+- (void)addPasterInfo:(AliyunPasterInfo *)info path:(NSString *)path
+{
+    if(self.recorder.isRecording){
+        NSLog(@"----- 动图测试:添加动图：录制中，不添加");
+        return;
+    }
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL result = [fileManager fileExistsAtPath:path];
+    if(result) {
+        [self deletePreviousEffectPaster];
+        AliyunEffectPaster *paster = [[AliyunEffectPaster alloc] initWithFile:path];
+        [self.recorder applyPaster:paster];
+        _previousEffectPaster = paster;
+        //[_pasterView refreshUIWhenThePasterInfoApplyedWithPasterInfo:info];
+    }
+}
+
+- (void)deletePreviousEffectPaster
+{
+    if (_previousEffectPaster) {
+        [self.recorder deletePaster:_previousEffectPaster];
+        NSLog(@"----- 动图测试：删除动图：%@\n",_previousEffectPaster.path);
+        _previousEffectPaster = nil;
+    }
 }
 
 #pragma mark - AliyunIRecorderDelegate
@@ -291,18 +366,18 @@ static AliCameraAction *_instance = nil;
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (status == AliyunIRecorderDeviceAuthorAudioDenied) {
-//            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeAudio];
+            //            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeAudio];
         } else if (status == AliyunIRecorderDeviceAuthorVideoDenied) {
-//            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeVideo];
+            //            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeVideo];
         }
         //当权限有问题的时候，不会走startPreview，所以这里需要更新下UI
-//        [self.sliderButtonsView setSwitchRationButtonEnabled:(self.recorderDuration == 0)];
+        //        [self.sliderButtonsView setSwitchRationButtonEnabled:(self.recorderDuration == 0)];
     });
 }
 /// 录制进度
 - (void)recorderVideoDuration:(CGFloat)duration
 {
-//    NSLog(@"----- 录制中：%f",duration);
+    //    NSLog(@"----- 录制中：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
@@ -326,7 +401,7 @@ static AliCameraAction *_instance = nil;
     [self.recorder finishRecording];  //后面代理会回调recorderDidFinishRecording
     //跳转处理
     NSString *outputPath = self.mediaConfig.outputPath;
-//    NSLog(@"---- outputPath: %@",outputPath);
+    //    NSLog(@"---- outputPath: %@",outputPath);
     [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
 }

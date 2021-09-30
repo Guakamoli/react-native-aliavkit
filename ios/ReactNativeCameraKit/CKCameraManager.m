@@ -36,6 +36,7 @@ RCT_EXPORT_VIEW_PROPERTY(frameColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
 
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)

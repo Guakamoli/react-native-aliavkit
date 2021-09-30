@@ -1,6 +1,16 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions, Platform, SafeAreaView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  VirtualizedList,
+} from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
 
@@ -45,7 +55,36 @@ type State = {
   captured: boolean;
   cameraType: CameraType;
   videoRecording: boolean;
+  pasterList: any[];
+  facePasterInfo: any;
 };
+
+type PasterItemProps = {
+  item: any;
+  applyPaster(item: any): void;
+};
+
+class PasterItem extends React.Component<PasterItemProps> {
+  static propTypes = {
+    item: PropTypes.object.isRequired,
+    applyPaster: PropTypes.func.isRequired,
+  };
+
+  applyPaster = () => {
+    this.props.applyPaster(this.props.item);
+  };
+
+  render() {
+    const { item } = this.props;
+    return (
+      <View style={styles.item}>
+        <TouchableOpacity onPress={this.applyPaster}>
+          <Image style={{ width: 80, height: 80 }} source={{ uri: item.icon }} />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
 
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
@@ -88,20 +127,28 @@ export default class CameraScreen extends Component<Props, State> {
       imageCaptured: false,
       captured: false,
       cameraType: CameraType.Front,
+      pasterList: [],
+      facePasterInfo: {},
     };
-    
   }
-
   componentDidMount() {
     let ratios = [];
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-    
+
     this.setState({
       ratios: ratios || [],
-      ratioArrayPosition: ratios.length > 0 ? 0 : -1,
-      cameraType: CameraType.Front,
+      ratioArrayPosition: ratios.length > 0 ? 0 : -1
+    });
+    this.getPasterData();
+  }
+
+  async getPasterData() {
+    const pasters = await this.camera.getPasterInfos();
+    // console.log('------ :', pasters[0]);
+    this.setState({
+      pasterList: pasters,
     });
   }
 
@@ -164,8 +211,8 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-  _onRecordingDuration(event){
-    console.log('duration: ',event.duration)
+  _onRecordingDuration(event) {
+    console.log('duration: ', event.duration);
   }
 
   renderCamera() {
@@ -189,6 +236,7 @@ export default class CameraScreen extends Component<Props, State> {
             laserColor={this.props.laserColor}
             frameColor={this.props.frameColor}
             onReadCode={this.props.onReadCode}
+            facePasterInfo={this.state.facePasterInfo}
             onRecordingProgress={this._onRecordingDuration}
           />
         )}
@@ -293,6 +341,45 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
+  getItemCount = () => {
+    const count = this.state.pasterList.length;
+    // console.log('getItemCount: ', count);
+    return count;
+  };
+
+  cameraApplyPaster = (paster) => {
+    // console.log('cameraApplyPaster: ', paster.url);
+    this.setState({ facePasterInfo: paster });
+  };
+  renderItem = (item) => {
+    return (
+      <PasterItem
+        item={item}
+        applyPaster={(paster) => {
+          this.cameraApplyPaster(paster);
+        }}
+      />
+    );
+  };
+
+  renderPasterButtons() {
+    return (
+      <View style={{ backgroundColor: '#ffffff00', flex: 2 }}>
+        <VirtualizedList
+          data={this.state.pasterList}
+          initialNumToRender={4}
+          renderItem={({ item, index }) => this.renderItem(item)}
+          keyExtractor={(item) => `${item.id}`}
+          getItemCount={this.getItemCount}
+          getItem={(data, index) => {
+            return this.state.pasterList[index];
+          }}
+          horizontal={true}
+        />
+      </View>
+    );
+  }
+
   onSwitchCameraPressed() {
     const direction = this.state.cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
     this.setState({ cameraType: direction });
@@ -350,6 +437,7 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
+        {this.renderPasterButtons()}
         {this.renderBottomButtons()}
       </View>
     );
@@ -427,5 +515,20 @@ const styles = StyleSheet.create({
   gap: {
     flex: 10,
     flexDirection: 'column',
+  },
+  item: {
+    backgroundColor: '#334',
+    opacity: 0.8,
+    height: 80,
+    width: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 0,
+    marginHorizontal: 5,
+    padding: 10,
+  },
+  title: {
+    fontSize: 20,
   },
 });

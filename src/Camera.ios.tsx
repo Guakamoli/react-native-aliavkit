@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import React from 'react';
 import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter } from 'react-native';
 
-const { CKCameraManager } = NativeModules;
+const { CKCameraManager, FacePasterBridge } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
@@ -24,6 +24,9 @@ const Camera = React.forwardRef((props, ref) => {
     checkDeviceCameraAuthorizationStatus: async () => {
       return await CKCameraManager.checkDeviceCameraAuthorizationStatus();
     },
+    getPasterInfos: async () => {
+      return await FacePasterBridge.getPasterInfos({});
+    }
   }));
 
   const transformedProps = _.cloneDeep(props);

@@ -17,6 +17,7 @@
 
 #import "AliCameraAction.h"
 #import "CKCameraManager.h"
+#import "AliyunPasterInfo.h"
 
 static void * CapturingStillImageContext = &CapturingStillImageContext;
 static void * SessionRunningContext = &SessionRunningContext;
@@ -32,7 +33,7 @@ typedef NS_ENUM( NSInteger, CKSetupResult ) {
 RCT_ENUM_CONVERTER(CKCameraType, (@{
     @"back": @(AVCaptureDevicePositionBack),
     @"front": @(AVCaptureDevicePositionFront),
-}), AVCaptureDevicePositionBack, integerValue)
+}), AVCaptureDevicePositionFront, integerValue)
 @end
 
 @implementation RCTConvert(CKCameraTorchMode)
@@ -40,7 +41,7 @@ RCT_ENUM_CONVERTER(CKCameraType, (@{
 RCT_ENUM_CONVERTER(CKCameraTorchMode, (@{
     @"on": @(AVCaptureTorchModeOn),
     @"off": @(AVCaptureTorchModeOff)
-}), AVCaptureTorchModeAuto, integerValue)
+}), AVCaptureTorchModeOff, integerValue)
 @end
 
 @implementation RCTConvert(CKCameraFlashMode)
@@ -128,6 +129,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic) NSUInteger normalBeautyLevel;
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
+@property (nonatomic, strong) NSDictionary *facePasterInfo;
+
 @end
 
 @implementation CKCamera
@@ -195,7 +198,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setCameraType:(AVCaptureDevicePosition)cameraType
 {
-    if (cameraType != _cameraType) {
+    if (_cameraType != cameraType) {
         _cameraType = cameraType;
         [self changeCamera:cameraType];
     }
@@ -209,7 +212,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     });
     return;
 #endif
-    [self.cameraAction switchCameraPosition];
+    
+    [self.cameraAction switchCaptureDevicePosition:preferredPosition];
 }
 
 - (void)setFlashMode:(AVCaptureFlashMode)flashMode {
@@ -275,130 +279,52 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
 }
 
-- (void) orientationChanged:(NSNotification *)notification
+- (void)setFacePasterInfo:(NSDictionary *)facePasterInfo
 {
-    if (!self.onOrientationChange) {
-        return;
-    }
-    
-    // PORTRAIT: 0, // ⬆️
-    // LANDSCAPE_LEFT: 1, // ⬅️
-    // PORTRAIT_UPSIDE_DOWN: 2, // ⬇️
-    // LANDSCAPE_RIGHT: 3, // ➡️
-    
-    UIDevice * device = notification.object;
-    UIDeviceOrientation orientation = device.orientation;
-    if (orientation == UIDeviceOrientationPortrait) {
-        self.onOrientationChange(@{@"orientation": @0});
-    } else if (orientation == UIDeviceOrientationLandscapeLeft) {
-        self.onOrientationChange(@{@"orientation": @1});
-    } else if (orientation ==  UIDeviceOrientationPortraitUpsideDown) {
-        self.onOrientationChange(@{@"orientation": @2});
-    } else if (orientation == UIDeviceOrientationLandscapeRight) {
-        self.onOrientationChange(@{@"orientation": @3});
+    if (_facePasterInfo != facePasterInfo) {
+        _facePasterInfo = facePasterInfo;
+        if (![facePasterInfo isEqualToDictionary:@{}]) {
+            [self applyFacePaster:facePasterInfo];
+        }
     }
 }
 
-- (void) setupCaptureSession {
-    // Setup the capture session.
-    // In general it is not safe to mutate an AVCaptureSession or any of its inputs, outputs, or connections from multiple threads at the same time.
-    // Why not do all of this on the main queue?
-    // Because -[AVCaptureSession startRunning] is a blocking call which can take a long time. We dispatch session setup to the sessionQueue
-    // so that the main queue isn't blocked, which keeps the UI responsive.
-    dispatch_async( self.sessionQueue, ^{
-        if ( self.setupResult != CKSetupResultSuccess ) {
-            return;
-        }
-        
-        self.backgroundRecordingID = UIBackgroundTaskInvalid;
-        NSError *error = nil;
-        
-        AVCaptureDevice *videoDevice = [CKCamera deviceWithMediaType:AVMediaTypeVideo preferringPosition:AVCaptureDevicePositionBack];
-        AVCaptureDeviceInput *videoDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
-        
-        [self.session beginConfiguration];
-        
-        if ( [self.session canAddInput:videoDeviceInput] ) {
-            [self.session addInput:videoDeviceInput];
-            self.videoDeviceInput = videoDeviceInput;
-            //            [CKCamera setFlashMode:self.flashMode forDevice:self.videoDeviceInput.device];
-        }
-        else {
-            self.setupResult = CKSetupResultSessionConfigurationFailed;
-        }
-        
-        AVCaptureMovieFileOutput *movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-        if ( [self.session canAddOutput:movieFileOutput] ) {
-            [self.session addOutput:movieFileOutput];
-            AVCaptureConnection *connection = [movieFileOutput connectionWithMediaType:AVMediaTypeVideo];
-            if ( connection.isVideoStabilizationSupported ) {
-                connection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
-            }
-            self.movieFileOutput = movieFileOutput;
-        }
-        else {
-            self.setupResult = CKSetupResultSessionConfigurationFailed;
-        }
-        
-        AVCaptureStillImageOutput *stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
-        if ( [self.session canAddOutput:stillImageOutput] ) {
-            stillImageOutput.outputSettings = @{AVVideoCodecKey : AVVideoCodecJPEG};
-            [self.session addOutput:stillImageOutput];
-            self.stillImageOutput = stillImageOutput;
-        }
-        else {
-            self.setupResult = CKSetupResultSessionConfigurationFailed;
-        }
-        
-        AVCaptureMetadataOutput * output = [[AVCaptureMetadataOutput alloc] init];
-        if ([self.session canAddOutput:output]) {
-            self.metadataOutput = output;
-            [self.session addOutput:self.metadataOutput];
-            [self.metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-            [self.metadataOutput setMetadataObjectTypes:[self.metadataOutput availableMetadataObjectTypes]];
-        }
-        
-        [self.session commitConfiguration];
-        
-    } );
-}
-
--(void)handleCameraPermission {
-    
-    switch ( [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] )
-    {
-        case AVAuthorizationStatusAuthorized:
-        {
-            // The user has previously granted access to the camera.
-            break;
-        }
-        case AVAuthorizationStatusNotDetermined:
-        {
-            // The user has not yet been presented with the option to grant video access.
-            // We suspend the session queue to delay session setup until the access request has completed to avoid
-            // asking the user for audio access if video access is denied.
-            // Note that audio access will be implicitly requested when we create an AVCaptureDeviceInput for audio during session setup.
-            dispatch_suspend( self.sessionQueue );
-            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted ) {
-                if ( ! granted ) {
-                    self.setupResult = CKSetupResultCameraNotAuthorized;
-                }
-                dispatch_resume( self.sessionQueue );
-            }];
-            break;
-        }
-        default:
-        {
-            // The user has previously denied access.
-            self.setupResult = CKSetupResultCameraNotAuthorized;
-            break;
-        }
-    }
-}
+//
+//-(void)handleCameraPermission {
+//
+//    switch ( [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] )
+//    {
+//        case AVAuthorizationStatusAuthorized:
+//        {
+//            // The user has previously granted access to the camera.
+//            break;
+//        }
+//        case AVAuthorizationStatusNotDetermined:
+//        {
+//            // The user has not yet been presented with the option to grant video access.
+//            // We suspend the session queue to delay session setup until the access request has completed to avoid
+//            // asking the user for audio access if video access is denied.
+//            // Note that audio access will be implicitly requested when we create an AVCaptureDeviceInput for audio during session setup.
+//            dispatch_suspend( self.sessionQueue );
+//            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^( BOOL granted ) {
+//                if ( ! granted ) {
+//                    self.setupResult = CKSetupResultCameraNotAuthorized;
+//                }
+//                dispatch_resume( self.sessionQueue );
+//            }];
+//            break;
+//        }
+//        default:
+//        {
+//            // The user has previously denied access.
+//            self.setupResult = CKSetupResultCameraNotAuthorized;
+//            break;
+//        }
+//    }
+//}
 
 -(void)reactSetFrame:(CGRect)frame {
     [super reactSetFrame:frame];
-    [self.cameraAction setCameraPreviewFrame:frame];
 }
 
 -(void)setRatioOverlay:(NSString *)ratioOverlay {
@@ -434,6 +360,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 
 #pragma mark - actions
+
+- (void)applyFacePaster:(NSDictionary *)options
+{
+    AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:options];
+    [self.cameraAction prepearForAddPasterInfo:info];
+}
 
 - (void)startRecording:(NSDictionary*)options
                success:(VideoRecordBlock)onSuccess
@@ -562,7 +494,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
 }
 
-+(NSURL*)saveToTmpFolder:(NSData*)data
++ (NSURL*)saveToTmpFolder:(NSData*)data
 {
     NSString *temporaryFileName = [NSProcessInfo processInfo].globallyUniqueString;
     NSString *temporaryFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[temporaryFileName stringByAppendingPathExtension:@"jpg"]];
@@ -665,54 +597,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)subjectAreaDidChange:(NSNotification *)notification
 {
     //    [self resetFocus];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-    if (context == CapturingStillImageContext)
-    {
-        // Flash/dim preview to indicate shutter action
-        //        BOOL isCapturingStillImage = [change[NSKeyValueChangeNewKey] boolValue];
-        //        if ( isCapturingStillImage )
-        //        {
-        //            dispatch_async(dispatch_get_main_queue(), ^{
-        //                self.alpha = 0.0;
-        //                [UIView animateWithDuration:0.35 animations:^{
-        //                    self.alpha = 1.0;
-        //                }];
-        //            });
-        //        }
-    }
-    else if ([keyPath isEqualToString:@"adjustingFocus"])
-    {
-        // Note: oldKey is not available (value is always NO it seems) so we only check on newKey
-        //        BOOL isFocusing = [change[NSKeyValueChangeNewKey] boolValue];
-        //        if (self.startFocusResetTimerAfterFocusing == YES && !isFocusing && self.resetFocusTimeout > 0)
-        //        {
-        //            self.startFocusResetTimerAfterFocusing = NO;
-        //
-        //            // Disengage manual focus after focusTimeout milliseconds
-        //            NSTimeInterval focusTimeoutSeconds = self.resetFocusTimeout / 1000;
-        //            self.focusResetTimer = [NSTimer scheduledTimerWithTimeInterval:focusTimeoutSeconds repeats:NO block:^(NSTimer *timer) {
-        ////                [self resetFocus];
-        //            }];
-        //        }
-    }
-    else if (context == SessionRunningContext)
-    {
-        //        BOOL isSessionRunning = [change[NSKeyValueChangeNewKey] boolValue];
-        //
-        //        dispatch_async( dispatch_get_main_queue(), ^{
-        //            // Only enable the ability to change camera if the device has more than one camera.
-        //            self.cameraButton.enabled = isSessionRunning && ( [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo].count > 1 );
-        //            self.recordButton.enabled = isSessionRunning;
-        //            self.stillButton.enabled = isSessionRunning;
-        //        } );
-    }
-    else
-    {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
 }
 
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate
