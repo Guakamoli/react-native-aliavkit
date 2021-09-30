@@ -18,6 +18,12 @@ export default class CameraScreenExample extends Component {
       <CameraScreen
         actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
         onBottomButtonPressed={(event) => this.onBottomButtonPressed(event)}
+        // 退出操作
+        goback={() => {
+          console.log(12313);
+        }}
+        // 拿到上传数据
+        getUploadFile={(data) => { console.log('getUploadFile-----------', data); }}
         // 1
         cameraFlipImage={require('../images/cameraFlipIcon.png')}
         captureButtonImage={require('../images/cameraButton.png')}

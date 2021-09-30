@@ -64,6 +64,8 @@ export type Props = {
   volumeImage: any
   onReadCode: (any) => void;
   onBottomButtonPressed: (any) => void;
+  getUploadFile: (any) => void;
+  goback: any
   cameraModule: boolean
 
   multipleBtnImage: any
@@ -298,6 +300,7 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 底部 切换模块
   renderswitchModule() {
+    const { captureImages, videoPath } = this.state
     return (
       <SafeAreaView style={styles.BottomBox}>
         <>
@@ -313,7 +316,26 @@ export default class CameraScreen extends Component<Props, State> {
             </View>}
           {/* 发布 */}
           {this.state.ShootSuccess ?
-            <TouchableOpacity onPress={() => { }}>
+            <TouchableOpacity onPress={() => {
+              let uploadFile = []
+              if (videoPath) {
+                let type = videoPath.split('.')
+                uploadFile.push({
+                  video_type: `video/${type[type.length - 1]}`,
+                  title_link: videoPath,
+                  type: "file"
+                })
+              } else {
+                let type = captureImages[0].uri.split('.')
+                uploadFile.push({
+                  image_url: captureImages[0].uri,
+                  image_type: `image/${type[type.length - 1]}`,
+                  image_size: captureImages[0].size,
+                  type: "file",
+                })
+              }
+              this.sendUploadFile(uploadFile)
+            }}>
               <View style={styles.uploadBox}>
                 <Text style={styles.uploadTitle}>发布快拍</Text>
               </View>
@@ -340,8 +362,7 @@ export default class CameraScreen extends Component<Props, State> {
       <>
         {/* 取消 */}
         <TouchableOpacity onPress={() => {
-
-          this.myRef.current.show('1231312', 2000);
+          this.props.goback()
         }} style={styles.closeBox}>
           <Image
             style={styles.closeIcon}
@@ -388,7 +409,7 @@ export default class CameraScreen extends Component<Props, State> {
       <>
         {/* 放弃 */}
         <TouchableOpacity onPress={() => {
-          this.setState({ ShootSuccess: false, showFilterLens: false, filterLensSelect: 0, progress: 0, captureImages: [] })
+          this.setState({ ShootSuccess: false, showFilterLens: false, filterLensSelect: 0, progress: 0, captureImages: [], uploadFile: null })
         }} style={[styles.UpdateBox, { left: 20 }]}>
           <Image
             style={styles.updateTopIcon}
@@ -585,8 +606,9 @@ export default class CameraScreen extends Component<Props, State> {
 
                   if (this.state.startShoot) {
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-                    const videoPath = await this.camera.stopRecording();
-                    console.log('video saved to ', videoPath);
+
+                    const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
+                    // console.log('video saved to2 ', videoPath);
                     this.setState({ videoPath })
                     setTimeout(() => {
                       if (this.state.timer != null) {
@@ -657,8 +679,8 @@ export default class CameraScreen extends Component<Props, State> {
 
             if (this.state.startShoot) {
               this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
-              const videoPath = await this.camera.stopRecording();
-              console.log('video saved to ', videoPath);
+              const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
+              // console.log('video saved to an ', videoPath);
               this.setState({ videoPath })
 
               if (this.state.timer != null) {
@@ -713,6 +735,11 @@ export default class CameraScreen extends Component<Props, State> {
       this.props.onBottomButtonPressed({ type, captureImages: this.state.captureImages, captureRetakeMode, image });
     }
   }
+  sendUploadFile(data) {
+    if (this.props.getUploadFile) {
+      this.props.getUploadFile(data);
+    }
+  }
   // cancel 按钮点击 ???
   onButtonPressed(type) {
     const captureRetakeMode = this.isCaptureRetakeMode();
@@ -733,7 +760,7 @@ export default class CameraScreen extends Component<Props, State> {
       return (
         <TouchableOpacity
           style={[styles.bottomButton, { justifyContent: type === 'left' ? 'flex-start' : 'flex-end' }]}
-          onPress={() => this.onButtonPressed(type)}
+        // onPress={() => this.onButtonPressed(type)}
         >
           <Text style={styles.textStyle}>{buttonText}</Text>
         </TouchableOpacity>
@@ -775,7 +802,7 @@ export default class CameraScreen extends Component<Props, State> {
           captureImages: _.concat(this.state.captureImages, image),
         });
       }
-      this.sendBottomButtonPressedAction('capture', false, image);
+      // this.sendBottomButtonPressedAction('capture', false, image);
     }
   }
   // 美颜 滤镜 box
@@ -854,24 +881,24 @@ export default class CameraScreen extends Component<Props, State> {
       </View >
     )
   }
-  // 拍摄
-  async onRecordVideoPressed() {
-    console.log('12313123');
-    console.log(this.state.videoRecording);
+  // 拍摄 
+  // async onRecordVideoPressed() {
+  //   // console.log('12313123');
+  //   console.log(this.state.videoRecording);
 
-    if (this.state.videoRecording) {
-      console.log('stopRecording');
-      this.setState({ videoRecording: false });
-      const videoPath = await this.camera.stopRecording();
-      console.log('video saved to ', videoPath);
-    } else {
-      console.log('startRecording');
+  //   if (this.state.videoRecording) {
+  //     console.log('stopRecording');
+  //     this.setState({ videoRecording: false });
+  //     const videoPath = await this.camera.stopRecording();
+  //     console.log('video saved to ', videoPath);
+  //   } else {
+  //     console.log('startRecording');
 
-      const success = await this.camera.startRecording();
-      console.log('---- success: ', success);
-      this.setState({ videoRecording: true });
-    }
-  }
+  //     const success = await this.camera.startRecording();
+  //     console.log('---- success: ', success);
+  //     this.setState({ videoRecording: true });
+  //   }
+  // }
 
   // 底部渲染
   renderBottom() {
@@ -904,11 +931,15 @@ export default class CameraScreen extends Component<Props, State> {
   postHead() {
     return (
       <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
-        <Image
-          style={styles.closeIcon}
-          source={this.props.closeImage}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => {
+          this.props.goback()
+        }} >
+          <Image
+            style={styles.closeIcon}
+            source={this.props.closeImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
         <TouchableOpacity onPress={() => {
 
@@ -940,7 +971,8 @@ export default class CameraScreen extends Component<Props, State> {
 
           }
           // 选择本地文件 数据
-          console.log('uplaodFile-1313', uplaodFile);
+          this.sendUploadFile(uplaodFile)
+          // console.log('uplaodFile-1313', uplaodFile);
         }}>
           <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
         </TouchableOpacity>
@@ -1188,7 +1220,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "red" }}></View> : null}
+        {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null}
         {
           this.state.storyShow ? (
             <>
