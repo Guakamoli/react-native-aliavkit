@@ -33,17 +33,16 @@
 {
     NSString *_videoSavePath;
 }
-@property (nonatomic, strong) AliyunIRecorder *recorder;        //录制
-@property (nonatomic, assign) BOOL shouldStartPreviewWhenActive;    //跳转其他页面停止预览，返回开始预览，退后台进入前台则一直在预览。这2种情况通过此变量区别。
 
+@property (nonatomic, strong) AliyunIRecorder *recorder;
 @property (nonatomic, strong) AlivcRecordFocusView *focusView;
 @property (nonatomic, strong) UITapGestureRecognizer *focusGesture;
 @property (nonatomic, strong) UIPinchGestureRecognizer *zoomGesture;
-@property (nonatomic, strong) VideoRecordStartBlk_t recordStartHandler;
-@property (nonatomic, strong) VideoRecordEndBlk_t recordEndHandler;
+@property (nonatomic, copy) VideoRecordStartBlk_t recordStartHandler;
+@property (nonatomic, copy) VideoRecordEndBlk_t recordEndHandler;
 @property (nonatomic, readwrite) BOOL isRecording;
 @property (nonatomic, strong) AliyunDownloadManager *downloadManager;
-@property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //当前的人脸动图
+@property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //current face paster
 
 @end
 
@@ -85,18 +84,16 @@ static AliCameraAction *_instance = nil;
 - (AliyunIRecorder *)recorder
 {
     if (!_recorder) {
-        //清除之前生成的录制路径
+        //clean previous path
         NSString *recordDir = [AliyunPathManager createRecrodDir];
         [AliyunPathManager clearDir:recordDir];
-        //生成这次的存储路径
         NSString *taskPath = [recordDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
-        //视频存储路径
         NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
         _videoSavePath = videoSavePath;
         
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
         _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
-        _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK自带人脸识别只支持YUV格式
+        _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK only support YUV
         _recorder.useFaceDetect = YES;
         _recorder.faceDetectCount = 2;
         _recorder.faceDectectSync = NO;
@@ -113,7 +110,6 @@ static AliCameraAction *_instance = nil;
         _recorder.beautifyStatus = YES;
         _recorder.videoFlipH = self.mediaConfig.videoFlipH;
         _recorder.frontCameraSupportVideoZoomFactor = YES;
-        //录制片段设置
         [self recorder:_recorder setMaxDuration:self.mediaConfig.maxDuration];
         [self recorder:_recorder setMinDuration:self.mediaConfig.minDuration];
     }
@@ -122,10 +118,8 @@ static AliCameraAction *_instance = nil;
 
 - (AliyunMediaConfig *)mediaConfig
 {
-    //{ mediaType: 'video', cameraType: 'front', allowsEditing: true, videoQuality: 'high' },
-    if (!_mediaConfig) {//默认配置
+    if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        //录制时长，最小2s,最多3min
         _mediaConfig.minDuration = 2.0f;
         _mediaConfig.maxDuration = 15.f;
         _mediaConfig.gop = 30;
@@ -156,6 +150,26 @@ static AliCameraAction *_instance = nil;
         _downloadManager = [[AliyunDownloadManager alloc] init];
     }
     return _downloadManager;
+}
+
+- (void)addNotification
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+- (void)appWillResignActive:(id)sender
+{
+    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+    if (self.recorder.isRecording) {
+        [self.recorder stopRecording];
+        [self.recorder stopPreview];
+    }
+}
+
+- (void)appDidBecomeActive:(id)sender
+{
+    [self.recorder startPreview];
 }
 
 - (void)addFocusGesture
@@ -297,7 +311,6 @@ static AliCameraAction *_instance = nil;
     }
     if (pasterInfo.eid <= 0 || [pasterInfo.bundlePath isEqualToString:@"icon"]) {//remove
         [self deletePreviousEffectPaster];
-        //        [self.pasterView refreshUIWhenThePasterInfoApplyedWithPasterInfo:pasterInfo];
         return;
     }
     
@@ -323,7 +336,6 @@ static AliCameraAction *_instance = nil;
                     NSLog(@"---- download paster error:%@",err.localizedDescription);
                 }else{
                     [weakSelf addPasterInfo:pasterInfo path:path];
-                    NSLog(@"");
                 }
             });
         };
@@ -335,7 +347,7 @@ static AliCameraAction *_instance = nil;
 - (void)addPasterInfo:(AliyunPasterInfo *)info path:(NSString *)path
 {
     if(self.recorder.isRecording){
-        NSLog(@"----- 动图测试:添加动图：录制中，不添加");
+        NSLog(@"----- ⚠️ recorder is recording, cant't add ⚠️");
         return;
     }
     
@@ -354,71 +366,58 @@ static AliCameraAction *_instance = nil;
 {
     if (_previousEffectPaster) {
         [self.recorder deletePaster:_previousEffectPaster];
-        NSLog(@"----- 动图测试：删除动图：%@\n",_previousEffectPaster.path);
+        NSLog(@"----- delete previous paster：%@\n",_previousEffectPaster.path);
+        
         _previousEffectPaster = nil;
     }
 }
 
 #pragma mark - AliyunIRecorderDelegate
-
-/// 设备权限
-- (void)recorderDeviceAuthorization:(AliyunIRecorderDeviceAuthor)status
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (status == AliyunIRecorderDeviceAuthorAudioDenied) {
-            //            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeAudio];
-        } else if (status == AliyunIRecorderDeviceAuthorVideoDenied) {
-            //            [self showAVAuthorizationAlertWithMediaType:AVMediaTypeVideo];
-        }
-        //当权限有问题的时候，不会走startPreview，所以这里需要更新下UI
-        //        [self.sliderButtonsView setSwitchRationButtonEnabled:(self.recorderDuration == 0)];
-    });
-}
-/// 录制进度
+/// record progress
 - (void)recorderVideoDuration:(CGFloat)duration
 {
-    //    NSLog(@"----- 录制中：%f",duration);
+    //    NSLog(@"----- recording：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
     }
 }
-/// 录制停止
+/// recording stopped
 - (void)recorderDidStopRecording
 {
-    NSLog(@"---- 停止录制 ");
+    NSLog(@"---- recording stopped ");
     [self _recorderFinishRecording];
 }
 
+/// multi-part video finish record
 - (void)recorderDidFinishRecording
 {
-    NSLog(@"----完成录制！！！！");
+    NSLog(@"----✅ finish all record ✅");
     [self.recorder stopPreview];
 }
 
 - (void)_recorderFinishRecording
 {
-    [self.recorder finishRecording];  //后面代理会回调recorderDidFinishRecording
-    //跳转处理
+    [self.recorder finishRecording];  //will call `recorderDidFinishRecording`
     NSString *outputPath = self.mediaConfig.outputPath;
     //    NSLog(@"---- outputPath: %@",outputPath);
     [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
 }
-///当录至最大时长时回调
+///while recording time up to limit
 - (void)recorderDidStopWithMaxDuration
 {
-    NSLog(@"录制到最大时长");
+    NSLog(@" recording time up to limit");
     [self _recorderFinishRecording];
     
 }
 
 - (void)recorderDidStartPreview
 {
-    NSLog(@"-------->开始预览");
+    NSLog(@"--------recorderDidStartPreview");
 }
 
-/// 录制异常
+/// recorder error
 - (void)recoderError:(NSError *)error
 {
     NSLog(@"recoderError%@",error);
@@ -429,15 +428,14 @@ static AliCameraAction *_instance = nil;
     [[BeautyEngineManager shareManager] clear];
 }
 
-///用户自定义渲染 CVPixelBufferRef -> CVPixelBufferRef
+///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    //注意这里美颜美型的参数是分开的beautyParams和beautySkinParams
-    //美颜参数设置(这里用的是beautyParams)
+    //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
     CGFloat beautyWhite = self.normalBeautyLevel * 0.01 * 2.0f;
-    CGFloat beautySharpen = self.normalBeautyLevel * 0.01 * 0.2f; //race中，这个是锐化
-    //美型参数设置(这里用的是beautySkinParams)
+    CGFloat beautySharpen = self.normalBeautyLevel * 0.01 * 0.2f;
+    //beauty shape
     CGFloat beautyBigEye = 0.12f;
     CGFloat beautyThinFace = 0.23f;
     CGFloat longFace = 0.11f;
@@ -464,7 +462,7 @@ static AliCameraAction *_instance = nil;
                                                              cutCheek:cutCheek];
 }
 
-///预览view的坐标大小计算
+///calculate preview frame
 - (CGRect)previewFrame
 {
     CGFloat ratio = self.mediaConfig.outputSize.width / self.mediaConfig.outputSize.height;

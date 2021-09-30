@@ -61,6 +61,7 @@ type State = {
 
 type PasterItemProps = {
   item: any;
+  index: number;
   applyPaster(item: any): void;
 };
 
@@ -75,11 +76,12 @@ class PasterItem extends React.Component<PasterItemProps> {
   };
 
   render() {
-    const { item } = this.props;
+    const { item,index } = this.props;
     return (
       <View style={styles.item}>
         <TouchableOpacity onPress={this.applyPaster}>
-          <Image style={{ width: 80, height: 80 }} source={{ uri: item.icon }} />
+        {/* todo:  */}
+          <Image style={{ width: 80, height: 80 }} source={{ uri: index == 0 ? item.bundlePath : item.icon }} />
         </TouchableOpacity>
       </View>
     );
@@ -351,10 +353,11 @@ export default class CameraScreen extends Component<Props, State> {
     // console.log('cameraApplyPaster: ', paster.url);
     this.setState({ facePasterInfo: paster });
   };
-  renderItem = (item) => {
+  renderItem = (item,index) => {
     return (
       <PasterItem
         item={item}
+        index={index}
         applyPaster={(paster) => {
           this.cameraApplyPaster(paster);
         }}
@@ -368,7 +371,7 @@ export default class CameraScreen extends Component<Props, State> {
         <VirtualizedList
           data={this.state.pasterList}
           initialNumToRender={4}
-          renderItem={({ item, index }) => this.renderItem(item)}
+          renderItem={({ item, index }) => this.renderItem(item,index)}
           keyExtractor={(item) => `${item.id}`}
           getItemCount={this.getItemCount}
           getItem={(data, index) => {

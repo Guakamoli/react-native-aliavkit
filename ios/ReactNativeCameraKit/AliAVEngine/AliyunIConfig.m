@@ -38,29 +38,26 @@ static AliyunIConfig *uiConfig;
     return self;
 }
 
-+ (AliyunIConfig *)config {
-    
++ (AliyunIConfig *)config
+{    
     return uiConfig;
 }
 
-+ (void)setConfig:(AliyunIConfig *)c {
++ (void)setConfig:(AliyunIConfig *)c
+{
     uiConfig = c;
 }
 
-- (NSString *)imageName:(NSString *)imageName {
-    
-
+- (NSString *)imageName:(NSString *)imageName
+{
     NSString *path = [NSString stringWithFormat:@"ReactNativeAliAVKit.bundle/%@",imageName];
     
     return path;
 }
 
-- (NSString *)filterPath:(NSString *)filterName {
-//    NSString *filterPath = [NSString stringWithFormat:@"AlivcCore.bundle/%@",filterName];
+- (NSString *)filterPath:(NSString *)filterName
+{
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:filterName];
-//    if (_filterBundleName) {
-//         path = [[[NSBundle mainBundle]bundlePath] stringByAppendingPathComponent:filterName];
-//    }
     return path;
 }
 

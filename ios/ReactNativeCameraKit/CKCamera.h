@@ -74,10 +74,11 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 
 @property (nonatomic, readonly) AVCaptureDeviceInput *videoDeviceInput;
 
-
-- (instancetype)initWithManager:(CKCameraManager *)manager bridge:(RCTBridge *)bridge;
 /// take photo
-- (void)snapStillImage:(NSDictionary*)options success:(CaptureBlock)block onError:(void (^)(NSString*))onError;
+- (void)snapStillImage:(NSDictionary*)options
+               success:(CaptureBlock)block
+               onError:(void (^)(NSString*))onError;
+
 + (NSURL *)saveToTmpFolder:(NSData*)data;
 
 ///start record video
@@ -89,6 +90,5 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 - (void)stopRecording:(NSDictionary*)options
                success:(VideoStopBlock)onSuccess
               onError:(void (^)(NSString*))onError;
-
 
 @end

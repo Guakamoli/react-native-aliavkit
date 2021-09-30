@@ -64,10 +64,8 @@ AliyunIExporterCallback
 
 - (AliyunMediaConfig *)mediaConfig
 {
-    //{ mediaType: 'video', cameraType: 'front', allowsEditing: true, videoQuality: 'high' },
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        //录制时长，最小2s,最多3min
         _mediaConfig.minDuration = 2.0f;
         _mediaConfig.maxDuration = 15.f;
         _mediaConfig.gop = 30;
@@ -285,19 +283,15 @@ AliyunIExporterCallback
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (success) {
                     NSLog(@"保存视频成功!");
-//                    [MBProgressHUD showWarningMessage:NSLocalizedString(@"video_local_save_edit",nil) inView:self.view];
                 } else {
                     NSLog(@"保存视频失败:%@", error);
-//                    [MBProgressHUD showWarningMessage:NSLocalizedString(@"video_exporting_check_autho",nil) inView:self.view];
                 }
             });
         }];
     }];
 }
 
-
 #pragma mark - AliyunIPlayerCallback --播放器回调
-
 ///播放结束
 - (void)playerDidEnd
 {
@@ -305,12 +299,6 @@ AliyunIExporterCallback
     [self replay];
 }
 
-/**
- 播放进度
- 
- @param playSec 播放时间
- @param streamSec 播放流时间
- */
 - (void)playProgress:(double)playSec streamProgress:(double)streamSec
 {
     
@@ -340,8 +328,8 @@ AliyunIExporterCallback
 }
 
 #pragma mark - AliyunIRenderCallback
-- (int)customRender:(int)srcTexture size:(CGSize)size {
-    // 自定义滤镜渲染
+- (int)customRender:(int)srcTexture size:(CGSize)size
+{
     return srcTexture;
 }
 
@@ -370,23 +358,6 @@ AliyunIExporterCallback
     _onExportVideo(event);
 }
 
-/**
- 导出异常
-
- @param errorCode 错误码
- 状态错误 ALIVC_FRAMEWORK_MEDIA_POOL_WRONG_STATE
- DEMUXER重复创建 ALIVC_FRAMEWORK_DEMUXER_INIT_MULTI_TIMES
- DEMUXER打开失败 ALIVC_FRAMEWORK_DEMUXER_OPEN_FILE_FAILED
- DEMUXER获取流信息失败 ALIVC_FRAMEWORK_DEMUXER_FIND_STREAM_INFO_FAILED
- 解码器创建失败 ALIVC_FRAMEWORK_AUDIO_DECODER_CREATE_DECODER_FAILED
- 解码器状态错误 ALIVC_FRAMEWORK_AUDIO_DECODER_ERROR_STATE
- 解码器输入错误 ALIVC_FRAMEWORK_AUDIO_DECODER_ERROR_INPUT
- 解码器参数SPSPPS为空 ALIVC_FRAMEWORK_VIDEO_DECODER_SPS_PPS_NULL,
- 解码H264参数创建失败 ALIVC_FRAMEWORK_VIDEO_DECODER_CREATE_H264_PARAM_SET_FAILED
- 解码HEVC参数创建失败 ALIVC_FRAMEWORK_VIDEO_DECODER_CREATE_HEVC_PARAM_SET_FAILED
- 缓存数据已满 ALIVC_FRAMEWORK_MEDIA_POOL_CACHE_DATA_SIZE_OVERFLOW
- 解码器内部返回错误码
- */
 - (void)exportError:(int)errorCode
 {
     
@@ -412,11 +383,6 @@ AliyunIExporterCallback
     
 }
 
-
-/*
- 渲染编排构建异常
- ALIVC_FRAMEWORK_RENDER_ERROR_LAYOUT_NOT_INIT =                  -10007009,
- */
 /// 尝试播放视频
 - (void)play {
     if (self.player.isPlaying) {
