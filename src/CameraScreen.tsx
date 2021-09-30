@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   Animated,
   FlatList,
-  NativeAppEventEmitter
+  ScrollView,
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
@@ -19,6 +19,8 @@ import Carousel from 'react-native-snap-carousel';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import CameraRoll from "@react-native-community/cameraroll";
+import { FlatGrid } from 'react-native-super-grid';
+import Video from 'react-native-video';
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -26,7 +28,9 @@ const FLASH_MODE_OFF = 'off';
 
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2
-const captureIcon2 = (width - 20) / 2
+const captureIcon2 = (width - 20) / 2;
+const photosItem = (width / 4);
+
 export enum CameraType {
   Front = 'front',
   Back = 'back'
@@ -60,8 +64,14 @@ export type Props = {
   volumeImage: any
   onReadCode: (any) => void;
   onBottomButtonPressed: (any) => void;
-  isstory: boolean
-  ispost: boolean
+  cameraModule: boolean
+
+  multipleBtnImage: any
+  postCameraImage: any
+  startMultipleBtnImage: any
+  changeSizeImage: any
+  videoFile: any
+  scrollViewWidth: boolean
 }
 
 type State = {
@@ -98,6 +108,14 @@ type State = {
   // 区分story/post 
   storyShow: boolean,
   postShow: boolean,
+  CameraRollList: any,
+
+  photoSelectType: string
+  multipleData: any
+  startmMltiple: boolean
+
+  photoAlbum: any
+  photoAlbumselect: any
 }
 
 
@@ -174,21 +192,74 @@ export default class CameraScreen extends Component<Props, State> {
       //
       storyShow: false,
       postShow: false,
+
+      CameraRollList: [],
+      photoSelectType: '',
+      multipleData: [],
+      startmMltiple: false,
+      photoAlbum: [],
+      photoAlbumselect: {},
+      videoFile: '',
+      scrollViewWidth: true
     };
   }
 
   componentDidMount() {
+
+
+    var _that = this;
+    //获取照片
+    var getPhotos = CameraRoll.getPhotos({
+      first: 30,
+      assetType: 'All',
+      //todo  安卓调试隐藏
+      include: ["playableDuration", 'filename', 'fileSize', 'imageSize',],
+      // groupTypes: 'Library'
+    })
+    var getAlbums = CameraRoll.getAlbums({
+      assetType: 'All',
+
+    })
+    getAlbums.then((data) => {
+
+      // 获取相册封面
+      data.map(async (item) => {
+        const cover = await CameraRoll.getPhotos({ first: 1, assetType: 'Photos', groupName: `${item.title}` })
+        // 通过相册 名称获取
+        data.map(item2 => {
+          if (item2.title == cover.edges[0].node.group_name) {
+            item2.cover = cover.edges[0].node.image.uri
+          }
+        })
+      })
+      // 相册数据
+      this.setState({ photoAlbum: data, photoAlbumselect: data[0] })
+    })
+
+    getPhotos.then(async (data) => {
+      var edges = data.edges;
+      var photos = [];
+      for (var i in edges) {
+        // ios文件
+        photos.push(edges[i].node);
+      }
+      _that.setState({
+        CameraRollList: photos
+      });
+    }, function (err) {
+      // alert( '获取照片失败！' );
+    });
     let ratios = [];
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
 
-    const { isstory, ispost } = this.props
+    const { cameraModule, } = this.props
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
-      storyShow: isstory,
-      postShow: ispost,
+      storyShow: cameraModule,
+      postShow: !cameraModule,
     });
 
   }
@@ -233,10 +304,10 @@ export default class CameraScreen extends Component<Props, State> {
           {/*  作品快拍 切换*/}
           {this.state.startShoot || this.state.ShootSuccess ? null :
             <View style={{ flexDirection: 'row', justifyContent: "center", }}>
-              <TouchableOpacity onPress={() => this.setState({ storyShow: false, postShow: true })}>
+              <TouchableOpacity onPress={() => this.setState({ storyShow: false, })}>
                 <Text style={styles.videoTitle}>作品</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.setState({ storyShow: true, postShow: false })}>
+              <TouchableOpacity onPress={() => this.setState({ storyShow: true, })}>
                 <Text style={styles.snapshotTitle}>快拍</Text>
               </TouchableOpacity>
             </View>}
@@ -317,8 +388,7 @@ export default class CameraScreen extends Component<Props, State> {
       <>
         {/* 放弃 */}
         <TouchableOpacity onPress={() => {
-          this.setState({ ShootSuccess: false, showFilterLens: false, filterLensSelect: 0, progress: 0 })
-
+          this.setState({ ShootSuccess: false, showFilterLens: false, filterLensSelect: 0, progress: 0, captureImages: [] })
         }} style={[styles.UpdateBox, { left: 20 }]}>
           <Image
             style={styles.updateTopIcon}
@@ -361,14 +431,14 @@ export default class CameraScreen extends Component<Props, State> {
             disabled={!this.state.showBeautify}
           >
             {this.state.ShootSuccess ? this.renderUpdateTop() : this.renderLeftButtons()}
-            <Camera
+            < Camera
               ref={(cam) => (this.camera = cam)}
-              style={{ flex: 1, borderRadius: 20, }}
+              style={{ flex: 1, justifyContent: 'flex-end' }}
               cameraType={this.state.cameraType}
               flashMode={this.state.flashData.mode}
               torchMode={this.state.torchMode ? 'on' : 'off'}
-              focusMode={this.props.focusMode}
-              zoomMode={this.props.zoomMode}
+              // focusMode={this.props.focusMode}
+              // zoomMode={this.props.zoomMode}
               ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
               saveToCameraRoll={!this.props.allowCaptureRetake}
               showFrame={this.props.showFrame}
@@ -378,7 +448,6 @@ export default class CameraScreen extends Component<Props, State> {
               onReadCode={this.props.onReadCode}
               normalBeautyLevel={this.state.normalBeautyLevel * 10}
             />
-
           </TouchableOpacity>
         )
         }
@@ -485,11 +554,11 @@ export default class CameraScreen extends Component<Props, State> {
 
               <TouchableOpacity
                 style={{ width: 64, height: 64, borderRadius: 64, }}
-                delayLongPress={500}
+                delayLongPress={1000}
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
                 onLongPress={async () => {
-                  console.log('onLongPress');
+                  console.log('onLongPress1');
                   clearInterval(this.state.timer)
                   // 按钮动画
                   Animated.timing(                        // 随时间变化而执行动画
@@ -512,7 +581,7 @@ export default class CameraScreen extends Component<Props, State> {
                 }}
                 // 长按结束
                 onPressOut={async () => {
-                  console.log('onPressOut');
+                  console.log('onPressOut1');
 
                   if (this.state.startShoot) {
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
@@ -532,16 +601,17 @@ export default class CameraScreen extends Component<Props, State> {
                   console.log('onPress');
 
                   const { startShoot, progress } = this.state
-                  // console.log('1313');
                   if (!startShoot || progress === 0) {
                     // 拍照
                     this.onCaptureImagePressed()
+                    console.log('dasdsad');
+
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
                   }
                 }}
               >
                 <View style={{ position: 'relative' }}>
-                  <View style={[{ backgroundColor: "green", },
+                  <View style={[{ backgroundColor: "#fff", },
                     img
                   ]}></View>
                 </View>
@@ -568,12 +638,10 @@ export default class CameraScreen extends Component<Props, State> {
                 duration: 500,                       // 让动画持续一段时间
               }
             ).start();
-            console.log('--------this.camera', this.camera);
             const success = await this.camera.startRecording();
             this.setState({ startShoot: success })
             // let success = true
             console.log('success', success);
-            console.log(13132);
 
             if (success) {
               // 调用进度条 开始拍摄
@@ -592,11 +660,11 @@ export default class CameraScreen extends Component<Props, State> {
               const videoPath = await this.camera.stopRecording();
               console.log('video saved to ', videoPath);
               this.setState({ videoPath })
-              setTimeout(() => {
-                if (this.state.timer != null) {
-                  clearInterval(this.state.timer);
-                }
-              }, 500);
+
+              if (this.state.timer != null) {
+                clearInterval(this.state.timer);
+              }
+
             }
 
           }}
@@ -611,7 +679,9 @@ export default class CameraScreen extends Component<Props, State> {
             }
           }}
         >
+          {/* <View style={styles.captureButtonImage}> */}
           < Image source={this.props.captureButtonImage} />
+          {/* </View> */}
         </TouchableOpacity>
       </View >
     )
@@ -802,14 +872,7 @@ export default class CameraScreen extends Component<Props, State> {
       this.setState({ videoRecording: true });
     }
   }
-  // 底部切换 和捕获
-  renderSwitchCapture() {
-    return (
-      <>
 
-      </>
-    )
-  }
   // 底部渲染
   renderBottom() {
     if (this.state.showBeautify || this.state.showFilterLens) {
@@ -847,28 +910,120 @@ export default class CameraScreen extends Component<Props, State> {
           resizeMode="contain"
         />
         <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
-        <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
+        <TouchableOpacity onPress={() => {
+
+
+          let uplaodFile = []
+          console.log('this.state.multipleData', this.state.multipleData);
+          if (this.state.multipleData.length > 0) {
+            this.state.multipleData.map(async (multipleDataItem) => {
+              const { image: { uri, width, height, filename, fileSize, playableDuration }, type } = multipleDataItem
+              let image_type = type + '/' + filename.split('.')[1]
+              if (this.state.photoSelectType === 'image') {
+                uplaodFile.push({
+                  image_type,
+                  image_dimensions: { width, height },
+                  image_url: uri,
+                  image_size: fileSize,
+                  title: filename
+                })
+              } else {
+                uplaodFile.push({
+                  video_type: image_type,
+                  type: "file",
+                  title_link: uri,
+                  video_size: fileSize,
+                  title: filename
+                })
+              }
+            })
+
+          }
+          // 选择本地文件 数据
+          console.log('uplaodFile-1313', uplaodFile);
+        }}>
+          <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
+        </TouchableOpacity>
       </View>
     )
   }
   postContent() {
+    const { multipleData, CameraRollList, photoSelectType, videoFile, } = this.state;
 
+    return (
+      <SafeAreaView style={{ flex: 1, padding: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ececec', position: 'relative' }}>
+
+        <TouchableOpacity style={{
+          width: 31,
+          height: 31, marginRight: 10, position: 'absolute', left: 15, bottom: 20, zIndex: 99
+        }} onPress={() => {
+          this.setState({ scrollViewWidth: !this.state.scrollViewWidth })
+        }}>
+          <Image
+            style={[{
+              width: 31,
+              height: 31,
+            }]}
+            source={this.props.changeSizeImage}
+
+          />
+        </TouchableOpacity>
+        <ScrollView style={{
+          height: 'auto',
+          margin: 'auto',
+          paddingHorizontal: 0,
+          backgroundColor: '#ececec',
+          width: this.state.scrollViewWidth ? width : 320
+        }}
+          pinchGestureEnabled={true}
+        >
+          {
+            photoSelectType === 'image' ? <Image
+              style={[{
+                width: width,
+                height: height - 300,
+              },]}
+              // 安卓展示不出来 权限问题？？？？ 
+              // source={{ uri: item.image.uri }}
+              source={{ uri: (multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image?.uri : CameraRollList[0]?.image?.uri) }}
+            /> :
+              <Video
+                source={{ uri: videoFile }}
+                style={{
+                  width: width,
+                  height: height - 160,
+                }} />
+          }
+        </ScrollView>
+      </SafeAreaView>
+    )
   }
   postFileUploadHead() {
+    const { startmMltiple, multipleData } = this.state;
+
     return (
-      <View style={{ height: 50, backgroundColor: "red", flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
-        <View>
-          <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
-        </View>
+      <View style={{ height: 58, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
+        <TouchableOpacity onPress={() => { }}>
+          <View>
+            <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>最近相册</Text>
+          </View>
+        </TouchableOpacity>
         <View style={{ flexDirection: "row", justifyContent: 'space-between', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => {
+            if (startmMltiple && multipleData.length) {
+              this.setState({ multipleData: [multipleData[multipleData.length - 1]] })
+            }
+            this.setState({ startmMltiple: !startmMltiple, })
+          }} >
+            <Image
+              style={[styles.multipleBtnImage, { marginRight: 10 }]}
+              source={startmMltiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
           <Image
-            style={styles.closeIcon}
-            source={this.props.closeImage}
-            resizeMode="contain"
-          />
-          <Image
-            style={styles.closeIcon}
-            source={this.props.closeImage}
+            style={styles.multipleBtnImage}
+            source={this.props.postCameraImage}
             resizeMode="contain"
           />
         </View>
@@ -876,11 +1031,148 @@ export default class CameraScreen extends Component<Props, State> {
     )
   }
   postFileUpload() {
-    // const aa = CameraRoll.getAlbums({ assetType: 'All' });
-    // console.log(aa);
+    const { CameraRollList, multipleData, startmMltiple, photoSelectType } = this.state;
+
+    const formatSeconds = (s) => {
+      let t = '';
+      if (s > -1) {
+        let min = Math.floor(s / 60) % 60;
+        let sec = s % 60;
+        if (min < 10) { t += "0"; }
+        t += min + ":";
+        if (sec < 10) { t += "0"; }
+        t += sec;
+      }
+      return t;
+    }
+    const getVideFile = async (fileType, item) => {
+      if (fileType !== 'video') return ''
+      let myAssetId = item?.image?.uri.slice(5);
+      // 获取视频文件 url 
+      console.log(myAssetId, 'myAssetId');
+
+      let returnedAssetInfo = await CameraRoll.getPhotoInfo(myAssetId, {});
+      console.log('videoFile', returnedAssetInfo.localUri);
+
+      this.setState({ videoFile: returnedAssetInfo.localUri })
+    }
     return (
       <>
         {this.postFileUploadHead()}
+        <View style={[{ height: 291, backgroundColor: '#000', }, Platform.OS === 'android' ? { paddingBottom: 10 } : { paddingBottom: 35 }]}>
+          <FlatGrid
+            itemDimension={photosItem}
+            data={CameraRollList}
+            spacing={0}
+            itemContainerStyle={{ margin: 0 }}
+            renderItem={({ index, item }) => {
+              const { type, image, } = item;
+              const { photoSelectType, startmMltiple } = this.state
+              // const a =timestamp
+              return (
+                <TouchableOpacity onPress={() => {
+                  //  第一次
+                  if (multipleData.length <= 1) {
+                    // 获取第一次选择类型
+                    let fileType = type.split('/')[0];
+                    if (fileType === 'video') {
+                      getVideFile(fileType, item)
+                    }
+                    this.setState({
+                      photoSelectType: fileType,
+                      multipleData: [item]
+                    })
+
+                  }
+                  if (startmMltiple) {
+                    // 图片大于10 || 视频 大于 1 
+                    if (photoSelectType == 'image') {
+                      if (multipleData.length == 10) {
+                        this.myRef.current.show('最多十张图片', 2000);
+                        return;
+                      }
+                    } else {
+                      if (multipleData.length = 1) {
+                        this.myRef.current.show('最多选择一个视频', 2000);
+                        return;
+                      }
+                    }
+                    let datalist = multipleData;
+                    // 已经选择了
+                    if (datalist.includes(item)) {
+                      // 循环找到选中的 去掉
+                      datalist.map((datalistitem, index) => {
+                        if (datalistitem.image.uri == image.uri) {
+                          datalist.splice(index, 1);
+                        }
+                      })
+                    } else {
+                      datalist.push(item)
+                    }
+                    this.setState({
+                      multipleData: datalist
+                    })
+
+
+                  }
+                }}
+                  disabled={!(type.indexOf(photoSelectType) !== -1) && startmMltiple}
+                  activeOpacity={0.9}
+                >
+                  <View style={[{
+
+                    position: 'relative',
+
+                  },]}>
+
+                    {
+                      startmMltiple ? (
+                        <>
+                          < Image source={this.props.captureButtonImage} style={[{ width: 20, height: 20, position: 'absolute', right: 5, top: 5, zIndex: 98 }]} />
+                          {
+                            multipleData.includes(item) ? <View style={[
+                              { width: 18, height: 18, borderRadius: 20, position: 'absolute', right: 6, top: 6, zIndex: 99, backgroundColor: '#836BFF', justifyContent: 'center', alignItems: 'center' },
+                            ]}>
+                              <Text style={{ color: '#fff', fontSize: 13, right: 5, position: 'absolute', top: 0, fontWeight: '400' }}>
+                                {multipleData.indexOf(item) !== -1 ? multipleData.indexOf(item) + 1 : 1}
+                              </Text>
+                            </View> : null
+                          }
+
+                        </>
+                      ) : null
+                    }
+                    <Image
+                      key={index}
+                      style={[{
+                        width: photosItem,
+                        height: photosItem,
+
+                      }, !(type.indexOf(photoSelectType) !== -1) && startmMltiple ? { opacity: 0.4 } : {}]}
+                      // 安卓展示不出来 权限问题？？？？ 
+                      source={{ uri: item.image.uri }}
+                      // source={require('../example/images/11.png')}
+                      resizeMode="cover"
+                    />
+                    <View style={[{
+                      width: photosItem,
+                      height: photosItem,
+                      position: 'absolute',
+                      backgroundColor: '#fff',
+
+                    }, multipleData[multipleData.length - 1]?.image.uri === image.uri ? { opacity: 0.5 } : { opacity: 0 }]}>
+                    </View>
+                    {
+                      image.playableDuration ? <Text style={{ color: '#fff', fontSize: 12, fontWeight: '400', lineHeight: 17, zIndex: 100, position: "absolute", right: 8, bottom: 7 }}> {formatSeconds(Math.ceil(image.playableDuration ?? 0))}</Text> : null
+                    }
+
+                  </View>
+                </TouchableOpacity>
+              )
+            }
+            }
+          />
+        </View>
       </>
     )
   }
@@ -895,31 +1187,27 @@ export default class CameraScreen extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         />
-        {/* story */}
-        <View style={{ height: 44, backgroundColor: "red" }}></View>
+
+        {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "red" }}></View> : null}
         {
-          this.state.storyShow && (
+          this.state.storyShow ? (
             <>
+              {/* story */}
               {Platform.OS === 'android' && this.renderCamera()}
               {Platform.OS !== 'android' && this.renderCamera()}
               {Platform.OS === 'android' && <View style={styles.gap} />}
               {this.renderBottom()}
             </>
           )
+            : (
+              <>
+                {/* post */}
+                {this.postHead()}
+                {this.postContent()}
+                {this.postFileUpload()}
+              </>
+            )
         }
-        {/* post */}
-        {
-          this.state.postShow && (
-            <>
-              {this.postHead()}
-              {/* {this.postContent()} */}
-              {this.postFileUpload()}
-            </>
-
-            // null
-          )
-        }
-
       </>
     );
   }
@@ -1028,8 +1316,8 @@ const styles = StyleSheet.create(
     },
     closeBox: {
       position: 'absolute',
-      top: 17,
-      left: 15,
+      top: 20,
+      left: 20,
       zIndex: 99
     },
     closeIcon: {
@@ -1152,5 +1440,9 @@ const styles = StyleSheet.create(
       position: 'relative',
       left: captureIcon2,
     },
+    multipleBtnImage: {
+      width: 31,
+      height: 31
+    }
   });
 

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Alert } from 'react-native';
 import CameraScreen from '../../src/CameraScreen';
-
+import PostUpload from '../../src/PostUpload'
 export default class CameraScreenExample extends Component {
   onBottomButtonPressed(event) {
     const captureImages = JSON.stringify(event.captureImages);
@@ -18,11 +18,6 @@ export default class CameraScreenExample extends Component {
       <CameraScreen
         actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
         onBottomButtonPressed={(event) => this.onBottomButtonPressed(event)}
-        flashImages={{
-          on: require('../images/flashOn.png'),
-          off: require('../images/flashOff.png'),
-          auto: require('../images/flashAuto.png'),
-        }}
         // 1
         cameraFlipImage={require('../images/cameraFlipIcon.png')}
         captureButtonImage={require('../images/cameraButton.png')}
@@ -39,10 +34,22 @@ export default class CameraScreenExample extends Component {
         noVolumeImage={require('../images/noVolume.png')}
         tailorImage={require('../images/tailor.png')}
         volumeImage={require('../images/volume.png')}
+        multipleBtnImage={require('../images/multipleBtn.png')}
+        startMultipleBtnImage={require('../images/startMultipleBtn.png')}
+        postCameraImage={require('../images/postCamera.png')}
+        changeSizeImage={require('../images/changeSize.png')}
         showCapturedImageCount
-        isstory={false}
-        ispost={true}
+        cameraModule={true}
+
       />
+
+      // <PostUpload
+      //   multipleBtnImage={require('../images/multipleBtn.png')}
+      //   startMultipleBtnImage={require('../images/startMultipleBtn.png')}
+      //   postCameraImage={require('../images/postCamera.png')}
+      //   showCapturedImageCount
+      //   cameraModule={true}
+      // />
     );
   }
 }

@@ -9,10 +9,12 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "@react-native-community/cameraroll": "^4.0.4",
     "lodash": "^4.17.20",
     "react": "16.13.1",
     "react-native": "0.63.4",
-    "react-native-svg": "^12.1.1"
+    "react-native-svg": "^12.1.1",
+    "react-native-video": "^5.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
