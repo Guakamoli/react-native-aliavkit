@@ -6,7 +6,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A high performance, fully featured, rock solid camera library for React Native applications",
   "nativePackage": true,
   "react-native": "src/index",
@@ -21,7 +21,7 @@
   },
   "main": "src/index.js",
   "dependencies": {
-    "@react-native-community/cameraroll": "^4.0.4",
+    "@react-native-community/cameraroll": "Guakamoli/react-native-cameraroll#feat/request-photo-access",
     "lodash": "^4.14.2",
     "react-native-easy-toast": "^2.0.0",
     "react-native-progress": "^5.0.0",

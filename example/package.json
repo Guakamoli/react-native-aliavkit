@@ -9,7 +9,7 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@react-native-community/cameraroll": "^4.0.4",
+    "@react-native-community/cameraroll": "Guakamoli/react-native-cameraroll#feat/request-photo-access",
     "lodash": "^4.17.20",
     "react": "17.0.1",
     "react-native": "0.64.2",
