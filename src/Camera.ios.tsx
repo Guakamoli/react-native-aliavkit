@@ -24,6 +24,7 @@ const Camera = React.forwardRef((props, ref) => {
     checkDeviceCameraAuthorizationStatus: async () => {
       return await CKCameraManager.checkDeviceCameraAuthorizationStatus();
     },
+    //获取服务器端的贴纸
     getPasterInfos: async () => {
       return await FacePasterBridge.getPasterInfos({});
     }

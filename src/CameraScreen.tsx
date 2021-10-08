@@ -81,7 +81,7 @@ class PasterItem extends React.Component<PasterItemProps> {
       <View style={styles.item}>
         <TouchableOpacity onPress={this.applyPaster}>
         {/* todo:  */}
-          <Image style={{ width: 80, height: 80 }} source={{ uri: index == 0 ? item.bundlePath : item.icon }} />
+          <Image style={{ width: 80, height: 80 }} source={{ uri: item.icon }} />
         </TouchableOpacity>
       </View>
     );
