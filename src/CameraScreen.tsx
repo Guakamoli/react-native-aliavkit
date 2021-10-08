@@ -445,7 +445,6 @@ export default class CameraScreen extends Component<Props, State> {
   }
   // 拍摄内容渲染
   renderCamera() {
-    console.log('222222',this.state.facePasterInfo);
     return (
       <View style={[styles.cameraContainer]}>
         {this.isCaptureRetakeMode() ? (
@@ -498,8 +497,6 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 进度条
   animate() {
-    console.log('131321');
-
     let progress = 0;
     this.setState({ progress: 0 });
     const stopRecording = async () => {
@@ -530,15 +527,12 @@ export default class CameraScreen extends Component<Props, State> {
     }
     const { pasterList } = this.state;
     const getPasterData = async () => {
-      console.log(1231);
       const pasters = await this.camera.getPasterInfos();
       console.log('------ :', pasters);
       this.setState({
         pasterList: pasters,
         facePasterInfo: pasters[0]
       });
-      console.log('pasterList[0]', pasterList[0]);
-
     }
     if (pasterList.length < 1) {
       getPasterData()
@@ -588,8 +582,6 @@ export default class CameraScreen extends Component<Props, State> {
           initialNumToRender={4}
           firstItem={this.state.currentIndex}
           onBeforeSnapToItem={(slideIndex = 0) => {
-            console.log('slideIndex', slideIndex,);
-            // this.setState({ this.spasterList[slideIndex]});
             this.setState({
               currentIndex: slideIndex,
               facePasterInfo: pasterList[slideIndex]
@@ -913,24 +905,6 @@ export default class CameraScreen extends Component<Props, State> {
       </View >
     )
   }
-  // 拍摄 
-  // async onRecordVideoPressed() {
-  //   // console.log('12313123');
-  //   console.log(this.state.videoRecording);
-
-  //   if (this.state.videoRecording) {
-  //     console.log('stopRecording');
-  //     this.setState({ videoRecording: false });
-  //     const videoPath = await this.camera.stopRecording();
-  //     console.log('video saved to ', videoPath);
-  //   } else {
-  //     console.log('startRecording');
-
-  //     const success = await this.camera.startRecording();
-  //     console.log('---- success: ', success);
-  //     this.setState({ videoRecording: true });
-  //   }
-  // }
 
   // 底部渲染
   renderBottom() {
@@ -1005,7 +979,6 @@ export default class CameraScreen extends Component<Props, State> {
           }
           // 选择本地文件 数据
           this.sendUploadFile(uplaodFile)
-          // console.log('uplaodFile-1313', uplaodFile);
         }}>
           <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
         </TouchableOpacity>
@@ -1117,8 +1090,6 @@ export default class CameraScreen extends Component<Props, State> {
       console.log(myAssetId, 'myAssetId');
 
       let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-      // console.log('videoFile', localUri);
-
       this.setState({ videoFile: localUri })
     }
     return (
