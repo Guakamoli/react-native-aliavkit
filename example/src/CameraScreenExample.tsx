@@ -46,7 +46,6 @@ export default class CameraScreenExample extends Component {
         changeSizeImage={require('../images/changeSize.png')}
         showCapturedImageCount
         cameraModule={true}
-
       />
 
       // <PostUpload

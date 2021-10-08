@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import React from 'react';
 import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter } from 'react-native';
 
-const { CKCameraManager } = NativeModules;
+const { CKCameraManager, FacePasterBridge } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
@@ -24,6 +24,9 @@ const Camera = React.forwardRef((props, ref) => {
     checkDeviceCameraAuthorizationStatus: async () => {
       return await CKCameraManager.checkDeviceCameraAuthorizationStatus();
     },
+    getPasterInfos: async () => {
+      return await FacePasterBridge.getPasterInfos({});
+    }
   }));
 
   React.useEffect(() => {
@@ -39,12 +42,18 @@ const Camera = React.forwardRef((props, ref) => {
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));
 
-  return <NativeCamera style={{ minWidth: 100, minHeight: 100 }} ref={nativeRef} {...transformedProps} />;
+  return (
+    <NativeCamera
+      style={{ minWidth: 100, minHeight: 100 }}
+      ref={nativeRef}
+      {...transformedProps}
+      onRecordingProgress={(event) => props.onRecordingProgress(event.nativeEvent)}
+    />
+  );
 });
 
 Camera.defaultProps = {
-  // resetFocusTimeout: 0,
-  // resetFocusWhenMotionDetected: true,
+  normalBeautyLevel: 30,
   saveToCameraRoll: true,
 };
 

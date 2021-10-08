@@ -201,7 +201,7 @@ static BeautyEngineManager *_instance = nil;
     /// 打开滤镜功能开关
     [self.beautyEngine setQueenBeautyType:kQueenBeautyTypeLUT enable:YES];
     NSBundle *currentBundle = [NSBundle bundleForClass:[self class]];
-    NSString *lutPath = @"AlivcCore.bundle/lz27.png";
+    NSString *lutPath = @"ReactNativeAliAVKit.bundle/lz27.png";
     NSString *fullPath = [[currentBundle resourcePath] stringByAppendingPathComponent:lutPath];
     // 设置滤镜资源，也可以是资源的绝对路径
     [self.beautyEngine setLutImagePath:fullPath];
@@ -215,7 +215,7 @@ static BeautyEngineManager *_instance = nil;
     //美妆（主要包括整妆、高光、美瞳、口红、眼妆）
     [self.beautyEngine setQueenBeautyType:kQueenBeautyTypeMakeup enable:YES];
     NSBundle *currentBundle = [NSBundle bundleForClass:[self class]];
-    NSString *makeupPath = @"AlivcCore.bundle/蜜桃妆.png";
+    NSString *makeupPath = @"ReactNativeAliAVKit.bundle/蜜桃妆.png";
     NSString *fullPath = [[currentBundle resourcePath] stringByAppendingPathComponent:makeupPath];
     // 设置整妆资源，也可以是资源的绝对路径
     [self.beautyEngine setMakeupWithType:kQueenBeautyMakeupTypeWhole paths:@[fullPath] blendType:kQueenBeautyBlendNormal];

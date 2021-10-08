@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 @class AliyunMediaConfig;
+@class AliyunPasterInfo;
 
 typedef void(^VideoRecordStartBlk_t)(CGFloat duration);
 typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
@@ -31,7 +32,8 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)startPreview;
 - (void)stopPreview;
 
-- (AVCaptureDevicePosition)switchCameraPosition;
+//- (AVCaptureDevicePosition)switchCameraPosition;
+- (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position;
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
@@ -43,7 +45,7 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)addZoomGesture;
 - (void)removeZoomGesture;
 
-- (void)setCameraPreviewFrame:(CGRect)frame;
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo;
 
 @end
 

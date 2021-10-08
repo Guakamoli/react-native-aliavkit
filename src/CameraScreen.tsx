@@ -33,7 +33,7 @@ const photosItem = (width / 4);
 
 export enum CameraType {
   Front = 'front',
-  Back = 'back'
+  Back = 'back',
 }
 
 export type Props = {
@@ -205,7 +205,6 @@ export default class CameraScreen extends Component<Props, State> {
       scrollViewWidth: true
     };
   }
-
   componentDidMount() {
 
 
@@ -438,6 +437,10 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   // 拍摄内容渲染
+  _onRecordingDuration(event) {
+    console.log('duration: ', event.duration);
+  }
+
   renderCamera() {
     return (
       <View style={[styles.cameraContainer]}>
