@@ -41,8 +41,6 @@ RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
 
-/// 0 10 20 30 40 50, default 30
-RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve

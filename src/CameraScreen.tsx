@@ -12,6 +12,7 @@ import {
   Animated,
   FlatList,
   ScrollView,
+  VirtualizedList,
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
@@ -118,6 +119,8 @@ type State = {
 
   photoAlbum: any
   photoAlbumselect: any
+  pasterList: any
+  facePasterInfo: any;
 }
 
 
@@ -202,13 +205,15 @@ export default class CameraScreen extends Component<Props, State> {
       photoAlbum: [],
       photoAlbumselect: {},
       videoFile: '',
-      scrollViewWidth: true
+      scrollViewWidth: true,
+      // 
+      pasterList: [],
+      facePasterInfo: {},
     };
   }
+
+
   componentDidMount() {
-
-
-    var _that = this;
     //获取照片
     var getPhotos = CameraRoll.getPhotos({
       first: 30,
@@ -244,7 +249,7 @@ export default class CameraScreen extends Component<Props, State> {
         // ios文件
         photos.push(edges[i].node);
       }
-      _that.setState({
+      this.setState({
         CameraRollList: photos
       });
     }, function (err) {
@@ -254,7 +259,6 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-
     const { cameraModule, } = this.props
     this.setState({
       ratios: ratios || [],
@@ -262,7 +266,6 @@ export default class CameraScreen extends Component<Props, State> {
       storyShow: cameraModule,
       postShow: !cameraModule,
     });
-
   }
   // ？？？？ 
   isCaptureRetakeMode() {
@@ -436,12 +439,13 @@ export default class CameraScreen extends Component<Props, State> {
     )
   }
 
-  // 拍摄内容渲染
+  // 拍摄进度
   _onRecordingDuration(event) {
-    console.log('duration: ', event.duration);
+    // console.log('duration: ', event.duration);
   }
-
+  // 拍摄内容渲染
   renderCamera() {
+    console.log('222222',this.state.facePasterInfo);
     return (
       <View style={[styles.cameraContainer]}>
         {this.isCaptureRetakeMode() ? (
@@ -471,6 +475,8 @@ export default class CameraScreen extends Component<Props, State> {
               frameColor={this.props.frameColor}
               onReadCode={this.props.onReadCode}
               normalBeautyLevel={this.state.normalBeautyLevel * 10}
+              onRecordingProgress={this._onRecordingDuration}
+              facePasterInfo={this.state.facePasterInfo}
             />
           </TouchableOpacity>
         )
@@ -492,6 +498,8 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 进度条
   animate() {
+    console.log('131321');
+
     let progress = 0;
     this.setState({ progress: 0 });
     const stopRecording = async () => {
@@ -520,6 +528,21 @@ export default class CameraScreen extends Component<Props, State> {
     if (ShootSuccess) {
       return null;
     }
+    const { pasterList } = this.state;
+    const getPasterData = async () => {
+      console.log(1231);
+      const pasters = await this.camera.getPasterInfos();
+      console.log('------ :', pasters);
+      this.setState({
+        pasterList: pasters,
+        facePasterInfo: pasters[0]
+      });
+      console.log('pasterList[0]', pasterList[0]);
+
+    }
+    if (pasterList.length < 1) {
+      getPasterData()
+    }
     return (
       this.props.captureButtonImage &&
       !this.isCaptureRetakeMode() && (
@@ -527,7 +550,7 @@ export default class CameraScreen extends Component<Props, State> {
           {
             <>
               {/* 长按按钮 */}
-              <View style={[styles.startShootBox, this.state.startShoot ? {} : { opacity: 0 }]} >
+              < View style={[styles.startShootBox, this.state.startShoot ? {} : { opacity: 0 }]} >
                 <Animated.View style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}>
                 </Animated.View>
                 <View style={styles.captureButton}></View>
@@ -554,17 +577,22 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 切换道具
   switchProp() {
-    let img = { width: 64, height: 64, borderRadius: 64 }
+    let img = { width: 64, height: 64, borderRadius: 64 };
+    const { pasterList } = this.state;
     return (
       <View style={{ position: "relative" }} >
         <Carousel
-          data={[1, 2, 3, 4, 5, 6, 7]}
+          data={pasterList}
           itemWidth={83}
           sliderWidth={width}
+          initialNumToRender={4}
           firstItem={this.state.currentIndex}
-          onBeforeSnapToItem={slideIndex => {
+          onBeforeSnapToItem={(slideIndex = 0) => {
+            console.log('slideIndex', slideIndex,);
+            // this.setState({ this.spasterList[slideIndex]});
             this.setState({
-              currentIndex: slideIndex
+              currentIndex: slideIndex,
+              facePasterInfo: pasterList[slideIndex]
             })
           }}
 
@@ -578,7 +606,7 @@ export default class CameraScreen extends Component<Props, State> {
 
               <TouchableOpacity
                 style={{ width: 64, height: 64, borderRadius: 64, }}
-                delayLongPress={1000}
+                delayLongPress={4000}
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
                 onLongPress={async () => {
@@ -636,9 +664,12 @@ export default class CameraScreen extends Component<Props, State> {
                 }}
               >
                 <View style={{ position: 'relative' }}>
-                  <View style={[{ backgroundColor: "#fff", },
+                  <View style={[{ backgroundColor: "red", },
                     img
-                  ]}></View>
+                  ]}>
+                    <Image style={img} source={{ uri: item.icon }} />
+                  </View>
+
                 </View>
               </TouchableOpacity>
             )
@@ -653,7 +684,7 @@ export default class CameraScreen extends Component<Props, State> {
           disabled={Platform.OS !== 'android'}
           // 长按
           onLongPress={async () => {
-            console.log('onLongPress');
+            console.log('onLongPress2');
             clearInterval(this.state.timer)
             // 按钮动画
             Animated.timing(                        // 随时间变化而执行动画
@@ -665,9 +696,7 @@ export default class CameraScreen extends Component<Props, State> {
             ).start();
             const success = await this.camera.startRecording();
             this.setState({ startShoot: success })
-            // let success = true
             console.log('success', success);
-
             if (success) {
               // 调用进度条 开始拍摄
               this.animate();

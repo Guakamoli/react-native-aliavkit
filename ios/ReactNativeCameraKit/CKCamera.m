@@ -95,12 +95,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
 
-@property (nonatomic, strong) AliCameraAction *cameraAction;
-@property (nonatomic, weak) CKCameraManager *manager;
-@property (nonatomic, weak) RCTBridge *bridge;
-
-@property (nonatomic) NSUInteger normalBeautyLevel;
-
 @end
 
 @implementation CKCamera
