@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/alivc_common_height_group_32"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/imgLeftThumb"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/paiya_thumb_overlay_bg" />
+
+    <LinearLayout
+        android:id="@+id/overlayLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:layout_weight="1">
+
+        <com.aliyun.svideo.editor.effects.captions.OverlayTextView
+            android:id="@+id/tvOverlay"
+            android:layout_marginTop="2dp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/alivc_common_margin_28"
+            android:background="@drawable/paiya_caption_line_overlay_text_bg"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:lines="1"
+            android:paddingStart="@dimen/alivc_common_padding_6"
+            android:paddingEnd="@dimen/alivc_common_padding_6"
+            android:textColor="#ffffff"
+            android:textSize="9sp" />
+
+    </LinearLayout>
+
+
+    <View
+        android:id="@+id/imgRightThumb"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/paiya_thumb_overlay_right_bg" />
+
+</LinearLayout>

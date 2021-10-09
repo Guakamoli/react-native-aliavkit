@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:paddingBottom="30dp"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mConstraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_custom_dialog"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="30dp"
+            android:text=""
+            android:textColor="#000000"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_goneMarginBottom="30dp" />
+
+        <View
+            android:id="@+id/viewHorizontalDivider"
+            android:layout_width="0dp"
+            android:layout_height="0.5dp"
+            android:background="#663C3C43"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvContent" />
+
+        <View
+            android:id="@+id/v_divider"
+            android:layout_width="0.5dp"
+            android:layout_height="43dp"
+            android:background="#663C3C43"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/viewHorizontalDivider" />
+
+        <TextView
+            android:id="@+id/tvLeft"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textColor="#0A7AFF"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@id/v_divider"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/viewHorizontalDivider" />
+
+        <TextView
+            android:id="@+id/tvRight"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:gravity="center"
+            android:text="@string/confirm"
+            android:textColor="#0A7AFF"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/v_divider"
+            app:layout_constraintTop_toBottomOf="@id/viewHorizontalDivider" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111111">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topTitleLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alivc_common_height_tittle_48"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imgBack"
+            style="?android:attr/actionButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onPublishClick"
+            android:src="@mipmap/aliyun_svideo_icon_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvUseVideo"
+            style="?android:attr/actionButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/paiya_publish_tittle_use_video"
+            android:textColor="#ffffffff"
+            android:textSize="15sp"
+            android:onClick="onPublishClick"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/progressPublish"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginStart="@dimen/alivc_common_margin_22"
+        android:layout_marginTop="@dimen/alivc_common_margin_74"
+        android:layout_marginEnd="@dimen/alivc_common_margin_22"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/aliyun_svideo_publish_progress_drawable"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvPublishProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0%"
+        android:textColor="#ffffffff"
+        android:textSize="@dimen/alivc_common_font_28"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.27" />
+
+    <TextView
+        android:id="@+id/tvPublishHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/alivc_common_margin_12"
+        android:text="@string/paiya_publish_hint"
+        android:textColor="#ffffffff"
+        android:textSize="@dimen/alivc_common_font_18"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvPublishProgress" />
+
+
+    <ImageView
+        android:id="@+id/imgCover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/topTitleLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="invisible"
+        app:layout_constraintVertical_bias="0.35"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintDimensionRatio="w,16:9"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <TextView
+        android:id="@+id/tvSelectCover"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/alivc_common_height_tittle_48"
+        android:text="@string/alivc_editor_publish_select_cover"
+        app:layout_constraintStart_toStartOf="@+id/imgCover"
+        app:layout_constraintEnd_toEndOf="@+id/imgCover"
+        android:gravity="center"
+        android:onClick="onPublishClick"
+        app:layout_constraintBottom_toBottomOf="@+id/imgCover"
+        android:textColor="#ffffff"
+        android:background="@drawable/paiya_editor_publish_select_cover_bg"
+        android:visibility="invisible"
+        android:textSize="15sp"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

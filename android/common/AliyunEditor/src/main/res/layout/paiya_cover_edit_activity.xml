@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111111">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topTitleLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alivc_common_height_tittle_48"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvCoverEditTitle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/alivc_common_margin_48"
+            android:layout_marginEnd="@dimen/alivc_common_margin_48"
+            android:gravity="center"
+            android:text="@string/alivc_editor_cover_tittle"
+            android:textColor="#ffffff"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgBack"
+            style="?android:attr/actionButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onCoverEditClick"
+            android:src="@mipmap/aliyun_svideo_crop_icon_cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgSave"
+            style="?android:attr/actionButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onCoverEditClick"
+            android:src="@mipmap/aliyun_svideo_icon_confirm"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/layoutCover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:cardBackgroundColor="@color/alivc_common_bg_transparent"
+        app:cardCornerRadius="@dimen/alivc_common_radius_20"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tvCoverEditHint"
+        app:layout_constraintDimensionRatio="9:16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topTitleLayout"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.8">
+
+        <TextureView
+            android:id="@+id/coverTextureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvCoverEditHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/alivc_common_margin_25"
+        android:layout_marginBottom="@dimen/alivc_common_margin_12"
+        android:text="@string/paiya_editor_cover_hint"
+        android:textColor="#ffffffff"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toTopOf="@+id/coverBottomLayout"
+        app:layout_constraintEnd_toEndOf="@+id/coverBottomLayout"
+        app:layout_constraintStart_toStartOf="@+id/coverBottomLayout" />
+
+    <FrameLayout
+        android:id="@+id/coverBottomLayout"
+        android:layout_width="0dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="@dimen/alivc_common_margin_12"
+        android:layout_marginBottom="@dimen/alivc_common_margin_25"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.8">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_height="50dp"
+            android:layout_marginTop="@dimen/alivc_common_margin_8"
+            android:layout_marginBottom="@dimen/alivc_common_margin_8"
+            app:cardBackgroundColor="@color/alivc_common_bg_transparent"
+            app:cardCornerRadius="@dimen/alivc_common_radius_8"
+            app:cardElevation="0dp"
+            app:cardMaxElevation="0dp"
+            app:cardPreventCornerOverlap="false">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/coverThumbnailRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="50dp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <View
+            android:id="@+id/viewIndicator"
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/alivc_common_padding_1"
+            android:layout_marginBottom="@dimen/alivc_common_padding_1"
+            android:background="@drawable/paiya_cover_edit_indicator_bg" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

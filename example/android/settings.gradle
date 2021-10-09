@@ -2,5 +2,27 @@ rootProject.name = 'CameraKitExample'
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
 
-include ':rncamerakit'
-project(':rncamerakit').projectDir = new File(rootProject.projectDir, '../../android')
+include ':react-native-camera-kit'
+project(':react-native-camera-kit').projectDir = new File(rootProject.projectDir, '../../android/react-native-camera-kit')
+
+include ':common:AliyunVideoCommon'
+project(':common:AliyunVideoCommon').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunVideoCommon')
+include ':common:AlivcMedia'
+project(':common:AlivcMedia').projectDir = new File(rootProject.projectDir, '../../android/common/AlivcMedia')
+include ':common:AliyunSVideoBase'
+project(':common:AliyunSVideoBase').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunSVideoBase')
+include ':common:AliyunFileDownLoader'
+project(':common:AliyunFileDownLoader').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunFileDownLoader')
+include ':common:AliyunSvideoMusic'
+project(':common:AliyunSvideoMusic').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunSvideoMusic')
+include ':common:AliyunCrop:crop'
+project(':common:AliyunCrop:crop').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunCrop/crop')
+include ':common:AliyunEditor'
+project(':common:AliyunEditor').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunEditor')
+include ':common:AliyunRecorder:record'
+project(':common:AliyunRecorder:record').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunRecorder/record')
+include ':common:AliyunResample'
+project(':common:AliyunResample').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunResample')
+
+include ':lib:lib-base'
+project(':lib:lib-base').projectDir = new File(rootProject.projectDir, '../../android/lib/lib-base')

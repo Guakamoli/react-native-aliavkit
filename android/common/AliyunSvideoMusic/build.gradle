@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+
+android {
+
+    compileSdkVersion externalCompileSdkVersion
+    buildToolsVersion externalBuildToolsVersion
+    defaultConfig {
+        minSdkVersion externalMinSdkVersion
+        targetSdkVersion externalTargetSdkVersion
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            consumerProguardFiles file('.').listFiles(new FilenameFilter() {
+                @Override
+                boolean accept(File file, String s) {
+                    return s.endsWith('.pro')
+                }
+            })
+        }
+        release {
+            minifyEnabled false
+            consumerProguardFiles file('.').listFiles(new FilenameFilter() {
+                @Override
+                boolean accept(File file, String s) {
+                    return s.endsWith('.pro')
+                }
+            })
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        encoding "UTF-8"
+    }
+
+    lintOptions {
+        warning 'InvalidPackage'
+    }
+
+}
+
+dependencies {
+    implementation project(':lib:lib-base')
+    implementation project(':common:AliyunFileDownLoader')
+    implementation project(':common:AliyunSVideoBase')
+    implementation project(':common:AliyunVideoCommon')
+}

@@ -1,0 +1,5 @@
+.gradle
+.idea
+/build
+/gradle-build
+/thirdparty-lib/base.gradle

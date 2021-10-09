@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvBlessing"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alivc_common_height_group_30"
+        android:gravity="center"
+        android:paddingBottom="8dp"
+        android:lines="1"
+        android:text=""
+        android:textColor="#ffffffff"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvAddCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="2dp"
+        android:background="@drawable/paiya_caption_blessing_add_bg"
+        android:drawableStart="@mipmap/ic_paiya_capting_add"
+        android:drawablePadding="2dp"
+        android:gravity="center"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/paiya_caption_add"
+        android:textColor="#ff111111"
+        android:textSize="12sp" />
+
+</LinearLayout>
