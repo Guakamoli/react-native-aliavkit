@@ -20,9 +20,22 @@
 @property (nonatomic, strong) NSString *videoPath;
 @property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
 
+
 - (instancetype)initWithManager:(RNEditViewManager *)manager bridge:(RCTBridge *)bridge;
 
+/// 尝试播放视频
+- (void)play;
+/// 尝试继续播放视频
+- (void)resume;
+/// 重新播放
+- (void)replay;
+/// 尝试暂停视频
+- (void)pause;
+- (int)seekToTime:(CGFloat)time;
+- (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 
+- (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete;
+- (void)removeImages;
 @end
 
 

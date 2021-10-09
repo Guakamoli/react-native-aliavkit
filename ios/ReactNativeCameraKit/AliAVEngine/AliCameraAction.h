@@ -32,7 +32,7 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)startPreview;
 - (void)stopPreview;
 
-//- (AVCaptureDevicePosition)switchCameraPosition;
+
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position;
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
 

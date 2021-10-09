@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Alert, NativeModules } from 'react-native';
 import VideoEditor from '../../src/VideoEditor';
+const { RNEditViewManager } = NativeModules;
 
 export default class VideoEditorExample extends Component {
   constructor(props) {
@@ -9,10 +10,11 @@ export default class VideoEditorExample extends Component {
       videoPath: '',
       filterName: '原片',
       startExportVideo: false,
+      thumbnails: [],
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
-  
+
   changeFilter(value) {
     this.setState({ filterName: value });
   }
@@ -30,6 +32,25 @@ export default class VideoEditorExample extends Component {
       return;
     }
     this.setState({ startExportVideo: true });
+  }
+
+  async getThumbnails() {
+    const imgPaths = await RNEditViewManager.generateImages({
+      videoPath: this.state.videoPath,
+      duration: 10,
+      startTime: 0,
+      itemPerTime: 1000,
+    });
+    console.log(imgPaths);
+  }
+
+  async trimVideo() {
+    const result = await RNEditViewManager.trimVideo({
+      videoPath: this.state.videoPath,
+      startTime: 2.0,
+      endTime: 8.0,
+    });
+    console.log(result);
   }
 
   render() {
@@ -62,6 +83,12 @@ export default class VideoEditorExample extends Component {
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('胶片')}>
               <Text>胶片</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonItem} onPress={() => this.getThumbnails()}>
+              <Text>抽帧</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonItem} onPress={() => this.trimVideo()}>
+              <Text>裁剪</Text>
             </TouchableOpacity>
           </View>
         </VideoEditor>

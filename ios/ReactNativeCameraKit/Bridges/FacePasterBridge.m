@@ -31,24 +31,28 @@ RCT_EXPORT_METHOD(getPasterInfos:(NSDictionary*)options
         if (error) {
             reject(@"fetch remote paster fail", error.localizedDescription, nil);
         } else {
-            NSMutableArray *arr = [NSMutableArray array];
             NSArray *pastList = responseObject[@"data"];
-            NSString *filterName = [NSString stringWithFormat:@"Face_Sticker/hanfumei-800"];
-            NSString *path = [[NSBundle mainBundle] pathForResource:filterName ofType:nil];
-            NSString *lastComponent = [path lastPathComponent];
-            NSArray *comp = [lastComponent componentsSeparatedByString:@"-"];
-            NSDictionary *localPaster = @{
-                @"name":comp.firstObject,
-                @"id":@([comp.lastObject integerValue]),
-                @"icon":[path stringByAppendingPathComponent:@"icon.png"],
-                @"type":@2,
-                @"bundlePath":path
-            };
-            [arr addObject:localPaster];
-            [arr addObjectsFromArray:pastList];
+            NSMutableArray *arr = [pastList mutableCopy];
+            [arr insertObject:[self _localFacePaster] atIndex:0];
             resolve(arr);
         }
     }];
+}
+
+- (NSDictionary *)_localFacePaster
+{
+    NSString *filterName = [NSString stringWithFormat:@"Face_Sticker/hanfumei-800"];
+    NSString *path = [[NSBundle mainBundle] pathForResource:filterName ofType:nil];
+    NSString *lastComponent = [path lastPathComponent];
+    NSArray *comp = [lastComponent componentsSeparatedByString:@"-"];
+    NSDictionary *localPaster = @{
+        @"name": comp.firstObject,
+        @"id": @([comp.lastObject integerValue]),
+        @"icon": [path stringByAppendingPathComponent:@"icon.png"],
+        @"type": @2,
+        @"bundlePath": path
+    };
+    return localPaster;
 }
 
 @end
