@@ -7,6 +7,7 @@
 @import AVFoundation;
 @class CKCameraManager;
 @class RCTBridge;
+#import "AliyunMediaConfig.h"
 
 typedef void (^CaptureBlock)(NSDictionary *imageObject);
 typedef void (^VideoRecordBlock)(BOOL successStart);
@@ -68,6 +69,7 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 + (CKCameraZoomMode)CKCameraZoomMode:(id)json;
 
 @end
+
 
 
 @interface CKCamera : UIView

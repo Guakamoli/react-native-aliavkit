@@ -23,6 +23,9 @@
 #import "AliyunEffectMvGroup.h"
 #import "AliyunEffectResourceModel.h"
 #import <Photos/Photos.h>
+#import "AliAssetImageGenerator.h"
+#import "AliyunTimelineMediaInfo.h"
+
 
 @interface RNEditView()<
 AliyunIPlayerCallback,
@@ -52,7 +55,7 @@ AliyunIExporterCallback
 @property (nonatomic, strong) NSString *filterName;
 @property (nonatomic) BOOL startExportVideo;
 @property (nonatomic) BOOL saveToPhotoLibrary;
-
+@property (nonatomic, strong) AliAssetImageGenerator *generator;
 @end
 
 @implementation RNEditView
@@ -60,6 +63,7 @@ AliyunIExporterCallback
 - (void)dealloc
 {
     [_editor stopEdit];
+    [self.generator cancel];
 }
 
 - (AliyunMediaConfig *)mediaConfig
@@ -83,6 +87,13 @@ AliyunIExporterCallback
         _publishManager.exportCallback = self;
     }
     return _publishManager;
+}
+
+- (AliAssetImageGenerator *)generator {
+    if (!_generator) {
+        _generator = [AliAssetImageGenerator new];
+    }
+    return _generator;
 }
 
 - (instancetype)initWithManager:(RNEditViewManager*)manager bridge:(RCTBridge *)bridge
@@ -384,7 +395,8 @@ AliyunIExporterCallback
 }
 
 /// 尝试播放视频
-- (void)play {
+- (void)play
+{
     if (self.player.isPlaying) {
         NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用play");
     } else {
@@ -406,7 +418,8 @@ AliyunIExporterCallback
 }
 
 /// 尝试继续播放视频
-- (void)resume {
+- (void)resume
+{
     if (self.player.isPlaying) {
         NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用resume");
     } else {
@@ -424,13 +437,15 @@ AliyunIExporterCallback
 }
 
 /// 重新播放
--(void)replay {
+- (void)replay
+{
     [self.player replay];
     [self updateUIAndDataWhenPlayStatusChanged];
 }
 
 /// 尝试暂停视频
-- (void)pause {
+- (void)pause
+{
     if (self.player.isPlaying) {
         int returnValue = [self.player pause];
         NSLog(@"短视频编辑播放器测试:调用了pause接口");
@@ -446,11 +461,131 @@ AliyunIExporterCallback
 }
 
 /// 更新UI 当状态改变的时候，播放的状态下是暂停按钮，其余都是播放按钮
-- (void)updateUIAndDataWhenPlayStatusChanged {
+- (void)updateUIAndDataWhenPlayStatusChanged
+{
     if (self.player.isPlaying) {
         _prePlaying = YES;
     } else {
         _prePlaying = NO;
     }
 }
+
+- (int)seekToTime:(CGFloat)time
+{
+    return [self.player seek:time];
+}
+
+- (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime
+{
+    [self.editor stopEdit];
+    if (self.clipConstructor.mediaClips.count != 1) {return;}
+    AliyunClip *clip = [self.clipConstructor mediaClipAtIndex:0];
+    if (clip.mediaType != AliyunClipVideo) { return; }
+    if (startTime) {
+        clip.startTime = startTime;
+    }
+    if (endTime && clip.duration > endTime) {
+        CGFloat newD = endTime - startTime;
+        clip.duration = newD;
+    }
+    // 3.23版本以下可以不用调用这句--很重要
+    [[self.editor getClipConstructor] updateMediaClip:clip atIndex:0];
+    [self.editor startEdit];
+    [self play];
+}
+
+static NSString * ThumnailDirectory() {
+    return [NSString stringWithFormat:@"%@/Documents/thumbNail", NSHomeDirectory()];
+}
+
+- (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
+{
+    NSString *videoPath = [options valueForKey:@"videoPath"];
+    videoPath = videoPath ? : [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+    CGFloat duration = [[options valueForKey:@"duration"] floatValue] ? : [self.player getDuration];
+    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue] ? : 0.0;
+    NSInteger itemPerTime = [[options valueForKey:@"itemPerTime"] integerValue] ? : 1000; //ms
+    
+    [self.generator addVideoWithPath:videoPath
+                           startTime:startTime
+                            duration:duration
+                        animDuration:0];
+    CGFloat videoDuration = self.generator.duration;
+    CGFloat singleTime = itemPerTime / 1000.0;// 一个图片的时间
+    NSMutableArray *timeValues = [[NSMutableArray alloc] init];
+    int idx = 0;
+    while (idx * singleTime < videoDuration) {
+        double time = idx * singleTime;
+        [timeValues addObject:@(time)];
+        idx++;
+    }
+    NSLog(@"-------: %d -- %lu",idx, (unsigned long)[timeValues count]);
+    self.generator.imageCount = [timeValues count];
+    self.generator.outputSize = CGSizeMake(200, 200);
+    self.generator.timePerImage = singleTime;
+    
+    __weak typeof(self) weakSelf = self;
+    [self removeImages];
+    [self.generator generateWithCompleteHandler:^(UIImage *image) {
+        if (image) {
+            [weakSelf saveImgToSandBox:image];
+        }
+    }];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        complete([self getResourcePaths]);
+    });
+}
+
+- (NSString *)saveImgToSandBox:(UIImage *)image
+{
+    NSString *fileDirectoryPath = ThumnailDirectory();
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:fileDirectoryPath]) {
+        NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        fileDirectoryPath = [documentsDirectory stringByAppendingPathComponent:@"thumbNail"];
+        [fm createDirectoryAtPath:fileDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    static int i = 0;
+    NSData *imgData = UIImagePNGRepresentation(image);
+    NSString *imageName = [NSString stringWithFormat:@"%03d.png", ++i];
+    NSString *imgPath = [fileDirectoryPath stringByAppendingPathComponent:imageName];
+    BOOL suc = [imgData writeToFile:imgPath atomically:YES];
+    NSLog(@"-------writeToFile :%@", suc == 1 ? @"YES" : @"NO");
+    return imgPath;
+}
+
+- (void)removeImages
+{
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *folderPath = ThumnailDirectory();
+    NSDirectoryEnumerator *dirEnumerator = [fm enumeratorAtPath:folderPath];
+    BOOL isDir = NO, isExist = NO;
+    for (NSString *fileName in dirEnumerator.allObjects) {
+        NSString *filePath = [NSString stringWithFormat:@"%@/%@", folderPath, fileName];
+        isExist = [fm fileExistsAtPath:filePath isDirectory:&isDir];
+        if (!isDir && isExist) {
+            NSLog(@"-------isExist :%@", isExist == 1 ? @"YES" : @"NO");
+            [fm removeItemAtPath:filePath error:nil];
+        }
+    }
+}
+
+- (NSArray *)getResourcePaths
+{
+    NSMutableArray *arr = [NSMutableArray array];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *folderPath = ThumnailDirectory();
+    NSDirectoryEnumerator *dirEnumerator = [fm enumeratorAtPath:folderPath];
+    BOOL isDir = NO, isExist = NO;
+    for (NSString *fileName in dirEnumerator.allObjects) {
+        NSString *filePath = [NSString stringWithFormat:@"%@/%@", folderPath, fileName];
+        isExist = [fm fileExistsAtPath:filePath isDirectory:&isDir];
+        if (!isDir && isExist) {
+            [arr addObject:filePath];
+        }
+    }
+    return arr;
+}
+
 @end

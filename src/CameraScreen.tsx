@@ -35,12 +35,9 @@ export type Props = {
   cameraFlipImage: any;
   hideControls: any;
   showFrame: any;
-  scanBarcode: any;
-  laserColor: any;
   frameColor: any;
   torchOnImage: any;
   torchOffImage: any;
-  onReadCode: (any) => void;
   onBottomButtonPressed: (any) => void;
 };
 
@@ -141,7 +138,7 @@ export default class CameraScreen extends Component<Props, State> {
 
     this.setState({
       ratios: ratios || [],
-      ratioArrayPosition: ratios.length > 0 ? 0 : -1
+      ratioArrayPosition: ratios.length > 0 ? 0 : -1,
     });
     this.getPasterData();
   }
@@ -234,10 +231,7 @@ export default class CameraScreen extends Component<Props, State> {
             ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
             saveToCameraRoll={!this.props.allowCaptureRetake}
             showFrame={this.props.showFrame}
-            scanBarcode={this.props.scanBarcode}
-            laserColor={this.props.laserColor}
             frameColor={this.props.frameColor}
-            onReadCode={this.props.onReadCode}
             facePasterInfo={this.state.facePasterInfo}
             onRecordingProgress={this._onRecordingDuration}
           />
@@ -353,7 +347,7 @@ export default class CameraScreen extends Component<Props, State> {
     // console.log('cameraApplyPaster: ', paster.url);
     this.setState({ facePasterInfo: paster });
   };
-  renderItem = (item,index) => {
+  renderItem = (item, index) => {
     return (
       <PasterItem
         item={item}
@@ -371,7 +365,7 @@ export default class CameraScreen extends Component<Props, State> {
         <VirtualizedList
           data={this.state.pasterList}
           initialNumToRender={4}
-          renderItem={({ item, index }) => this.renderItem(item,index)}
+          renderItem={({ item, index }) => this.renderItem(item, index)}
           keyExtractor={(item) => `${item.id}`}
           getItemCount={this.getItemCount}
           getItem={(data, index) => {

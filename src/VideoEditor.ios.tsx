@@ -15,6 +15,11 @@ class VideoEditor extends React.Component {
     this.props.onExportVideo(event.nativeEvent);
   };
 
+  async getImages() {
+    const imagePaths =  await this.editRef.current.generateImages({});
+    return imagePaths;
+  }
+
   render() {
     return (
       <EditView

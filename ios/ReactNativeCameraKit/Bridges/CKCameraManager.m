@@ -37,6 +37,8 @@ RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
+
 
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
@@ -102,13 +104,6 @@ RCT_EXPORT_METHOD(requestDeviceCameraAuthorization:(RCTPromiseResolveBlock)resol
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
-}
-
-- (NSArray<NSString *> *)customBubblingEventTypes
-{
-    return @[
-        @"startVideoRecord"
-      ];
 }
 
 @end
