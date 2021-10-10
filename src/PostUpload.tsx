@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+
 import React, { Component, useRef } from 'react';
 import {
   StyleSheet,
@@ -9,14 +9,9 @@ import {
   Dimensions,
   Platform,
   SafeAreaView,
-  Animated,
-  FlatList,
   ScrollView,
 } from 'react-native';
-import _, { size } from 'lodash';
-import Camera from './Camera';
-import Carousel from 'react-native-snap-carousel';
-import * as Progress from 'react-native-progress';
+import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import CameraRoll from "@react-native-community/cameraroll";
 import { FlatGrid } from 'react-native-super-grid';
@@ -31,22 +26,23 @@ const captureIcon = (width - 98) / 2
 const captureIcon2 = (width - 20) / 2;
 const photosItem = (width / 4);
 
-export enum CameraType {
-  Front = 'front',
-  Back = 'back'
-}
+
 
 export type Props = {
-
+  ratioOverlay?: string,
+  closeImage: any,
+  goback: any
 
   multipleBtnImage: any
   postCameraImage: any
   startMultipleBtnImage: any
-  videoFile: any
-
+  changeSizeImage: any
+ 
+  scrollViewWidth: boolean
 }
 
 type State = {
+
   CameraRollList: any,
 
   photoSelectType: string
@@ -55,18 +51,21 @@ type State = {
 
   photoAlbum: any
   photoAlbumselect: any
+  pasterList: any
+  videoFile: any
+  facePasterInfo: any
+  filterName:any
 }
 
 
-export default class PostUpload extends Component<Props, State> {
+export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any
+  editor:any
 
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
-
-
 
     this.state = {
       CameraRollList: [],
@@ -75,17 +74,20 @@ export default class PostUpload extends Component<Props, State> {
       startmMltiple: false,
       photoAlbum: [],
       photoAlbumselect: {},
-      videoFile: ''
+      videoFile: '',
+      scrollViewWidth: true,
+      // 
+      pasterList: [],
+      facePasterInfo: {},
+      filterName:"原片"
     };
   }
 
+
   componentDidMount() {
-
-
-    var _that = this;
     //获取照片
     var getPhotos = CameraRoll.getPhotos({
-      first: 100,
+      first: 30,
       assetType: 'All',
       //todo  安卓调试隐藏
       include: ["playableDuration", 'filename', 'fileSize', 'imageSize',],
@@ -118,22 +120,30 @@ export default class PostUpload extends Component<Props, State> {
         // ios文件
         photos.push(edges[i].node);
       }
-      _that.setState({
+      this.setState({
         CameraRollList: photos
       });
     }, function (err) {
       // alert( '获取照片失败！' );
     });
   }
-
+  sendUploadFile(data) {
+    if (this.props.getUploadFile) {
+      this.props.getUploadFile(data);
+    }
+  }
   postHead() {
     return (
       <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
-        <Image
-          style={styles.closeIcon}
-          source={this.props.closeImage}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => {
+          this.props.goback()
+        }} >
+          <Image
+            style={styles.closeIcon}
+            source={this.props.closeImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>
         <TouchableOpacity onPress={() => {
 
@@ -143,33 +153,30 @@ export default class PostUpload extends Component<Props, State> {
           if (this.state.multipleData.length > 0) {
             this.state.multipleData.map(async (multipleDataItem) => {
               const { image: { uri, width, height, filename, fileSize, playableDuration }, type } = multipleDataItem
-
-
               let image_type = type + '/' + filename.split('.')[1]
+              let localUri = await CameraRoll.requestPhotoAccess(uri.slice(5));
               if (this.state.photoSelectType === 'image') {
                 uplaodFile.push({
                   image_type,
                   image_dimensions: { width, height },
-                  image_url: uri,
+                  image_url: localUri,
                   image_size: fileSize,
-                  title: filename,
-                  type: "file",
+                  title: filename
                 })
               } else {
                 uplaodFile.push({
-                  video_type,
+                  video_type: image_type,
                   type: "file",
-                  title_link: uri,
+                  title_link: localUri,
                   video_size: fileSize,
-                  title: filename,
+                  title: filename
                 })
               }
-
-
             })
 
           }
-          console.log(uplaodFile);
+          // 选择本地文件 数据
+          this.sendUploadFile(uplaodFile)
         }}>
           <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
         </TouchableOpacity>
@@ -177,20 +184,40 @@ export default class PostUpload extends Component<Props, State> {
     )
   }
   postContent() {
-    const { multipleData, CameraRollList, photoSelectType, videoFile } = this.state;
-    return (
-      <SafeAreaView style={{ flex: 1, padding: 0 }}>
-        <ScrollView style={{
-          height: height,
-          margin: 0,
-        }}
-        >
+    const { multipleData, CameraRollList, photoSelectType, videoFile, } = this.state;
 
+    return (
+      <SafeAreaView style={{ flex: 1, padding: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ececec', position: 'relative' }}>
+
+        <TouchableOpacity style={{
+          width: 31,
+          height: 31, marginRight: 10, position: 'absolute', left: 15, bottom: 20, zIndex: 99
+        }} onPress={() => {
+          this.setState({ scrollViewWidth: !this.state.scrollViewWidth })
+        }}>
+          <Image
+            style={[{
+              width: 31,
+              height: 31,
+            }]}
+            source={this.props.changeSizeImage}
+
+          />
+        </TouchableOpacity>
+        <ScrollView style={{
+          height: 'auto',
+          margin: 'auto',
+          paddingHorizontal: 0,
+          backgroundColor: '#ececec',
+          width: this.state.scrollViewWidth ? width : 320
+        }}
+          pinchGestureEnabled={true}
+        >
           {
             photoSelectType === 'image' ? <Image
               style={[{
                 width: width,
-                height: height,
+                height: height - 300,
               },]}
               // 安卓展示不出来 权限问题？？？？ 
               // source={{ uri: item.image.uri }}
@@ -200,7 +227,7 @@ export default class PostUpload extends Component<Props, State> {
                 source={{ uri: videoFile }}
                 style={{
                   width: width,
-                  height: height,
+                  height: height - 160,
                 }} />
           }
         </ScrollView>
@@ -254,12 +281,14 @@ export default class PostUpload extends Component<Props, State> {
       }
       return t;
     }
-    const getVideFile = async (item) => {
-      if (photoSelectType !== 'video') return ''
+    const getVideFile = async (fileType, item) => {
+      if (fileType !== 'video') return ''
       let myAssetId = item?.image?.uri.slice(5);
       // 获取视频文件 url 
-      let returnedAssetInfo = await CameraRoll.getPhotoInfo(myAssetId, {});
-      this.setState({ videoFile: returnedAssetInfo.localUri })
+      console.log(myAssetId, 'myAssetId');
+
+      let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+      this.setState({ videoFile: localUri })
     }
     return (
       <>
@@ -277,17 +306,17 @@ export default class PostUpload extends Component<Props, State> {
               return (
                 <TouchableOpacity onPress={() => {
                   //  第一次
-
                   if (multipleData.length <= 1) {
                     // 获取第一次选择类型
                     let fileType = type.split('/')[0];
+                    if (fileType === 'video') {
+                      getVideFile(fileType, item)
+                    }
                     this.setState({
                       photoSelectType: fileType,
                       multipleData: [item]
                     })
-                    if (photoSelectType === 'video') {
-                      getVideFile(item)
-                    }
+
                   }
                   if (startmMltiple) {
                     // 图片大于10 || 视频 大于 1 
@@ -368,7 +397,7 @@ export default class PostUpload extends Component<Props, State> {
                     }, multipleData[multipleData.length - 1]?.image.uri === image.uri ? { opacity: 0.5 } : { opacity: 0 }]}>
                     </View>
                     {
-                      image.playableDuration ? <Text style={{ color: '#fff', fontSize: 12, fontWeight: '400', lineHeight: 17, zIndex: 100, position: "absolute", right: 6, bottom: 7 }}> {formatSeconds(Math.ceil(image.playableDuration ?? 0))}</Text> : null
+                      image.playableDuration ? <Text style={{ color: '#fff', fontSize: 12, fontWeight: '400', lineHeight: 17, zIndex: 100, position: "absolute", right: 8, bottom: 7 }}> {formatSeconds(Math.ceil(image.playableDuration ?? 0))}</Text> : null
                     }
 
                   </View>
@@ -384,25 +413,17 @@ export default class PostUpload extends Component<Props, State> {
   render() {
     return (
       <>
-        <Toast
-          ref={this.myRef}
-          position="center"
-          positionValue={70}
-          fadeInDuration={750}
-          fadeOutDuration={1000}
-          opacity={0.8}
-        />
-
-        {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "red" }}></View> : null}
-
-
-        <>
-          {/* post */}
-          {this.postHead()}
-          {this.postContent()}
-          {this.postFileUpload()}
-        </>
-
+        {/* {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null} */}
+        {
+         
+              <>
+                {/* post */}
+                {this.postHead()}
+                {this.postContent()}
+                {this.postFileUpload()}
+              </>
+            
+        }
       </>
     );
   }
@@ -410,63 +431,17 @@ export default class PostUpload extends Component<Props, State> {
 
 const styles = StyleSheet.create(
   {
-
     closeIcon: {
       width: 28,
       height: 28,
     },
-
-
-
-    uploadBox: {
-      width: 130,
-      height: 40,
-      borderRadius: 22,
-      backgroundColor: "#fff",
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    uploadTitle: {
-      fontWeight: '500',
-      fontSize: 13,
-      color: "#000",
-      lineHeight: 18
-    },
-    UpdateBox: {
-      position: 'absolute',
-      zIndex: 99,
-      top: 20,
-    },
-    updateTopIcon: {
-      width: 40,
-      height: 40,
-      marginRight: 10
-    },
-    filterLensSelectTitle: {
-      fontSize: 13,
-      fontWeight: "500",
-      color: '#fff',
-      lineHeight: 18,
-    },
-    startShootAnnulus: {
-      backgroundColor: "rgba(255,255,255,0.5)",
-      borderRadius: 122,
-      position: 'absolute'
-    },
+ 
     captureButton: {
       width: 49,
       height: 49,
       backgroundColor: "#fff",
       borderRadius: 49,
       position: 'absolute'
-    },
-    captureButtonContainer: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: "row",
-      position: 'absolute',
-      bottom: 30,
-
     },
     captureButtonImage: {
       position: 'absolute',
@@ -475,23 +450,10 @@ const styles = StyleSheet.create(
       elevation: 1,
       top: - 7,
     },
-    slider: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      display: "flex",
-      zIndex: 99,
-      elevation: 10,
-    },
-    startShootBox: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      position: 'relative',
-      left: captureIcon2,
-    },
     multipleBtnImage: {
       width: 31,
       height: 31
-    }
+    },
+
   });
 
