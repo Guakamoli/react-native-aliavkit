@@ -13,6 +13,8 @@ export default class VideoEditorExample extends Component {
       thumbnails: [],
     };
     this.onExportVideo = this.onExportVideo.bind(this);
+
+    this.getFilters();
   }
 
   changeFilter(value) {
@@ -51,6 +53,12 @@ export default class VideoEditorExample extends Component {
       endTime: 8.0,
     });
     console.log(result);
+  }
+
+  async getFilters() {
+    //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
+    const infos = await RNEditViewManager.getFilterIcons({});
+    console.log('-------:', infos);
   }
 
   render() {

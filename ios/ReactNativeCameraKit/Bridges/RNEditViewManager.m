@@ -80,4 +80,19 @@ RCT_EXPORT_METHOD(removeThumbnaiImages:(NSDictionary*)options)
     return dispatch_get_main_queue();
 }
 
+RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    NSArray *names = @[@"柔柔",@"优雅",@"红润",@"阳光",@"海蓝",@"炽黄",@"浓烈",@"闪耀",@"朝阳",@"经典",@"粉桃",@"雪梨",@"鲜果",@"麦茶",@"灰白",@"波普",@"光圈",@"海盐",@"黑白",@"胶片",@"焦黄",@"蓝调",@"迷糊",@"思念",@"素描",@"鱼眼",@"马赛克",@"模糊"];
+    NSMutableArray *infos = [NSMutableArray array];
+    for (NSString *name in names) {
+        NSString *iconPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"Filter/%@/icon.png",name]];
+        [infos addObject:@{@"iconPath":iconPath,@"filterName":name}];
+    }
+    NSLog(@"------filterInfos： %@",infos);
+    resolve(infos);
+    
+}
+
 @end
