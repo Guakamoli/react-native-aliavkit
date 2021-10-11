@@ -80,6 +80,7 @@ RCT_EXPORT_METHOD(removeThumbnaiImages:(NSDictionary*)options)
     return dispatch_get_main_queue();
 }
 
+
 RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
