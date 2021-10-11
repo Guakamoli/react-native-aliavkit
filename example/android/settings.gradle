@@ -5,7 +5,6 @@ include ':app'
 include ':react-native-camera-kit'
 project(':react-native-camera-kit').projectDir = new File(rootProject.projectDir, '../../android/react-native-camera-kit')
 
-
 include ':common:AliyunVideoCommon'
 project(':common:AliyunVideoCommon').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunVideoCommon')
 include ':common:AlivcMedia'
@@ -20,14 +19,8 @@ include ':common:AliyunCrop:crop'
 project(':common:AliyunCrop:crop').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunCrop/crop')
 include ':common:AliyunEditor'
 project(':common:AliyunEditor').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunEditor')
-include ':common:QueenBeauty'
-project(':common:QueenBeauty').projectDir = new File(rootProject.projectDir, '../../android/common/QueenBeauty')
-include ':common:FaceunityBeauty'
-project(':common:FaceunityBeauty').projectDir = new File(rootProject.projectDir, '../../android/common/FaceunityBeauty')
 include ':common:AliyunRecorder:record'
 project(':common:AliyunRecorder:record').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunRecorder/record')
-include ':common:AliyunRecorder:pro_record'
-project(':common:AliyunRecorder:pro_record').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunRecorder/pro_record')
 include ':common:AliyunResample'
 project(':common:AliyunResample').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunResample')
 

@@ -42,7 +42,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         val view = uiManager?.resolveView(viewTag) as CKCamera
-        promise.resolve(view.recorderManage.getBeautyLevel(context))
+        promise.resolve(view.recorderManage?.getBeautyLevel(context))
     }
 
     //设置美颜等级
@@ -51,16 +51,16 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         val view = uiManager?.resolveView(viewTag) as CKCamera
-        view.recorderManage.setBeautyLevel(beautyLevel)
+        view.recorderManage?.setBeautyLevel(beautyLevel)
     }
 
     //设置滤镜
     @ReactMethod
-    fun setColorFilter(beautyLevel: Int, viewTag: Int, promise: Promise) {
+    fun setColorFilter(position: Int, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         val view = uiManager?.resolveView(viewTag) as CKCamera
-        view.recorderManage.setColorFilter(beautyLevel)
+        view.recorderManage?.setColorFilter()
     }
 
     //去拍照
@@ -70,7 +70,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.recorderManage.takePhoto(promise)
+            view.recorderManage?.takePhoto(context,promise)
         }
     }
 
@@ -80,11 +80,11 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            if(!view.isPermissions){
+            if(!view.isPermissions()){
                 view.getPermissions()
                 return@runOnUiQueueThread
             }
-            view.recorderManage.startRecording(context,promise)
+            view.recorderManage?.startRecording(context,promise)
         }
     }
 
@@ -94,7 +94,18 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.recorderManage.stopRecording(promise)
+            view.recorderManage?.stopRecording(context,promise)
+        }
+    }
+
+
+    @ReactMethod
+    fun release(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKCamera
+            view.onRelease()
         }
     }
 

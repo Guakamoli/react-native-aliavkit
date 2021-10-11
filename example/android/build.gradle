@@ -14,7 +14,7 @@ buildscript {
         maven { url "https://maven.aliyun.com/repository/releases" }
         maven { url 'https://jitpack.io' }
     }
-    apply from: 'thirdparty-lib/config.gradle'
+    apply from: '../../android/thirdparty-lib/config.gradle'
     apply from: 'thirdparty-lib/base.gradle'
     dependencies {
         classpath('com.android.tools.build:gradle:4.1.1')
@@ -24,6 +24,7 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+
 
 allprojects {
     repositories {
@@ -43,3 +44,4 @@ allprojects {
         maven { url "https://maven.aliyun.com/repository/releases" }
     }
 }
+

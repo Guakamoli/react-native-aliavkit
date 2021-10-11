@@ -9,14 +9,15 @@ import java.util.*
 class RNCameraKitPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         val modules: MutableList<NativeModule> = ArrayList()
-        val cameraModule = RNCameraKitModule(reactContext)
-        modules.add(cameraModule)
+        modules.add(RNCameraKitModule(reactContext))
+        modules.add(RNPlayerKitModule(reactContext))
         return modules
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
         val viewManagers: MutableList<ViewManager<*, *>> = ArrayList()
         viewManagers.add(CKCameraManager())
+        viewManagers.add(CKPlayerManager())
         return viewManagers
     }
 }

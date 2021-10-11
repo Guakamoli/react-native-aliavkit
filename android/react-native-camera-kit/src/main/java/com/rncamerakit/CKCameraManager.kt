@@ -53,8 +53,8 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
 
     @ReactProp(name = "normalBeautyLevel")
-    fun setBeautyLevel(view: CKCamera, normalBeautyLevel: Int) {
-        var beautyLevel = when (normalBeautyLevel) {
+    fun setBeautyLevel(view: CKCamera, normalBeautyLevel: Int?) {
+        val beautyLevel = when (normalBeautyLevel) {
             0 -> 0
             10 -> 1
             20 -> 2
@@ -65,25 +65,24 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
                 3
             }
         }
-        view.recorderManage.setBeautyLevel(beautyLevel)
+        view.recorderManage?.setBeautyLevel(beautyLevel)
     }
 
-    //摄像头方向  back 后置摄像头，front 前置摄像头
     @ReactProp(name = "cameraType")
-    fun setCameraType(view: CKCamera, type: String) {
-        view.recorderManage.setCameraType(type)
+    fun setCameraType(view: CKCamera, type: String?) {
+        view.recorderManage?.setCameraType(type)
     }
 
     //是否开启闪光灯
     @ReactProp(name = "flashMode")
-    fun setFlashMode(view: CKCamera, mode: String) {
-        view.recorderManage.setLight(mode)
+    fun setFlashMode(view: CKCamera, mode: String?) {
+        view.recorderManage?.setLight(mode)
     }
 
     //手电筒
     @ReactProp(name = "torchMode")
-    fun setTorchMode(view: CKCamera, mode: String) {
-        view.recorderManage.setTorchMode(mode)
+    fun setTorchMode(view: CKCamera, mode: String?) {
+        view.recorderManage?.setTorchMode(mode)
     }
 
     @ReactProp(name = "focusMode")
