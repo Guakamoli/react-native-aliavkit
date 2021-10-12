@@ -47,7 +47,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     private var mAliyunIEditor: AliyunIEditor? = null
 
-
     private var mDisposableObserver: DisposableObserver<String>? = null
 
     private var mVideoContainer: FrameLayout? = null
@@ -114,7 +113,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
             .subscribe(mDisposableObserver)
     }
 
-
     private fun initEditor(uri: Uri, isVideo: Boolean) {
         //设置onTextureRender能够回调
         mAliyunIEditor =
@@ -125,13 +123,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.setFillBackgroundColor(Color.BLACK)
         if (ret != AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS) {
             FixedToastUtils.show(
-                mContext, mContext.resources.getString(R.string.alivc_editor_edit_tip_init_failed)
+                mContext, mContext.resources.getString(R.string.alivc_editor_edit_tip_init_failed)+", $ret"
             )
             return
         }
         mAliyunIEditor?.play()
     }
-
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
         RNEventEmitter.startVideoEditor(reactContext, currentPlayTime)
@@ -144,7 +141,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
             }
         }
     }
-
 
     /**
      * 导入图片
@@ -167,6 +163,20 @@ class CKEditor(val reactContext: ThemedReactContext) :
         }
     }
 
+    /**
+     * 设置静音
+     */
+    fun setAudioSilence(isSilence: Boolean?) {
+       if(isSilence == true){
+           mAliyunIEditor?.setVolume(0)
+       }else{
+           mAliyunIEditor?.setVolume(50)
+       }
+    }
+
+    /**
+     * 获取滤镜列表
+     */
     fun getColorFilterList(promise: Promise) {
         if (!isCopyAssets) {
             promise.reject("getColorFilterList", "ColorFilter is empty")
@@ -175,8 +185,35 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mColorFilterManager?.getColorFilter(promise)
     }
 
+    /**
+     * 设置滤镜
+     */
     fun setColorFilter(filterName: String?) {
         mColorFilterManager?.setColorFilter(filterName,mAliyunIEditor)
+    }
+
+    /**
+     * 导出视频
+     */
+    fun exportVideo(promise: Promise) {
+        if(mAliyunIEditor?.isPlaying == true){
+            mAliyunIEditor?.stop()
+        }
+        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.saveEffectToLocal()
+        mComposeManager?.startCompose(mProjectConfigure,promise,true)
+    }
+
+    /**
+     * 导出图片
+     */
+    fun exportImage(promise: Promise) {
+        if(mAliyunIEditor?.isPlaying == true){
+            mAliyunIEditor?.stop()
+        }
+        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.saveEffectToLocal()
+        mComposeManager?.startCompose(mProjectConfigure,promise,false)
     }
 
     /**

@@ -40,7 +40,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-//            view.exportVideo(promise)
+            view.exportVideo(promise)
         }
     }
 
@@ -51,7 +51,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-//            view.exportImage(promise)
+            view.exportImage(promise)
         }
     }
 

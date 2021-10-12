@@ -273,8 +273,7 @@ class RecorderManage(mContext: ThemedReactContext) {
         outputInfo.videoHeight = mHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
         mRecorder?.setMediaInfo(outputInfo)
-        val videoPath =
-            Constants.SDCardConstants.getDir(mContext.applicationContext) + File.separator + "paiya-record.mp4"
+        val videoPath = File( Constants.SDCardConstants.getDir(mContext.applicationContext),"paiya-record.mp4").absolutePath
         mRecorder?.setOutputPath(videoPath)
         mRecorder?.setVideoQuality(VideoQuality.SSD)
         mRecorder?.setVideoBitrate(10 * 1000 * 1000)
