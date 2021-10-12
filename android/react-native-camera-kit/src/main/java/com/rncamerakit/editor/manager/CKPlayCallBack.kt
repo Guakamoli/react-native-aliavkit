@@ -1,4 +1,4 @@
-package com.rncamerakit.editor
+package com.rncamerakit.editor.manager
 
 import android.content.Context
 import android.os.Handler
@@ -8,7 +8,7 @@ import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.editor.EditorCallBack
 import com.rncamerakit.R
 
-class CKEditorCallBack(private val mContext: Context, private val mCallbacks: Callbacks?,private var isVideo:Boolean) :
+class CKPlayCallBack(private val mContext: Context, private val mCallbacks: Callbacks?, private var isVideo:Boolean) :
     EditorCallBack() {
 
     init {

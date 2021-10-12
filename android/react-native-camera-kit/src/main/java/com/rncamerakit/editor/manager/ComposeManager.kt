@@ -1,6 +1,5 @@
-package com.rncamerakit.compose
+package com.rncamerakit.editor.manager
 
-import android.content.Context
 import android.graphics.Bitmap
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.DateTimeUtils

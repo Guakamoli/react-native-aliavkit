@@ -1,4 +1,4 @@
-package com.rncamerakit.recorder
+package com.rncamerakit.recorder.manager
 
 import android.content.Context
 import com.aliyun.common.utils.CommonUtil
@@ -27,6 +27,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.recorder.ImplRecordCallback
+import com.rncamerakit.recorder.OnRecorderCallbacks
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -132,7 +134,7 @@ class RecorderManage(mContext: ThemedReactContext) {
     fun takePhoto(context :ReactApplicationContext ,promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
-                RecorderManage.photoPath = photoPath
+                Companion.photoPath = photoPath
                 promise.resolve(photoPath)
             }
 

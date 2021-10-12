@@ -1,4 +1,4 @@
-package com.rncamerakit
+package com.rncamerakit.editor
 
 import android.app.Activity
 import android.content.Context
@@ -28,9 +28,10 @@ import com.aliyun.svideosdk.importer.AliyunIImport
 import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
 import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
-import com.rncamerakit.compose.ComposeManager
-import com.rncamerakit.editor.CKEditorCallBack
-import com.rncamerakit.recorder.RecorderManage
+import com.rncamerakit.R
+import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.editor.manager.CKPlayCallBack
+import com.rncamerakit.editor.manager.ComposeManager
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -41,7 +42,7 @@ import java.util.*
 class CKPlayer( val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver,
-    CKEditorCallBack.Callbacks {
+    CKPlayCallBack.Callbacks {
 
     private val mContext: Context = reactContext.applicationContext
     private val mActivity: Activity? = reactContext.currentActivity
@@ -98,7 +99,7 @@ class CKPlayer( val reactContext: ThemedReactContext) :
     private fun initEditor(uri: Uri, isVideo: Boolean) {
         //设置onTextureRender能够回调
         mAliyunIEditor =
-            AliyunEditorFactory.creatAliyunEditor(uri, CKEditorCallBack(mContext, this, isVideo))
+            AliyunEditorFactory.creatAliyunEditor(uri, CKPlayCallBack(mContext, this, isVideo))
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
