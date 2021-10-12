@@ -24,11 +24,19 @@ class RNEventEmitter {
         }
 
         /**
-         * 播放进度
+         * Player 播放进度
          */
         fun startVideoPlay(reactContext: ThemedReactContext?, currentPlayTime: Long){
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 ?.emit("startVideoPlay", "" + currentPlayTime/1000)
+        }
+
+        /**
+         * Editor 播放进度
+         */
+        fun startVideoEditor(reactContext: ThemedReactContext?, currentPlayTime: Long){
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("startVideoEditor", "" + currentPlayTime/1000)
         }
 
         /**

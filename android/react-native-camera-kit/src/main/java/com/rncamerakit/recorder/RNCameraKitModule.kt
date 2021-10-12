@@ -1,15 +1,8 @@
-package com.rncamerakit
+package com.rncamerakit.recorder
 
 import android.app.Activity
-import com.aliyun.svideo.recorder.activity.AlivcSvideoRecordActivity
-import com.aliyun.svideo.recorder.bean.AlivcRecordInputParam
-import com.aliyun.svideo.recorder.bean.RenderingMode
-import com.aliyun.svideosdk.common.struct.common.AliyunSnapVideoParam
-import com.aliyun.svideosdk.common.struct.common.VideoQuality
-import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
-import java.lang.ref.WeakReference
 
 class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
