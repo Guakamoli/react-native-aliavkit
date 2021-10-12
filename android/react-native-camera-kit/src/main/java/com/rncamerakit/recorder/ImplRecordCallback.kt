@@ -13,7 +13,7 @@ import com.aliyun.svideosdk.recorder.RecordCallback
 import java.io.File
 import java.io.IOException
 
-class ImplRecordCallback (private val mContext: Context): RecordCallback {
+class ImplRecordCallback(private val mContext: Context) : RecordCallback {
 
     private var mCallbacks: OnRecorderCallbacks? = null
 
@@ -48,8 +48,10 @@ class ImplRecordCallback (private val mContext: Context): RecordCallback {
 
     override fun onPictureBack(bitmap: Bitmap?) {
         ThreadUtils.runOnSubThread {
-            val imgPath =
-                Constants.SDCardConstants.getDir(mContext.applicationContext) + File.separator + System.currentTimeMillis() + "-photo.jpg"
+            val imgPath = File(
+                Constants.SDCardConstants.getDir(mContext.applicationContext),
+                System.currentTimeMillis().toString() + "-photo.jpg"
+            ).absolutePath
             try {
                 BitmapUtil.generateFileFromBitmap(bitmap, imgPath, "jpg")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -28,7 +28,6 @@ class ImportManager(val reactContext: ThemedReactContext) {
     }
 
     private fun getVideoParam(isVideo:Boolean): AliyunVideoParam {
-        if (isVideo){
             return  AliyunVideoParam.Builder()
                 .bitrate(10 * 1000)
                 .frameRate(30)
@@ -41,19 +40,6 @@ class ImportManager(val reactContext: ThemedReactContext) {
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
-        }else{
-            return  AliyunVideoParam.Builder()
-                .frameRate(90)
-                .gop(30)
-                .crf(10)
-                .scaleRate(1.0f)
-                .outputWidth(mWidth)
-                .outputHeight(mHeight)
-                .videoQuality(VideoQuality.SSD)
-                .scaleMode(VideoDisplayMode.FILL)
-                .videoCodec(VideoCodecs.H264_HARDWARE)
-                .build()
-        }
     }
 
 
@@ -86,6 +72,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
         mAliyunIImport?.addMediaClip(
             AliyunImageClip.Builder()
                 .source(filePath)
+                .duration(10)
                 .build()
         )
         mProjectConfigure = mAliyunIImport?.generateProjectConfigure()

@@ -10,6 +10,7 @@ export type Props = {
   captureButtonImage: any,
 }
 type State = {
+  audioSilence: boolean;
   colorFilterPosition: number;
   colorFilterList: any[];
 };
@@ -21,6 +22,7 @@ export default class Editor extends Component<Props, State> {
   constructor(props) {
     super(props)
     this.state = {
+      audioSilence: false,
       colorFilterPosition: 0,
       colorFilterList: [],
     }
@@ -50,6 +52,15 @@ export default class Editor extends Component<Props, State> {
   };
 
 
+  setAudioSilence = async () => {
+    let audioSilence = !this.state.audioSilence;
+    console.log("静音", audioSilence);
+    this.setState({
+      audioSilence: audioSilence,
+    });
+  };
+
+
   onExportVideo = async () => {
     let videoPath = await RNEditorKitModule.exportVideo(findNodeHandle(this.nativeRef.current));
     console.log("exportVideo", videoPath);
@@ -58,12 +69,7 @@ export default class Editor extends Component<Props, State> {
 
   onExportImage = async () => {
     let imagePath = await RNEditorKitModule.exportImage(findNodeHandle(this.nativeRef.current));
-    console.log("exportImage", videoPath);
-  };
-
-  onColorFilter = async () => {
-    let videoPath = await RNEditorKitModule.setColorFilter(0, findNodeHandle(this.nativeRef.current));
-    console.log("onColorFilter", videoPath);
+    console.log("exportImage", imagePath);
   };
 
 
@@ -96,8 +102,9 @@ export default class Editor extends Component<Props, State> {
         <NativeEditor
           ref={this.nativeRef}
           style={{ minWidth: 100, minHeight: 100 }}
-          videoPath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media//paiya-record.mp4"
-        // imagePath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media//1634025894098-photo.jpg"
+          audioSilence={this.state.audioSilence}
+          videoPath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record.mp4"
+        // imagePath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634036310274-photo.jpg"
         />
         <View style={styles.captureButtonContainer}>
           <TouchableOpacity onPress={() => this.getColorFilterList()}>
@@ -109,11 +116,20 @@ export default class Editor extends Component<Props, State> {
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
           </TouchableOpacity>
         </View>
-        {/* <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.corpVideoFrame()}>
+       
+        <View style={styles.captureButtonContainer}>
+          <TouchableOpacity onPress={() => this.setAudioSilence()}>
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
           </TouchableOpacity>
-        </View> */}
+        </View>
+
+        <View style={styles.captureButtonContainer}>
+          <TouchableOpacity onPress={() => this.onExportVideo()}>
+            <Image source={this.props.captureButtonImage} resizeMode='contain' />
+          </TouchableOpacity>
+        </View>
+
+
       </View>
     );
   }
