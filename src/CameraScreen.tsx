@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
-
+import EventBus from './EventBus';
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
 const FLASH_MODE_OFF = 'off';
@@ -73,17 +73,36 @@ class PasterItem extends React.Component<PasterItemProps> {
   };
 
   render() {
-    const { item,index } = this.props;
+    const { item, index } = this.props;
     return (
       <View style={styles.item}>
         <TouchableOpacity onPress={this.applyPaster}>
-        {/* todo:  */}
           <Image style={{ width: 80, height: 80 }} source={{ uri: item.icon }} />
         </TouchableOpacity>
       </View>
     );
   }
 }
+
+const CameraScreeCount = () => {
+  const [duration, setDuration] = React.useState(0.00);
+
+  React.useEffect(() => {
+    const callback = (e) => {
+      setDuration(e);
+    };
+    EventBus.addListener('record_duration', callback);
+    return () => {
+      EventBus.remove('record_duration', callback);
+    };
+  }, []);
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ color: 'red', fontSize: 30 }}>{duration}</Text>
+    </View>
+  );
+};
 
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
@@ -128,6 +147,7 @@ export default class CameraScreen extends Component<Props, State> {
       cameraType: CameraType.Front,
       pasterList: [],
       facePasterInfo: {},
+      videoRecording: false,
     };
   }
   componentDidMount() {
@@ -210,9 +230,9 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-  _onRecordingDuration(event) {
-    console.log('duration: ', event.duration);
-  }
+  _onRecordingDuration = (event) => {
+    EventBus.emit('record_duration', parseFloat(event.duration).toFixed(2));
+  };
 
   renderCamera() {
     return (
@@ -410,13 +430,14 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   async onRecordVideoPressed() {
+    console.log('---- onRecordVideoPressed: ', this.state.videoRecording);
     if (this.state.videoRecording) {
-      this.setState({ videoRecording: false });
       const path = await this.camera.stopRecording();
-      console.log('video saved to ', path);
+      console.log('---- stopRecording video saved to ', path);
+      this.setState({ videoRecording: false });
     } else {
       const success = await this.camera.startRecording();
-      console.log('---- success: ', success);
+      console.log('---- startRecording success: ', success);
       this.setState({ videoRecording: success });
     }
   }
@@ -434,6 +455,7 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
+        <CameraScreeCount />
         {this.renderPasterButtons()}
         {this.renderBottomButtons()}
       </View>
