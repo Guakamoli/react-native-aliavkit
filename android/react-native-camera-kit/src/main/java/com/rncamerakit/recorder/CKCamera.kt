@@ -1,4 +1,4 @@
-package com.rncamerakit
+package com.rncamerakit.recorder
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,7 +15,7 @@ import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.uimanager.ThemedReactContext
-import com.rncamerakit.recorder.RecorderManage
+import com.rncamerakit.recorder.manager.RecorderManage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver

@@ -1,11 +1,9 @@
-package com.rncamerakit
+package com.rncamerakit.editor
 
-import com.aliyun.svideo.base.Constants
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
-import com.rncamerakit.recorder.RecorderManage
-import java.io.File
+import com.rncamerakit.recorder.manager.RecorderManage
 
 class CKPlayerManager : SimpleViewManager<CKPlayer>() {
 

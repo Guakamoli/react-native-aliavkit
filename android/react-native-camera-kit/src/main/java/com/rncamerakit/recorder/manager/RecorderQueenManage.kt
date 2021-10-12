@@ -1,4 +1,4 @@
-package com.rncamerakit.recorder
+package com.rncamerakit.recorder.manager
 
 import android.hardware.Camera
 import com.aliyun.svideo.base.widget.beauty.BeautyConstants

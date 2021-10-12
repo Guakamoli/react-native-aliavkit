@@ -1,15 +1,12 @@
-package com.rncamerakit.crop
+package com.rncamerakit.editor.manager
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
-import android.media.MediaMetadataRetriever
-import android.os.Build
 import android.text.TextUtils
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
@@ -26,7 +23,6 @@ import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReadableMap
 import com.google.gson.GsonBuilder
-import com.manwei.libs.utils.GsonManage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
