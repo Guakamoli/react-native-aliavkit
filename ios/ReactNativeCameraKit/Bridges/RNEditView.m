@@ -235,15 +235,19 @@ AliyunIExporterCallback
 {
     if (_videoPath != videoPath) {
         _videoPath = videoPath;
-        NSLog(@"------videoPath：%@",videoPath);
+        
         if (videoPath && ![videoPath isEqualToString:@""]) {
+            if ([videoPath containsString:@"file://"]) { //in case path contains scheme
+                _videoPath = [NSURL URLWithString:videoPath].path;
+            }
             [self initEditorSDK];
         } else {
-//            test only
+            //**For test only**
 //            NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
 //            _videoPath = videoSavePath;
 //            [self initEditorSDK];
         }
+        NSLog(@"------videoPath：%@",_videoPath);
     }
 }
 
