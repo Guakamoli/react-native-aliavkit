@@ -65,22 +65,23 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
                 3
             }
         }
-        view.recorderManage?.setBeautyLevel(beautyLevel)
+        view.mRecorderManage?.setBeautyLevel(beautyLevel)
     }
 
     @ReactProp(name = "cameraType")
     fun setCameraType(view: CKCamera, type: String?) {
-        view.recorderManage?.setCameraType(type)
+        view.mRecorderManage?.setCameraType(type)
     }
 
     @ReactProp(name = "flashMode")
     fun setFlashMode(view: CKCamera, mode: String?) {
-        view.recorderManage?.setLight(mode)
+        view.mRecorderManage?.setLight(mode)
+        view.mRecorderManage?.setEffectPaster()
     }
 
     @ReactProp(name = "torchMode")
     fun setTorchMode(view: CKCamera, mode: String?) {
-        view.recorderManage?.setTorchMode(mode)
+        view.mRecorderManage?.setTorchMode(mode)
     }
 
     @ReactProp(name = "focusMode")
@@ -122,4 +123,5 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     fun setShutterAnimationDuration(view: CKCamera, duration: Int) {
 //        view.setShutterAnimationDuration(duration)
     }
+
 }
