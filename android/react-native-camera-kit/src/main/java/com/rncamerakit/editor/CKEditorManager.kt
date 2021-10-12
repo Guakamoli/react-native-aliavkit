@@ -27,5 +27,11 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             view.importImage(imagePath)
         }
     }
+    @ReactProp(name = "audioSilence")
+    fun setAudioSilence(view: CKEditor, audioSilence: Boolean?) {
+        view.reactContext.runOnUiQueueThread {
+            view.setAudioSilence(audioSilence)
+        }
+    }
 
 }
