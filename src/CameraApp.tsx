@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Alert } from 'react-native';
-import CameraScreen from '../../src/CameraScreen';
-import PostUpload from '../../src/PostUpload'
+import CameraScreen from './CameraScreen';
+import PostUpload from './PostUpload'
+import StoryEditor from './StoryEditor'
 export default class CameraScreenExample extends Component {
   onBottomButtonPressed(event) {
     const captureImages = JSON.stringify(event.captureImages);
@@ -23,7 +24,7 @@ export default class CameraScreenExample extends Component {
           console.log(12313);
         }}
         // 拿到上传数据
-        getUploadFile={(data) => { console.log('getUploadFilesss-----------', data); }}
+        getUploadFile={(data) => { console.log('getUploadFile-----------', data); }}
         // 1
         cameraFlipImage={require('../images/cameraFlipIcon.png')}
         captureButtonImage={require('../images/cameraButton.png')}

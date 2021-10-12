@@ -292,6 +292,14 @@ export default class CameraScreen extends Component<Props, State> {
     }
     return (
       <>
+       <Toast
+          ref={this.myRef}
+          position="top"
+          positionValue={300}
+          fadeInDuration={1050}
+          fadeOutDuration={800}
+          opacity={0.8}
+        />
         {this.postFileUploadHead()}
         <View style={[{ height: 291, backgroundColor: '#000', }, Platform.OS === 'android' ? { paddingBottom: 10 } : { paddingBottom: 35 }]}>
           <FlatGrid
