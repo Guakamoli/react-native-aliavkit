@@ -105,14 +105,14 @@ AliyunIExporterCallback
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor blackColor];
-        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-        self.videoPath = videoSavePath;
-        [self initBaseData];
-        [self addSubview:self.preview];
-        [self initSDKAbout];
-        
-        [self.editor startEdit];
-        [self play];
+//        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+//        self.videoPath = videoSavePath;
+//        [self initBaseData];
+//        [self addSubview:self.preview];
+//        [self initSDKAbout];
+//
+//        [self.editor startEdit];
+//        [self play];
     }
     return self;
 }
@@ -236,7 +236,25 @@ AliyunIExporterCallback
     if (_videoPath != videoPath) {
         _videoPath = videoPath;
         NSLog(@"------videoPath：%@",videoPath);
+        if (videoPath && ![videoPath isEqualToString:@""]) {
+            [self initEditorSDK];
+        } else {
+//            test only
+//            NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+//            _videoPath = videoSavePath;
+//            [self initEditorSDK];
+        }
     }
+}
+
+- (void)initEditorSDK
+{
+    [self initBaseData];
+    [self addSubview:self.preview];
+    [self initSDKAbout];
+    
+    [self.editor startEdit];
+    [self play];
 }
 
 - (void)setOnExportVideo:(RCTBubblingEventBlock)onExportVideo
