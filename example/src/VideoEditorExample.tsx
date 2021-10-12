@@ -11,6 +11,7 @@ export default class VideoEditorExample extends Component {
       filterName: '原片',
       startExportVideo: false,
       thumbnails: [],
+      videoMute: false,
     };
     this.onExportVideo = this.onExportVideo.bind(this);
 
@@ -69,6 +70,7 @@ export default class VideoEditorExample extends Component {
           style={styles.editContainer}
           filterName={this.state.filterName}
           videoPath={this.state.videoPath}
+          videoMute={this.state.videoMute}
           saveToPhotoLibrary={true}
           startExportVideo={this.state.startExportVideo}
           onExportVideo={this.onExportVideo}
@@ -80,17 +82,17 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('原片')}>
               <Text>原片</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('灰白')}>
-              <Text>灰白</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('柔柔')}>
               <Text>柔柔</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('波普')}>
               <Text>波普</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('胶片')}>
-              <Text>胶片</Text>
+            <TouchableOpacity
+              style={styles.buttonItem}
+              onPress={() => this.setState({ videoMute: !this.state.videoMute })}
+            >
+              <Text style={{ color : 'orange' }}>🔇静音</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.getThumbnails()}>
               <Text>抽帧</Text>

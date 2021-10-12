@@ -22,6 +22,7 @@ import Toast, { DURATION } from 'react-native-easy-toast'
 
 
 const { width, height } = Dimensions.get('window');
+const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
 export enum CameraType {
   Front = 'front',
@@ -99,7 +100,7 @@ export default class StoryEditor extends Component<Props, State> {
   }
   componentDidMount() {
     this.getFilters()
-    console.log(123131);
+    // console.log(123131);
       console.log('-------this.props.filePaht',this.props.filePaht);
       
   }
@@ -109,7 +110,7 @@ export default class StoryEditor extends Component<Props, State> {
     const { captureImages } = this.state
     const {filePaht}  = this.props
     return (
-      <SafeAreaView style={styles.BottomBox}>
+      <View style={styles.BottomBox}>
         <>
           {/*  作品快拍 切换*/}
           
@@ -140,7 +141,7 @@ export default class StoryEditor extends Component<Props, State> {
               </View>
             </TouchableOpacity>
         </>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -152,8 +153,8 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
       // 'volume':
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
-      // 'tailor': 
-      { 'img': this.props.tailorImage, 'onPress': () => { } },
+      // // 'tailor': 
+      // { 'img': this.props.tailorImage, 'onPress': () => { } },
       // 'git':
       { 'img': this.props.musicRevampImage, 'onPress': () => { } },
       // 'Aa': 
@@ -175,9 +176,9 @@ export default class StoryEditor extends Component<Props, State> {
         {/* 编辑按钮组 */}
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
           {
-            imglist.map(item => {
+            imglist.map((item,index) => {
               return (
-                <TouchableOpacity onPress={item.onPress} >
+                <TouchableOpacity onPress={item.onPress} key={index}>
                   <Image
                     style={styles.updateTopIcon}
                     source={item.img}
@@ -207,20 +208,23 @@ export default class StoryEditor extends Component<Props, State> {
     }
     const  VideoEditors =()=>{
       return (
-        <VideoEditor
+      <View style={{height:'100%',backgroundColor:'#fff',borderRadius:20}}>
+    <VideoEditor
         ref={(edit) => (this.editor = edit)}
-        style={{ flex: 1, justifyContent: 'flex-end'}}
+        style={{height:CameraHeight,justifyContent:'flex-end' }}
         filterName={this.state.filterName}
         videoPath={this.props.filePaht}
         saveToPhotoLibrary={true}
         startExportVideo={false}
+        videoMute={this.state.mute}
         onExportVideo={onExportVideo}
       />
+   </View>
       )
     }
     return (
       <View style={[styles.cameraContainer]}>
-          <TouchableOpacity style={{ flex: 1, justifyContent: 'flex-end', position: "relative", borderRadius: 20 }}
+          <TouchableOpacity style={{ flex: 1, justifyContent:'flex-end', position: "relative" }}
             onPress={() => {
               this.setState({ showFilterLens: false,})
               // !this.state.showFilterLens 
@@ -228,9 +232,10 @@ export default class StoryEditor extends Component<Props, State> {
             activeOpacity={1}
             disabled={this.state.showBeautify}
           >
-             {this.renderUpdateTop() }
-            { VideoEditors()}
+             { VideoEditors()}
+          {this.renderUpdateTop() }
           </TouchableOpacity>
+           
       </View>
     );
   }
@@ -308,11 +313,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ position: 'relative', }}>
-          {/* 拍摄按钮 */}
-         
-        </View>
-        <View style={{ height: 100, backgroundColor: "#000", }}>
+        <View style={{ height: 125, backgroundColor: "#000", justifyContent:'center',alignContent:'center'}}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -367,6 +368,7 @@ const styles = StyleSheet.create(
         },
         default: {
           flex: 1,
+          // height:400,
           flexDirection: 'column',
         },
       }),
@@ -430,7 +432,7 @@ const styles = StyleSheet.create(
     UpdateBox: {
       position: 'absolute',
       zIndex: 99,
-      top: 20,
+      top: 40,
     },
     updateTopIcon: {
       width: 40,

@@ -56,6 +56,9 @@ AliyunIExporterCallback
 @property (nonatomic) BOOL startExportVideo;
 @property (nonatomic) BOOL saveToPhotoLibrary;
 @property (nonatomic, strong) AliAssetImageGenerator *generator;
+
+@property (nonatomic) BOOL videoMute;
+
 @end
 
 @implementation RNEditView
@@ -265,6 +268,13 @@ AliyunIExporterCallback
 {
     if (_saveToPhotoLibrary != saveToPhotoLibrary) {
         _saveToPhotoLibrary = saveToPhotoLibrary;
+    }
+}
+
+- (void)setVideoMute:(BOOL)videoMute {
+    if (_videoMute != videoMute) {
+        _videoMute = videoMute;
+        [self.editor setMute:videoMute];
     }
 }
 

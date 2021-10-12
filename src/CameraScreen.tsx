@@ -21,6 +21,8 @@ import Toast, { DURATION } from 'react-native-easy-toast'
 import CameraRoll from "@react-native-community/cameraroll";
 import PostUpload from './PostUpload' 
 import  StoryEditor from './StoryEditor'
+import EventBus from './EventBus';
+
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
 const FLASH_MODE_OFF = 'off';
@@ -396,10 +398,9 @@ export default class CameraScreen extends Component<Props, State> {
   //   )
   // }
 
-  // 拍摄进度
-  _onRecordingDuration(event) {
-    // console.log('duration: ', event.duration);
-  }
+  _onRecordingDuration = (event) => {
+    // EventBus.emit('record_duration', parseFloat(event.duration).toFixed(2));
+  };
 
   // 拍摄内容渲染
   renderCamera() {
@@ -585,7 +586,7 @@ export default class CameraScreen extends Component<Props, State> {
 
               <TouchableOpacity
                 style={{ width: 64, height: 64, borderRadius: 64, }}
-                delayLongPress={3000}
+                delayLongPress={1000}
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
                 onLongPress={async () => {
@@ -954,7 +955,7 @@ export default class CameraScreen extends Component<Props, State> {
                 {Platform.OS === 'android' && this.renderCamera()}
                 {Platform.OS !== 'android' && this.renderCamera()}
                 {Platform.OS === 'android' && <View style={styles.gap} />}
-              {this.renderBottom()}
+                {this.renderBottom()}
                 </>
               }
             </>
@@ -1078,7 +1079,7 @@ const styles = StyleSheet.create(
     },
     closeBox: {
       position: 'absolute',
-      top: 20,
+      top: 50,
       left: 20,
       zIndex: 99
     },
