@@ -221,6 +221,9 @@ export default class CameraScreen extends Component<Props, State> {
 
     });
   }
+  componentWillUnmount() {
+    this.setState = ()=>false;
+}
   // ？？？？ 
   isCaptureRetakeMode() {
     return !!(this.props.allowCaptureRetake && !_.isUndefined(this.state.imageCaptured));
@@ -508,13 +511,10 @@ export default class CameraScreen extends Component<Props, State> {
   }
   //  拍摄按钮
   renderCaptureButton() {
-    const { fadeInOpacity, ShootSuccess } = this.state
-    if (ShootSuccess) {
-      return null;
-    }
-    const { pasterList } = this.state;
+    const { fadeInOpacity, ShootSuccess ,pasterList} = this.state
     const getPasterData = async () => {
       const pasters = await this.camera.getPasterInfos();
+      console.log('--------pasters',pasters)
       this.setState({
         pasterList: pasters,
         facePasterInfo: pasters[0]
@@ -522,6 +522,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (pasterList.length < 1) {
       getPasterData()
+      return null;
     }
     return (
       this.props.captureButtonImage &&
@@ -964,7 +965,7 @@ export default class CameraScreen extends Component<Props, State> {
                 <PostUpload
               // 退出操作
                 goback={() => {
-                  console.log(12313);
+                  this.props.goback()
                 }}
               //   // 拿到上传数据
                 getUploadFile={(data) => { this.sendUploadFile(data) }}
@@ -973,6 +974,7 @@ export default class CameraScreen extends Component<Props, State> {
                 postCameraImage={this.props.postCameraImage}
                 captureButtonImage={this.props.captureButtonImage}
                 changeSizeImage={this.props.changeSizeImage}
+                closeImage={this.props.closeImage}
                 cameraModule={true}
               />
               </>
