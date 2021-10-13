@@ -1,6 +1,7 @@
 package com.rncamerakit.editor.manager
 
 import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.DateTimeUtils
 import com.aliyun.svideo.common.utils.FileUtils
@@ -20,6 +21,7 @@ import com.rncamerakit.RNEventEmitter
 import java.io.FileOutputStream
 import java.io.IOException
 
+
 class ComposeManager(private val mContext: ThemedReactContext) {
 
     private var mVodCompose: AliyunIVodCompose? = null
@@ -28,7 +30,6 @@ class ComposeManager(private val mContext: ThemedReactContext) {
     init {
         mVodCompose = AliyunComposeFactory.createAliyunVodCompose();
         mVodCompose?.init(mContext.applicationContext)
-
     }
 
     private fun getCoverImager(promise: Promise?) {

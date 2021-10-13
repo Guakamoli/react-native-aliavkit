@@ -28,6 +28,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
     }
 
     private fun getVideoParam(isVideo:Boolean): AliyunVideoParam {
+        if(isVideo){
             return  AliyunVideoParam.Builder()
                 .bitrate(10 * 1000)
                 .frameRate(30)
@@ -40,6 +41,19 @@ class ImportManager(val reactContext: ThemedReactContext) {
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
+        }else{
+            return  AliyunVideoParam.Builder()
+                .frameRate(10)
+                .gop(5)
+                .crf(1)
+                .scaleRate(1.0f)
+                .outputWidth(720)
+                .outputHeight(1280)
+                .videoQuality(VideoQuality.SSD)
+                .scaleMode(VideoDisplayMode.FILL)
+                .videoCodec(VideoCodecs.H264_SOFT_OPENH264)
+                .build()
+        }
     }
 
 

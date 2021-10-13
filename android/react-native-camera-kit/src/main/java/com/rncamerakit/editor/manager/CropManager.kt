@@ -255,7 +255,6 @@ class CropManager {
 
             val videoFramePaths: MutableList<String?> = ArrayList<String?>()
             Observable.fromIterable(coverTimes).flatMap { longs ->
-                Log.e("BBB", "apply:$longs")
                 Observable.create<String?> { emitter ->
                     thumbnailFetcher.requestThumbnailImage(longArrayOf(longs), object :
                         AliyunIThumbnailFetcher.OnThumbnailCompletion {
@@ -309,11 +308,8 @@ class CropManager {
         ): String? {
             var path =
                 FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
-
             val name = File(videoPath).nameWithoutExtension
-
             path = FileUtils.createFile(path, "VideoFrame-$name-$longTime.jpg").path
-
             var fileOutputStream: FileOutputStream? = null
             try {
                 fileOutputStream = FileOutputStream(path)
@@ -331,7 +327,6 @@ class CropManager {
             }
             return path
         }
-
     }
 
 
