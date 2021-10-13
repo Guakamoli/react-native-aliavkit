@@ -45,12 +45,12 @@ class CropManager {
         /**
          * 图片裁剪
          */
-        fun cropImager(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
+        fun cropImage(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
 
             val context = reactContext?.applicationContext
 
             val imagePath =
-                if (readableMap.hasKey("imagePath")) readableMap.getString("imagePath") else ""
+                if (readableMap.hasKey("filePath")) readableMap.getString("filePath") else ""
             if (TextUtils.isEmpty(imagePath)) {
                 promise.reject("cropImager", "error: imagePath is empty")
                 return
@@ -129,7 +129,7 @@ class CropManager {
             val context = reactContext?.applicationContext
 
             val videoPath =
-                if (readableMap.hasKey("videoPath")) readableMap.getString("videoPath") else ""
+                if (readableMap.hasKey("filePath")) readableMap.getString("filePath") else ""
             if (TextUtils.isEmpty(videoPath)) {
                 promise.reject("cropVideo", "error: videoPath is empty")
                 return
@@ -189,8 +189,9 @@ class CropManager {
             param.outputWidth = outputWidth
             param.outputHeight = outputHeight
 
-            param.startTime = startTime.toLong()
-            param.endTime = endTime.toLong()
+            //startTime 单位：us
+            param.startTime = startTime.toLong()*1000
+            param.endTime = endTime.toLong()*1000
 
             param.quality = VideoQuality.SSD
             param.gop = 15

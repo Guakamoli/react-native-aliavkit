@@ -117,13 +117,49 @@ export default class Editor extends Component<Props, State> {
     }
     let videoTrim = await RNEditorKitModule.videoTrim(trimParam, findNodeHandle(this.nativeRef.current));
     console.log("videoTrim", videoTrim);
-
   };
+
+
+  onCropImage = async ()=>{
+    let cropParam = {
+      'filePath': '/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634097852533-photo.jpg',
+      'outputWidth': 500,
+      'outputHeight': 500,
+      'startX': 0,
+      'startY': 200,
+      'endX': 500,
+      'endY': 700,
+    }
+    let cropImage = await RNEditorKitModule.cropImage(cropParam, findNodeHandle(this.nativeRef.current));
+    console.log("cropImage", cropImage);
+  }
+
+  onCropVideo = async ()=>{
+    let cropParam = {
+      'filePath': '/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record.mp4',
+      'outputWidth': 500,
+      'outputHeight': 500,
+      'startX': 0,
+      'startY': 200,
+      'endX': 500,
+      'endY': 700,
+      'startTime': 2000,
+      'endTime': 9000,
+    }
+    let cropVideo = await RNEditorKitModule.cropVideo(cropParam, findNodeHandle(this.nativeRef.current));
+    console.log("cropVideo", cropVideo);
+  }
+
 
   componentDidMount() {
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
       // console.log("startVideoEditor", duration);
+    });
+
+    //视频裁剪进度
+    this.startVideoCropListener = DeviceEventEmitter.addListener('startVideoCrop', (progress) => {
+      console.log("startVideoCrop", progress);
     });
 
     //导出视频 合成回调
@@ -136,6 +172,9 @@ export default class Editor extends Component<Props, State> {
     RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
+    }
+    if (this.startVideoCropListener != null) {
+      this.startVideoCropListener.remove();
     }
     if (this.startVideoComposeListener != null) {
       this.startVideoComposeListener.remove();
@@ -177,7 +216,7 @@ export default class Editor extends Component<Props, State> {
 
 
         <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.onVideoCover()}>
+          <TouchableOpacity onPress={() => this.onCropVideo()}>
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
           </TouchableOpacity>
         </View>
