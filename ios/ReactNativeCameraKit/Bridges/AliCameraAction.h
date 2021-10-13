@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-@class AliyunMediaConfig;
+@class AVEngineConfig;
 @class AliyunPasterInfo;
 
 typedef void(^VideoRecordStartBlk_t)(CGFloat duration);
@@ -15,7 +15,8 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 @interface AliCameraAction : NSObject
 
-@property (nonatomic, strong) AliyunMediaConfig *mediaConfig;
+
+@property (nonatomic, strong) AVEngineConfig *recordConfig;
 
 @property (nonatomic, strong, readonly) UIView *cameraPreview;
 

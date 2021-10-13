@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { Alert } from 'react-native';
 import CameraScreen from '../../src/CameraScreen';
 
+
+
+
 export default class CameraScreenExample extends Component {
   onBottomButtonPressed(event) {
     const captureImages = JSON.stringify(event.captureImages);

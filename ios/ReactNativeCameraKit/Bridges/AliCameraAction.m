@@ -23,11 +23,8 @@
 #import "AlivcRecordFocusView.h"
 #import "AliyunPasterInfo.h"
 #import "AliyunDownloadManager.h"
-
-#define IS_IPHONEX (([[UIScreen mainScreen] bounds].size.height<812)?NO:YES)
-#define NoStatusBarSafeTop (IS_IPHONEX ? 44 : 0)
-#define ScreenWidth  [UIScreen mainScreen].bounds.size.width
-#define ScreenHeight  [UIScreen mainScreen].bounds.size.height
+#import "ShortCut.h"
+#import "MediaConfigConverter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -91,45 +88,30 @@ static AliCameraAction *_instance = nil;
         NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
         _videoSavePath = videoSavePath;
         
-        _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
+        AliyunMediaConfig *mc = self.recordConfig.mediaConfig;
+        _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:mc.outputSize];
         _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
         _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK only support YUV
-        _recorder.useFaceDetect = YES;
-        _recorder.faceDetectCount = 2;
-        _recorder.faceDectectSync = NO;
+        _recorder.useFaceDetect = self.recordConfig.useFaceDetect;
+        _recorder.faceDetectCount = self.recordConfig.faceDetectCount;
+        _recorder.faceDectectSync = self.recordConfig.faceDectectSync;
         _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
-        _recorder.encodeMode = (self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) ? 0 : 1;
-        _recorder.GOP = self.mediaConfig.gop;
-        _recorder.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
-        _recorder.bitrate = 15*1000*1000; // 15Mbps
+//        _recorder.encodeMode = (mc.encodeMode == AliyunEncodeModeSoftFFmpeg) ? 0 : 1;
+        _recorder.GOP = mc.gop;
+        _recorder.videoQuality = (AliyunVideoQuality)mc.videoQuality;
+        _recorder.bitrate = self.recordConfig.bitrate; // 15Mbps
         _recorder.encodeMode = 1; // Force hardware encoding
-        _recorder.recordFps = self.mediaConfig.fps;
-        _recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
-        self.mediaConfig.outputPath = _recorder.outputPath;
+        _recorder.recordFps = mc.fps;
+        _recorder.outputPath = mc.outputPath ? mc.outputPath : videoSavePath;
+        mc.outputPath = _recorder.outputPath;
         _recorder.taskPath = taskPath;
-        _recorder.beautifyStatus = YES;
-        _recorder.videoFlipH = self.mediaConfig.videoFlipH;
-        _recorder.frontCameraSupportVideoZoomFactor = YES;
-        [self recorder:_recorder setMaxDuration:self.mediaConfig.maxDuration];
-        [self recorder:_recorder setMinDuration:self.mediaConfig.minDuration];
+        _recorder.beautifyStatus = self.recordConfig.beautifyStatus;
+        _recorder.videoFlipH = mc.videoFlipH;
+        _recorder.frontCameraSupportVideoZoomFactor = self.recordConfig.frontCameraSupportVideoZoomFactor;
+        [self recorder:_recorder setMaxDuration:mc.maxDuration];
+        [self recorder:_recorder setMinDuration:mc.minDuration];
     }
     return _recorder;
-}
-
-- (AliyunMediaConfig *)mediaConfig
-{
-    if (!_mediaConfig) {
-        _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 2.0f;
-        _mediaConfig.maxDuration = 15.f;
-        _mediaConfig.gop = 30;
-        _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
-        _mediaConfig.videoOnly = YES;
-        _mediaConfig.backgroundColor = [UIColor blackColor];
-        _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
-        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
-    }
-    return _mediaConfig;
 }
 
 #pragma mark - focus and scale
@@ -327,13 +309,13 @@ static AliCameraAction *_instance = nil;
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
-            NSLog(@"------download progress: %lf",pgs);
+            DLog(@"download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;
         task.completionHandler = ^(NSString *path, NSError *err) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (err) {
-                    NSLog(@"---- download paster error:%@",err.localizedDescription);
+                    DLog(@" download paster error:%@",err.localizedDescription);
                 }else{
                     [weakSelf addPasterInfo:pasterInfo path:path];
                 }
@@ -347,7 +329,7 @@ static AliCameraAction *_instance = nil;
 - (void)addPasterInfo:(AliyunPasterInfo *)info path:(NSString *)path
 {
     if(self.recorder.isRecording){
-        NSLog(@"----- ⚠️ recorder is recording, cant't add ⚠️");
+        DLog(@"- ⚠️ recorder is recording, cant't add ⚠️");
         return;
     }
     
@@ -366,7 +348,7 @@ static AliCameraAction *_instance = nil;
 {
     if (_previousEffectPaster) {
         [self.recorder deletePaster:_previousEffectPaster];
-        NSLog(@"----- delete previous paster：%@\n",_previousEffectPaster.path);
+        DLog(@"- delete previous paster：%@\n",_previousEffectPaster.path);
         
         _previousEffectPaster = nil;
     }
@@ -376,7 +358,7 @@ static AliCameraAction *_instance = nil;
 /// record progress
 - (void)recorderVideoDuration:(CGFloat)duration
 {
-    //    NSLog(@"----- recording：%f",duration);
+    //    DLog(@"- recording：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
@@ -385,42 +367,42 @@ static AliCameraAction *_instance = nil;
 /// recording stopped
 - (void)recorderDidStopRecording
 {
-    NSLog(@"---- recording stopped ");
+    DLog(@" recording stopped ");
     [self _recorderFinishRecording];
 }
 
 /// multi-part video finish record
 - (void)recorderDidFinishRecording
 {
-    NSLog(@"----✅ finish all record ✅");
+    DLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
 }
 
 - (void)_recorderFinishRecording
 {
     [self.recorder finishRecording];  //will call `recorderDidFinishRecording`
-    NSString *outputPath = self.mediaConfig.outputPath;
-    //    NSLog(@"---- outputPath: %@",outputPath);
+    NSString *outputPath = self.recordConfig.mediaConfig.outputPath;
+    //    DLog(@" outputPath: %@",outputPath);
     [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
 }
 ///while recording time up to limit
 - (void)recorderDidStopWithMaxDuration
 {
-    NSLog(@" recording time up to limit");
+    DLog(@" recording time up to limit");
     [self _recorderFinishRecording];
     
 }
 
 - (void)recorderDidStartPreview
 {
-    NSLog(@"--------recorderDidStartPreview");
+    DLog(@"recorderDidStartPreview");
 }
 
 /// recorder error
 - (void)recoderError:(NSError *)error
 {
-    NSLog(@"recoderError%@",error);
+    DLog(@"recoderError%@",error);
 }
 
 - (void)destroyRender
@@ -447,7 +429,7 @@ static AliCameraAction *_instance = nil;
     CGFloat cutCheek = .0f;
     
     return [[BeautyEngineManager shareManager] customRenderWithBuffer:sampleBuffer
-                                                               rotate:self.mediaConfig.videoRotate
+                                                               rotate:self.recordConfig.mediaConfig.videoRotate
                                                           skinBuffing:beautyBuffing
                                                         skinWhitening:beautyWhite
                                                               sharpen:beautySharpen
@@ -465,11 +447,12 @@ static AliCameraAction *_instance = nil;
 ///calculate preview frame
 - (CGRect)previewFrame
 {
-    CGFloat ratio = self.mediaConfig.outputSize.width / self.mediaConfig.outputSize.height;
-    CGRect finalFrame = CGRectMake(0, NoStatusBarSafeTop+44+10, ScreenWidth, ScreenWidth /ratio);
-    if ([self.mediaConfig mediaRatio] == AliyunMediaRatio9To16){
+    CGFloat ratio = self.recordConfig.mediaConfig.outputSize.width / self.recordConfig.mediaConfig.outputSize.height;
+    CGRect finalFrame = CGRectMake(0, kStatusBarHeight+44+10, ScreenWidth, ScreenWidth /ratio);
+    if ([self.recordConfig.mediaConfig mediaRatio] == AliyunMediaRatio9To16){
         finalFrame =CGRectMake((ScreenWidth - ScreenHeight * ratio)/2.f , 0, ScreenHeight * ratio, ScreenHeight);
     }
+    DLog(@"%@",NSStringFromCGRect(finalFrame));
     return finalFrame;
 }
 

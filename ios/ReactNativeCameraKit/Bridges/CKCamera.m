@@ -18,6 +18,7 @@
 #import "AliCameraAction.h"
 #import "CKCameraManager.h"
 #import "AliyunPasterInfo.h"
+#import "MediaConfigConverter.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -79,14 +80,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 // camera options
 @property (nonatomic) AVCaptureDevicePosition cameraType;
 @property (nonatomic) AVCaptureFlashMode flashMode;
-@property (nonatomic) AVCaptureTorchMode torchMode;
+//@property (nonatomic) AVCaptureTorchMode torchMode;
 @property (nonatomic) CKCameraFocusMode focusMode;
 @property (nonatomic) CKCameraZoomMode zoomMode;
 @property (nonatomic, strong) NSString* ratioOverlay;
 @property (nonatomic, strong) UIColor *ratioOverlayColor;
 @property (nonatomic, strong) RCTDirectEventBlock onOrientationChange;
-
-//@property (nonatomic) BOOL isAddedOberver;
 
 @property (nonatomic, strong) AliCameraAction *cameraAction;
 
@@ -94,6 +93,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
+
+@property (nonatomic, strong) NSDictionary *recordConfig;
 
 @end
 
@@ -128,7 +129,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (instancetype)init
 {
     if (self = [super init]) {
-        [self.cameraAction startFrontPreview];
+        
     }
     return self;
 }
@@ -137,6 +138,20 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super layoutSubviews];
     [self addSubview:self.cameraAction.cameraPreview];
+}
+
+#pragma mark - Setter
+
+- (void)setRecordConfig:(NSDictionary *)recordConfig
+{
+    if (_recordConfig != recordConfig) {
+        _recordConfig = recordConfig;
+        if (recordConfig && ![recordConfig isEqual:@{}]) {
+            AVEngineConfig *config = [MediaConfigConverter convertToConfig:recordConfig];
+            self.cameraAction.recordConfig = config;
+            [self.cameraAction startFrontPreview];
+        }
+    }
 }
 
 - (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
@@ -151,6 +166,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     if (_cameraType != cameraType) {
         _cameraType = cameraType;
+        
         [self changeCamera:cameraType];
     }
 }
@@ -170,38 +186,44 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)setFlashMode:(AVCaptureFlashMode)flashMode {
     if (flashMode != _flashMode) {
         _flashMode = flashMode;
-        if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
-            [self.cameraAction switchFlashMode:flashMode];
-        }
+//        if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
+//            [self.cameraAction switchFlashMode:flashMode];
+//        }
     }
 }
 
--(void)setTorchMode:(AVCaptureTorchMode)torchMode {
-    _torchMode = torchMode;
-    if (self.videoDeviceInput && [self.videoDeviceInput.device isTorchModeSupported:torchMode] && self.videoDeviceInput.device.hasTorch) {
-        NSError* err = nil;
-        if ( [self.videoDeviceInput.device lockForConfiguration:&err] ) {
-            [self.videoDeviceInput.device setTorchMode:torchMode];
-            [self.videoDeviceInput.device unlockForConfiguration];
-        }
-    }
-}
+//-(void)setTorchMode:(AVCaptureTorchMode)torchMode {
+//    _torchMode = torchMode;
+//    if (self.videoDeviceInput && [self.videoDeviceInput.device isTorchModeSupported:torchMode] && self.videoDeviceInput.device.hasTorch) {
+//        NSError* err = nil;
+//        if ( [self.videoDeviceInput.device lockForConfiguration:&err] ) {
+//            [self.videoDeviceInput.device setTorchMode:torchMode];
+//            [self.videoDeviceInput.device unlockForConfiguration];
+//        }
+//    }
+//}
 
 - (void)setFocusMode:(CKCameraFocusMode)focusMode {
-    _focusMode = focusMode;
-    if (self.focusMode == CKCameraFocusModeOn) {
-        [self.cameraAction addFocusGesture];
-    } else {
-        [self.cameraAction removeFocusGesture];
+    if (_focusMode != focusMode) {
+        _focusMode = focusMode;
+        if (self.focusMode == CKCameraFocusModeOn) {
+            [self.cameraAction addFocusGesture];
+        } else {
+            [self.cameraAction removeFocusGesture];
+        }
     }
 }
 
 - (void)setZoomMode:(CKCameraZoomMode)zoomMode {
-    _zoomMode = zoomMode;
-    if (zoomMode == CKCameraZoomModeOn) {
-        [self.cameraAction addZoomGesture];
-    } else {
-        [self.cameraAction removeZoomGesture];
+    if (_zoomMode != zoomMode) {
+        _zoomMode = zoomMode;
+        if (zoomMode == CKCameraZoomModeOn) {
+            self.cameraAction.recordConfig.frontCameraSupportVideoZoomFactor = YES;
+            [self.cameraAction addZoomGesture];
+        } else {
+            self.cameraAction.recordConfig.frontCameraSupportVideoZoomFactor = NO;
+            [self.cameraAction removeZoomGesture];
+        }        
     }
 }
 

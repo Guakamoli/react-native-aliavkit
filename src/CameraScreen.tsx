@@ -39,6 +39,7 @@ export type Props = {
   torchOnImage: any;
   torchOffImage: any;
   onBottomButtonPressed: (any) => void;
+  
 };
 
 type State = {
@@ -54,6 +55,7 @@ type State = {
   videoRecording: boolean;
   pasterList: any[];
   facePasterInfo: any;
+  recordConfig: any;
 };
 
 type PasterItemProps = {
@@ -104,6 +106,26 @@ const CameraScreeCount = () => {
   );
 };
 
+const recordConfig = {
+  minDuration: 2.0,
+  maxDuration: 15.0,
+  gop: 30,
+  bitrate: '1M',
+  cutMode: 0,
+  videoOnly: true,
+  backgroundColor: '#000000',
+  videoQuality: 'High',
+  fps: 30,
+  videoCodec: 'h264',
+  videoRotate: 0,
+  deleteVideoClipOnExit: true,
+  mediaRatio: '9To16',
+  resolution: {
+    width: 1080,
+    height: 1280,
+  },
+};
+
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
@@ -148,6 +170,7 @@ export default class CameraScreen extends Component<Props, State> {
       pasterList: [],
       facePasterInfo: {},
       videoRecording: false,
+      recordConfig: recordConfig,
     };
   }
   componentDidMount() {
@@ -243,6 +266,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Camera
             ref={(cam) => (this.camera = cam)}
             style={{ flex: 1, justifyContent: 'flex-end' }}
+            recordConfig={this.state.recordConfig}
             cameraType={this.state.cameraType}
             flashMode={this.state.flashData.mode}
             torchMode={this.state.torchMode ? 'on' : 'off'}

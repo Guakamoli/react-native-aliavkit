@@ -25,7 +25,7 @@
 #import <Photos/Photos.h>
 #import "AliAssetImageGenerator.h"
 #import "AliyunTimelineMediaInfo.h"
-
+#import "ShortCut.h"
 
 @interface RNEditView()<
 AliyunIPlayerCallback,
@@ -105,16 +105,18 @@ AliyunIExporterCallback
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor blackColor];
-//        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-//        self.videoPath = videoSavePath;
-//        [self initBaseData];
-//        [self addSubview:self.preview];
-//        [self initSDKAbout];
-//
-//        [self.editor startEdit];
-//        [self play];
     }
     return self;
+}
+
+- (void)initEditorSDK
+{
+    [self initBaseData];
+    [self addSubview:self.preview];
+    [self initSDKAbout];
+    
+    [self.editor startEdit];
+    [self play];
 }
 
 ///设置初始值
@@ -170,7 +172,7 @@ AliyunIExporterCallback
     AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:_videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-//    NSLog(@"----------clip.duration:%f",clip.duration);
+//    DLog(@"clip.duration:%f",clip.duration);
     self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 }
 
@@ -227,9 +229,11 @@ AliyunIExporterCallback
     
     int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
     if (result != 0) {
-        NSLog(@"合成失败");
+        DLog(@"合成失败");
     }
 }
+
+#pragma mark - Setter
 
 - (void)setVideoPath:(NSString *)videoPath
 {
@@ -247,18 +251,8 @@ AliyunIExporterCallback
 //            _videoPath = videoSavePath;
 //            [self initEditorSDK];
         }
-        NSLog(@"------videoPath：%@",_videoPath);
+        DLog(@"videoPath：%@",_videoPath);
     }
-}
-
-- (void)initEditorSDK
-{
-    [self initBaseData];
-    [self addSubview:self.preview];
-    [self initSDKAbout];
-    
-    [self.editor startEdit];
-    [self play];
 }
 
 - (void)setOnExportVideo:(RCTBubblingEventBlock)onExportVideo
@@ -325,20 +319,20 @@ AliyunIExporterCallback
         } completionHandler:^(BOOL success, NSError * _Nullable error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (success) {
-                    NSLog(@"保存视频成功!");
+                    DLog(@"保存视频成功!");
                 } else {
-                    NSLog(@"保存视频失败:%@", error);
+                    DLog(@"保存视频失败:%@", error);
                 }
             });
         }];
     }];
 }
 
-#pragma mark - AliyunIPlayerCallback --播放器回调
+#pragma mark - AliyunIPlayerCallback 播放器回调
 ///播放结束
 - (void)playerDidEnd
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    DLog(@"- %s",__PRETTY_FUNCTION__);
     [self replay];
 }
 
@@ -367,7 +361,7 @@ AliyunIExporterCallback
 
 - (void)playError:(int)errorCode
 {
-    NSLog(@"--- %s:  %d",__PRETTY_FUNCTION__,errorCode);
+    DLog(@"- %s:  %d",__PRETTY_FUNCTION__,errorCode);
 }
 
 #pragma mark - AliyunIRenderCallback
@@ -430,16 +424,16 @@ AliyunIExporterCallback
 - (void)play
 {
     if (self.player.isPlaying) {
-        NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用play");
+        DLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用play");
     } else {
         int returnValue = [self.player play];
-        NSLog(@"短视频编辑播放器测试:调用了play接口");
+        DLog(@"短视频编辑播放器测试:调用了play接口");
         if (returnValue == 0) {
-            NSLog(@"短视频编辑播放器测试:play返回0成功");
+            DLog(@"短视频编辑播放器测试:play返回0成功");
         } else {
             switch (returnValue) {
                 case ALIVC_COMMON_INVALID_STATE: //-4
-                    NSLog(@"------播放失败： 状态错误");
+                    DLog(@"播放失败： 状态错误");
                     break;
                 default:
                     break;
@@ -453,16 +447,16 @@ AliyunIExporterCallback
 - (void)resume
 {
     if (self.player.isPlaying) {
-        NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用resume");
+        DLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用resume");
     } else {
         int returnValue = [self.player resume];
-        NSLog(@"短视频编辑播放器测试:调用了resume接口");
+        DLog(@"短视频编辑播放器测试:调用了resume接口");
         if (returnValue == 0) {
             //            [self forceFinishLastEditPasterView];
-            NSLog(@"短视频编辑播放器测试:resume返回0成功");
+            DLog(@"短视频编辑播放器测试:resume返回0成功");
         } else {
             [self.player play];
-            NSLog(@"短视频编辑播放器测试:！！！！继续播放错误,错误码:%d",returnValue);
+            DLog(@"短视频编辑播放器测试:！！！！继续播放错误,错误码:%d",returnValue);
         }
     }
     [self updateUIAndDataWhenPlayStatusChanged];
@@ -480,14 +474,14 @@ AliyunIExporterCallback
 {
     if (self.player.isPlaying) {
         int returnValue = [self.player pause];
-        NSLog(@"短视频编辑播放器测试:调用了pause接口");
+        DLog(@"短视频编辑播放器测试:调用了pause接口");
         if (returnValue == 0) {
-            NSLog(@"短视频编辑播放器测试:pause返回0成功");
+            DLog(@"短视频编辑播放器测试:pause返回0成功");
         } else {
-            NSLog(@"短视频编辑播放器测试:！！！！暂停错误,错误码:%d", returnValue);
+            DLog(@"短视频编辑播放器测试:！！！！暂停错误,错误码:%d", returnValue);
         }
     } else {
-        NSLog(@"短视频编辑播放器测试:当前播放器不是播放状态,不调用pause");
+        DLog(@"短视频编辑播放器测试:当前播放器不是播放状态,不调用pause");
     }
     [self updateUIAndDataWhenPlayStatusChanged];
 }
@@ -551,7 +545,7 @@ static NSString * ThumnailDirectory() {
         [timeValues addObject:@(time)];
         idx++;
     }
-    NSLog(@"-------: %d -- %lu",idx, (unsigned long)[timeValues count]);
+    DLog(@"-: %d  %lu",idx, (unsigned long)[timeValues count]);
     self.generator.imageCount = [timeValues count];
     self.generator.outputSize = CGSizeMake(200, 200);
     self.generator.timePerImage = singleTime;
@@ -583,7 +577,7 @@ static NSString * ThumnailDirectory() {
     NSString *imageName = [NSString stringWithFormat:@"%03d.png", ++i];
     NSString *imgPath = [fileDirectoryPath stringByAppendingPathComponent:imageName];
     BOOL suc = [imgData writeToFile:imgPath atomically:YES];
-    NSLog(@"-------writeToFile :%@", suc == 1 ? @"YES" : @"NO");
+    DLog(@"-writeToFile :%@", suc == 1 ? @"YES" : @"NO");
     return imgPath;
 }
 
@@ -597,7 +591,7 @@ static NSString * ThumnailDirectory() {
         NSString *filePath = [NSString stringWithFormat:@"%@/%@", folderPath, fileName];
         isExist = [fm fileExistsAtPath:filePath isDirectory:&isDir];
         if (!isDir && isExist) {
-            NSLog(@"-------isExist :%@", isExist == 1 ? @"YES" : @"NO");
+            DLog(@"-isExist :%@", isExist == 1 ? @"YES" : @"NO");
             [fm removeItemAtPath:filePath error:nil];
         }
     }

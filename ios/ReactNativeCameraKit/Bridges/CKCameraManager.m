@@ -20,9 +20,10 @@ RCT_EXPORT_MODULE()
     return self.camera;
 }
 
+RCT_EXPORT_VIEW_PROPERTY(recordConfig, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(cameraType, CKCameraType)
 RCT_EXPORT_VIEW_PROPERTY(flashMode, CKCameraFlashMode)
-RCT_EXPORT_VIEW_PROPERTY(torchMode, CKCameraTorchMode)
+
 RCT_EXPORT_VIEW_PROPERTY(focusMode, CKCameraFocusMode)
 RCT_EXPORT_VIEW_PROPERTY(zoomMode, CKCameraZoomMode)
 RCT_EXPORT_VIEW_PROPERTY(ratioOverlay, NSString)
@@ -37,7 +38,6 @@ RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 
 
 /// 0 10 20 30 40 50, default 30
