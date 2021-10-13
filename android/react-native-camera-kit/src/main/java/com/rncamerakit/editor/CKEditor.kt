@@ -1,9 +1,9 @@
 package com.rncamerakit.editor
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
-import android.text.TextUtils
 import android.view.Gravity
 import android.view.SurfaceView
 import android.view.View
@@ -12,24 +12,24 @@ import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
+import com.aliyun.svideo.editor.view.EditorVideHelper
 import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.editor.AliyunIEditor
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
-import com.rncamerakit.editor.manager.CKPlayCallBack
-import com.rncamerakit.editor.manager.ColorFilterManager
-import com.rncamerakit.editor.manager.ComposeManager
-import com.rncamerakit.editor.manager.ImportManager
+import com.rncamerakit.editor.manager.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
+@SuppressLint("ViewConstructor")
 class CKEditor(val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver,
@@ -52,7 +52,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private var mVideoContainer: FrameLayout? = null
     private var mSurfaceView: SurfaceView? = null
 
-    private var mProjectConfigure: String? = null
+    private lateinit var mProjectConfigure: String
 
     //视频导入
     private var mImportManager: ImportManager? = null
@@ -123,7 +123,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.setFillBackgroundColor(Color.BLACK)
         if (ret != AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS) {
             FixedToastUtils.show(
-                mContext, mContext.resources.getString(R.string.alivc_editor_edit_tip_init_failed)+", $ret"
+                mContext,
+                mContext.resources.getString(R.string.alivc_editor_edit_tip_init_failed) + ", $ret"
             )
             return
         }
@@ -146,32 +147,27 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导入图片
      */
     fun importImage(filePath: String?) {
-        mProjectConfigure = mImportManager?.importImage(filePath)
-        if (mProjectConfigure != null) {
-            initEditor(Uri.fromFile(File(mProjectConfigure)), false)
-        }
+        mProjectConfigure = mImportManager?.importImage(filePath).toString()
+        initEditor(Uri.fromFile(File(mProjectConfigure)), false)
     }
 
     /**
      * 导入视频
      */
     fun importVideo(filePath: String?) {
-        mProjectConfigure = mImportManager?.importVideo(filePath)
-        if (mProjectConfigure != null) {
-            initEditor(Uri.fromFile(File(mProjectConfigure)), true)
-
-        }
+        mProjectConfigure = mImportManager?.importVideo(filePath).toString()
+        initEditor(Uri.fromFile(File(mProjectConfigure)), true)
     }
 
     /**
      * 设置静音
      */
     fun setAudioSilence(isSilence: Boolean?) {
-       if(isSilence == true){
-           mAliyunIEditor?.setVolume(0)
-       }else{
-           mAliyunIEditor?.setVolume(50)
-       }
+        if (isSilence == true) {
+            mAliyunIEditor?.setVolume(0)
+        } else {
+            mAliyunIEditor?.setVolume(50)
+        }
     }
 
     /**
@@ -189,35 +185,106 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 设置滤镜
      */
     fun setColorFilter(filterName: String?) {
-        mColorFilterManager?.setColorFilter(filterName,mAliyunIEditor)
+        mColorFilterManager?.setColorFilter(filterName, mAliyunIEditor)
+    }
+
+    /**
+     * 视频裁剪
+     */
+    fun videoTrim(readableMap: ReadableMap, promise: Promise) {
+        val duration = mAliyunIEditor?.streamDuration
+        val startTime = if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") else 0
+        val endTime = if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") else duration
+        val isApply =
+            if (readableMap.hasKey("isApply")) readableMap.getBoolean("isApply") else false
+        if (endTime != null) {
+            EditorVideHelper.resetVideoTimes(
+                mAliyunIEditor,
+                startTime.toLong(),
+                endTime.toLong(),
+                isApply
+            )
+            promise.resolve(true)
+        }
+    }
+
+    /**
+     * 获取视频封面
+     */
+    fun videoCover(seekTime: Int, promise: Promise) {
+        VideoCoverManager.getVideoCover(mContext, mProjectConfigure, seekTime.toLong(), promise)
     }
 
     /**
      * 导出视频
      */
     fun exportVideo(promise: Promise) {
-        if(mAliyunIEditor?.isPlaying == true){
+        if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
-        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.stop()
         mAliyunIEditor?.saveEffectToLocal()
-        mComposeManager?.startCompose(mProjectConfigure,promise,true)
+        mAliyunIEditor?.applySourceChange()
+        mComposeManager?.startCompose(mProjectConfigure, promise, true)
     }
 
     /**
      * 导出图片
      */
     fun exportImage(promise: Promise) {
-        if(mAliyunIEditor?.isPlaying == true){
+        if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
-        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.stop()
         mAliyunIEditor?.saveEffectToLocal()
-        mComposeManager?.startCompose(mProjectConfigure,promise,false)
+        mAliyunIEditor?.applySourceChange()
+        mComposeManager?.startCompose(mProjectConfigure, promise, false)
     }
 
     /**
-     * 释放
+     * 暂停播放
+     */
+    fun pause(promise: Promise) {
+        mAliyunIEditor?.pause()
+        promise.resolve(true)
+    }
+
+    /**
+     * 停止播放
+     */
+    fun stop(promise: Promise) {
+        mAliyunIEditor?.stop()
+        promise.resolve(true)
+    }
+
+    /**
+     * 重新播放
+     */
+    fun play(promise: Promise) {
+        replay()
+        promise.resolve(true)
+    }
+
+    private fun replay() {
+        if (!mAliyunIEditor?.isPlaying!!) {
+            if (mAliyunIEditor?.isPaused == true) {
+                mAliyunIEditor?.resume()
+            } else {
+                mAliyunIEditor?.play()
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    fun seek(seekTime: Int, promise: Promise) {
+        // time 时间，单位：微秒
+        mAliyunIEditor?.seek(seekTime.toLong() * 1000)
+    }
+
+    /**
+     *
      */
     fun onRelease() {
         mAliyunIEditor?.onDestroy()

@@ -29,23 +29,6 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
 
     private var mActivity: Activity? = null
 
-    //获取美颜等级
-    @ReactMethod
-    fun getBeautyLevel(options: ReadableMap, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        val view = uiManager?.resolveView(viewTag) as CKCamera
-        promise.resolve(view.mRecorderManage?.getBeautyLevel(context))
-    }
-
-    //设置美颜等级
-    @ReactMethod
-    fun setBeautyLevel(beautyLevel: Int, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        val view = uiManager?.resolveView(viewTag) as CKCamera
-        view.mRecorderManage?.setBeautyLevel(beautyLevel)
-    }
 
     //设置滤镜
     @ReactMethod
@@ -100,7 +83,6 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
             view.mRecorderManage?.downloadPaster(null,promise)
         }
     }
-
 
     @ReactMethod
     fun release(viewTag: Int, promise: Promise) {

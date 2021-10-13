@@ -1,6 +1,6 @@
 package com.rncamerakit.editor
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
@@ -39,13 +39,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.util.*
 
-class CKPlayer( val reactContext: ThemedReactContext) :
+@SuppressLint("ViewConstructor")
+class CKPlayer(val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver,
     CKPlayCallBack.Callbacks {
 
     private val mContext: Context = reactContext.applicationContext
-    private val mActivity: Activity? = reactContext.currentActivity
 
     private var mWidth = 0
     private var mHeight = 0
@@ -117,7 +117,7 @@ class CKPlayer( val reactContext: ThemedReactContext) :
     private fun copyAssets() {
         mDisposableObserver = object : DisposableObserver<String>() {
             override fun onNext(s: String) {
-                initColorFilter();
+                initColorFilter()
             }
 
             override fun onError(e: Throwable?) {
@@ -173,7 +173,7 @@ class CKPlayer( val reactContext: ThemedReactContext) :
         }
         val source = Source(mColorFilterList[colorFilterPosition])
         val effect = EffectBean()
-        effect.id = colorFilterPosition;
+        effect.id = colorFilterPosition
         effect.source = source
         if (source.path != null && source.path.contains(File.separator)) {
             val name = source.path.substring(source.path.lastIndexOf(File.separator) + 1)

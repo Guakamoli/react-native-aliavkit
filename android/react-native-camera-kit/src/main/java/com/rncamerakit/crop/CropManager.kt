@@ -1,13 +1,11 @@
-package com.rncamerakit.editor.manager
+package com.rncamerakit.crop
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
 import android.text.TextUtils
 import android.util.Log
-import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
@@ -21,8 +19,12 @@ import com.aliyun.svideosdk.crop.CropParam
 import com.aliyun.svideosdk.crop.impl.AliyunCropCreator
 import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.uimanager.ThemedReactContext
 import com.google.gson.GsonBuilder
+import com.rncamerakit.RNEventEmitter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.annotations.NonNull
 import io.reactivex.rxjava3.core.Observable
@@ -36,16 +38,34 @@ import java.io.IOException
 
 class CropManager {
     companion object {
-        fun cropImager(context: Context?, imagePath: String?, outputWidth: Int, outputHeight: Int) {
-            val tag = "cropImager"
-            BitmapUtils.checkAndAmendImgOrientation(imagePath)
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(imagePath, options)
 
-            val mimeType = options.outMimeType
-            val imageWidth = options.outWidth
-            val imageHeight = options.outHeight
+        private const val TAG = "CropManager"
+
+
+        /**
+         * 图片裁剪
+         */
+        fun cropImager(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
+
+            val context = reactContext?.applicationContext
+
+            val imagePath =
+                if (readableMap.hasKey("imagePath")) readableMap.getString("imagePath") else ""
+            if (TextUtils.isEmpty(imagePath)) {
+                promise.reject("cropImager", "error: imagePath is empty")
+                return
+            }
+            BitmapUtils.checkAndAmendImgOrientation(imagePath)
+
+            val outputWidth =
+                if (readableMap.hasKey("outputWidth")) readableMap.getInt("outputWidth") else 720
+            val outputHeight =
+                if (readableMap.hasKey("outputHeight")) readableMap.getInt("outputHeight") else 1280
+
+            val startX = if (readableMap.hasKey("startX")) readableMap.getInt("startX") else 0
+            val startY = if (readableMap.hasKey("startY")) readableMap.getInt("startY") else 0
+            val endX = if (readableMap.hasKey("endX")) readableMap.getInt("endX") else outputWidth
+            val endY = if (readableMap.hasKey("endY")) readableMap.getInt("endY") else outputHeight
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
 
@@ -63,15 +83,7 @@ class CropManager {
             param.outputPath = outputPath
 
             //裁剪矩阵
-            val startCropPosX = 0
-            val startCropPoxY = 0
-            val cropRect = Rect(
-                startCropPosX,
-                startCropPoxY,
-                imageWidth,
-                imageWidth
-            )
-            param.cropRect = cropRect
+            param.cropRect = Rect(startX, startY, endX, endY)
 
             param.outputWidth = outputWidth
             param.outputHeight = outputHeight
@@ -85,20 +97,23 @@ class CropManager {
 
             aliyunCrop.setCropCallback(object : CropCallback {
                 override fun onProgress(progress: Int) {
-                    Log.e(tag, "progress：$progress")
+                    Log.e(TAG, "progress：$progress")
+                    RNEventEmitter.startVideoCrop(reactContext, progress)
                 }
 
                 override fun onError(code: Int) {
-                    Log.e(tag, "onError：$code")
+                    Log.e(TAG, "onError：$code")
+                    promise.reject("cropImager", "onError:$code")
                 }
 
                 override fun onComplete(duration: Long) {
-                    Log.e(tag, "onComplete：$duration; $outputPath")
+                    Log.e(TAG, "onComplete：$duration; $outputPath")
                     aliyunCrop.dispose()
+                    promise.resolve(outputPath)
                 }
 
                 override fun onCancelComplete() {
-                    Log.e(tag, "onCancelComplete")
+                    Log.e(TAG, "onCancelComplete")
                     aliyunCrop.dispose()
                 }
             })
@@ -106,32 +121,54 @@ class CropManager {
         }
 
 
-        fun cropVideo(
-            context: Context,
-            videoPath: String?,
-        ) {
-            val tag = "cropVideo"
+        /**
+         * 视频裁剪
+         */
+        fun cropVideo(reactContext: ReactContext, readableMap: ReadableMap, promise: Promise) {
 
-            val aliyunCrop = AliyunCropCreator.createCropInstance(context)
+            val context = reactContext?.applicationContext
 
-            var mVideoWidth = 0
-            var frameHeight = 0
-            var duration: Long = 0
+            val videoPath =
+                if (readableMap.hasKey("videoPath")) readableMap.getString("videoPath") else ""
+            if (TextUtils.isEmpty(videoPath)) {
+                promise.reject("cropVideo", "error: videoPath is empty")
+                return
+            }
+
+            var mVideoWidth = 720
+            var mVideoHeight = 1280
             try {
                 val nativeParser = NativeParser()
                 nativeParser.init(videoPath)
                 try {
                     mVideoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
-                    frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
+                    mVideoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
                 nativeParser.release()
                 nativeParser.dispose()
-                duration = aliyunCrop.getVideoDuration(videoPath)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+
+            val outputWidth =
+                if (readableMap.hasKey("outputWidth")) readableMap.getInt("outputWidth") else mVideoWidth
+            val outputHeight =
+                if (readableMap.hasKey("outputHeight")) readableMap.getInt("outputHeight") else mVideoHeight
+
+            val startX = if (readableMap.hasKey("startX")) readableMap.getInt("startX") else 0
+            val startY = if (readableMap.hasKey("startY")) readableMap.getInt("startY") else 0
+
+            val endX = if (readableMap.hasKey("endX")) readableMap.getInt("endX") else outputWidth
+            val endY = if (readableMap.hasKey("endY")) readableMap.getInt("endY") else outputHeight
+
+            val aliyunCrop = AliyunCropCreator.createCropInstance(context)
+            val duration = aliyunCrop.getVideoDuration(videoPath)
+
+            val startTime = if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") else 0
+            val endTime =
+                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") else duration
 
             val file = File(videoPath)
             val fileName = "crop_" + file.name
@@ -147,15 +184,16 @@ class CropManager {
             param.inputPath = videoPath
             param.outputPath = outputPath
 
-            param.cropRect = Rect(0, 0, mVideoWidth, mVideoWidth)
-            param.outputWidth = 720
-            param.outputHeight = 720
+            //裁剪矩阵
+            param.cropRect = Rect(startX, startY, endX, endY)
+            param.outputWidth = outputWidth
+            param.outputHeight = outputHeight
 
-            param.startTime = 1000
-            param.endTime = duration - param.startTime
+            param.startTime = startTime.toLong()
+            param.endTime = endTime.toLong()
 
             param.quality = VideoQuality.SSD
-            param.gop = 5
+            param.gop = 15
             param.frameRate = 30
             param.crf = 23
             //视频编码方式
@@ -166,20 +204,23 @@ class CropManager {
             aliyunCrop.setCropParam(param)
             aliyunCrop.setCropCallback(object : CropCallback {
                 override fun onProgress(progress: Int) {
-                    Log.e(tag, "progress：$progress")
+                    Log.e(TAG, "progress：$progress")
+                    RNEventEmitter.startVideoCrop(reactContext, progress)
                 }
 
                 override fun onError(code: Int) {
-                    Log.e(tag, "onError：$code")
+                    Log.e(TAG, "onError：$code")
+                    promise.reject("cropVideo", "onError:$code")
                 }
 
                 override fun onComplete(duration: Long) {
-                    Log.e(tag, "onComplete：$duration; $outputPath")
+                    Log.e(TAG, "onComplete：$duration; $outputPath")
                     aliyunCrop.dispose()
+                    promise.resolve(videoPath)
                 }
 
                 override fun onCancelComplete() {
-                    Log.e(tag, "onCancelComplete")
+                    Log.e(TAG, "onCancelComplete")
                     aliyunCrop.dispose()
                 }
             })
@@ -194,8 +235,8 @@ class CropManager {
         fun corpVideoFrame(context: Context, options: ReadableMap, promise: Promise) {
             val videoPath =
                 if (options.hasKey("videoPath")) options.getString("videoPath")
-//                else null
-                else Constants.SDCardConstants.getDir(context.applicationContext) + File.separator + "paiya-record.mp4"
+                else null
+//                else Constants.SDCardConstants.getDir(context.applicationContext) + File.separator + "paiya-record.mp4"
             if (TextUtils.isEmpty(videoPath)) {
                 promise.reject("corpVideoFrame", "error: videoPath is empty")
                 return
@@ -260,7 +301,14 @@ class CropManager {
                         AliyunIThumbnailFetcher.OnThumbnailCompletion {
                         override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
                             if (bitmap != null && !bitmap.isRecycled) {
-                                val videoFramePath = saveBitmap(context, videoPath, bitmap, longs)
+                                var videoFramePath =
+                                    FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
+                                val name = File(videoPath).nameWithoutExtension
+                                videoFramePath = FileUtils.createFile(
+                                    videoFramePath,
+                                    "VideoFrame-$name-$longTime.jpg"
+                                ).path
+                                BitmapUtils.saveBitmap(bitmap, videoFramePath)
                                 if (!TextUtils.isEmpty(videoFramePath)) {
                                     emitter!!.onNext(videoFramePath)
                                     emitter.onComplete()
@@ -299,34 +347,6 @@ class CropManager {
                 })
         }
 
-
-        private fun saveBitmap(
-            context: Context,
-            videoPath: String?,
-            bitmap: Bitmap,
-            longTime: Long
-        ): String? {
-            var path =
-                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
-            val name = File(videoPath).nameWithoutExtension
-            path = FileUtils.createFile(path, "VideoFrame-$name-$longTime.jpg").path
-            var fileOutputStream: FileOutputStream? = null
-            try {
-                fileOutputStream = FileOutputStream(path)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream)
-            } catch (e: java.lang.Exception) {
-                return ""
-            } finally {
-                if (fileOutputStream != null) {
-                    try {
-                        fileOutputStream.close()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-            return path
-        }
     }
 
 

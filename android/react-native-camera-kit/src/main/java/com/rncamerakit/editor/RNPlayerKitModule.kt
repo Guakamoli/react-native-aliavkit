@@ -2,7 +2,7 @@ package com.rncamerakit.editor
 
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
-import com.rncamerakit.editor.manager.CropManager
+import com.rncamerakit.crop.CropManager
 
 class RNPlayerKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -43,16 +43,6 @@ class RNPlayerKitModule(private val reactContext: ReactApplicationContext) :
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKPlayer
             view.exportImage(promise)
-        }
-    }
-
-    @ReactMethod
-    fun corpVideoFrame(options: ReadableMap,viewTag: Int, promise: Promise) {
-        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKPlayer
-            CropManager.corpVideoFrame(context,options,promise)
         }
     }
 

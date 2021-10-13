@@ -52,6 +52,7 @@ export default class Editor extends Component<Props, State> {
   };
 
 
+  //设置静音
   setAudioSilence = async () => {
     let audioSilence = !this.state.audioSilence;
     console.log("静音", audioSilence);
@@ -61,18 +62,63 @@ export default class Editor extends Component<Props, State> {
   };
 
 
+  //完成导出视频，返回视频地址
   onExportVideo = async () => {
     let videoPath = await RNEditorKitModule.exportVideo(findNodeHandle(this.nativeRef.current));
     console.log("exportVideo", videoPath);
   };
 
 
+  //完成导出图片，返回导出的图片地址
   onExportImage = async () => {
     let imagePath = await RNEditorKitModule.exportImage(findNodeHandle(this.nativeRef.current));
     console.log("exportImage", imagePath);
   };
 
 
+  //播放、继续播放
+  onPlay = async () => {
+    let play = await RNEditorKitModule.play(findNodeHandle(this.nativeRef.current));
+    console.log("replay", play);
+  };
+
+
+  //暂停播放
+  onPause = async () => {
+    let pause = await RNEditorKitModule.pause(findNodeHandle(this.nativeRef.current));
+    console.log("onPause", pause);
+  }
+
+  //停止播放
+  onStop = async () => {
+    let stop = await RNEditorKitModule.stop(findNodeHandle(this.nativeRef.current));
+    console.log("onStop", stop);
+  };
+
+  //定位播放
+  onSeek = async () => {
+    // * seek到某个时间点   @param time 时间，单位：毫秒
+    let seek = await RNEditorKitModule.seek(2000,findNodeHandle(this.nativeRef.current));
+    console.log("onSeek", seek);
+  };
+
+  //获取视频封面
+  onVideoCover = async () => {
+    let videoCover = await RNEditorKitModule.videoCover(2000,findNodeHandle(this.nativeRef.current));
+    console.log("onVideoCover", videoCover);
+  }
+
+
+  //视频裁剪，时间裁剪，传入开始结束时间,成功后会播放裁剪后的视频
+  videoTrim = async () => {
+    let trimParam = {
+      'startTime': 3000,
+      'endTime': 8000,
+    }
+    let videoTrim = await RNEditorKitModule.videoTrim(trimParam, findNodeHandle(this.nativeRef.current));
+    console.log("videoTrim", videoTrim);
+
+  };
 
   componentDidMount() {
     //播放回调
@@ -80,7 +126,7 @@ export default class Editor extends Component<Props, State> {
       // console.log("startVideoEditor", duration);
     });
 
-    //合成回调
+    //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (progress) => {
       console.log("startVideoCompose", progress);
     });
@@ -104,7 +150,7 @@ export default class Editor extends Component<Props, State> {
           style={{ minWidth: 100, minHeight: 100 }}
           audioSilence={this.state.audioSilence}
           videoPath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record.mp4"
-        // imagePath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634036310274-photo.jpg"
+        // imagePath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634097852533-photo.jpg"
         />
         <View style={styles.captureButtonContainer}>
           <TouchableOpacity onPress={() => this.getColorFilterList()}>
@@ -116,7 +162,7 @@ export default class Editor extends Component<Props, State> {
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
           </TouchableOpacity>
         </View>
-       
+
         <View style={styles.captureButtonContainer}>
           <TouchableOpacity onPress={() => this.setAudioSilence()}>
             <Image source={this.props.captureButtonImage} resizeMode='contain' />
@@ -129,6 +175,12 @@ export default class Editor extends Component<Props, State> {
           </TouchableOpacity>
         </View>
 
+
+        <View style={styles.captureButtonContainer}>
+          <TouchableOpacity onPress={() => this.onVideoCover()}>
+            <Image source={this.props.captureButtonImage} resizeMode='contain' />
+          </TouchableOpacity>
+        </View>
 
       </View>
     );

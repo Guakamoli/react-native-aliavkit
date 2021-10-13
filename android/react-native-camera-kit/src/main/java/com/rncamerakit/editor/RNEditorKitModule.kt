@@ -2,7 +2,6 @@ package com.rncamerakit.editor
 
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
-import com.rncamerakit.editor.manager.CropManager
 
 class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -33,6 +32,70 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    @ReactMethod
+    fun videoTrim(options: ReadableMap, viewTag: Int, promise: Promise){
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.videoTrim(options,promise)
+        }
+    }
+
+    @ReactMethod
+    fun pause(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.pause(promise)
+        }
+    }
+
+    @ReactMethod
+    fun stop(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.stop(promise)
+        }
+    }
+
+
+    @ReactMethod
+    fun play(viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.play(promise)
+        }
+    }
+
+
+    @ReactMethod
+    fun seek(seekTime:Int, viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.seek(seekTime,promise)
+        }
+    }
+
+
+    @ReactMethod
+    fun videoCover(seekTime:Int, viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKEditor
+            view.videoCover(seekTime,promise)
+        }
+    }
+
+
 
     @ReactMethod
     fun exportVideo(viewTag: Int, promise: Promise) {
@@ -43,7 +106,6 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
             view.exportVideo(promise)
         }
     }
-
 
     @ReactMethod
     fun exportImage(viewTag: Int, promise: Promise) {
