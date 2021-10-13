@@ -335,12 +335,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 
                 if (localIdentifier) {
                     imageInfoDict[@"id"] = localIdentifier;
+                    [[NSUserDefaults standardUserDefaults] setObject:localIdentifier forKey:@"localIdentifier"];
                 }
                 
                 // 'ph://' is a rnc/cameraroll URL scheme for loading PHAssets by localIdentifier
                 // which are loaded via RNCAssetsLibraryRequestHandler module that conforms to RCTURLRequestHandler
                 if (self.saveToCameraRollWithPhUrl) {
-                    imageInfoDict[@"uri"] = [NSString stringWithFormat:@"ph://%@", localIdentifier];
+                    NSString *photoURI = [NSString stringWithFormat:@"ph://%@", localIdentifier];
+                    imageInfoDict[@"uri"] = photoURI;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         onSuccess(imageInfoDict);
                     });

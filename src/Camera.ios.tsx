@@ -44,8 +44,9 @@ const Camera = React.forwardRef((props, ref) => {
 });
 
 Camera.defaultProps = {
-  normalBeautyLevel: 30, 
+  normalBeautyLevel: 30,
   saveToCameraRoll: true,
+  saveToCameraRollWithPhUrl: true,
 };
 
 export default Camera;

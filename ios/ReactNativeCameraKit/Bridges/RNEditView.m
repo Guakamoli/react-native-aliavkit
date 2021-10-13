@@ -25,7 +25,9 @@
 #import <Photos/Photos.h>
 #import "AliAssetImageGenerator.h"
 #import "AliyunTimelineMediaInfo.h"
-
+#import "AliyunCompositionInfo.h"
+#import "AliyunAlbumModel.h"
+#import "AliyunPhotoLibraryManager.h"
 
 @interface RNEditView()<
 AliyunIPlayerCallback,
@@ -58,7 +60,8 @@ AliyunIExporterCallback
 @property (nonatomic, strong) AliAssetImageGenerator *generator;
 
 @property (nonatomic) BOOL videoMute;
-
+@property (nonatomic, strong) NSString *imagePath;
+@property (nonatomic, strong) AliyunCompositionInfo *compositionInfo;
 @end
 
 @implementation RNEditView
@@ -105,16 +108,43 @@ AliyunIExporterCallback
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor blackColor];
-//        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-//        self.videoPath = videoSavePath;
-//        [self initBaseData];
-//        [self addSubview:self.preview];
-//        [self initSDKAbout];
-//
-//        [self.editor startEdit];
-//        [self play];
+        self.imagePath = @"";
     }
     return self;
+}
+
+- (void)_setPhotoPath:(AliyunCompositionInfo *)info
+{
+    NSString *editDir = [AliyunPathManager compositionRootDir];
+    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    
+    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:self.mediaConfig.outputSize];
+    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:info.sourcePath duration:info.duration animDuration:0];
+    [importor addMediaClip:clip];
+    
+    // set video param
+    AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
+    param.fps = self.mediaConfig.fps;
+    param.gop = self.mediaConfig.gop;
+    param.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
+    if (self.mediaConfig.cutMode == AliyunMediaCutModeScaleAspectCut) {
+        param.scaleMode = AliyunScaleModeFit;
+    }else{
+        param.scaleMode = AliyunScaleModeFill;
+    }
+    // 编码模式
+    if (self.mediaConfig.encodeMode ==  AliyunEncodeModeHardH264) {
+        param.codecType = AliyunVideoCodecHardware;
+    }else if(self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) {
+        param.codecType = AliyunVideoCodecOpenh264;
+    }
+    
+    [importor setVideoParam:param];
+    // generate config
+    [importor generateProjectConfigure];
+    // output path
+    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]]stringByAppendingPathExtension:@"mp4"];
+    self.taskPath = taskPath;
 }
 
 ///设置初始值
@@ -228,6 +258,53 @@ AliyunIExporterCallback
     int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
     if (result != 0) {
         NSLog(@"合成失败");
+    }
+}
+
+- (void)addAsset:(PHAsset *)asset
+{
+    NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset
+                                                          maxSize:self.mediaConfig.outputSize
+                                                       outputPath:tmpPhotoPath
+                                                       completion:^(NSError *error, UIImage * _Nullable result) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            AliyunCompositionInfo *info = [[AliyunCompositionInfo alloc] init];
+            info.phAsset = asset;
+            info.phImage = result;
+            info.thumbnailImage = result;
+            info.duration = 3;//图片默认3秒
+            info.type = AliyunCompositionInfoTypePhoto;
+            info.sourcePath = tmpPhotoPath;
+            [self _setPhotoPath:info];
+        });
+    }];
+}
+
+- (void)setImagePath:(NSString *)imagePath
+{
+    if (_imagePath != imagePath) {
+        _imagePath = imagePath;
+        if (imagePath && ![imagePath isEqualToString:@""]) {
+            if ([imagePath containsString:@"file://"]) { //in case path contains scheme
+                _imagePath = [NSURL URLWithString:imagePath].path;
+            }
+            [self initEditorSDK];
+        } else {
+            //**For test only**
+//            file:///var/mobile/Media/DCIM/100APPLE/IMG_0054.JPG
+            NSString * localIdentifier = [[NSUserDefaults standardUserDefaults] objectForKey:@"localIdentifier"];
+            if (localIdentifier) {
+                PHAsset * asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil].firstObject;
+                
+                [self addAsset:asset];
+            }
+//            _imagePath = photoURI;
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self initEditorSDK];                
+            });
+        }
+        NSLog(@"------videoPath：%@",_imagePath);
     }
 }
 
