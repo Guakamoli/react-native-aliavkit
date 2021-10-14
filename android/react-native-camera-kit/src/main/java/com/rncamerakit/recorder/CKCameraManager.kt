@@ -58,7 +58,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
      */
     @ReactProp(name = "facePasterInfo")
     fun setFacePasterInfo(view: CKCamera, readableMap: ReadableMap?) {
-        if (readableMap != null && (readableMap.hasKey("url") || readableMap.hasKey("path"))) {
+        if (readableMap != null && readableMap.toHashMap().size>0) {
             val previewPaster = PreviewPasterForm()
             previewPaster.icon =
                 if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
