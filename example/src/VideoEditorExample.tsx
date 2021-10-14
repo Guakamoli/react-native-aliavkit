@@ -69,6 +69,7 @@ export default class VideoEditorExample extends Component {
           ref={(edit) => (this.editor = edit)}
           style={styles.editContainer}
           filterName={this.state.filterName}
+          captureButtonImage={require('../images/cameraButton.png')}
           videoPath={this.state.videoPath}
           videoMute={this.state.videoMute}
           saveToPhotoLibrary={true}
