@@ -1,4 +1,4 @@
-package com.rncamerakit
+package com.rncamerakit.recorder
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -8,7 +8,6 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleObserver
-import com.aliyun.svideo.base.widget.ProgressDialog
 import com.aliyun.svideo.common.utils.PermissionUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.common.utils.ThreadUtils
@@ -16,8 +15,7 @@ import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.uimanager.ThemedReactContext
-import com.rncamerakit.recorder.EffectManage
-import com.rncamerakit.recorder.RecorderManage
+import com.rncamerakit.recorder.manager.RecorderManage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -32,7 +30,7 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
     private var mVideoContainer: FrameLayout? = null
-    var recorderManage: RecorderManage? = null
+    var mRecorderManage: RecorderManage? = null
         private set
     private var mRecorder: AlivcIMixRecorderInterface? = null
     private var mDisposableObserver: DisposableObserver<String>? = null
@@ -40,8 +38,8 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     private var mHeight = 0
 
     private fun initRecorder() {
-        recorderManage = RecorderManage(reactContext)
-        mRecorder = recorderManage!!.recorder
+        mRecorderManage = RecorderManage(reactContext)
+        mRecorder = mRecorderManage!!.mRecorder
         mRecorder?.setDisplayView(mRecorderSurfaceView, null)
         mRecorder?.startPreview()
     }
@@ -137,8 +135,8 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     private fun copyAssets() {
         mDisposableObserver = object : DisposableObserver<String>() {
             override fun onNext(s: String) {
-                if (recorderManage != null) {
-                    recorderManage!!.initColorFilterAssets()
+                if (mRecorderManage != null) {
+                    mRecorderManage!!.initColorFilterAssets()
                 }
                 setFaceTrackModePath()
             }
@@ -171,8 +169,8 @@ class CKCamera(private val reactContext: ThemedReactContext) :
             mRecorder!!.release()
             mRecorder = null
         }
-        if (recorderManage != null) {
-            recorderManage!!.onRelease()
+        if (mRecorderManage != null) {
+            mRecorderManage!!.onRelease()
         }
         if (mDisposableObserver != null) {
             mDisposableObserver!!.dispose()
@@ -208,8 +206,6 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         initRecorderSurfaceView()
         initRecorder()
         initFocusView()
-        EffectManage.instance.init(reactContext)
-        EffectManage.instance.initGifEffectList()
         copyAssets()
     }
 }

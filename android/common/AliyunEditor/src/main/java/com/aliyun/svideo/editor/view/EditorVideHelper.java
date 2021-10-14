@@ -1,36 +1,9 @@
 package com.aliyun.svideo.editor.view;
 
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.net.Uri;
-import android.os.Environment;
-import android.os.Handler;
-import android.util.Log;
-import android.widget.Toast;
-
 import com.aliyun.svideosdk.common.AliyunIClipConstructor;
 import com.aliyun.svideosdk.common.struct.common.AliyunClip;
-import com.aliyun.svideosdk.common.struct.common.AliyunImageClip;
 import com.aliyun.svideosdk.common.struct.common.AliyunVideoClip;
-import com.aliyun.svideosdk.common.struct.common.AliyunVideoParam;
 import com.aliyun.svideosdk.editor.AliyunIEditor;
-import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory;
-import com.aliyun.svideosdk.importer.AliyunIImport;
-import com.aliyun.svideosdk.importer.impl.AliyunImportCreator;
-import com.blankj.utilcode.util.FileUtils;
-import com.google.gson.Gson;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -102,7 +75,6 @@ public class EditorVideHelper {
 //            }
 //        }
 
-
         clipConstructor.updateAllClips(clipList);
         aliyunIEditor.saveEffectToLocal();
         aliyunIEditor.applySourceChange();
@@ -151,5 +123,42 @@ public class EditorVideHelper {
 //        }
     }
 
+
+    public static void resetVideoTimes(AliyunIEditor aliyunIEditor, long startTime, long endTime,boolean isApply) {
+        if (aliyunIEditor == null) {
+            return;
+        }
+
+        aliyunIEditor.stop();
+        AliyunIClipConstructor clipConstructor = aliyunIEditor.getSourcePartManager();
+        if (clipConstructor == null) {
+            return;
+        }
+        List<AliyunClip> clipList = clipConstructor.getAllClips();
+
+        for (int i = 0; i < clipList.size(); i++) {
+            AliyunClip clip = clipList.get(i);
+            if (clip instanceof AliyunVideoClip) {
+                AliyunVideoClip videoClip = (AliyunVideoClip) clip;
+                videoClip.setStartTime(startTime);
+                videoClip.setDuration(endTime-startTime);
+                videoClip.setEndTime(endTime);
+                clipConstructor.updateMediaClip(i,videoClip);
+            }
+        }
+
+        aliyunIEditor.saveEffectToLocal();
+        aliyunIEditor.applySourceChange();
+//        if(isApply){
+//            aliyunIEditor.applySourceChange();
+//        }
+        if (!aliyunIEditor.isPlaying()) {
+            if (aliyunIEditor.isPaused()) {
+                aliyunIEditor.resume();
+            } else {
+                aliyunIEditor.play();
+            }
+        }
+    }
 
 }

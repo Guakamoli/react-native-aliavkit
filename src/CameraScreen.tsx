@@ -822,7 +822,7 @@ export default class CameraScreen extends Component<Props, State> {
   // 拍照功能
   async onCaptureImagePressed() {
     const image = await this.camera.capture();
-
+    console.log('capture image path ', image);
     if (this.props.allowCaptureRetake) {
       this.setState({ imageCaptured: image });
     } else {

@@ -27,9 +27,10 @@ const Camera = React.forwardRef((props, ref) => {
 
   React.useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
-      // console.log("duration", duration);
+      console.log("duration",duration);
     });
     return () => {
+      RNCameraKitModule.release(findNodeHandle(nativeRef.current));
       subscription.remove();
     };
   }, []);

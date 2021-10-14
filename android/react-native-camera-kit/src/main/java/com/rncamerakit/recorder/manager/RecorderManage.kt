@@ -1,4 +1,4 @@
-package com.rncamerakit.recorder
+package com.rncamerakit.recorder.manager
 
 import android.content.Context
 import com.aliyun.common.utils.CommonUtil
@@ -9,11 +9,13 @@ import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.util.SharedPreferenceUtils
+import com.aliyun.svideo.recorder.view.effects.EffectBody
 import com.aliyun.svideosdk.common.struct.common.AliyunSnapVideoParam
 import com.aliyun.svideosdk.common.struct.common.VideoQuality
 import com.aliyun.svideosdk.common.struct.effect.EffectFilter
 import com.aliyun.svideosdk.common.struct.effect.EffectPaster
 import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
+import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.aliyun.svideosdk.common.struct.project.Source
 import com.aliyun.svideosdk.common.struct.recorder.CameraParam
 import com.aliyun.svideosdk.common.struct.recorder.CameraType
@@ -22,10 +24,11 @@ import com.aliyun.svideosdk.common.struct.recorder.MediaInfo
 import com.aliyun.svideosdk.recorder.AliyunIClipManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.R
-import com.rncamerakit.crop.CropManager
+import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.recorder.ImplRecordCallback
+import com.rncamerakit.recorder.OnRecorderCallbacks
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -35,19 +38,21 @@ import java.util.*
 
 class RecorderManage(mContext: ThemedReactContext) {
 
-    val recorder: AlivcIMixRecorderInterface?
     var cameraType: CameraType? = null
+    var mRecorder: AlivcIMixRecorderInterface?= null
 
-    private val mClipManager: AliyunIClipManager?
-    private val mRecordCallback: ImplRecordCallback?
-    private val mRecorderQueenManage: RecorderQueenManage?
+    private var mClipManager: AliyunIClipManager? = null
+    private var mRecordCallback: ImplRecordCallback? = null
+    private var mRecorderQueenManage: RecorderQueenManage? = null
+    private var mEffectPasterManage: EffectPasterManage? = null
+
     private var mDisposableObserver: DisposableObserver<List<String>>? = null
     private val mColorFilterList: MutableList<String> = ArrayList()
 
     /**
      * 贴纸
      */
-    private var effectPaster: EffectPaster? = null
+    private var mEffectPaster: EffectPaster? = null
 
     fun initColorFilterAssets() {
         mDisposableObserver = object : DisposableObserver<List<String>>() {
@@ -77,15 +82,15 @@ class RecorderManage(mContext: ThemedReactContext) {
      * 切换摄像头
      */
     fun setCameraType(mode: String?) {
-        if (cameraType != null && recorder != null) {
-            val cameraId = recorder.switchCamera()
+        if (cameraType != null) {
+            val cameraId = mRecorder?.switchCamera()
             for (type in CameraType.values()) {
                 if (type.type == cameraId) {
                     cameraType = type
                 }
             }
             //切换摄像头后重新设置一次闪光灯模式，否则闪光灯无效.使用系统的拍照接口且后置摄像头
-            recorder.setLight(mFlashType)
+            mRecorder?.setLight(mFlashType)
             return
         }
         cameraType = CameraType.FRONT
@@ -108,16 +113,20 @@ class RecorderManage(mContext: ThemedReactContext) {
                 FlashType.AUTO
             }
         }
-        recorder?.setLight(mFlashType)
+        mRecorder?.setLight(mFlashType)
     }
 
     /**
      * 手电筒，仅后置摄像头有效
      */
     fun setTorchMode(mode: String?) {
-        recorder?.setLight(if ("on" == mode) FlashType.TORCH else mFlashType)
+        mRecorder?.setLight(if ("on" == mode) FlashType.TORCH else mFlashType)
     }
 
+
+    companion object{
+        var photoPath:String? = null;
+    }
 
     /**
      * 带特效拍照
@@ -125,6 +134,7 @@ class RecorderManage(mContext: ThemedReactContext) {
     fun takePhoto(context :ReactApplicationContext ,promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
+                Companion.photoPath = photoPath
                 promise.resolve(photoPath)
             }
 
@@ -132,7 +142,7 @@ class RecorderManage(mContext: ThemedReactContext) {
                 promise.reject("takePhoto", "errorCode:$errorCode")
             }
         })
-        recorder?.takePhoto(true)
+        mRecorder?.takePhoto(true)
     }
 
     /**
@@ -151,14 +161,14 @@ class RecorderManage(mContext: ThemedReactContext) {
             return
         }
 
-        if (recorder != null) {
+        if (mRecorder != null) {
             mClipManager?.deleteAllPart()
             mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
                 override fun onProgress(duration: Long) {
-                    reactContext.getJSModule(RCTDeviceEventEmitter::class.java) .emit("video-recording", "" + duration)
+                    RNEventEmitter.startVideoRecord(reactContext,duration)
                 }
             })
-            recorder.startRecording()
+            mRecorder?.startRecording()
             promise.resolve(true)
         } else {
             promise.reject("startRecording", "recorder is null")
@@ -172,11 +182,11 @@ class RecorderManage(mContext: ThemedReactContext) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onComplete(validClip: Boolean, clipDuration: Long) {
                 if (clipDuration < 2000) {
-                    recorder?.cancelRecording()
+                    mRecorder?.cancelRecording()
                     promise.reject("startRecording", "recording duration" + clipDuration + "ms")
                     return
                 }
-                recorder?.finishRecording()
+                mRecorder?.finishRecording()
                 mClipManager?.deleteAllPart()
             }
 
@@ -188,10 +198,14 @@ class RecorderManage(mContext: ThemedReactContext) {
                 promise.reject("startRecording", "errorCode:$errorCode")
             }
         })
-        recorder?.stopRecording()
+        mRecorder?.stopRecording()
     }
 
     private var colorFilterPosition = 0
+
+    /**
+     * 设置颜色滤镜
+     */
     fun setColorFilter() {
         if (mColorFilterList.isEmpty() || colorFilterPosition >= mColorFilterList.size) {
             colorFilterPosition = 0
@@ -199,36 +213,49 @@ class RecorderManage(mContext: ThemedReactContext) {
         }
         val source = Source(mColorFilterList[colorFilterPosition])
         val filterEffect = EffectFilter(source)
-        recorder?.applyFilter(filterEffect)
+        mRecorder?.applyFilter(filterEffect)
         colorFilterPosition++
         if (colorFilterPosition > mColorFilterList.size) {
             colorFilterPosition = 0
         }
     }
 
+
     fun getBeautyLevel(context: Context?): Int {
         return SharedPreferenceUtils.getBeautyFaceLevel(context)
     }
 
+    /**
+     * 设置美颜等级
+     */
     fun setBeautyLevel(level: Int) {
         mRecorderQueenManage?.setBeautyLevel(level)
     }
 
-
-    fun setGifEffect() {
-        EffectManage.instance.setGifEffect(object : EffectManage.OnGifEffectPasterCallback() {
+    /**
+     * 设置贴纸
+     */
+    fun setEffectPaster() {
+        mEffectPasterManage?.setEffectPaster(object : EffectPasterManage.OnGifEffectPasterCallback() {
             override fun onPath(path: String) {
                 super.onPath(path)
-                if (effectPaster != null) {
-                    recorder?.removePaster(effectPaster)
+                if (mEffectPaster != null) {
+                    mRecorder?.removePaster(mEffectPaster)
                 }
                 val source = Source(path)
-                effectPaster = EffectPaster(source)
-                recorder?.addPaster(effectPaster)
+                mEffectPaster = EffectPaster(source)
+                mRecorder?.addPaster(mEffectPaster)
             }
         })
     }
 
+    fun downloadPaster(effectBody: EffectBody<PreviewPasterForm>?,promise: Promise){
+        mEffectPasterManage?.downloadPaster(effectBody,promise)
+    }
+
+    /**
+     *
+     */
     fun onRelease() {
         if (mDisposableObserver != null) {
             mDisposableObserver!!.dispose()
@@ -237,7 +264,7 @@ class RecorderManage(mContext: ThemedReactContext) {
     }
 
     init {
-        recorder = AlivcRecorder(mContext)
+        mRecorder = AlivcRecorder(mContext)
         val mWidth = ScreenUtils.getWidth(mContext)
         val mHeight = mWidth * 16 / 9
         val outputInfo = MediaInfo()
@@ -245,20 +272,23 @@ class RecorderManage(mContext: ThemedReactContext) {
         outputInfo.videoWidth = mWidth
         outputInfo.videoHeight = mHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
-        recorder.setMediaInfo(outputInfo)
-        val videoPath =
-            Constants.SDCardConstants.getDir(mContext.applicationContext) + File.separator + "paiya-record.mp4"
-        recorder.setOutputPath(videoPath)
-        recorder.setVideoQuality(VideoQuality.SSD)
-        recorder.setVideoBitrate(10 * 1000 * 1000)
-        recorder.setGop(30)
-        recorder.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
-        recorder.setCamera(CameraType.FRONT)
-        recorder.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
-        mClipManager = recorder.getClipManager()
+        mRecorder?.setMediaInfo(outputInfo)
+        val videoPath = File( Constants.SDCardConstants.getDir(mContext.applicationContext),"paiya-record.mp4").absolutePath
+        mRecorder?.setOutputPath(videoPath)
+        mRecorder?.setVideoQuality(VideoQuality.SSD)
+        mRecorder?.setVideoBitrate(10 * 1000 * 1000)
+        mRecorder?.setGop(30)
+        mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
+        mRecorder?.setCamera(CameraType.FRONT)
+        mRecorder?.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
+        mClipManager = mRecorder?.getClipManager()
         mRecordCallback = ImplRecordCallback(mContext)
-        recorder.setRecordCallback(mRecordCallback)
-        mRecorderQueenManage = RecorderQueenManage(mContext, recorder, this)
+        mRecorder?.setRecordCallback(mRecordCallback)
+        mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
+
+        mEffectPasterManage = EffectPasterManage(mContext)
+        mEffectPasterManage?.initEffectPasterList()
+
     }
 
 

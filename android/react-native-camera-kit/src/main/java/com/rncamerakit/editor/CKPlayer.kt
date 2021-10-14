@@ -1,6 +1,6 @@
-package com.rncamerakit
+package com.rncamerakit.editor
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
@@ -26,9 +26,12 @@ import com.aliyun.svideosdk.editor.AliyunIEditor
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.aliyun.svideosdk.importer.AliyunIImport
 import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
+import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
-import com.rncamerakit.editor.CKEditorCallBack
-import com.rncamerakit.recorder.RecorderManage
+import com.rncamerakit.R
+import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.editor.manager.CKPlayCallBack
+import com.rncamerakit.editor.manager.ComposeManager
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -36,13 +39,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.util.*
 
-class CKPlayer(private val reactContext: ThemedReactContext) :
+@SuppressLint("ViewConstructor")
+class CKPlayer(val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver,
-    CKEditorCallBack.Callbacks {
+    CKPlayCallBack.Callbacks {
 
     private val mContext: Context = reactContext.applicationContext
-    private val mActivity: Activity? = reactContext.currentActivity
 
     private var mWidth = 0
     private var mHeight = 0
@@ -58,7 +61,6 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
      * 获取编辑的流片段管理，可以实现对流片段的修改，删除，添加，获取操作
      */
     private var mAliyunIClipConstructor: AliyunIClipConstructor? = null
-
     private var mDisposableObserver: DisposableObserver<String>? = null
 
     private var mVideoContainer: FrameLayout? = null
@@ -67,6 +69,10 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
 
 
     private val mColorFilterList: MutableList<String> = ArrayList()
+
+
+    private var mProjectConfigure: String? = null
+    private var mComposeManager: ComposeManager? = null
 
 
     private fun initVideoContainer() {
@@ -80,6 +86,8 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
         mSurfaceView = SurfaceView(mContext)
         val layoutParams = LayoutParams(mWidth, mHeight)
         mVideoContainer!!.addView(mSurfaceView, layoutParams)
+
+
     }
 
     private fun initPasterView() {
@@ -91,7 +99,7 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
     private fun initEditor(uri: Uri, isVideo: Boolean) {
         //设置onTextureRender能够回调
         mAliyunIEditor =
-            AliyunEditorFactory.creatAliyunEditor(uri, CKEditorCallBack(mContext, this, isVideo))
+            AliyunEditorFactory.creatAliyunEditor(uri, CKPlayCallBack(mContext, this, isVideo))
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
@@ -109,7 +117,7 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
     private fun copyAssets() {
         mDisposableObserver = object : DisposableObserver<String>() {
             override fun onNext(s: String) {
-                initColorFilter();
+                initColorFilter()
             }
 
             override fun onError(e: Throwable?) {
@@ -165,7 +173,7 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
         }
         val source = Source(mColorFilterList[colorFilterPosition])
         val effect = EffectBean()
-        effect.id = colorFilterPosition;
+        effect.id = colorFilterPosition
         effect.source = source
         if (source.path != null && source.path.contains(File.separator)) {
             val name = source.path.substring(source.path.lastIndexOf(File.separator) + 1)
@@ -177,6 +185,31 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
         if (colorFilterPosition > mColorFilterList.size) {
             colorFilterPosition = 0
         }
+    }
+
+
+    /**
+     * 导出视频
+     */
+    fun exportVideo(promise: Promise) {
+        if(mAliyunIEditor?.isPlaying == true){
+            mAliyunIEditor?.stop()
+        }
+        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.saveEffectToLocal()
+        mComposeManager?.startCompose(mProjectConfigure,promise,true)
+    }
+
+    /**
+     * 导出图片
+     */
+    fun exportImage(promise: Promise) {
+        if(mAliyunIEditor?.isPlaying == true){
+            mAliyunIEditor?.stop()
+        }
+        mAliyunIEditor?.applySourceChange()
+        mAliyunIEditor?.saveEffectToLocal()
+        mComposeManager?.startCompose(mProjectConfigure,promise,false)
     }
 
 
@@ -198,10 +231,10 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
                 .endTime(duration / 1000)
                 .build()
         )
-        val projectConfigure = mAliyunIImport?.generateProjectConfigure()
+        mProjectConfigure = mAliyunIImport?.generateProjectConfigure()
         mAliyunIImport?.release()
-        if (projectConfigure != null) {
-            initEditor(Uri.fromFile(File(projectConfigure)), true)
+        if (mProjectConfigure != null) {
+            initEditor(Uri.fromFile(File(mProjectConfigure)), true)
             mAliyunIEditor?.play()
         }
     }
@@ -218,10 +251,10 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
                 .duration(1)
                 .build()
         )
-        val projectConfigure = mAliyunIImport?.generateProjectConfigure()
+        mProjectConfigure = mAliyunIImport?.generateProjectConfigure()
         mAliyunIImport?.release()
-        if (projectConfigure != null) {
-            initEditor(Uri.fromFile(File(projectConfigure)), false)
+        if (mProjectConfigure != null) {
+            initEditor(Uri.fromFile(File(mProjectConfigure)), false)
             mAliyunIEditor?.play()
         }
     }
@@ -229,6 +262,8 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
     fun onRelease() {
         mAliyunIEditor?.onDestroy()
         mDisposableObserver?.dispose()
+
+        mComposeManager?.onRelease()
     }
 
 
@@ -239,11 +274,13 @@ class CKPlayer(private val reactContext: ThemedReactContext) :
         initSurfaceView()
         initPasterView()
         mAliyunIImport = AliyunImportCreator.getImportInstance(mContext)
+        mComposeManager = ComposeManager(reactContext)
         copyAssets()
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
         Log.e("AAA", "onPlayProgress：$currentPlayTime")
+        RNEventEmitter.startVideoPlay(reactContext, currentPlayTime)
     }
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
