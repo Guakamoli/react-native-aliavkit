@@ -23,6 +23,9 @@ const Camera = React.forwardRef((props, ref) => {
     requestDeviceCameraAuthorization: async () => {
       return await RNCameraKitModule.requestDeviceCameraAuthorization();
     },
+    release: async () => {
+      return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+    },
   }));
 
   React.useEffect(() => {
@@ -30,7 +33,7 @@ const Camera = React.forwardRef((props, ref) => {
       console.log("duration",duration);
     });
     return () => {
-      RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
       subscription.remove();
     };
   }, []);
