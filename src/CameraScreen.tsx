@@ -10,7 +10,7 @@ import {
   Platform,
   SafeAreaView,
   Animated,
-  FlatList
+  FlatList,
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
@@ -30,6 +30,7 @@ const FLASH_MODE_OFF = 'off';
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2
 const captureIcon2 = (width - 20) / 2;
+const captureIcon3 = (width - 30) / 2;
 const CameraHeight = (height-100)
 
 export enum CameraType {
@@ -73,7 +74,9 @@ export type Props = {
   postCameraImage: any
   startMultipleBtnImage: any
   changeSizeImage: any
- 
+  addPhotoBtnPng:any
+  postMutePng:any
+  postNoMutePng:any
 }
 
 type State = {
@@ -113,6 +116,7 @@ type State = {
   pasterList: any
   facePasterInfo: any
   filterName:any
+
 }
 
 
@@ -130,11 +134,13 @@ export default class CameraScreen extends Component<Props, State> {
   flashArray: any[];
   camera: any;
   myRef: any
+  FlatListRef:any
   editor:any
 
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.FlatListRef = React.createRef();
     this.currentFlashArrayPosition = 0;
     this.flashArray = [
       {
@@ -195,7 +201,8 @@ export default class CameraScreen extends Component<Props, State> {
       // 
       pasterList: [],
       facePasterInfo: {},
-      filterName:"原片"
+      filterName:"原片",
+
     };
   }
 
@@ -514,6 +521,7 @@ export default class CameraScreen extends Component<Props, State> {
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess ,pasterList} = this.state
     const getPasterData = async () => {
+      console.log(123);
       const pasters = await this.camera.getPasterInfos();
       console.log('--------pasters',pasters)
       this.setState({
@@ -525,6 +533,7 @@ export default class CameraScreen extends Component<Props, State> {
       getPasterData()
       return null;
     }
+    // console.log('111111111---FlatList',this.FlatListRef.current);
     return (
       this.props.captureButtonImage &&
       !this.isCaptureRetakeMode() && (
@@ -548,6 +557,15 @@ export default class CameraScreen extends Component<Props, State> {
               </View>
               {/* 普通的切换按钮 */}
               <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
+                {/* <TouchableOpacity onPress={()=>{
+                  console.log(23333);
+                  
+                  this.FlatListRef.scrollToIndex({ index: 0, animated: false  })   
+                  // listRef.current.scrollToIndex({ index: 0, animated: false })
+                  }} >
+
+              <Image style={[{width:20,height:20},{position:"absolute",bottom:90,left:captureIcon3,}]} source={this.props.closeImage } />
+                </TouchableOpacity> */}
                 {this.switchProp()}
               </View>
             </>
@@ -564,6 +582,10 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View style={{ position: "relative" }} >
         <Carousel
+         ref={(flatList)=>{  this.FlatListRef = flatList  }}
+        //  ref={this.FlatListRef}
+        // scrollToIndex={()=>{animated: true, viewPosition: 0, index: 0} }
+        // this._flatList.scrollToOffset({animated: true, viewPosition: 0, index: 0}); //跳转到顶部
           data={pasterList}
           itemWidth={83}
           sliderWidth={width}
@@ -642,6 +664,7 @@ export default class CameraScreen extends Component<Props, State> {
                 }}
               >
                 <View style={{ position: 'relative' }}>
+ 
                   <View style={[styles.propStyle,
                     img
                   ]}>
@@ -976,6 +999,9 @@ export default class CameraScreen extends Component<Props, State> {
                 captureButtonImage={this.props.captureButtonImage}
                 changeSizeImage={this.props.changeSizeImage}
                 closeImage={this.props.closeImage}
+                addPhotoBtnPng={this.props.addPhotoBtnPng}
+                postMutePng={this.props.postMutePng}
+                postNoMutePng={this.props.postNoMutePng}
                 cameraModule={true}
               />
               </>

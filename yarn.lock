@@ -6361,6 +6361,10 @@ react-native-svg@^12.1.1:
     css-select "^2.1.0"
     css-tree "^1.0.0-alpha.39"
 
+react-native-trimmer@Guakamoli/react-native-trimmer#kameoappCamera:
+  version "1.1.1-patch2"
+  resolved "https://codeload.github.com/Guakamoli/react-native-trimmer/tar.gz/750514d1b56ed95ca913ae299c71b01de5ccaeae"
+
 react-native-video@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/react-native-video/-/react-native-video-5.1.1.tgz#89a7989efeb8d404611c06154d1da227a745d7d8"

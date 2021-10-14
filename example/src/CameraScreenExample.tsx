@@ -44,6 +44,9 @@ export default class CameraScreenExample extends Component {
         startMultipleBtnImage={require('../images/startMultipleBtn.png')}
         postCameraImage={require('../images/postCamera.png')}
         changeSizeImage={require('../images/changeSize.png')}
+        addPhotoBtnPng ={require('../images/addPhotoBtn.png')}
+        postMutePng={require('../images/postEditorMute.png')}
+        postNoMutePng={require('../images/postEditorNoMute.png')}
         showCapturedImageCount
         cameraModule={true}
       />

@@ -60,8 +60,8 @@ type State = {
 
  
 // 滤镜名称
-  filterName:any
-  filterList:any
+  filterName:string
+  filterList:Array<any>
 }
 
 
@@ -89,14 +89,12 @@ export default class StoryEditor extends Component<Props, State> {
     };
   }
 
-     getFilters  = async() => {
+  getFilters  = async() => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if(this.state.filterList.length < 1){
       const infos = await RNEditViewManager.getFilterIcons({});
       this.setState({filterList:infos})
     }
-
-  
   }
   componentDidMount() {
     this.getFilters()
