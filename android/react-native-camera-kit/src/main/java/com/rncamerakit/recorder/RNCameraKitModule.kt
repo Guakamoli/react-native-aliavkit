@@ -1,6 +1,7 @@
 package com.rncamerakit.recorder
 
 import android.app.Activity
+import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 
@@ -46,7 +47,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.mRecorderManage?.takePhoto(context,promise)
+            view.mRecorderManage?.takePhoto(context, promise)
         }
     }
 
@@ -56,11 +57,11 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            if(!view.isPermissions()){
+            if (!view.isPermissions()) {
                 view.getPermissions()
                 return@runOnUiQueueThread
             }
-            view.mRecorderManage?.startRecording(context,promise)
+            view.mRecorderManage?.startRecording(context, promise)
         }
     }
 
@@ -70,17 +71,63 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.mRecorderManage?.stopRecording(context,promise)
+            view.mRecorderManage?.stopRecording(context, promise)
         }
     }
 
+    /**
+     * 获取贴纸列表
+     */
     @ReactMethod
-    fun downloadPaster(viewTag: Int, promise: Promise){
+    fun getPasterInfos(viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.mRecorderManage?.downloadPaster(null,promise)
+            view.mRecorderManage?.getPasterInfos(promise)
+        }
+    }
+
+
+    /**
+     * 下载贴纸
+     */
+    @ReactMethod
+    fun downloadPaster(readableMap: ReadableMap, viewTag: Int, promise: Promise) {
+        val context = reactContext
+        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        context.runOnUiQueueThread {
+            val view = uiManager?.resolveView(viewTag) as CKCamera
+
+            val previewPaster = PreviewPasterForm()
+
+            previewPaster.icon =
+                if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
+
+            previewPaster.type =
+                if (readableMap.hasKey("type")) readableMap.getInt("isLocalRes") else 0
+            previewPaster.id = if (readableMap.hasKey("id")) readableMap.getInt("id") else 0
+            previewPaster.sort = if (readableMap.hasKey("sort")) readableMap.getInt("sort") else 0
+
+            previewPaster.url = if (readableMap.hasKey("url")) readableMap.getString("url") else ""
+            previewPaster.md5 = if (readableMap.hasKey("md5")) readableMap.getString("md5") else ""
+            previewPaster.preview =
+                if (readableMap.hasKey("preview")) readableMap.getString("preview") else ""
+            previewPaster.name =
+                if (readableMap.hasKey("name")) readableMap.getString("name") else ""
+
+            previewPaster.fontId =
+                if (readableMap.hasKey("fontId")) readableMap.getInt("fontId") else 0
+            previewPaster.level =
+                if (readableMap.hasKey("level")) readableMap.getInt("level") else 0
+
+            previewPaster.isLocalRes =
+                if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
+
+            previewPaster.path =
+                if (readableMap.hasKey("path")) readableMap.getString("path") else ""
+
+            view.mRecorderManage?.downloadPaster(previewPaster, promise)
         }
     }
 

@@ -23,6 +23,13 @@ const Camera = React.forwardRef((props, ref) => {
     requestDeviceCameraAuthorization: async () => {
       return await RNCameraKitModule.requestDeviceCameraAuthorization();
     },
+
+    //获取服务器端的贴纸
+    getPasterInfos: async () => {
+      return await RNCameraKitModule.getPasterInfos({});
+    },
+    
+    //释放资源，退出页面时调用
     release: async () => {
       return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
     },

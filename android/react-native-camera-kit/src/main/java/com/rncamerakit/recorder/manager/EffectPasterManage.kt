@@ -9,6 +9,7 @@ import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
+import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.RNEventEmitter
 import java.util.*
 
@@ -17,7 +18,7 @@ import java.util.*
  */
 class EffectPasterManage(private val mContext: ThemedReactContext) {
 
-    private val mRemoteData: MutableList<EffectBody<PreviewPasterForm>> = ArrayList()
+    private val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
 
     private var mPaterLoader: EffectLoader? = null
 
@@ -25,20 +26,19 @@ class EffectPasterManage(private val mContext: ThemedReactContext) {
         mPaterLoader = EffectLoader(mContext.applicationContext)
     }
 
-    fun initEffectPasterList() {
-        mRemoteData.clear()
-        val form = PreviewPasterForm()
-        val effectBody = EffectBody(form, true)
-        mRemoteData.add(0, effectBody)
+    fun getPasterInfos(promise: Promise?) {
+        mPasterList.clear()
+        mPasterList.add(PreviewPasterForm())
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
             for (form in localInfos!!) {
-                val body = EffectBody(form, true)
-                mRemoteData.add(body)
+                form.isLocalRes = true
+                mPasterList.add(form)
             }
             for (mv in remoteInfos!!) {
-                val body = EffectBody(mv, false)
-                mRemoteData.add(body)
+                mv.isLocalRes = false
+                mPasterList.add(mv)
             }
+            promise?.resolve(GsonManage.toJson(mPasterList))
         }
     }
 
@@ -46,32 +46,23 @@ class EffectPasterManage(private val mContext: ThemedReactContext) {
         open fun onPath(path: String) {}
     }
 
-    private var position: Int = 0;
-
-    fun setEffectPaster(callback: OnGifEffectPasterCallback) {
-        if (mRemoteData.isEmpty() || position >= mRemoteData.size) {
-            position = 0
-            return
-        }
-        val effectBody = mRemoteData[position]
-        var path: String
-        if (effectBody.isLocal) {
-            effectBody.data?.let {
-                path = if (it.id == 150) {
-                    it.path
-                } else {
-                    DownloadFileUtils.getAssetPackageDir(
-                        mContext,
-                        it.name,
-                        it.id.toLong()
-                    ).absolutePath
-                }
-                Log.e("AAA", "local progress：$path")
-                callback.onPath(path)
+    fun setEffectPaster(paster: PreviewPasterForm?,callback: OnGifEffectPasterCallback) {
+        val path: String
+        if (paster?.isLocalRes == true) {
+            path = if (paster.id == 150) {
+                paster.path
+            } else {
+                DownloadFileUtils.getAssetPackageDir(
+                    mContext,
+                    paster.name,
+                    paster.id.toLong()
+                ).absolutePath
             }
+            Log.e("AAA", "local progress：$path")
+            callback.onPath(path)
         } else {
             //需要下载
-            mPaterLoader!!.downloadPaster(effectBody.data, object : FileDownloaderCallback() {
+            mPaterLoader!!.downloadPaster(paster, object : FileDownloaderCallback() {
                 override fun onProgress(
                     downloadId: Int,
                     soFarBytes: Long,
@@ -95,11 +86,10 @@ class EffectPasterManage(private val mContext: ThemedReactContext) {
                 }
             })
         }
-        position++;
     }
 
-    fun downloadPaster(effectBody: EffectBody<PreviewPasterForm>?, promise: Promise) {
-        mPaterLoader!!.downloadPaster(effectBody?.data, object : FileDownloaderCallback() {
+    fun downloadPaster(paster: PreviewPasterForm?, promise: Promise) {
+        mPaterLoader!!.downloadPaster(paster, object : FileDownloaderCallback() {
             override fun onProgress(
                 downloadId: Int,
                 soFarBytes: Long,
@@ -114,7 +104,9 @@ class EffectPasterManage(private val mContext: ThemedReactContext) {
             override fun onFinish(downloadId: Int, path: String) {
                 Log.e("AAA", "download path：$path")
                 RNEventEmitter.downloadPasterProgress(mContext, 100);
-                promise.resolve(path)
+                paster?.isLocalRes = true
+                paster?.path = path
+                promise.resolve(paster)
             }
 
             override fun onError(task: BaseDownloadTask, e: Throwable) {

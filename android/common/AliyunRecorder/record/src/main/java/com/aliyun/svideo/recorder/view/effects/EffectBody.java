@@ -4,7 +4,9 @@
 
 package com.aliyun.svideo.recorder.view.effects;
 
-public class EffectBody<T> {
+import java.io.Serializable;
+
+public class EffectBody<T> implements Serializable {
 
     private T mData;
     private boolean isLocal = false;

@@ -50,7 +50,7 @@ public interface AlivcIMixRecorderInterface {
 
     void stopPreview();
 
-    void addPaster(EffectPaster var1);
+    int addPaster(EffectPaster var1);
 
     void addPaster(EffectPaster var1, float var2, float var3, float var4, float var5, float var6, boolean var7);
 

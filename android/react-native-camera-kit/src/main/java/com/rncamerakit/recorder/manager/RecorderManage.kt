@@ -39,7 +39,7 @@ import java.util.*
 class RecorderManage(mContext: ThemedReactContext) {
 
     var cameraType: CameraType? = null
-    var mRecorder: AlivcIMixRecorderInterface?= null
+    var mRecorder: AlivcIMixRecorderInterface? = null
 
     private var mClipManager: AliyunIClipManager? = null
     private var mRecordCallback: ImplRecordCallback? = null
@@ -124,14 +124,14 @@ class RecorderManage(mContext: ThemedReactContext) {
     }
 
 
-    companion object{
-        var photoPath:String? = null;
+    companion object {
+        var photoPath: String? = null;
     }
 
     /**
      * 带特效拍照
      */
-    fun takePhoto(context :ReactApplicationContext ,promise: Promise) {
+    fun takePhoto(context: ReactApplicationContext, promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
                 Companion.photoPath = photoPath
@@ -165,7 +165,7 @@ class RecorderManage(mContext: ThemedReactContext) {
             mClipManager?.deleteAllPart()
             mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
                 override fun onProgress(duration: Long) {
-                    RNEventEmitter.startVideoRecord(reactContext,duration)
+                    RNEventEmitter.startVideoRecord(reactContext, duration)
                 }
             })
             mRecorder?.startRecording()
@@ -178,7 +178,7 @@ class RecorderManage(mContext: ThemedReactContext) {
     /**
      * 停止录制
      */
-    fun stopRecording(context:Context,promise: Promise) {
+    fun stopRecording(context: Context, promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onComplete(validClip: Boolean, clipDuration: Long) {
                 if (clipDuration < 2000) {
@@ -233,24 +233,35 @@ class RecorderManage(mContext: ThemedReactContext) {
     }
 
     /**
-     * 设置贴纸
+     * 设置人脸贴纸
      */
-    fun setEffectPaster() {
-        mEffectPasterManage?.setEffectPaster(object : EffectPasterManage.OnGifEffectPasterCallback() {
-            override fun onPath(path: String) {
-                super.onPath(path)
-                if (mEffectPaster != null) {
-                    mRecorder?.removePaster(mEffectPaster)
+    fun setFaceEffectPaster(paster: PreviewPasterForm?) {
+        mEffectPasterManage?.setEffectPaster(paster,
+            object : EffectPasterManage.OnGifEffectPasterCallback() {
+                override fun onPath(path: String) {
+                    super.onPath(path)
+                    if (mEffectPaster != null) {
+                        mRecorder?.removePaster(mEffectPaster)
+                    }
+                    val source = Source(path)
+                    mEffectPaster = EffectPaster(source)
+                    val addPaster = mRecorder?.addPaster(mEffectPaster)
                 }
-                val source = Source(path)
-                mEffectPaster = EffectPaster(source)
-                mRecorder?.addPaster(mEffectPaster)
-            }
-        })
+            })
     }
 
-    fun downloadPaster(effectBody: EffectBody<PreviewPasterForm>?,promise: Promise){
-        mEffectPasterManage?.downloadPaster(effectBody,promise)
+    /**
+     * 获取贴纸列表
+     */
+    fun getPasterInfos(promise: Promise) {
+        mEffectPasterManage?.getPasterInfos(promise)
+    }
+
+    /**
+     * 下载贴纸
+     */
+    fun downloadPaster(paster: PreviewPasterForm?, promise: Promise) {
+        mEffectPasterManage?.downloadPaster(paster, promise)
     }
 
     /**
@@ -273,7 +284,10 @@ class RecorderManage(mContext: ThemedReactContext) {
         outputInfo.videoHeight = mHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
         mRecorder?.setMediaInfo(outputInfo)
-        val videoPath = File( Constants.SDCardConstants.getDir(mContext.applicationContext),"paiya-record.mp4").absolutePath
+        val videoPath = File(
+            Constants.SDCardConstants.getDir(mContext.applicationContext),
+            "paiya-record.mp4"
+        ).absolutePath
         mRecorder?.setOutputPath(videoPath)
         mRecorder?.setVideoQuality(VideoQuality.SSD)
         mRecorder?.setVideoBitrate(10 * 1000 * 1000)
@@ -287,7 +301,6 @@ class RecorderManage(mContext: ThemedReactContext) {
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
 
         mEffectPasterManage = EffectPasterManage(mContext)
-        mEffectPasterManage?.initEffectPasterList()
 
     }
 

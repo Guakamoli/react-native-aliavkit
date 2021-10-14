@@ -106,8 +106,8 @@ public class AlivcRecorder implements AlivcIMixRecorderInterface {
     }
 
     @Override
-    public void addPaster(EffectPaster var1) {
-        mRecorder.addPaster(var1);
+    public int addPaster(EffectPaster var1) {
+        return  mRecorder.addPaster(var1);
     }
 
     @Override
