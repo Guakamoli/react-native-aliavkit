@@ -113,40 +113,6 @@ AliyunIExporterCallback
     return self;
 }
 
-- (void)_setPhotoPath:(AliyunCompositionInfo *)info
-{
-    NSString *editDir = [AliyunPathManager compositionRootDir];
-    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    
-    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:self.mediaConfig.outputSize];
-    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:info.sourcePath duration:info.duration animDuration:0];
-    [importor addMediaClip:clip];
-    
-    // set video param
-    AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
-    param.fps = self.mediaConfig.fps;
-    param.gop = self.mediaConfig.gop;
-    param.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
-    if (self.mediaConfig.cutMode == AliyunMediaCutModeScaleAspectCut) {
-        param.scaleMode = AliyunScaleModeFit;
-    }else{
-        param.scaleMode = AliyunScaleModeFill;
-    }
-    // 编码模式
-    if (self.mediaConfig.encodeMode ==  AliyunEncodeModeHardH264) {
-        param.codecType = AliyunVideoCodecHardware;
-    }else if(self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) {
-        param.codecType = AliyunVideoCodecOpenh264;
-    }
-    
-    [importor setVideoParam:param];
-    // generate config
-    [importor generateProjectConfigure];
-    // output path
-    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]]stringByAppendingPathExtension:@"mp4"];
-    self.taskPath = taskPath;
-}
-
 ///设置初始值
 - (void)initBaseData
 {
@@ -166,6 +132,31 @@ AliyunIExporterCallback
         _outputSize.height = 1280;
         NSAssert(false, @"调试的时候崩溃,_outputSize分辨率异常处理");
     }
+}
+
+- (void)_setPhotoTaskPath:(NSString *)photoPath
+{
+    NSString *editDir = [AliyunPathManager compositionRootDir];
+    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    
+    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
+    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:3.0 animDuration:0];
+    [importor addMediaClip:clip];
+    
+    // set video param
+    AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
+    param.fps = self.mediaConfig.fps;
+    param.gop = self.mediaConfig.gop;
+    param.bitrate = 15*1000*1000;
+    param.scaleMode = AliyunScaleModeFill;
+    param.codecType = AliyunVideoCodecHardware;
+    [importor setVideoParam:param];
+    
+    // generate config
+    [importor generateProjectConfigure];
+    // output path
+    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    self.taskPath = taskPath;
 }
 
 /// 单视频接入编辑页面，生成一个新的taskPath
@@ -261,26 +252,6 @@ AliyunIExporterCallback
     }
 }
 
-- (void)addAsset:(PHAsset *)asset
-{
-    NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
-    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset
-                                                          maxSize:self.mediaConfig.outputSize
-                                                       outputPath:tmpPhotoPath
-                                                       completion:^(NSError *error, UIImage * _Nullable result) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            AliyunCompositionInfo *info = [[AliyunCompositionInfo alloc] init];
-            info.phAsset = asset;
-            info.phImage = result;
-            info.thumbnailImage = result;
-            info.duration = 3;//图片默认3秒
-            info.type = AliyunCompositionInfoTypePhoto;
-            info.sourcePath = tmpPhotoPath;
-            [self _setPhotoPath:info];
-        });
-    }];
-}
-
 - (void)setImagePath:(NSString *)imagePath
 {
     if (_imagePath != imagePath) {
@@ -289,22 +260,18 @@ AliyunIExporterCallback
             if ([imagePath containsString:@"file://"]) { //in case path contains scheme
                 _imagePath = [NSURL URLWithString:imagePath].path;
             }
+            [self _setPhotoTaskPath:_imagePath];
             [self initEditorSDK];
         } else {
             //**For test only**
-//            file:///var/mobile/Media/DCIM/100APPLE/IMG_0054.JPG
-            NSString * localIdentifier = [[NSUserDefaults standardUserDefaults] objectForKey:@"localIdentifier"];
-            if (localIdentifier) {
-                PHAsset * asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[localIdentifier] options:nil].firstObject;
-                
-                [self addAsset:asset];
+            NSString * photoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"photoPath"];
+            if (photoPath) {
+                [self _setPhotoTaskPath:photoPath];
+                _imagePath = photoPath;
             }
-//            _imagePath = photoURI;
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self initEditorSDK];                
-            });
+            [self initEditorSDK];
         }
-        NSLog(@"------videoPath：%@",_imagePath);
+        NSLog(@"------imagePath：%@",_imagePath);
     }
 }
 
@@ -393,6 +360,26 @@ AliyunIExporterCallback
     }
 }
 
+- (void)saveResourceType:(PHAssetResourceType)type withPath:(NSString *)path
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self requestAuthorization:^{
+            [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                PHAssetCreationRequest *cr = [PHAssetCreationRequest creationRequestForAsset];
+                [cr addResourceWithType:type fileURL:[NSURL fileURLWithPath:path] options:nil];
+            } completionHandler:^(BOOL success, NSError * _Nullable error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (success) {
+                        NSLog(@"保存%@成功!", type == PHAssetResourceTypeVideo ? @"视频" : @"图片");
+                    } else {
+                        NSLog(@"保存%@失败:%@", type == PHAssetResourceTypeVideo ? @"视频" : @"图片", error);
+                    }
+                });
+            }];
+        }];
+    });
+}
+
 - (void)saveVideoWithPath:(NSString *)videoPath
 {
     [self requestAuthorization:^{
@@ -458,10 +445,24 @@ AliyunIExporterCallback
 ///导出结束
 - (void)exporterDidEnd:(NSString *)outputPath
 {
+    __block NSString *path = outputPath;
     if (_saveToPhotoLibrary) {
-        [self saveVideoWithPath:outputPath];
+        if (self.imagePath) {
+            __weak typeof(self) weakSelf = self;
+            [self _generateImageFromVideoPath:outputPath
+                                  itemPerTime:1000
+                                    startTime:0
+                                     duration:3.0
+                          generatorOutputSize:CGSizeMake(1080, 1920)
+                                     complete:^(NSArray * imagePaths) {
+                path = imagePaths.firstObject;
+                [weakSelf saveResourceType:PHAssetResourceTypePhoto withPath:path];
+            }];
+        } else if(self.videoPath) {
+            [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
+        }
     }
-    id event = @{@"exportProgress": @(1.0), @"outputPath":outputPath};
+    id event = @{@"exportProgress": @(1.0), @"outputPath":path};
     _onExportVideo(event);
 }
 
@@ -607,14 +608,13 @@ static NSString * ThumnailDirectory() {
     return [NSString stringWithFormat:@"%@/Documents/thumbNail", NSHomeDirectory()];
 }
 
-- (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
+- (void)_generateImageFromVideoPath:(NSString *)videoPath
+                        itemPerTime:(NSInteger)itemPerTime
+                          startTime:(CGFloat)startTime
+                           duration:(CGFloat)duration
+                generatorOutputSize:(CGSize)outputSize
+                           complete:(void (^)(NSArray *))complete
 {
-    NSString *videoPath = [options valueForKey:@"videoPath"];
-    videoPath = videoPath ? : [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-    CGFloat duration = [[options valueForKey:@"duration"] floatValue] ? : [self.player getDuration];
-    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue] ? : 0.0;
-    NSInteger itemPerTime = [[options valueForKey:@"itemPerTime"] integerValue] ? : 1000; //ms
-    
     [self.generator addVideoWithPath:videoPath
                            startTime:startTime
                             duration:duration
@@ -630,7 +630,7 @@ static NSString * ThumnailDirectory() {
     }
     NSLog(@"-------: %d -- %lu",idx, (unsigned long)[timeValues count]);
     self.generator.imageCount = [timeValues count];
-    self.generator.outputSize = CGSizeMake(200, 200);
+    self.generator.outputSize = outputSize;
     self.generator.timePerImage = singleTime;
     
     __weak typeof(self) weakSelf = self;
@@ -643,6 +643,21 @@ static NSString * ThumnailDirectory() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         complete([self getResourcePaths]);
     });
+}
+
+- (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
+{
+    NSString *videoPath = [options valueForKey:@"videoPath"];
+    videoPath = videoPath ? : [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+    CGFloat duration = [[options valueForKey:@"duration"] floatValue] ? : [self.player getDuration];
+    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue] ? : 0.0;
+    NSInteger itemPerTime = [[options valueForKey:@"itemPerTime"] integerValue] ? : 1000; //ms
+    [self _generateImageFromVideoPath:videoPath
+                          itemPerTime:itemPerTime
+                            startTime:startTime
+                             duration:duration
+                  generatorOutputSize:CGSizeMake(200, 200)
+                             complete:complete];
 }
 
 - (NSString *)saveImgToSandBox:(UIImage *)image
