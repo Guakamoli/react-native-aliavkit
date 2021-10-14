@@ -83,8 +83,13 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.mRecorderManage?.getPasterInfos(promise)
+            try {
+                val view = uiManager?.resolveView(viewTag) as CKCamera
+                view.mRecorderManage?.getPasterInfos(promise)
+            } catch (e: Exception) {
+//                println("程序出现了未知异常。${e.message}")
+                promise.resolve(null)
+            }
         }
     }
 
