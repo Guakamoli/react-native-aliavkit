@@ -43,7 +43,7 @@ export type Props = {
   
   goback: any
  // 视频路径
- filePaht: any, 
+ filePath: any, 
 }
 
 type State = {
@@ -99,14 +99,14 @@ export default class StoryEditor extends Component<Props, State> {
   componentDidMount() {
     this.getFilters()
     // console.log(123131);
-      console.log('-------this.props.filePaht',this.props.filePaht);
+      console.log('-------this.props.filePath',this.props.filePath);
       
   }
 
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state
-    const {filePaht}  = this.props
+    const {filePath}  = this.props
     return (
       <View style={styles.BottomBox}>
         <>
@@ -116,11 +116,11 @@ export default class StoryEditor extends Component<Props, State> {
        
             <TouchableOpacity onPress={() => {
               let uploadFile = []
-              if (filePaht) {
-                let type = filePaht.split('.')
+              if (filePath) {
+                let type = filePath.split('.')
                 uploadFile.push({
                   video_type: `video/${type[type.length - 1]}`,
-                  title_link: filePaht,
+                  title_link: filePath,
                   type: "file"
                 })
               } else {
@@ -211,7 +211,7 @@ export default class StoryEditor extends Component<Props, State> {
         ref={(edit) => (this.editor = edit)}
         style={{height:CameraHeight,justifyContent:'flex-end' }}
         filterName={this.state.filterName}
-        videoPath={this.props.filePaht}
+        videoPath={this.props.filePath}
         saveToPhotoLibrary={true}
         startExportVideo={false}
         videoMute={this.state.mute}

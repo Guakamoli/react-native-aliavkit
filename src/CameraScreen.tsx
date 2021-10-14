@@ -482,16 +482,16 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   // 照片数量
-  numberOfImagesTaken() {
-    const numberTook = this.state.captureImages.length;
-    if (numberTook >= 2) {
-      return numberTook;
-    } else if (this.state.captured) {
-      return '1';
-    } else {
-      return '';
-    }
-  }
+  // numberOfImagesTaken() {
+  //   const numberTook = this.state.captureImages.length;
+  //   if (numberTook >= 2) {
+  //     return numberTook;
+  //   } else if (this.state.captured) {
+  //     return '1';
+  //   } else {
+  //     return '';
+  //   }
+  // }
 
   // 进度条
   animate() {
@@ -536,7 +536,7 @@ export default class CameraScreen extends Component<Props, State> {
     // console.log('111111111---FlatList',this.FlatListRef.current);
     return (
       this.props.captureButtonImage &&
-      !this.isCaptureRetakeMode() && (
+      // !this.isCaptureRetakeMode() && (
         <View style={[styles.captureButtonContainer]}>
           {
             <>
@@ -571,7 +571,7 @@ export default class CameraScreen extends Component<Props, State> {
             </>
           }
         </View >
-      )
+      // )
     );
   }
 
@@ -830,6 +830,7 @@ export default class CameraScreen extends Component<Props, State> {
         this.setState({
           captured: true,
           imageCaptured: image,
+          
           captureImages: _.concat(this.state.captureImages, image),
         });
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
@@ -971,7 +972,7 @@ export default class CameraScreen extends Component<Props, State> {
                 noVolumeImage= {this.props.noVolumeImage}
                 tailorImage= {this.props.tailorImage}
                 volumeImage= {this.props.volumeImage}
-                filePaht = {this.state.videoPath}
+                filePath = {this.state.videoPath}
                 />
                 :
                 <>

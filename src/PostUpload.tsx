@@ -571,11 +571,12 @@ export default class CameraScreen extends Component<Props, State> {
           horizontal={true}
           renderItem={({ index, item })=>{
             return(
-              // <View >
-              // </View>
+              <View  style={{height:130}}>
+            
               <TouchableOpacity>
               <Image style={{width:100,height:100,backgroundColor:'green',marginRight:4}}   source={{uri:item.iconPath}} />
               </TouchableOpacity>
+                </View>
             )
           }}
         />
@@ -583,30 +584,30 @@ export default class CameraScreen extends Component<Props, State> {
     )
   }
 
-  playScrubber = () => {
-    this.setState({ playing: true });
+  // playScrubber = () => {
+  //   this.setState({ playing: true });
 
-    this.scrubberInterval = setInterval(() => {
-      this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
-    }, scrubInterval)
-  }
+  //   this.scrubberInterval = setInterval(() => {
+  //     this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
+  //   }, scrubInterval)
+  // }
 
-  pauseScrubber = () => {
-    clearInterval(this.scrubberInterval)
+  // pauseScrubber = () => {
+  //   clearInterval(this.scrubberInterval)
 
-    this.setState({ playing: false, scrubberPosition: this.state.trimmerLeftHandlePosition });
-  }
+  //   this.setState({ playing: false, scrubberPosition: this.state.trimmerLeftHandlePosition });
+  // }
 
-  onHandleChange = ({ leftPosition, rightPosition }) => {
-    this.setState({
-      trimmerRightHandlePosition: rightPosition,
-      trimmerLeftHandlePosition: leftPosition
-    })
-  }
+  // onHandleChange = ({ leftPosition, rightPosition }) => {
+  //   this.setState({
+  //     trimmerRightHandlePosition: rightPosition,
+  //     trimmerLeftHandlePosition: leftPosition
+  //   })
+  // }
 
-  onScrubbingComplete = (newValue) => {
-    this.setState({ playing: false, scrubberPosition: newValue })
-  }
+  // onScrubbingComplete = (newValue) => {
+  //   this.setState({ playing: false, scrubberPosition: newValue })
+  // }
   // 裁剪
   postTrimer(){
     const {
@@ -617,8 +618,8 @@ export default class CameraScreen extends Component<Props, State> {
     } = this.state;
   
     return (
-      <>
-   <View style={{marginTop:160}}>
+      
+    <View style={{marginTop:160}}>
      <Trimmer
           onHandleChange={this.onHandleChange}
           totalDuration={totalDuration}
@@ -643,12 +644,29 @@ export default class CameraScreen extends Component<Props, State> {
         />
     
     </View>
-</>
+
 
     )
   }
   // 封面
-
+  postCover(){
+    return(
+      <View style={{marginTop:93,paddingHorizontal:17}}>
+      <FlatList
+          data={[1,2,3,4,5,6,7]}
+          initialNumToRender={7}
+          horizontal={true}
+          renderItem={({ index, item })=>{
+            return(
+              <TouchableOpacity>
+                <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{width:65,height:74,backgroundColor:'green',marginRight:4}}  />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        </View>
+    )
+  }
   // 切换底部功能
   switchProps(){
     const switchProps =['滤镜','修剪','封面'];
@@ -682,7 +700,10 @@ export default class CameraScreen extends Component<Props, State> {
         {
           selectBottomModel  === '修剪' && this.postTrimer()
         }
-        {/* {this.postTrimer()} */}
+        {
+          selectBottomModel  === '封面' && this.postCover()
+        }
+        
         {
           fileSelectType  != 'image' && this.switchProps()
         }
