@@ -126,6 +126,10 @@ dependencies {
     implementation project (':common:AliyunResample')
     implementation project (':common:AliyunSVideoBase')
     implementation project (':common:AliyunSvideoMusic')
+
+    implementation project(':react-native-svg')
+    implementation project(':react-native-video')
+    implementation project(':@react-native-community_cameraroll')
 }
 
 task copyDownloadableDepsToLibs(type: Copy) {

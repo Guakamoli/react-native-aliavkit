@@ -6,12 +6,14 @@ import android.content.Context;
 import androidx.multidex.MultiDexApplication;
 
 import com.aliyun.svideo.downloader.DownloaderManager;
+import com.brentvatne.react.ReactVideoPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
+import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +35,8 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     // Packages that cannot be autolinked yet can be added manually here, for CameraKitExample:
                     // packages.add(new MyReactNativePackage());
                     packages.add(new RNCameraKitPackage());
+                    packages.add(new ReactVideoPackage());
+                    packages.add(new CameraRollPackage());
 
                     return packages;
                 }
