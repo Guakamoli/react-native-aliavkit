@@ -197,6 +197,7 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     }
 
     init {
+        onRelease()
         if (!isPermissions()) {
             getPermissions()
         }
