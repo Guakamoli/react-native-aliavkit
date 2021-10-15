@@ -44,6 +44,7 @@ export type Props = {
   goback: any
  // 视频路径
  filePath: any, 
+ fileType:any
 }
 
 type State = {
@@ -62,6 +63,8 @@ type State = {
 // 滤镜名称
   filterName:string
   filterList:Array<any>
+// 导出
+  startExportVideo:Boolean
 }
 
 
@@ -85,10 +88,45 @@ export default class StoryEditor extends Component<Props, State> {
       filterLensSelect: 0,
       // 视频 照片地址
       filterName:"柔柔",
-      filterList:[]
+      filterList:[],
+
+      startExportVideo: false,
     };
+    this.onExportVideo = this.onExportVideo.bind(this);
+  }
+  startExportVideo() {
+    console.log(this.state.startExportVideo);
+    if (this.state.startExportVideo) {
+      return;
+    }
+    this.setState({ startExportVideo: true });
   }
 
+  //  发布快拍   导出视频  丢出数据
+  onExportVideo(event) {
+    console.log('1231',event);
+    const {filePath,fileType}  = this.props
+    if (event.exportProgress === 1) {
+      let  outputPath = event.outputPath
+      this.setState({ startExportVideo: false,outputPath:event.outputPath });
+      // console.log('视频导出成功, path = ', event.outputPath);
+      let uploadFile = [];
+      // 现在都是filePath 
+      // 
+  
+        let type = outputPath.split('.')
+        uploadFile.push({
+          Type : `${fileType}/${type[type.length - 1]}`,
+          // const videoPath = 
+          path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
+          size : 0,
+          Name:outputPath
+        })
+   
+      this.sendUploadFile(uploadFile)
+      
+    }
+  }
   getFilters  = async() => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if(this.state.filterList.length < 1){
@@ -100,13 +138,15 @@ export default class StoryEditor extends Component<Props, State> {
     this.getFilters()
     // console.log(123131);
       console.log('-------this.props.filePath',this.props.filePath);
+      console.log('------fileType',this.props.fileType);
+      
       
   }
 
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state
-    const {filePath}  = this.props
+   
     return (
       <View style={styles.BottomBox}>
         <>
@@ -114,25 +154,8 @@ export default class StoryEditor extends Component<Props, State> {
           
           {/* 发布 */}
        
-            <TouchableOpacity onPress={() => {
-              let uploadFile = []
-              if (filePath) {
-                let type = filePath.split('.')
-                uploadFile.push({
-                  video_type: `video/${type[type.length - 1]}`,
-                  title_link: filePath,
-                  type: "file"
-                })
-              } else {
-                let type = captureImages[0]?.uri.split('.')
-                uploadFile.push({
-                  image_url: captureImages[0]?.uri,
-                  image_type: `image/${type[type.length - 1]}`,
-                  image_size: captureImages[0]?.size,
-                  type: "file",
-                })
-              }
-              this.sendUploadFile(uploadFile)
+            <TouchableOpacity onPress={ () => {
+               this.startExportVideo()
             }}>
               <View style={styles.uploadBox}>
                 <Text style={styles.uploadTitle}>发布快拍</Text>
@@ -161,6 +184,14 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <>
         {/* 放弃 */}
+        <TouchableOpacity style={{ backgroundColor: '#F5FCFF',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',}} onPress={() => this.startExportVideo()}>
+              <Text style={{ color: 'orange' }}>导出</Text>
+            </TouchableOpacity>
         <TouchableOpacity onPress={() => {
           this.setState({  showFilterLens: false, filterLensSelect: 0,captureImages: [] })
           this.props.rephotograph()
@@ -198,12 +229,12 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-     function  onExportVideo(event) {
-      if (event.exportProgress === 1) {
-        // this.setState({ startExportVideo: false });
-       console.log('视频导出成功, path = ', event.outputPath);
-      }
-    }
+    //  function  onExportVideo(event) {
+    //   if (event.exportProgress === 1) {
+    //     // this.setState({ startExportVideo: false });
+    //    console.log('视频导出成功, path = ', event.outputPath);
+    //   }
+    // }
     const  VideoEditors =()=>{
       return (
       <View style={{height:'100%',backgroundColor:'#fff',borderRadius:20}}>
@@ -212,10 +243,10 @@ export default class StoryEditor extends Component<Props, State> {
         style={{height:CameraHeight,justifyContent:'flex-end' }}
         filterName={this.state.filterName}
         videoPath={this.props.filePath}
-        saveToPhotoLibrary={true}
-        startExportVideo={false}
+        saveToPhotoLibrary={false}
+        startExportVideo={this.state.startExportVideo}
         videoMute={this.state.mute}
-        onExportVideo={onExportVideo}
+        onExportVideo={this.onExportVideo}
       />
    </View>
       )

@@ -7,7 +7,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CameraScreenExample from './CameraScreenExample';
 import CameraExample from './CameraExample';
 import VideoEditorExample from './VideoEditorExample';
-
+import Example from './trimmer'
+import StoryMusic from '../../src/StoryMusic'
 function HomeScreen({ navigation, route }) {
   return (
     <View style={{ flex: 1 }}>
@@ -27,6 +28,13 @@ function HomeScreen({ navigation, route }) {
           onPress={() => navigation.navigate('VideoEditor')}
         >
           <Text style={styles.buttonText}>Video Play</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('aa')}
+        >
+          <Text style={styles.buttonText}>aa</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -58,7 +66,9 @@ function VideoEditor({ navigation }) {
 
   return <VideoEditorExample />;
 }
-
+function aa (){
+  return <StoryMusic />
+}
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -69,6 +79,7 @@ export default function App() {
         <Stack.Screen name='Camera' component={Camera} />
         <Stack.Screen name='CameraScreen' component={CameraScreen} />
         <Stack.Screen name='VideoEditor' component={VideoEditor} />
+        <Stack.Screen name='aa' component={aa} />
       </Stack.Navigator>
     </NavigationContainer>
   );

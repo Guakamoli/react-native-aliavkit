@@ -161,6 +161,8 @@ export default class CameraScreen extends Component<Props, State> {
 
     getPhotos.then(async (data) => {
       var edges = data.edges;
+      // console.log('andor',data);
+      
       var photos = [];
       for (var i in edges) {
         // ios文件
@@ -185,7 +187,7 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
         <TouchableOpacity onPress={() => {
-          fileEditor ? this.setState({fileEditor:false,multipleData:[],selectBottomModel:'滤镜'}) : this.props.goback()
+          fileEditor ? this.setState({fileEditor:false,multipleData:[],selectBottomModel:'滤镜',startmMltiple:false}) : this.props.goback()
         }} >
           <Image
             style={styles.closeIcon}
@@ -619,8 +621,8 @@ export default class CameraScreen extends Component<Props, State> {
   
     return (
       
-    <View style={{marginTop:160}}>
-     <Trimmer
+    <View style={{marginTop:160,paddingHorizontal:20}}>
+     {/* <Trimmer
           onHandleChange={this.onHandleChange}
           totalDuration={totalDuration}
           trimmerLeftHandlePosition={trimmerLeftHandlePosition}
@@ -641,7 +643,7 @@ export default class CameraScreen extends Component<Props, State> {
           onLeftHandlePressIn={() => console.log('onLeftHandlePressIn')}
           onRightHandlePressIn={() => console.log('onRightHandlePressIn')}
           onScrubberPressIn={() => console.log('onScrubberPressIn')}
-        />
+        /> */}
     
     </View>
 
@@ -658,9 +660,11 @@ export default class CameraScreen extends Component<Props, State> {
           horizontal={true}
           renderItem={({ index, item })=>{
             return(
+              <View  style={{height:130}}>
               <TouchableOpacity>
                 <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{width:65,height:74,backgroundColor:'green',marginRight:4}}  />
               </TouchableOpacity>
+              </View>
             )
           }}
         />

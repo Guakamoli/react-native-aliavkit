@@ -116,7 +116,7 @@ type State = {
   pasterList: any
   facePasterInfo: any
   filterName:any
-
+  fileType:String
 }
 
 
@@ -166,7 +166,7 @@ export default class CameraScreen extends Component<Props, State> {
       videoRecording: false,
       ratios: [],
       ratioArrayPosition: -1,
-      imageCaptured: false,
+      imageCaptured: null,
       captured: false,
       cameraType: CameraType.Front,
 
@@ -192,6 +192,7 @@ export default class CameraScreen extends Component<Props, State> {
 
       // 视频 照片地址
       videoPath: null,
+      fileType:'video',
       //
       storyShow: false,
       photoAlbum: [],
@@ -206,8 +207,18 @@ export default class CameraScreen extends Component<Props, State> {
     };
   }
 
-
+  //  aa =async ()=>{
+  //    console.log(1231);
+     
+  //   const pasters = await this.camera.getPasterInfos();
+  //   console.log('--------pasters',pasters)
+  //   this.setState({
+  //     pasterList: pasters,
+  //     facePasterInfo: pasters[0]
+  //   });
+  // }
   componentDidMount() {
+    
     var getAlbums = CameraRoll.getAlbums({
       assetType: 'All',
 
@@ -216,7 +227,7 @@ export default class CameraScreen extends Component<Props, State> {
       // 相册数据
       this.setState({ photoAlbum: [], photoAlbumselect: {} })
     })
-
+    // this.aa()
     
     let ratios = [];
     if (this.props.cameraRatioOverlay) {
@@ -229,9 +240,23 @@ export default class CameraScreen extends Component<Props, State> {
       storyShow: cameraModule,
 
     });
+   
   }
+ 
   componentWillUnmount() {
+    // if( Platform.OS === 'android'){
+    //   console.log(Platform.OS === 'android');
+    //    this.camera.release();
+    // }
+    console.log('销毁');
     this.setState = ()=>false;
+}
+componentWillUpdate(props,state){
+  // 离开story 
+  if(!state.storyShow && Platform.OS === 'android'){
+    console.log(Platform.OS === 'android');
+     this.camera.release();
+  }
 }
   // ？？？？ 
   isCaptureRetakeMode() {
@@ -461,9 +486,9 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View style={[styles.cameraContainer]}>
         {this.isCaptureRetakeMode() ? (
-          <Image style={{ flex: 1, justifyContent: 'flex-end' }} source={{ uri: this.state.imageCaptured.uri }} />
+          <Image style={{ flex: 1, justifyContent: 'flex-end' }} source={{ uri: this.state.imageCaptured }} />
         ) : (
-          <TouchableOpacity style={{ flex: 1, justifyContent: 'flex-end', position: "relative", borderRadius: 20 }}
+          <TouchableOpacity style={[Platform.OS != 'android'&& {  flex: 1, justifyContent: 'flex-end',}, { position: "relative", borderRadius: 20 }]}
             onPress={() => {
               this.setState({ showFilterLens: false, showBeautify: false })
             }}
@@ -504,16 +529,22 @@ export default class CameraScreen extends Component<Props, State> {
     }
     this.setState({
       timer: setInterval(() => {
-        progress += 1 / 14;
+        progress += 1 / 140;
         console.log('进度条');
-        if (progress > 1) {
+        // if(progress < 20 / 140){
+        //   this.myRef.current.show('摄像失败,请勿小于2秒', 2000);
+        //   this.setState({ startShoot: false, ShootSuccess: false, fadeInOpacity: new Animated.Value(60) })
+        //   stopRecording()
+        //   clearInterval(this.state.timer)
+        // }
+        if (progress > 1 ) {
           progress = 1;
           this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
           stopRecording()
           clearInterval(this.state.timer)
         }
         this.setState({ progress, });
-      }, 1000)
+      }, 100)
     })
 
   }
@@ -521,7 +552,7 @@ export default class CameraScreen extends Component<Props, State> {
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess ,pasterList} = this.state
     const getPasterData = async () => {
-      console.log(123);
+      // console.log('getPasterInfos');
       const pasters = await this.camera.getPasterInfos();
       console.log('--------pasters',pasters)
       this.setState({
@@ -533,7 +564,6 @@ export default class CameraScreen extends Component<Props, State> {
       getPasterData()
       return null;
     }
-    // console.log('111111111---FlatList',this.FlatListRef.current);
     return (
       this.props.captureButtonImage &&
       // !this.isCaptureRetakeMode() && (
@@ -640,7 +670,8 @@ export default class CameraScreen extends Component<Props, State> {
                   if (this.state.startShoot) {
                    
 
-                    const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
+                    // const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
+                    const videoPath = await this.camera.stopRecording()
                     console.log('video saved to2 ', videoPath);
                     this.setState({  videoPath,})
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
@@ -696,7 +727,7 @@ export default class CameraScreen extends Component<Props, State> {
               }
             ).start();
             const success = await this.camera.startRecording();
-            this.setState({ startShoot: success })
+            this.setState({ fileType:"video" ,startShoot: success })
             console.log('success', success);
             if (success) {
               // 调用进度条 开始拍摄
@@ -714,7 +745,7 @@ export default class CameraScreen extends Component<Props, State> {
               
               const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
               // console.log('video saved to an ', videoPath);
-              this.setState({ videoPath })
+              this.setState({fileType:"video" ,videoPath })
               this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
               if (this.state.timer != null) {
                 clearInterval(this.state.timer);
@@ -730,7 +761,7 @@ export default class CameraScreen extends Component<Props, State> {
             if (!startShoot || progress === 0) {
               // 拍照
               this.onCaptureImagePressed()
-      
+              this.setState({fileType:"image"})
             }
           }}
         >
@@ -824,14 +855,14 @@ export default class CameraScreen extends Component<Props, State> {
     const image = await this.camera.capture();
     console.log('capture image path ', image);
     if (this.props.allowCaptureRetake) {
-      this.setState({ imageCaptured: image });
+      this.setState({ imageCaptured: image?.uri,fileType:"image" });
     } else {
       if (image) {
         this.setState({
           captured: true,
-          imageCaptured: image,
-          
-          captureImages: _.concat(this.state.captureImages, image),
+          imageCaptured: image?.uri,
+          fileType:"image",
+          captureImages: _.concat(this.state.captureImages, image?.uri),
         });
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
  
@@ -850,7 +881,7 @@ export default class CameraScreen extends Component<Props, State> {
 
     // ]
     return (
-      <View style={{ height: 189, backgroundColor: "#000" }}>
+      <View style={{ height: 189, backgroundColor: "#000",width:width ,zIndex:99}}>
         <View style={styles.beautifyBoxHead}>
           {/* <Text style={styles.beautifyTitle}>{this.state.showFilterLens ? `滤镜` : `美颜`}</Text> */}
           <Text style={styles.beautifyTitle}>{ `美颜`}</Text>
@@ -972,7 +1003,8 @@ export default class CameraScreen extends Component<Props, State> {
                 noVolumeImage= {this.props.noVolumeImage}
                 tailorImage= {this.props.tailorImage}
                 volumeImage= {this.props.volumeImage}
-                filePath = {this.state.videoPath}
+                filePath = {this.state.videoPath ?? this.state.imageCaptured}
+                fileType ={this.state.fileType}
                 />
                 :
                 <>
@@ -986,7 +1018,7 @@ export default class CameraScreen extends Component<Props, State> {
           )
             : (
               <>
-                {/* post */}  
+                {/* post */} 
                 <PostUpload
               // 退出操作
                 goback={() => {
