@@ -108,7 +108,7 @@ AliyunIExporterCallback
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor blackColor];
-        self.imagePath = @"";
+//        self.imagePath = @"";
     }
     return self;
 }
