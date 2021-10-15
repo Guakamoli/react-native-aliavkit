@@ -12,15 +12,20 @@ import com.facebook.react.common.ReactConstants.TAG
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
+import com.rncamerakit.recorder.manager.EffectPasterManage
+import java.util.*
+import kotlin.collections.HashMap
 
 
 class CKCameraManager : SimpleViewManager<CKCamera>() {
 
-    override fun getName() : String {
+    override fun getName(): String {
         return "CKCameraManager"
     }
 
     override fun createViewInstance(context: ThemedReactContext): CKCamera {
+        //初始化贴纸管理
+        EffectPasterManage.instance.init(context)
         return CKCamera(context)
     }
 
@@ -37,7 +42,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
                 ReadableType.Map -> "Map"
                 ReadableType.Number -> "Number"
                 ReadableType.String -> "String"
-                else ->  ""
+                else -> ""
             }
         }
         logCommand += ")"
@@ -46,9 +51,9 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
     override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
         return MapBuilder.of(
-                "onOrientationChange", MapBuilder.of("registrationName", "onOrientationChange"),
-                "onReadCode", MapBuilder.of("registrationName", "onReadCode"),
-                "onPictureTaken", MapBuilder.of("registrationName", "onPictureTaken")
+            "onOrientationChange", MapBuilder.of("registrationName", "onOrientationChange"),
+            "onReadCode", MapBuilder.of("registrationName", "onReadCode"),
+            "onPictureTaken", MapBuilder.of("registrationName", "onPictureTaken")
         )
     }
 
@@ -63,7 +68,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
             previewPaster.icon =
                 if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
             previewPaster.type =
-                if (readableMap.hasKey("type")) readableMap.getInt("isLocalRes") else 0
+                if (readableMap.hasKey("type")) readableMap.getInt("type") else 0
             previewPaster.id = if (readableMap.hasKey("id")) readableMap.getInt("id") else 0
             previewPaster.sort = if (readableMap.hasKey("sort")) readableMap.getInt("sort") else 0
 

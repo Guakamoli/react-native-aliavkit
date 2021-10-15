@@ -26,7 +26,8 @@ const Camera = React.forwardRef((props, ref) => {
 
     //获取服务器端的贴纸
     getPasterInfos: async () => {
-      // return await RNCameraKitModule.getPasterInfos(findNodeHandle(nativeRef.current));
+      var  pasterInfos = await RNCameraKitModule.getPasterInfos();
+      return JSON.parse(pasterInfos)
     },
     
     //释放资源，退出页面时调用

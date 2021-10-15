@@ -13,6 +13,7 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
+import com.horcrux.svg.SvgPackage;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 
@@ -30,14 +31,11 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 
                 @Override
                 protected List<ReactPackage> getPackages() {
-                    @SuppressWarnings("UnnecessaryLocalVariable")
                     List<ReactPackage> packages = new PackageList(this).getPackages();
-                    // Packages that cannot be autolinked yet can be added manually here, for CameraKitExample:
-                    // packages.add(new MyReactNativePackage());
                     packages.add(new RNCameraKitPackage());
                     packages.add(new ReactVideoPackage());
                     packages.add(new CameraRollPackage());
-
+                    packages.add(new SvgPackage());
                     return packages;
                 }
 

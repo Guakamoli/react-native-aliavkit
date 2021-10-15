@@ -23,6 +23,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.util.*
 
+@SuppressLint("ViewConstructor")
 class CKCamera(private val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {

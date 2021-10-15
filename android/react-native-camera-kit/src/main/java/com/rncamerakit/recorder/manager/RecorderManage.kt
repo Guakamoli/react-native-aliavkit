@@ -44,7 +44,6 @@ class RecorderManage(mContext: ThemedReactContext) {
     private var mClipManager: AliyunIClipManager? = null
     private var mRecordCallback: ImplRecordCallback? = null
     private var mRecorderQueenManage: RecorderQueenManage? = null
-    private var mEffectPasterManage: EffectPasterManage? = null
 
     private var mDisposableObserver: DisposableObserver<List<String>>? = null
     private val mColorFilterList: MutableList<String> = ArrayList()
@@ -236,7 +235,7 @@ class RecorderManage(mContext: ThemedReactContext) {
      * 设置人脸贴纸
      */
     fun setFaceEffectPaster(paster: PreviewPasterForm?) {
-        mEffectPasterManage?.setEffectPaster(paster,
+        EffectPasterManage.instance.setEffectPaster(paster,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String) {
                     super.onPath(path)
@@ -250,19 +249,7 @@ class RecorderManage(mContext: ThemedReactContext) {
             })
     }
 
-    /**
-     * 获取贴纸列表
-     */
-    fun getPasterInfos(promise: Promise) {
-        mEffectPasterManage?.getPasterInfos(promise)
-    }
 
-    /**
-     * 下载贴纸
-     */
-    fun downloadPaster(paster: PreviewPasterForm?, promise: Promise) {
-        mEffectPasterManage?.downloadPaster(paster, promise)
-    }
 
     /**
      *
@@ -299,8 +286,6 @@ class RecorderManage(mContext: ThemedReactContext) {
         mRecordCallback = ImplRecordCallback(mContext)
         mRecorder?.setRecordCallback(mRecordCallback)
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
-
-        mEffectPasterManage = EffectPasterManage(mContext)
 
     }
 
