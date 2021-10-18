@@ -154,17 +154,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
     /**
      * 导入视频 \ 导入图片
      */
-    fun importVideo(filePath: String?) {
+    fun importVideo(filePath: String?, isVideo: Boolean) {
+        this.isVideo = isVideo
         mProjectConfigure = mImportManager?.importVideo(filePath).toString()
-        initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo(filePath))
+        initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
     }
 
-    private fun isVideo(fileName: String?): Boolean {
-        val fileNameMap: FileNameMap = URLConnection.getFileNameMap()
-        val contentTypeFor: String = fileNameMap.getContentTypeFor(fileName)
-        isVideo =  contentTypeFor.contains("video")
-        return isVideo
-    }
 
     /**
      * 导出视频时是否同时保存到相册
@@ -241,7 +236,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.stop()
         mAliyunIEditor?.saveEffectToLocal()
         mAliyunIEditor?.applySourceChange()
-        mComposeManager?.startCompose(mProjectConfigure, promise, this.isVideo,isSaveToPhotoLibrary)
+        mComposeManager?.startCompose(
+            mProjectConfigure,
+            promise,
+            this.isVideo,
+            isSaveToPhotoLibrary
+        )
     }
 
     /**

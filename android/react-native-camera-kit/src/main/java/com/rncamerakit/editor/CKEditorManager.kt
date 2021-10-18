@@ -1,13 +1,9 @@
 package com.rncamerakit.editor
 
-import android.media.ThumbnailUtils
-import android.provider.MediaStore
-import android.webkit.MimeTypeMap
+import android.text.TextUtils
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
-import java.net.FileNameMap
-import java.net.URLConnection
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
 
@@ -30,11 +26,32 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     //文件地址
     @ReactProp(name = "videoPath")
     fun setVideoPath(view: CKEditor, videoPath: String?) {
+        if(TextUtils.isEmpty(videoPath)){
+            return
+        }
         view.reactContext.runOnUiQueueThread {
-            view.importVideo(videoPath)
+            view.importVideo(videoPath,true)
         }
     }
 
+
+    //文件地址
+    @ReactProp(name = "imagePath")
+    fun setImagePath(view: CKEditor, imagePath: String?) {
+        if(TextUtils.isEmpty(imagePath)){
+            return
+        }
+        view.reactContext.runOnUiQueueThread {
+            view.importVideo(imagePath,false)
+        }
+    }
+
+//    private fun isVideo(fileName: String?): Boolean {
+//        val fileNameMap: FileNameMap = URLConnection.getFileNameMap()
+//        val contentTypeFor: String = fileNameMap.getContentTypeFor(fileName)
+//        isVideo =  contentTypeFor.contains("video")
+//        return isVideo
+//    }
 
     //视频静音
     @ReactProp(name = "videoMute")
