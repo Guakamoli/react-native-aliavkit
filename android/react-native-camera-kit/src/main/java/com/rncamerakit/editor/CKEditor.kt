@@ -28,6 +28,8 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
+import java.net.FileNameMap
+import java.net.URLConnection
 
 @SuppressLint("ViewConstructor")
 class CKEditor(val reactContext: ThemedReactContext) :
@@ -41,6 +43,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private var mHeight = 0
 
     private var isCopyAssets = false
+
+    //导出视频时是否保存到相册
+    private var isSaveToPhotoLibrary = false
+
+    //是否是视频 true:视频文件 ；false: 图片文件
+    private var isVideo = false
 
     /**
      * 编辑接口，包含特效使用，视频预览
@@ -144,25 +152,33 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     /**
-     * 导入图片
-     */
-    fun importImage(filePath: String?) {
-        mProjectConfigure = mImportManager?.importImage(filePath).toString()
-        initEditor(Uri.fromFile(File(mProjectConfigure)), false)
-    }
-
-    /**
-     * 导入视频
+     * 导入视频 \ 导入图片
      */
     fun importVideo(filePath: String?) {
         mProjectConfigure = mImportManager?.importVideo(filePath).toString()
-        initEditor(Uri.fromFile(File(mProjectConfigure)), true)
+        initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo(filePath))
+    }
+
+    private fun isVideo(fileName: String?): Boolean {
+        val fileNameMap: FileNameMap = URLConnection.getFileNameMap()
+        val contentTypeFor: String = fileNameMap.getContentTypeFor(fileName)
+        isVideo =  contentTypeFor.contains("video")
+        return isVideo
+    }
+
+    /**
+     * 导出视频时是否同时保存到相册
+     */
+    fun isSaveToPhotoLibrary(isSave: Boolean?) {
+        if (isSave != null) {
+            this.isSaveToPhotoLibrary = isSave
+        }
     }
 
     /**
      * 设置静音
      */
-    fun setAudioSilence(isSilence: Boolean?) {
+    fun setVideoMute(isSilence: Boolean?) {
         if (isSilence == true) {
             mAliyunIEditor?.setVolume(0)
         } else {
@@ -216,29 +232,16 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     /**
-     * 导出视频
+     * 导出视频 \ 导出图片
      */
-    fun exportVideo(promise: Promise) {
+    fun exportVideo(promise: Promise?) {
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
         mAliyunIEditor?.stop()
         mAliyunIEditor?.saveEffectToLocal()
         mAliyunIEditor?.applySourceChange()
-        mComposeManager?.startCompose(mProjectConfigure, promise, true)
-    }
-
-    /**
-     * 导出图片
-     */
-    fun exportImage(promise: Promise) {
-        if (mAliyunIEditor?.isPlaying == true) {
-            mAliyunIEditor?.stop()
-        }
-        mAliyunIEditor?.stop()
-        mAliyunIEditor?.saveEffectToLocal()
-        mAliyunIEditor?.applySourceChange()
-        mComposeManager?.startCompose(mProjectConfigure, promise, false)
+        mComposeManager?.startCompose(mProjectConfigure, promise, this.isVideo,isSaveToPhotoLibrary)
     }
 
     /**

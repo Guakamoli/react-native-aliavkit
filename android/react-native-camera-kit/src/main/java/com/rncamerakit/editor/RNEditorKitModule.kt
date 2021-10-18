@@ -3,6 +3,9 @@ package com.rncamerakit.editor
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.rncamerakit.crop.CropManager
+import com.rncamerakit.utils.AliFileUtils
+import java.net.FileNameMap
+import java.net.URLConnection
 
 class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -13,7 +16,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
     //获取滤镜列表
     @ReactMethod
-    fun getColorFilterList(viewTag: Int, promise: Promise){
+    fun getColorFilterList(viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
@@ -22,24 +25,17 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    //设置滤镜
-    @ReactMethod
-    fun setColorFilter(filterName: String?, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.setColorFilter(filterName)
-        }
-    }
 
+    /**
+     * 视频裁剪，开始结束时间，软裁剪
+     */
     @ReactMethod
-    fun videoTrim(options: ReadableMap, viewTag: Int, promise: Promise){
+    fun videoTrim(options: ReadableMap, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.videoTrim(options,promise)
+            view.videoTrim(options, promise)
         }
     }
 
@@ -76,26 +72,25 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
 
     @ReactMethod
-    fun seek(seekTime:Int, viewTag: Int, promise: Promise) {
+    fun seek(seekTime: Int, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.seek(seekTime,promise)
+            view.seek(seekTime, promise)
         }
     }
 
 
     @ReactMethod
-    fun videoCover(seekTime:Int, viewTag: Int, promise: Promise) {
+    fun videoCover(seekTime: Int, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.videoCover(seekTime,promise)
+            view.videoCover(seekTime, promise)
         }
     }
-
 
 
     @ReactMethod
@@ -107,17 +102,6 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
             view.exportVideo(promise)
         }
     }
-
-    @ReactMethod
-    fun exportImage(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.exportImage(promise)
-        }
-    }
-
 
 
     @ReactMethod
@@ -137,7 +121,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun cropVideo(options: ReadableMap,viewTag: Int,  promise: Promise) {
+    fun cropVideo(options: ReadableMap, viewTag: Int, promise: Promise) {
         val context = reactContext
         context.runOnUiQueueThread {
             CropManager.cropVideo(context, options, promise)
@@ -145,6 +129,27 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
 
+    /**
+     * 将沙盒的图片\视频 保存到相册
+     */
+    @ReactMethod
+    fun saveMediaStore(filePath: String, promise: Promise) {
+        val context = reactContext
+        context.runOnUiQueueThread {
+            if(isVideo(filePath)){
+                AliFileUtils.saveVideoToMediaStore(context.applicationContext,filePath)
+            }else{
+                AliFileUtils.saveImageToMediaStore(context.applicationContext,filePath)
+            }
+        }
+    }
+
+
+    private fun isVideo(fileName: String?): Boolean {
+        val fileNameMap: FileNameMap = URLConnection.getFileNameMap()
+        val contentTypeFor: String = fileNameMap.getContentTypeFor(fileName)
+        return contentTypeFor.contains("video")
+    }
 
     @ReactMethod
     fun release(viewTag: Int, promise: Promise) {

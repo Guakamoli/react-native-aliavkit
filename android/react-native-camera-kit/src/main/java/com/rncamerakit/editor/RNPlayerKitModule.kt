@@ -25,27 +25,6 @@ class RNPlayerKitModule(private val reactContext: ReactApplicationContext) :
     }
 
 
-    @ReactMethod
-    fun exportVideo(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKPlayer
-            view.exportVideo(promise)
-        }
-    }
-
-
-    @ReactMethod
-    fun exportImage(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKPlayer
-            view.exportImage(promise)
-        }
-    }
-
 
     @ReactMethod
     fun release(viewTag: Int, promise: Promise) {

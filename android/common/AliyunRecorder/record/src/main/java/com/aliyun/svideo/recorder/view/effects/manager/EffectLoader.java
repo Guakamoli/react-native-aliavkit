@@ -133,6 +133,7 @@ public class EffectLoader {
         selectedColumns.add(FileDownloaderModel.NAME);
         selectedColumns.add(FileDownloaderModel.PREVIEW);
         selectedColumns.add(FileDownloaderModel.PATH);
+        selectedColumns.add(FileDownloaderModel.URL);
         selectedColumns.add(FileDownloaderModel.SORT);
         HashMap<String, String> conditionMap = new HashMap<String, String>();
         conditionMap.put(FileDownloaderModel.EFFECTTYPE, String.valueOf(EffectService.EFFECT_FACE_PASTER));
@@ -147,7 +148,7 @@ public class EffectLoader {
             paster.setName(cursor.getString(cursor.getColumnIndex(FileDownloaderModel.NAME)));
             paster.setSort(cursor.getInt(cursor.getColumnIndex(FileDownloaderModel.SORT)));
             paster.setPath(cursor.getString(cursor.getColumnIndex(FileDownloaderModel.PATH)));
-
+            paster.setUrl(cursor.getString(cursor.getColumnIndex(FileDownloaderModel.URL)));
             //pasterid = 150 是本地asset打入的id号.目前需求认为本地打入的动图资源不应该显示再更多动图列表中
             //if (paster.getId() != 150){
             //    localPasters.add(paster);

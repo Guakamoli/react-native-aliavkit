@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.PermissionUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.common.utils.ThreadUtils
+import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
@@ -202,6 +203,7 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         if (!isPermissions()) {
             getPermissions()
         }
+        DownloaderManager.getInstance().init(reactContext.applicationContext)
         mWidth = ScreenUtils.getWidth(context)
         mHeight = mWidth * 16 / 9
         initVideoContainer()

@@ -29,6 +29,13 @@ export default class Editor extends Component<Props, State> {
     this.nativeRef = React.createRef();
   };
 
+  _onExportVideo = (event) => {
+    if (!this.props.onExportVideo) {
+      return;
+    }
+    this.props.onExportVideo(event.nativeEvent);
+  };
+
 
   //获取滤镜列表
   getColorFilterList = async () => {
@@ -37,42 +44,6 @@ export default class Editor extends Component<Props, State> {
     this.setState({
       colorFilterList: JSON.parse(colorFilterList),
     });
-  };
-
-  //设置滤镜
-  setColorFilter = () => {
-    let position = this.state.colorFilterPosition;
-    let list = this.state.colorFilterList;
-    let colorFilterName = list[position].name
-    console.log("setColorFilter", colorFilterName);
-    RNEditorKitModule.setColorFilter(colorFilterName, findNodeHandle(this.nativeRef.current));
-    this.setState({
-      colorFilterPosition: (position + 1) >= list.length ? 0 : (position + 1),
-    });
-  };
-
-
-  //设置静音
-  setAudioSilence = async () => {
-    let audioSilence = !this.state.audioSilence;
-    console.log("静音", audioSilence);
-    this.setState({
-      audioSilence: audioSilence,
-    });
-  };
-
-
-  //完成导出视频，返回视频地址
-  onExportVideo = async () => {
-    let videoPath = await RNEditorKitModule.exportVideo(findNodeHandle(this.nativeRef.current));
-    console.log("exportVideo", videoPath);
-  };
-
-
-  //完成导出图片，返回导出的图片地址
-  onExportImage = async () => {
-    let imagePath = await RNEditorKitModule.exportImage(findNodeHandle(this.nativeRef.current));
-    console.log("exportImage", imagePath);
   };
 
 
@@ -87,7 +58,7 @@ export default class Editor extends Component<Props, State> {
   onPause = async () => {
     let pause = await RNEditorKitModule.pause(findNodeHandle(this.nativeRef.current));
     console.log("onPause", pause);
-  }
+  };
 
   //停止播放
   onStop = async () => {
@@ -106,7 +77,7 @@ export default class Editor extends Component<Props, State> {
   onVideoCover = async () => {
     let videoCover = await RNEditorKitModule.videoCover(2000,findNodeHandle(this.nativeRef.current));
     console.log("onVideoCover", videoCover);
-  }
+  };
 
 
   //视频裁剪，时间裁剪，传入开始结束时间,成功后会播放裁剪后的视频
@@ -154,7 +125,7 @@ export default class Editor extends Component<Props, State> {
   componentDidMount() {
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
-      // console.log("startVideoEditor", duration);
+      console.log("startVideoEditor", duration);
     });
 
     //视频裁剪进度
@@ -163,8 +134,10 @@ export default class Editor extends Component<Props, State> {
     });
 
     //导出视频 合成回调
-    this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (progress) => {
-      console.log("startVideoCompose", progress);
+    this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
+      // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
+      // console.log("startVideoCompose", param);
+      this.props.onExportVideo(param);
     });
   }
 
@@ -187,32 +160,10 @@ export default class Editor extends Component<Props, State> {
         <NativeEditor
           ref={this.nativeRef}
           style={{ minWidth: 100, minHeight: 100 }}
-          audioSilence={this.state.audioSilence}
-          videoPath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record.mp4"
-        // imagePath="/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634097852533-photo.jpg"
+          {...this.props}
+          startExportVideo = {this.props.startExportVideo}
         />
-        <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.getColorFilterList()}>
-            <Image source={this.props.captureButtonImage} resizeMode='contain' />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.setColorFilter()}>
-            <Image source={this.props.captureButtonImage} resizeMode='contain' />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.setAudioSilence()}>
-            <Image source={this.props.captureButtonImage} resizeMode='contain' />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.onExportVideo()}>
-            <Image source={this.props.captureButtonImage} resizeMode='contain' />
-          </TouchableOpacity>
-        </View>
+       
 
 
         <View style={styles.captureButtonContainer}>

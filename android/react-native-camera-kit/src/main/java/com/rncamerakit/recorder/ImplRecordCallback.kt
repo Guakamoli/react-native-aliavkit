@@ -1,11 +1,13 @@
 package com.rncamerakit.recorder
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.os.Build
 import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
+import com.aliyun.svideo.common.utils.PermissionUtils
 import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideo.common.utils.ToastUtils
 import com.aliyun.svideo.common.utils.UriUtils
@@ -54,28 +56,36 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
             ).absolutePath
             try {
                 BitmapUtil.generateFileFromBitmap(bitmap, imgPath, "jpg")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    //适配android Q
-                    ThreadUtils.runOnSubThread {
-                        UriUtils.saveImgToMediaStore(
-                            mContext.applicationContext,
-                            imgPath
-                        )
-                    }
-                } else {
-                    MediaScannerConnection.scanFile(
-                        mContext.applicationContext,
-                        arrayOf(imgPath),
-                        arrayOf("image/jpeg"),
-                        null
-                    )
+//                if(PermissionUtils.checkPermissionsGroup(mContext, arrayOf(
+//                        Manifest.permission.READ_EXTERNAL_STORAGE,
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                    ))){
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                        //适配android Q
+//                        ThreadUtils.runOnSubThread {
+//                            UriUtils.saveImgToMediaStore(
+//                                mContext.applicationContext,
+//                                imgPath
+//                            )
+//                        }
+//                    } else {
+//                        MediaScannerConnection.scanFile(
+//                            mContext.applicationContext,
+//                            arrayOf(imgPath),
+//                            arrayOf("image/jpeg"),
+//                            null
+//                        )
+//                    }
+//                }
+                if (mCallbacks != null) {
+                    mCallbacks!!.onTakePhoto(imgPath)
                 }
-                ThreadUtils.runOnUiThread {
-                    ToastUtils.show(mContext, "图片已保存到相册")
-                    if (mCallbacks != null) {
-                        mCallbacks!!.onTakePhoto(imgPath)
-                    }
-                }
+//                ThreadUtils.runOnUiThread {
+////                    ToastUtils.show(mContext, "图片已保存到相册")
+//                    if (mCallbacks != null) {
+//                        mCallbacks!!.onTakePhoto(imgPath)
+//                    }
+//                }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
