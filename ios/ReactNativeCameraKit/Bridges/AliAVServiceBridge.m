@@ -164,13 +164,13 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     //save resource to sandbox from photo library
     NSString *path = [NSURL URLWithString:source].path;
-    PHAsset *phAsset = [[PHAsset fetchAssetsWithLocalIdentifiers:@[path] options:nil] firstObject];
-    UIImage *phImage = [AliAVServiceBridge _getImageForAsset:phAsset withSize:CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight)];
-    NSString *imageUri = [[AliyunPathManager createResourceDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    NSData *imageData = UIImageJPEGRepresentation(phImage, 1.0 / sqrt(2.0));
-    [imageData writeToFile:imageUri atomically:YES];
-
-    NSURL *sourceURL = [NSURL URLWithString:imageUri];
+    
+    __block NSString *assetURI = nil;
+    [self _saveImageToSandBox:path complete:^(NSString *path) {
+        assetURI = path;
+    }];
+    
+    NSURL *sourceURL = [NSURL URLWithString:assetURI];
     
     AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:sourceURL options:nil];
     
