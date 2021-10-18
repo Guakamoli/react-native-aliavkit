@@ -19,6 +19,9 @@ import { FlatGrid } from 'react-native-super-grid';
 import Video from 'react-native-video';
 import Carousel from 'react-native-snap-carousel';
 import Trimmer from 'react-native-trimmer'
+import Camera from './Camera';
+import VideoEditor from './VideoEditor';
+import AVService from './AVService.ios'
 
 
 const { width, height } = Dimensions.get('window');
@@ -27,7 +30,7 @@ const captureIcon2 = (width - 20) / 2;
 const photosItem = (width / 4);
 
 
-const { RNEditViewManager } = NativeModules;
+const { RNEditViewManager,AliAVServiceBridge } = NativeModules;
 export type Props = {
   ratioOverlay?: string,
   closeImage: any,
@@ -69,7 +72,11 @@ type State = {
   playing: boolean,
   trimmerLeftHandlePosition: any
   trimmerRightHandlePosition: any,
-  scrubberPosition: any
+  scrubberPosition: any,
+
+  cropOffset:Array<any>
+  cropOffsetX:any
+  cropOffsetY:any
 }
 const maxTrimDuration = 60000;
 const minimumTrimDuration = 1000;
@@ -118,7 +125,10 @@ export default class CameraScreen extends Component<Props, State> {
       playing: false,
     trimmerLeftHandlePosition: initialLeftHandlePosition,
     trimmerRightHandlePosition: initialRightHandlePosition,
-    scrubberPosition: 1000
+    scrubberPosition: 1000,
+    cropOffset:[],
+    cropOffsetX:0,
+    cropOffsetY:0,
     };
   }
   getFilters  = async() => {
@@ -161,13 +171,24 @@ export default class CameraScreen extends Component<Props, State> {
 
     getPhotos.then(async (data) => {
       var edges = data.edges;
-      // console.log('andor',data);
+      console.log('andor',data);
       
       var photos = [];
+      // edges.map( async(item)=>{
+        
+      //   let localUri = await CameraRoll.requestPhotoAccess(item.node.image.uri.slice(5));
+      //   item.node.image.uri = localUri ;
+      //   // console.log(localUri);
+        
+      //   photos.push(item.node);
+      //   console.log('ios',photos);
+      // })
       for (var i in edges) {
         // ios文件
         photos.push(edges[i].node);
       }
+      // console.log('-------',photos);
+      
       this.setState({
         CameraRollList: photos
       });
@@ -183,7 +204,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
   }
   postHead() {
-    const {fileEditor,multipleData,fileSelectType,videoMute} = this.state
+    const {fileEditor,multipleData,fileSelectType,videoMute,cropOffsetX,cropOffsetY} = this.state
     return (
       <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
         <TouchableOpacity onPress={() => {
@@ -203,7 +224,16 @@ export default class CameraScreen extends Component<Props, State> {
 
         :   <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>}
        
-        <TouchableOpacity onPress={() => {
+        <TouchableOpacity onPress={ async () => {
+          console.log({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:400, cropHeight:400, quality:'highest' });
+          
+          // 裁剪
+          // AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality })？
+          //   return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
+          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:400, cropHeight:400, quality:'highest' });
+          // await AVService.crop({})
+          console.log('---data',data);
+          
           // 进入修改
           multipleData.length < 1 ? this.myRef.current.show('请至少选择一个上传文件', 2000)  :  this.setState({fileEditor:true})
         
@@ -266,29 +296,38 @@ export default class CameraScreen extends Component<Props, State> {
 
           />
         </TouchableOpacity>
+       
         <ScrollView style={{
           height: 'auto',
           margin: 'auto',
           paddingHorizontal: 0,
           backgroundColor: '#ececec',
-          width: this.state.scrollViewWidth ? width : 320
+          width: this.state.scrollViewWidth ? width : width-60
         }}
           pinchGestureEnabled={true}
           onScroll = {(event)=>{{
+            console.log('multipleData',multipleData);
+            
             console.log(event.nativeEvent.contentOffset.x);//水平滚动距离
             console.log(event.nativeEvent.contentOffset.y);//垂直滚动距离 
+
+            this.setState({cropOffsetX: event.nativeEvent.contentOffset.x,cropOffsetY:event.nativeEvent.contentOffset.y})
+           
           }}}
+              
         >
           {
-            fileSelectType === 'image' ? <Image
-              style={[{
-                width: width,
-                height: height - 300,
-              },]}
-              // 安卓展示不出来 权限问题？？？？ 
-              // source={{ uri: item.image.uri }}
-              source={{ uri: (multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image?.uri : CameraRollList[0]?.image?.uri) }}
-            /> :
+            fileSelectType === 'image' ?  <Image
+            style={[{
+              width: '100%',
+              height: height - 300,
+              // width: this.state.scrollViewWidth ? width : 320
+            },]}
+            // 安卓展示不出来 权限问题？？？？ 
+            // source={{ uri: item.image.uri }}
+            source={{ uri: (multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image?.uri : CameraRollList[0]?.image?.uri) }}
+            resizeMode={'stretch'}
+          /> :
               <Video
                 source={{ uri: videoFile }}
                 style={{
@@ -354,8 +393,12 @@ export default class CameraScreen extends Component<Props, State> {
       console.log(myAssetId, 'myAssetId');
 
       let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+      // console.log(localUri, 'myAssetId');
+      
       this.setState({ videoFile: localUri })
     }
+    // console.log('CameraRollList',CameraRollList);
+    
     return (
       <>
        <Toast
@@ -399,7 +442,8 @@ export default class CameraScreen extends Component<Props, State> {
                         this.myRef.current.show('最多十张图片', 2000);
                         return;
                       }
-                    } else {
+                    } 
+                    if(fileSelectType == 'video') {
                       if (multipleData.length = 1) {
                         this.myRef.current.show('最多选择一个视频', 2000);
                         return;
@@ -486,15 +530,28 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   postEditorViewData(){
+    
     const data =  [1,3,4]
     // let aa = true
     const {multipleData}  = this.state
-    // console.log('data.length',data.length);
+    console.log('1231',multipleData);
+    // console.log('data.length',multipleData[0].length);
     const onlyOne = multipleData.length === 1
     if(onlyOne){
      return (
       <View style={[{height:395,width:width,}]}>
-      <Image   source ={multipleData[0].image} style={{width:'100%',height:'100%'}} / >
+        <VideoEditor
+        ref={(edit) => (this.editor = edit)}
+        style={{width:'100%',height:'100%' }}
+        filterName={this.state.filterName}
+        videoPath={multipleData[0].image.uri}
+        // imagePath={multipleData[0].image.uri}
+        saveToPhotoLibrary={false}
+        // startExportVideo={this.state.startExportVideo}
+        // videoMute={this.state.mute}
+        // onExportVideo={this.onExportVideo}
+      />
+        {/* <Image   source ={multipleData[0].image} style={{width:'100%',height:'100%'}} / > */}
       </View>
      )
     }
@@ -539,7 +596,7 @@ export default class CameraScreen extends Component<Props, State> {
         )
       }}
       renderItem={({index,item})=>{
-        // console.log(item);
+        console.log('123',item);
         const finall = (index == multipleData.length -1 && multipleData.length > 1)
         
         return (
@@ -549,7 +606,19 @@ export default class CameraScreen extends Component<Props, State> {
             // ,finall && {width:214}
             
             ]}>
-            <Image   source ={item.image} style={{width:'100%',height:'100%'}} / >
+            {/* <Image   source ={item.image} style={{width:'100%',height:'100%'}} / > */}
+
+            <VideoEditor
+        ref={(edit) => (this.editor = edit)}
+        style={{width:'100%',height:'100%' }}
+        filterName={this.state.filterName}
+        videoPath={item.image.uri}
+        // imagePath={this.state.imagePath}
+        saveToPhotoLibrary={false}
+        // startExportVideo={this.state.startExportVideo}
+        // videoMute={this.state.mute}
+        // onExportVideo={this.onExportVideo}
+      />
             </View>
            {/* {finall && 
           
@@ -575,7 +644,9 @@ export default class CameraScreen extends Component<Props, State> {
             return(
               <View  style={{height:130}}>
             
-              <TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+                      this.setState({ filterName:item.filterName})
+                    }}>
               <Image style={{width:100,height:100,backgroundColor:'green',marginRight:4}}   source={{uri:item.iconPath}} />
               </TouchableOpacity>
                 </View>
@@ -586,30 +657,7 @@ export default class CameraScreen extends Component<Props, State> {
     )
   }
 
-  // playScrubber = () => {
-  //   this.setState({ playing: true });
-
-  //   this.scrubberInterval = setInterval(() => {
-  //     this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
-  //   }, scrubInterval)
-  // }
-
-  // pauseScrubber = () => {
-  //   clearInterval(this.scrubberInterval)
-
-  //   this.setState({ playing: false, scrubberPosition: this.state.trimmerLeftHandlePosition });
-  // }
-
-  // onHandleChange = ({ leftPosition, rightPosition }) => {
-  //   this.setState({
-  //     trimmerRightHandlePosition: rightPosition,
-  //     trimmerLeftHandlePosition: leftPosition
-  //   })
-  // }
-
-  // onScrubbingComplete = (newValue) => {
-  //   this.setState({ playing: false, scrubberPosition: newValue })
-  // }
+ 
   // 裁剪
   postTrimer(){
     const {
@@ -619,35 +667,64 @@ export default class CameraScreen extends Component<Props, State> {
       playing,
     } = this.state;
   
+    return null
+  //   const  playScrubber = () => {
+  //   this.setState({ playing: true });
+
+  //   this.scrubberInterval = setInterval(() => {
+  //     this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
+  //   }, scrubInterval)
+  // }
+
+  // const  pauseScrubber = () => {
+  //   clearInterval(scrubberInterval)
+
+  //   this.setState({ playing: false, scrubberPosition: this.state.trimmerLeftHandlePosition });
+  // }
+
+  // const  onHandleChange = ({ leftPosition, rightPosition }) => {
+  //   this.setState({
+  //     trimmerRightHandlePosition: rightPosition,
+  //     trimmerLeftHandlePosition: leftPosition
+  //   })
+  // }
+
+  // const onScrubbingComplete = (newValue) => {
+  //   this.setState({ playing: false, scrubberPosition: newValue })
+  // }
     return (
       
-    <View style={{marginTop:160,paddingHorizontal:20}}>
-     {/* <Trimmer
-          onHandleChange={this.onHandleChange}
-          totalDuration={totalDuration}
-          trimmerLeftHandlePosition={trimmerLeftHandlePosition}
-          trimmerRightHandlePosition={trimmerRightHandlePosition}
-          minimumTrimDuration={minimumTrimDuration}
-          maxTrimDuration={maxTrimDuration}
-          maximumZoomLevel={200}
-          zoomMultiplier={20}
-          initialZoomValue={2}
-          scaleInOnInit={true}
-          tintColor="#333"
-          markerColor="#5a3d5c"
-          trackBackgroundColor="#382039"
-          trackBorderColor="#5a3d5c"
-          scrubberColor="#b7e778"
-          scrubberPosition={scrubberPosition}
-          onScrubbingComplete={this.onScrubbingComplete}
-          onLeftHandlePressIn={() => console.log('onLeftHandlePressIn')}
-          onRightHandlePressIn={() => console.log('onRightHandlePressIn')}
-          onScrubberPressIn={() => console.log('onScrubberPressIn')}
-        /> */}
+    // <View style={{marginTop:160,paddingHorizontal:20}}>
+    //  <Trimmer
+    //       onHandleChange={onHandleChange}
+    //       totalDuration={totalDuration}
+    //       // 左 右侧数据
+    //       trimmerLeftHandlePosition={trimmerLeftHandlePosition}
+    //       trimmerRightHandlePosition={trimmerRightHandlePosition}
+    //       // 最小 最大 持续时间
+    //       minimumTrimDuration={minimumTrimDuration}
+    //       maxTrimDuration={maxTrimDuration}
+    //       // 缩放倍数
+    //       maximumZoomLevel={200}
+    //       zoomMultiplier={100}
+    //       //构造修剪器时的初始缩放
+    //       initialZoomValue={2}
+    //       scaleInOnInit={true}
+    //       tintColor="#333"
+    //       markerColor="#5a3d5c"
+    //       trackBackgroundColor="#382039"
+    //       trackBorderColor="#5a3d5c"
+    //       scrubberColor="#b7e778"
+    //       scrubberPosition={scrubberPosition}
+    //       onScrubbingComplete={onScrubbingComplete}
+    //       onLeftHandlePressIn={() => console.log('onLeftHandlePressIn')}
+    //       onRightHandlePressIn={() => console.log('onRightHandlePressIn')}
+    //       onScrubberPressIn={() => console.log('onScrubberPressIn')}
+    //     />
     
-    </View>
+    // </View>
 
-
+null
     )
   }
   // 封面
@@ -677,9 +754,9 @@ export default class CameraScreen extends Component<Props, State> {
     const {selectBottomModel} = this.state;
     return(
       <View style={{height:60, width:width,flexDirection:"row",justifyContent:'space-evenly',alignItems:'flex-start',position:"absolute",bottom:0}}>
-        {switchProps.map(item => {
+        {switchProps.map((item,index) => {
               return (
-                <TouchableOpacity onPress={() => {
+                <TouchableOpacity key={index} onPress={() => {
                   this.setState({ selectBottomModel: item })
                 }}
                 >
@@ -691,6 +768,7 @@ export default class CameraScreen extends Component<Props, State> {
       </View>
     )
   }
+
   photoEditorContent(){
     const {selectBottomModel,fileSelectType} = this.state;
    
