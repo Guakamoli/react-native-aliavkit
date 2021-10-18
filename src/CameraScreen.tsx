@@ -85,7 +85,7 @@ class PasterItem extends React.Component<PasterItemProps> {
 }
 
 const CameraScreeCount = () => {
-  const [duration, setDuration] = React.useState(0.00);
+  const [duration, setDuration] = React.useState(0.0);
 
   React.useEffect(() => {
     const callback = (e) => {
@@ -250,6 +250,7 @@ export default class CameraScreen extends Component<Props, State> {
             zoomMode={'on'}
             ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
             saveToCameraRoll={!this.props.allowCaptureRetake}
+            saveToCameraRollWithPhUrl={true}
             showFrame={this.props.showFrame}
             frameColor={this.props.frameColor}
             facePasterInfo={this.state.facePasterInfo}

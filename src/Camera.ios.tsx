@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import React from 'react';
-import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter } from 'react-native';
+import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager } from 'react-native';
+import AVService from './AVService.ios'
 
-const { CKCameraManager, FacePasterBridge } = NativeModules;
+const { CKCameraManager } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
-  const nativeRef = React.useRef();
 
   React.useImperativeHandle(ref, () => ({
     capture: async () => {
@@ -26,17 +26,18 @@ const Camera = React.forwardRef((props, ref) => {
     },
     //获取服务器端的贴纸
     getPasterInfos: async () => {
-      return await FacePasterBridge.getPasterInfos({});
+      return await AVService.getFacePasterInfos({});
     }
   }));
 
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));
 
+  // const nativeRef = React.useRef();
   return (
     <NativeCamera
       style={{ minWidth: 100, minHeight: 100 }}
-      ref={nativeRef}
+      ref={ref}
       {...transformedProps}
       onRecordingProgress={(event) => props.onRecordingProgress(event.nativeEvent)}
     />
@@ -44,8 +45,9 @@ const Camera = React.forwardRef((props, ref) => {
 });
 
 Camera.defaultProps = {
-  normalBeautyLevel: 30, 
+  normalBeautyLevel: 30,
   saveToCameraRoll: true,
+  saveToCameraRollWithPhUrl: true,
 };
 
 export default Camera;
