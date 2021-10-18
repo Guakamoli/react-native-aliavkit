@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, AliyunTimelineMediaInfoType) {
     AliyunTimelineMediaInfoTypeVedio = 0,
     AliyunTimelineMediaInfoTypePhoto = 1,
     AliyunTimelineMediaInfoTypeGif = 3
-} AliyunTimelineMediaInfoType;
+};
 
 @interface AliyunTimelineMediaInfo : NSObject
 

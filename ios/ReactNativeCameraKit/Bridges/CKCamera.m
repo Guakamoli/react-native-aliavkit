@@ -18,6 +18,8 @@
 #import "AliCameraAction.h"
 #import "CKCameraManager.h"
 #import "AliyunPasterInfo.h"
+#import "AliyunPathManager.h"
+#import "AliyunPhotoLibraryManager.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -299,6 +301,31 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }];
 }
 
+- (void)saveImageDataToSandBox:(NSData *)imageData
+{
+    NSString *editDir = [AliyunPathManager compositionRootDir];
+    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:taskPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:taskPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString *coverPath = [taskPath stringByAppendingPathComponent:@"cover.jpg"];
+//    NSData *data = UIImagePNGRepresentation(_image);
+   BOOL success = [imageData writeToFile:coverPath atomically:YES];
+    
+    if (success) {
+        NSLog(@"----- coverPath: %@",coverPath);
+    }
+    ///var/mobile/Containers/Data/Application/840064A4-0DAB-4F2F-A1D1-06612A04066F/Documents/com.guakamoli.engine/composition/9D44B12C-58C2-461A-8301-F2568399CF96/cover.png
+}
+
+- (void)saveAsset:(PHAsset *)asset
+{
+    NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset maxSize:CGSizeMake(1080, 1920) outputPath:tmpPhotoPath completion:^(NSError *error, UIImage * _Nullable result) {
+        [[NSUserDefaults standardUserDefaults] setObject:tmpPhotoPath forKey:@"photoPath"];
+    }];
+}
+
 - (void)writeCapturedImageData:(NSData *)imageData
                      onSuccess:(CaptureBlock)onSuccess
                        onError:(void (^)(NSString *))onError
@@ -340,16 +367,28 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 // 'ph://' is a rnc/cameraroll URL scheme for loading PHAssets by localIdentifier
                 // which are loaded via RNCAssetsLibraryRequestHandler module that conforms to RCTURLRequestHandler
                 if (self.saveToCameraRollWithPhUrl) {
-                    imageInfoDict[@"uri"] = [NSString stringWithFormat:@"ph://%@", localIdentifier];
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        onSuccess(imageInfoDict);
-                    });
+                    NSString *photoURI = [NSString stringWithFormat:@"ph://%@", localIdentifier];
+                    imageInfoDict[@"uri"] = photoURI;
+                    
+                    NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+                    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:firstAsset maxSize:CGSizeMake(1080, 1920) outputPath:tmpPhotoPath completion:^(NSError *error, UIImage * _Nullable result) {
+                        imageInfoDict[@"photoPath"] = tmpPhotoPath;
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            onSuccess(imageInfoDict);
+                        });
+                    }];
+                    
                 } else {
                     PHContentEditingInputRequestOptions *options = [[PHContentEditingInputRequestOptions alloc] init];
                     [options setNetworkAccessAllowed:YES];
                     [firstAsset requestContentEditingInputWithOptions:options completionHandler:^(PHContentEditingInput * _Nullable contentEditingInput, NSDictionary * _Nonnull info) {
                         imageInfoDict[@"uri"] = contentEditingInput.fullSizeImageURL.absoluteString;
-                        
+                    }];
+                    
+                    NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+                    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:firstAsset maxSize:CGSizeMake(1080, 1920) outputPath:tmpPhotoPath completion:^(NSError *error, UIImage * _Nullable result) {
+                        imageInfoDict[@"photoPath"] = tmpPhotoPath;
+//                        [[NSUserDefaults standardUserDefaults] setObject:tmpPhotoPath forKey:@"photoPath"]; //for test only
                         dispatch_async(dispatch_get_main_queue(), ^{
                             onSuccess(imageInfoDict);
                         });

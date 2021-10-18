@@ -8,6 +8,7 @@ export default class VideoEditorExample extends Component {
     super(props);
     this.state = {
       videoPath: '',
+      imagePath: '',
       filterName: '原片',
       startExportVideo: false,
       thumbnails: [],
@@ -69,8 +70,9 @@ export default class VideoEditorExample extends Component {
           ref={(edit) => (this.editor = edit)}
           style={styles.editContainer}
           filterName={this.state.filterName}
-          captureButtonImage={require('../images/cameraButton.png')}
+          //captureButtonImage={require('../images/cameraButton.png')}
           videoPath={this.state.videoPath}
+          //imagePath={this.state.imagePath}
           videoMute={this.state.videoMute}
           saveToPhotoLibrary={true}
           startExportVideo={this.state.startExportVideo}

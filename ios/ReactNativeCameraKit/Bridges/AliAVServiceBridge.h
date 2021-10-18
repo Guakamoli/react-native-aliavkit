@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTBridgeModule.h>
 
-@interface FacePasterBridge : NSObject<RCTBridgeModule>
+@interface AliAVServiceBridge : NSObject<RCTBridgeModule>
 
 
 
