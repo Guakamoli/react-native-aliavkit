@@ -25,4 +25,8 @@ export default class AVService {
   static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality }) {
     return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
   }
+
+  static async saveToSandBox({ path }) {
+    return await AliAVServiceBridge.saveToSandBox({ path });
+  }
 }
