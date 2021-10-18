@@ -22,6 +22,7 @@ import CameraRoll from "@react-native-community/cameraroll";
 import PostUpload from './PostUpload' 
 import  StoryEditor from './StoryEditor'
 import EventBus from './EventBus';
+import StoryMusic from './StoryMusic'
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -77,6 +78,9 @@ export type Props = {
   addPhotoBtnPng:any
   postMutePng:any
   postNoMutePng:any
+
+  musicDynamicGif:any
+  musicIconPng:any
 }
 
 type State = {
@@ -117,6 +121,8 @@ type State = {
   facePasterInfo: any
   filterName:any
   fileType:String
+  musicOpen:Boolean
+
 }
 
 
@@ -204,6 +210,9 @@ export default class CameraScreen extends Component<Props, State> {
       facePasterInfo: {},
       filterName:"原片",
 
+
+      // 音乐打开
+      musicOpen:false
     };
   }
 
@@ -218,6 +227,7 @@ export default class CameraScreen extends Component<Props, State> {
   //   });
   // }
   componentDidMount() {
+    // console.log('newDate',new Date().getMinutes());
     
     var getAlbums = CameraRoll.getAlbums({
       assetType: 'All',
@@ -253,10 +263,10 @@ export default class CameraScreen extends Component<Props, State> {
 }
 componentWillUpdate(props,state){
   // 离开story 
-  if(!state.storyShow && Platform.OS === 'android'){
-    console.log(Platform.OS === 'android');
-     this.camera.release();
-  }
+  // if(!state.storyShow && Platform.OS === 'android'){
+  //   console.log(Platform.OS === 'android');
+  //    this.camera.release();
+  // }
 }
   // ？？？？ 
   isCaptureRetakeMode() {
@@ -293,7 +303,19 @@ componentWillUpdate(props,state){
 
   // 底部 切换模块
   renderswitchModule() {
-    const { captureImages, videoPath } = this.state
+    const { captureImages, videoPath ,musicOpen} = this.state;
+    if(musicOpen){
+      return (
+        <SafeAreaView style={styles.BottomBox}>
+          <View style={{ flexDirection: 'row', justifyContent: "center", }}>
+             
+              <TouchableOpacity onPress={() => this.setState({ storyShow: true, })}>
+                <Text style={styles.snapshotMuse}>配乐</Text>
+              </TouchableOpacity>
+            </View>
+        </SafeAreaView>
+      )
+    }
     return (
       <SafeAreaView style={styles.BottomBox}>
         <>
@@ -365,7 +387,7 @@ componentWillUpdate(props,state){
         </TouchableOpacity>
         <View style={styles.leftIconBox}>
           {/* 音乐 */}
-          <TouchableOpacity onPress={() => { }} >
+          <TouchableOpacity onPress={() => { this.setState({musicOpen: !this.state.musicOpen})}} >
             <Image
               style={styles.musicIcon}
               source={this.props.musicImage}
@@ -550,7 +572,7 @@ componentWillUpdate(props,state){
   }
   //  拍摄按钮
   renderCaptureButton() {
-    const { fadeInOpacity, ShootSuccess ,pasterList} = this.state
+    const { fadeInOpacity, ShootSuccess ,pasterList,musicOpen} = this.state
     const getPasterData = async () => {
       // console.log('getPasterInfos');
       const pasters = await this.camera.getPasterInfos();
@@ -567,7 +589,7 @@ componentWillUpdate(props,state){
     return (
       this.props.captureButtonImage &&
       // !this.isCaptureRetakeMode() && (
-        <View style={[styles.captureButtonContainer]}>
+        <View style={[styles.captureButtonContainer, !musicOpen && {bottom:30}]}>
           {
             <>
               {/* 长按按钮 */}
@@ -596,7 +618,9 @@ componentWillUpdate(props,state){
 
               <Image style={[{width:20,height:20},{position:"absolute",bottom:90,left:captureIcon3,}]} source={this.props.closeImage } />
                 </TouchableOpacity> */}
-                {this.switchProp()}
+                {/* {this.switchProp()} */}
+                {this.state.musicOpen ? <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng} /> : this.switchProp()}
+                {/* this.state.musicOpen */}
               </View>
             </>
           }
@@ -642,6 +666,8 @@ componentWillUpdate(props,state){
                 disabled={!(this.state.currentIndex === index)}
                 // 长按
                 onLongPress={async () => {
+       
+                  
                   console.log('onLongPress1');
                   clearInterval(this.state.timer)
                   // 按钮动画
@@ -673,6 +699,11 @@ componentWillUpdate(props,state){
                     // const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
                     const videoPath = await this.camera.stopRecording()
                     console.log('video saved to2 ', videoPath);
+
+
+                    // 判断是否大于2秒
+
+
                     this.setState({  videoPath,})
                     this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
                     setTimeout(() => {
@@ -686,7 +717,7 @@ componentWillUpdate(props,state){
                 // 单击
                 onPress={() => {
                   console.log('onPress');
-
+                  console.log( new Date().getTime());
                   const { startShoot, progress } = this.state
                   if (!startShoot || progress === 0) {
                     // 拍照
@@ -881,7 +912,7 @@ componentWillUpdate(props,state){
 
     // ]
     return (
-      <View style={{ height: 189, backgroundColor: "#000",width:width ,zIndex:99}}>
+      <View style={{ height: 189, backgroundColor: "#000",width:width ,zIndex:99,position:'absolute',bottom:0}}>
         <View style={styles.beautifyBoxHead}>
           {/* <Text style={styles.beautifyTitle}>{this.state.showFilterLens ? `滤镜` : `美颜`}</Text> */}
           <Text style={styles.beautifyTitle}>{ `美颜`}</Text>
@@ -922,11 +953,13 @@ componentWillUpdate(props,state){
           </View>
           : */}
           <View style={styles.beautifyBoxContent}>
-            {[0, 1, 2, 3, 4, 5].map(item => {
+            {[0, 1, 2, 3, 4, 5].map((item,index) => {
               return (
                 <TouchableOpacity onPress={() => {
                   this.setState({ normalBeautyLevel: item })
-                }}
+                } 
+              }
+              key={index}
                 >
                   <View style={[
                     styles.beautifySelect,
@@ -948,12 +981,14 @@ componentWillUpdate(props,state){
   renderBottom() {
     if (this.state.showBeautify || this.state.showFilterLens) {
       return (
-        this.renderbeautifyBox()
+        <View style={{ position: 'relative'}}>
+       { this.renderbeautifyBox()}
+        </View>
       )
     }
     return (
       <>
-        <View style={{ position: 'relative', }}>
+        <View style={{ position: 'relative'}}>
           {/* 拍摄按钮 */}
           {!this.props.hideControls && (
             // <View style={[styles.bottomButtons]}>
@@ -1116,6 +1151,12 @@ const styles = StyleSheet.create(
       marginHorizontal: 30,
       marginRight: 80
     },
+    snapshotMuse:{
+      fontSize: 13,
+      lineHeight: 18,
+      color: '#FFFFFF',
+      marginHorizontal: 30,
+    },
     switchScreen: {
       position: "absolute",
       right: 20,
@@ -1238,7 +1279,7 @@ const styles = StyleSheet.create(
       alignItems: 'center',
       flexDirection: "row",
       position: 'absolute',
-      bottom: 30,
+      bottom: 0,
 
     },
     captureButtonImage: {
@@ -1265,6 +1306,7 @@ const styles = StyleSheet.create(
 
     propStyle:{
        backgroundColor: "#334",
-        opacity: 0.8,}
+        opacity: 0.8,
+      }
   });
 

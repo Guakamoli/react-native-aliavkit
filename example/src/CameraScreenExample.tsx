@@ -47,6 +47,8 @@ export default class CameraScreenExample extends Component {
         addPhotoBtnPng ={require('../images/addPhotoBtn.png')}
         postMutePng={require('../images/postEditorMute.png')}
         postNoMutePng={require('../images/postEditorNoMute.png')}
+        musicDynamicGif = {require('../images/musicDynamic.gif')}
+        musicIconPng = {require('../images/musicIcon.png')}
         showCapturedImageCount
         cameraModule={true}
       />

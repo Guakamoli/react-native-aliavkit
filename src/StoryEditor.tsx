@@ -142,6 +142,14 @@ export default class StoryEditor extends Component<Props, State> {
       
       
   }
+  componentWillUnmount() {
+    // if( Platform.OS === 'android'){
+    //   console.log(Platform.OS === 'android');
+    //    this.camera.release();
+    // }
+    console.log('销毁');
+    this.setState = ()=>false;
+}
 
   // 底部 切换模块
   renderUploadStory() {

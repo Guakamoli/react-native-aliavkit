@@ -1,4 +1,4 @@
-import React, { Component, useRef, useState } from 'react';
+import React, { Component, useRef, useState,useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,16 +15,16 @@ import {
 } from 'react-native';
 
 import _ from 'lodash';
-import Toast, { DURATION } from 'react-native-easy-toast'
-import CameraRoll from "@react-native-community/cameraroll";
-import { FlatGrid } from 'react-native-super-grid';
-import Video from 'react-native-video';
+
 import Carousel from 'react-native-snap-carousel';
-import Trimmer from 'react-native-trimmer'
+
 const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => { 
-  const [musicSelect,setMusicSelect] = useState(1)
-  const [musicChoice,setMmusicChoice] = useState(false)
+  const {musicDynamicGif,musicIconPng}  = props
+  // const [musicSelect,setMusicSelect] = useState(1);
+  const [musicChoice,setMmusicChoice] = useState(false); 
+  const [currentIndex,setCurrentIndex] = useState(0);
+  const [musicSearchValue,setMusicSearchValue] = useState('')
  const  musicCarousel  = () => {
     return (
       <Carousel
@@ -32,21 +32,19 @@ const StoryMusic = (props) => {
      itemWidth={298}
      sliderWidth={width}
      initialNumToRender={4}
-     // firstItem={this.state.currentIndex}
-    //  onBeforeSnapToItem={(slideIndex = 0) => {
-    //    // this.setState({
-    //    //   currentIndex: slideIndex,
-    //    //   facePasterInfo: pasterList[slideIndex]
-    //    // })
-    //  }}
+     firstItem={currentIndex}
+     activeAnimationType={'timing'}
+     onBeforeSnapToItem={(slideIndex = 0) => {
+      setCurrentIndex(slideIndex)
+     }}
 
       renderItem={({ index, item }) => {
        
        return (
-         <View style={[{width:298,height:85,backgroundColor:"rgba(255,255,255,0.2)",borderRadius:15,marginVertical:16,padding:14},musicSelect == item &&{ backgroundColor:"rgba(255,255,255,0.95)"}]}>
+         <View style={[{width:298,height:85,backgroundColor:"rgba(255,255,255,0.2)",borderRadius:15,marginVertical:16,padding:14},currentIndex == index &&{ backgroundColor:"rgba(255,255,255,0.95)"}]}>
            <View style={{flexDirection:"row",justifyContent:"space-between",marginBottom:14}}> 
-           <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{ width: 18,height:18 }} />
-           <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{ width: 30,height:18 }} />
+           <Image source={musicIconPng} style={{ width: 18,height:18 }} />
+           <Image source={musicDynamicGif} style={{ width: 30,height:18 }} />
            </View>
            <View>
              <Text>
@@ -60,14 +58,39 @@ const StoryMusic = (props) => {
     )
   }
   const  findMusic = ()=>{
+    const onLengthHandle = useCallback(
+      e => {
+        // setLength(copyWordCount(e.nativeEvent.text, lang));
+        setMusicSearchValue(e.nativeEvent.text)
+      },
+      [musicSearchValue],
+    );
     return ( 
-      <View style={{height:571,backgroundColor:"pink"}}> 
+      <View style={{height:571,backgroundColor:"rgba(0, 0, 0, 0.8)"}}> 
       <View style={styles.findMusicHead}>
-        <Text>取消</Text>
-        <Text>背景音乐</Text>
-        <Text> 完成</Text>
+        <TouchableOpacity onPress={()=>{ setMmusicChoice(false)}}> 
+        <Text style={styles.findMusicCancel} >取消</Text>
+          </TouchableOpacity>
+        <Text style={ styles.findMusicHeadTitle }>背景音乐</Text>
+        <Text > 完成</Text>
       </View>
       <View style={styles.searchMusic}>
+   
+      <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{ width: 12,height:12,marginRight:5 }} />
+    
+        <TextInput  
+         multiline={true}
+         textAlignVertical={'top'}
+         numberOfLines={3}
+         onChange={onLengthHandle}
+        //  style={[
+        //    styles.inputStyle,
+        //    isRN ? {} : { boxSizing: 'border-box', paddingHorizontal: 15, width: '100%', borderRadius: 14 },
+        //  ]}
+         value={musicSearchValue}
+        //  placeholder={`${t('commentPlaceholder')}`}
+         selectionColor='#895EFF'
+        />
       </View>
       <FlatList 
       data={[1,2,3,4,5,6,7,8,9]}
@@ -88,15 +111,14 @@ const StoryMusic = (props) => {
     )
   }
 return (
-  <View style={{backgroundColor:"#000"}}>
-    <TouchableOpacity onPress={()=>{console.log(musicChoice);
-     setMmusicChoice(!musicChoice)}}>
+  <View >
+    {!musicChoice &&  <TouchableOpacity onPress={()=>{setMmusicChoice(!musicChoice)}}>
       <View style={{width:63,height:31,backgroundColor:"rgba(255,255,255,0.2)",borderRadius:16,justifyContent:'center',alignItems:"center",marginLeft:(width - 298) /2}}>
-        <Text>搜索</Text>
+       <Text>搜索</Text>
       </View>
-    </TouchableOpacity>
-   {musicChoice ?  findMusic() :   musicCarousel()
-  }
+    </TouchableOpacity> }
+    
+   {musicChoice ?  findMusic() :   musicCarousel() }
   </View>
 )
 }
@@ -105,7 +127,26 @@ const styles = StyleSheet.create({
   findMusicHead:{
     flexDirection:"row",
     justifyContent:'space-between',
-    marginHorizontal:15
+    margin:15,
+    marginBottom:0,
+  },
+  findMusicHeadTitle:{
+    fontSize:16,
+    fontWeight:"500",
+    lineHeight:22,
+    color:"#fff"
+  },
+  findMusicSuccess:{
+    fontSize:16,
+    fontWeight:'500',
+    lineHeight:22,
+    color:"rgba(255,255,255,0.4)"
+  },
+  findMusicCancel:{
+    fontSize:16,
+    fontWeight:'400',
+    lineHeight:22,
+    color:"#fff"
   },
   searchMusic:{
     width:width -30,
@@ -113,7 +154,11 @@ const styles = StyleSheet.create({
     backgroundColor:"rgba(255,255,255,0.2)",
     borderRadius:11,
     marginTop:32,
-    marginHorizontal:15
+    marginHorizontal:15,
+    // justifyContent:'center',
+    alignItems:'center',
+    flexDirection:"row",
+    padding:10,
   }
   
 })
