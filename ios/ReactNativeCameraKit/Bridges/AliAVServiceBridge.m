@@ -12,6 +12,7 @@
 #import "AVAsset+VideoInfo.h"
 #import <AVFoundation/AVFoundation.h>
 #import "AliyunPathManager.h"
+#import "AliyunPhotoLibraryManager.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -163,13 +164,13 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     //save resource to sandbox from photo library
     NSString *path = [NSURL URLWithString:source].path;
-    PHAsset *phAsset = [[PHAsset fetchAssetsWithLocalIdentifiers:@[path] options:nil] firstObject];
-    UIImage *phImage = [AliAVServiceBridge _getImageForAsset:phAsset withSize:CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight)];
-    NSString *imageUri = [[AliyunPathManager createResourceDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    NSData *imageData = UIImageJPEGRepresentation(phImage, 1.0 / sqrt(2.0));
-    [imageData writeToFile:imageUri atomically:YES];
-
-    NSURL *sourceURL = [NSURL URLWithString:imageUri];
+    
+    __block NSString *assetURI = nil;
+    [self _saveImageToSandBox:path complete:^(NSString *path) {
+        assetURI = path;
+    }];
+    
+    NSURL *sourceURL = [NSURL URLWithString:assetURI];
     
     AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:sourceURL options:nil];
     
@@ -336,6 +337,43 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         return  UIImageOrientationUp;
     }
     
+}
+
+RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    NSString *path = [options valueForKey:@"path"];
+    if (!path) {
+        reject(@"",@"no path param",nil);
+    }
+    if (![path containsString:@"ph://"]) {
+        reject(@"",@"no ph:// scheme",nil);
+    }
+    [self _saveImageToSandBox:path complete:^(NSString *path) {
+        resolve(path);
+    }];
+}
+
+- (void)_saveImageToSandBox:(NSString *)path complete:(void(^)(NSString *path))complete
+{
+    NSString *_assetId = [path stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+    PHAsset *asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
+    if (asset.mediaType == PHAssetMediaTypeVideo) {
+        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:asset completion:^(AVAsset *avAsset, NSDictionary *info) {
+            AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
+            NSString *sourcePath = [urlAsset.URL path];
+            complete(sourcePath);
+        }];
+    } else if (asset.mediaType == PHAssetResourceTypePhoto) {
+        NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+        [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset
+                                                              maxSize:CGSizeMake(1080, 1920)
+                                                           outputPath:tmpPhotoPath
+                                                           completion:^(NSError *error, UIImage * _Nullable result) {
+            complete(tmpPhotoPath);
+        }];
+    }
 }
 
 + (BOOL)_saveImage:(UIImage *)image toFileName:(NSString *)fileName
