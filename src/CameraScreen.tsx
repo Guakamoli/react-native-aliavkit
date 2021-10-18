@@ -254,10 +254,10 @@ export default class CameraScreen extends Component<Props, State> {
   }
  
   componentWillUnmount() {
-    // if( Platform.OS === 'android'){
-    //   console.log(Platform.OS === 'android');
-    //    this.camera.release();
-    // }
+    if( Platform.OS === 'android'){
+      console.log(Platform.OS === 'android');
+       this.camera.release();
+    }
     console.log('销毁');
     this.setState = ()=>false;
 }
@@ -893,6 +893,7 @@ componentWillUpdate(props,state){
           captured: true,
           imageCaptured: image?.uri,
           fileType:"image",
+          videoPath:image,
           captureImages: _.concat(this.state.captureImages, image?.uri),
         });
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
