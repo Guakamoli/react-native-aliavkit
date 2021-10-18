@@ -13,10 +13,21 @@
 #import <AVFoundation/AVFoundation.h>
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
+#import <AliyunVideoSDKPro/AliyunCrop.h>
+#import <AliyunVideoSDKPro/AliyunImageCrop.h>
+#import <AliyunVideoSDKPro/AliyunErrorCode.h>
+#import <AliyunVideoSDKPro/AliyunErrorCode.h>
+#import "AVAsset+VideoInfo.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
-@interface AliAVServiceBridge ()
+@interface AliAVServiceBridge ()<AliyunCropDelegate>
+{
+    RCTPromiseResolveBlock _resolve;
+    BOOL _hasListeners;
+}
+
+@property (nonatomic, strong) AliyunCrop *cutPanel;
 
 @end
 
@@ -139,6 +150,21 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
     }
 }
 
+- (void)startObserving
+{
+    _hasListeners = YES;
+}
+
+- (void)stopObserving
+{
+    _hasListeners = NO;
+}
+
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[@"cropProgress"];
+}
+
 RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
@@ -161,116 +187,121 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     if ( cropHeight == 0.0 ) {
         reject(@"",@"Invalid cropHeight",nil);
     }
+
     
-    //save resource to sandbox from photo library
-    NSString *path = [NSURL URLWithString:source].path;
+    NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+    PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
+    CGSize outputSize = CGSizeMake(1080, 1920);
     
-    __block NSString *assetURI = nil;
-    [self _saveImageToSandBox:path complete:^(NSString *path) {
-        assetURI = path;
-    }];
+    CGRect cropRect = CGRectMake(cropOffsetX, 1920-cropOffsetY, cropWidth, cropHeight);
     
-    NSURL *sourceURL = [NSURL URLWithString:assetURI];
-    
-    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:sourceURL options:nil];
-    
-    NSString *outputURL = [[AliyunPathManager createResourceDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    
-    NSString *useQuality = [self _getQualityForAsset:quality asset:asset];
-    
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:useQuality];
-    if (!exportSession) {
-        reject(@"",@"Error creating AVAssetExportSession",nil);
-    }
-    exportSession.outputURL = [NSURL fileURLWithPath:outputURL];
-    exportSession.outputFileType = AVFileTypeMPEG4;
-    exportSession.shouldOptimizeForNetworkUse = YES;
-    
-    AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoCompositionWithPropertiesOfAsset:asset];
-    AVAssetTrack *clipVideoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
-    
-    UIImageOrientation videoOrientation = [self _getVideoOrientationFromAsset:asset];
-    
-    CGFloat videoWidth = 0.0;
-    CGFloat videoHeight = 0.0;
-    
-    if (videoOrientation == UIImageOrientationUp || videoOrientation == UIImageOrientationDown) {
-        videoWidth = clipVideoTrack.naturalSize.height;
-        videoHeight = clipVideoTrack.naturalSize.width;
-    } else {
-        videoWidth = clipVideoTrack.naturalSize.width;
-        videoHeight = clipVideoTrack.naturalSize.height;
-    }
-    
-    videoComposition.frameDuration = CMTimeMake(1, 30);
-    while (fmod(cropWidth, 2.0) > 0 && cropWidth < videoWidth) {
-        cropWidth += 1.0;
-    }
-    while (fmod(cropWidth, 2.0) > 0 && cropWidth > 0.0) {
-        cropWidth -= 1.0;
-    }
-    while (fmod(cropHeight, 2.0) > 0 && cropHeight < videoHeight) {
-        cropHeight += 1.0;
-    }
-    while (fmod(cropHeight, 2.0) > 0 && cropHeight > 0.0) {
-        cropHeight -= 1.0;
-    }
-    
-    videoComposition.renderSize = CGSizeMake(cropWidth, cropHeight);
-    
-    AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction new];
-    instruction.timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
-    
-    CGAffineTransform t1 = CGAffineTransformIdentity;
-    CGAffineTransform t2 = CGAffineTransformIdentity;
-    
-    AVMutableVideoCompositionLayerInstruction *transformer =
-    [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:clipVideoTrack];
-    
-    switch (videoOrientation) {
-        case UIImageOrientationUp:
-            t1 = CGAffineTransformMakeTranslation(clipVideoTrack.naturalSize.height - cropOffsetX,
-                                                  0-cropOffsetY);
-            t2 = CGAffineTransformRotate(t1, M_PI_2);
-            break;
-        case UIImageOrientationLeft:
-            t1 = CGAffineTransformMakeTranslation(clipVideoTrack.naturalSize.width - cropOffsetX,
-                                                  clipVideoTrack.naturalSize.height - cropOffsetY);
-            t2 = CGAffineTransformRotate(t1, M_PI);
-            break;
-        case UIImageOrientationRight:
-            t1 = CGAffineTransformMakeTranslation(0 - cropOffsetX, 0-cropOffsetY);
-            t2 = CGAffineTransformRotate(t1, 0);
-            break;
-        case UIImageOrientationDown:
-            t1 = CGAffineTransformMakeTranslation(0 - cropOffsetX, clipVideoTrack.naturalSize.width - cropOffsetY);
-            t2 = CGAffineTransformRotate(t1, -M_PI_2);
-            break;
+    _resolve = resolve;
+    __weak typeof(self) weakSelf = self;
+    if (phAsset.mediaType == PHAssetMediaTypeVideo) {
+        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:phAsset completion:^(AVAsset *avAsset, NSDictionary *info) {
+            AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
+            NSString *sourcePath = [urlAsset.URL path];
             
-        default:
-            break;
+            NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+            weakSelf.cutPanel = [[AliyunCrop alloc] initWithDelegate:(id<AliyunCropDelegate>)self];
+            weakSelf.cutPanel.inputPath = sourcePath;
+//            CGSize outputSize = [avAsset avAssetNaturalSize];
+//            CGFloat resolution = [avAsset avAssetNaturalSize].width * [avAsset avAssetNaturalSize].height;
+            weakSelf.cutPanel.outputSize = cropRect.size;
+            weakSelf.cutPanel.outputPath = outputPath;
+            weakSelf.cutPanel.startTime = 0;
+            CGFloat endTime = [avAsset avAssetVideoTrackDuration];
+            weakSelf.cutPanel.endTime = endTime;
+            weakSelf.cutPanel.fps = 30;
+            weakSelf.cutPanel.gop = 30;
+            // cut mode
+            weakSelf.cutPanel.cropMode = 1;
+            weakSelf.cutPanel.rect = cropRect;
+            weakSelf.cutPanel.bitrate = 15*1000*1000; // 15Mbps
+            weakSelf.cutPanel.encodeMode = 1; // Force hardware encoding
+            weakSelf.cutPanel.shouldOptimize = NO;
+            
+            int res =[weakSelf.cutPanel startCrop];
+            if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_VIDEO){
+                reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+            }
+            else if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_AUDIO){
+                reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+            }
+            else if (res <0 && res != -314){
+                reject(@"",@"",nil);
+            }
+            else if (res == 0) {
+                resolve(outputPath);
+            }
+        }];
+    } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
+        NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+        [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
+                                                              maxSize:outputSize
+                                                           outputPath:tmpPhotoPath
+                                                           completion:^(NSError *error, UIImage * _Nullable sourceImage) {
+            if (sourceImage == nil) {
+                return;
+            }
+            AliyunImageCrop *imageCrop = [[AliyunImageCrop alloc] init];
+            imageCrop.originImage = sourceImage;
+            imageCrop.cropMode = AliyunImageCropModeAspectCut;
+            imageCrop.cropRect = cropRect;
+            imageCrop.outputSize = cropRect.size;
+            UIImage *generatedImage = [imageCrop generateImage];
+            NSData *data = UIImagePNGRepresentation(generatedImage);
+            [data writeToFile:tmpPhotoPath atomically:YES];
+        }];
     }
-    
-    CGAffineTransform finalTransform = t2;
-    [transformer setTransform:finalTransform atTime:kCMTimeZero];
-    
-    instruction.layerInstructions = @[transformer];
-    videoComposition.instructions = @[instruction];
-    
-    exportSession.videoComposition = videoComposition;
-    
-    [exportSession exportAsynchronouslyWithCompletionHandler:^{
-        if (exportSession.status == AVAssetExportSessionStatusCompleted) {
-            resolve(outputURL);
-        }
-        else if (exportSession.status == AVAssetExportSessionStatusFailed) {
-            reject(@"",@"Failed",[exportSession error]);
-        }
-        else if (exportSession.status == AVAssetExportSessionStatusCancelled) {
-            reject(@"",@"Cancelled",[exportSession error]);
-        }
-    }];
 }
+
+/**
+ 裁剪失败回调
+
+ @param error 错误码å
+ */
+- (void)cropOnError:(int)error
+{
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    [self.cutPanel cancel];
+}
+
+/**
+ 裁剪进度回调
+
+ @param progress 当前进度 0-1
+ */
+- (void)cropTaskOnProgress:(float)progress
+{
+    NSLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
+    if (_hasListeners) {
+        [self sendEventWithName:@"cropProgress" body:@{@"progress":@(progress)}];
+    }
+}
+
+/**
+ 裁剪完成回调
+ */
+- (void)cropTaskOnComplete
+{
+    NSLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
+    if (_hasListeners) {
+        [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
+    }
+    [self.cutPanel cancel];
+}
+
+/**
+ 主动取消或退后台时回调
+ */
+- (void)cropTaskOnCancel
+{
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+}
+
+
+
 
 - (NSURL *)_getSourceURL:(NSString *)source
 {

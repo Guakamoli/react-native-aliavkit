@@ -230,12 +230,12 @@ export default class CameraScreen extends Component<Props, State> {
           // 裁剪
           // AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality })？
           //   return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
-          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:400, cropHeight:400, quality:'highest' });
+          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100.0, cropOffsetY:100.0, cropWidth:800.0, cropHeight:800.0, quality:'highest' });
           // await AVService.crop({})
           console.log('---data',data);
           
           // 进入修改
-          multipleData.length < 1 ? this.myRef.current.show('请至少选择一个上传文件', 2000)  :  this.setState({fileEditor:true})
+          // multipleData.length < 1 ? this.myRef.current.show('请至少选择一个上传文件', 2000)  :  this.setState({fileEditor:true})
         
 
           // 发送选择的数据

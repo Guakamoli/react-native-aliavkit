@@ -54,6 +54,11 @@ RCT_EXPORT_METHOD(pause)
     [self.editView pause];
 }
 
+RCT_EXPORT_METHOD(stop)
+{
+    [self.editView stop];
+}
+
 RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
