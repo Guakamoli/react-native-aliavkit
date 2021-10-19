@@ -13,7 +13,7 @@
 #import "AliyunEffectResourceModel.h"
 #import <AliyunVideoSDKPro/AliyunHttpClient.h>
 #import "AliyunPathManager.h"
-
+#import <React/RCTBridge.h>
 
 NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 NSString * const kOssBasePath =  @"https://static.paiyaapp.com";

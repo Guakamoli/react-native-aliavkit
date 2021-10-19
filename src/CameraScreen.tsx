@@ -467,7 +467,10 @@ export default class CameraScreen extends Component<Props, State> {
         {
           <TouchableOpacity
             style={{ width: 80, height: 80, backgroundColor: 'yellow' }}
-            onPress={this.downloadMusic}
+            onPress={async () => {
+              const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
+              console.log('---- downloadMusic: ', path);
+            }}
           >
             <Text>Test</Text>
           </TouchableOpacity>
