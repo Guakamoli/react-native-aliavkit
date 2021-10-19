@@ -134,6 +134,7 @@ class RecorderManage(mContext: ThemedReactContext) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
                 Companion.photoPath = photoPath
+                onRelease()
                 promise.resolve(photoPath)
             }
 
@@ -190,6 +191,7 @@ class RecorderManage(mContext: ThemedReactContext) {
             }
 
             override fun onFinish(outputPath: String?) {
+                onRelease()
                 promise.resolve(outputPath)
             }
 
@@ -250,14 +252,13 @@ class RecorderManage(mContext: ThemedReactContext) {
     }
 
 
-
     /**
      *
      */
     fun onRelease() {
-        if (mDisposableObserver != null) {
-            mDisposableObserver!!.dispose()
-        }
+        mDisposableObserver?.dispose()
+        mRecorder?.release()
+        mRecorder = null
         mRecorderQueenManage?.onRelease()
     }
 

@@ -40,10 +40,11 @@ export default class Editor extends Component<Props, State> {
   //获取滤镜列表
   getColorFilterList = async () => {
     let colorFilterList = await RNEditorKitModule.getColorFilterList(findNodeHandle(this.nativeRef.current));
-    console.log("getColorFilterList", colorFilterList);
-    this.setState({
-      colorFilterList: JSON.parse(colorFilterList),
-    });
+    return JSON.parse(colorFilterList)
+    // console.log("getColorFilterList", colorFilterList);
+    // this.setState({
+    //   colorFilterList: JSON.parse(colorFilterList),
+    // });
   };
 
 
