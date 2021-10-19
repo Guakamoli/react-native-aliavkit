@@ -187,9 +187,8 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
     PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
-    CGSize outputSize = CGSizeMake(1080, 1920);
     
-    CGRect cropRect = CGRectMake(cropOffsetX, 1920-cropOffsetY, cropWidth, cropHeight);
+    CGRect cropRect = CGRectMake(cropOffsetX, cropOffsetY, cropWidth, cropHeight);
     
     __weak typeof(self) weakSelf = self;
     if (phAsset.mediaType == PHAssetMediaTypeVideo) {
@@ -211,8 +210,8 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             // cut mode
             weakSelf.cutPanel.cropMode = 1;
             weakSelf.cutPanel.rect = cropRect;
-            weakSelf.cutPanel.bitrate = 15*1000*1000; // 15Mbps
-            weakSelf.cutPanel.encodeMode = 1; // Force hardware encoding
+            weakSelf.cutPanel.bitrate = 15*1000*1000;   // 15Mbps
+            weakSelf.cutPanel.encodeMode = 1;           // Force hardware encoding
             weakSelf.cutPanel.shouldOptimize = NO;
             
             int res =[weakSelf.cutPanel startCrop];
@@ -230,6 +229,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             }
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
+        CGSize outputSize = CGSizeMake(1080, 1920);
         NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
         [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
                                                               maxSize:outputSize

@@ -230,7 +230,7 @@ export default class CameraScreen extends Component<Props, State> {
           // 裁剪
           // AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality })？
           //   return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
-          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100.0, cropOffsetY:800.0, cropWidth:800.0, cropHeight:800.0 });
+          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100.0, cropOffsetY:100.0, cropWidth:800.0, cropHeight:800.0 });
           // await AVService.crop({})
           console.log('---data',data);
           
