@@ -20,6 +20,8 @@ const FLASH_MODE_OFF = 'off';
 
 const { width, height } = Dimensions.get('window');
 
+import AVService from './AVService.ios.ts';
+
 export enum CameraType {
   Front = 'front',
   Back = 'back',
@@ -101,14 +103,6 @@ const CameraScreeCount = () => {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text style={{ color: 'red', fontSize: 30 }}>{duration}</Text>
     </View>
-  );
-};
-
-const TestTouchArea = () => {
-  return (
-    <TouchableOpacity style={{ width: 80, height: 80, backgroundColor: 'yellow', }}>
-      <Text>Test</Text>
-    </TouchableOpacity>
   );
 };
 
@@ -457,6 +451,11 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
 
+  downloadMusic = async () => {
+    const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
+    console.log('---- downloadMusic: ', path);
+  }
+
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: 'black' }} {...this.props}>
@@ -465,7 +464,14 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
-        <TestTouchArea />
+        {
+          <TouchableOpacity
+            style={{ width: 80, height: 80, backgroundColor: 'yellow' }}
+            onPress={this.downloadMusic}
+          >
+            <Text>Test</Text>
+          </TouchableOpacity>
+        }
         <CameraScreeCount />
         {this.renderPasterButtons()}
         {this.renderBottomButtons()}
