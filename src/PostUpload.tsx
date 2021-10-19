@@ -10,7 +10,8 @@ import {
   SafeAreaView,
   ScrollView,
   FlatList,
-  NativeModules
+  NativeModules,
+  NativeEventEmitter,
 } from 'react-native';
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast'
@@ -19,14 +20,13 @@ import { FlatGrid } from 'react-native-super-grid';
 import Video from 'react-native-video';
 import Carousel from 'react-native-snap-carousel';
 import Trimmer from 'react-native-trimmer'
-import Camera from './Camera';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService.ios'
 
 
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2
-const captureIcon2 = (width - 20) / 2;
+
 const photosItem = (width / 4);
 
 
@@ -69,24 +69,26 @@ type State = {
   selectBottomModel:string
 
   // 2
-  playing: boolean,
   trimmerLeftHandlePosition: any
   trimmerRightHandlePosition: any,
   scrubberPosition: any,
+  totalDuration:any
+
 
   cropOffset:Array<any>
   cropOffsetX:any
   cropOffsetY:any
+  
+  multipleSandBoxData:any
 }
 const maxTrimDuration = 60000;
 const minimumTrimDuration = 1000;
-const totalDuration = 180000
 
-const initialLeftHandlePosition = 0;
-const initialRightHandlePosition = 36000;
+
+
 
 const scrubInterval = 50;
-
+let subscription = null
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any
@@ -122,13 +124,15 @@ export default class CameraScreen extends Component<Props, State> {
       selectBottomModel:'滤镜',
 
       //22
-      playing: false,
-    trimmerLeftHandlePosition: initialLeftHandlePosition,
-    trimmerRightHandlePosition: initialRightHandlePosition,
-    scrubberPosition: 1000,
+    trimmerLeftHandlePosition: 0,
+    trimmerRightHandlePosition: 10000,
+    scrubberPosition: 0,
+    totalDuration :60000,
+
     cropOffset:[],
     cropOffsetX:0,
     cropOffsetY:0,
+    multipleSandBoxData: '',
     };
   }
   getFilters  = async() => {
@@ -141,9 +145,21 @@ export default class CameraScreen extends Component<Props, State> {
     }
   }
   componentDidMount() {
+    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    subscription = managerEmitter.addListener(
+    'cropProgress',
+    (reminder) => {
+      console.log(reminder);
+      
+      if( reminder.progress == 1 && this.state.fileSelectType === 'video'  ){
+        this.setState({fileEditor:true})
+      }
+      //
+    }
+  );
     //获取照片
     var getPhotos = CameraRoll.getPhotos({
-      first: 30,
+      first: 100,
       assetType: 'All',
       //todo  安卓调试隐藏
       include: ["playableDuration", 'filename', 'fileSize', 'imageSize',],
@@ -198,17 +214,22 @@ export default class CameraScreen extends Component<Props, State> {
     // 滤镜
     this.getFilters()
   }
+  componentWillUnmount(){
+    subscription.remove();
+    console.log('销毁');
+    
+  }
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
     }
   }
   postHead() {
-    const {fileEditor,multipleData,fileSelectType,videoMute,cropOffsetX,cropOffsetY} = this.state
+    const {fileEditor,multipleData,fileSelectType,videoMute,cropOffsetX,cropOffsetY,multipleSandBoxData} = this.state
     return (
       <View style={{ height: 44, backgroundColor: '#000', flexDirection: "row", justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12 }}>
         <TouchableOpacity onPress={() => {
-          fileEditor ? this.setState({fileEditor:false,multipleData:[],selectBottomModel:'滤镜',startmMltiple:false}) : this.props.goback()
+          fileEditor ? this.setState({fileEditor:false,multipleData:[],selectBottomModel:'滤镜',startmMltiple:false,multipleSandBoxData:[]}) : this.props.goback()
         }} >
           <Image
             style={styles.closeIcon}
@@ -225,49 +246,55 @@ export default class CameraScreen extends Component<Props, State> {
         :   <Text style={{ fontSize: 17, fontWeight: '500', color: "#fff", lineHeight: 24 }}>新作品</Text>}
        
         <TouchableOpacity onPress={ async () => {
-          console.log({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:400, cropHeight:400, quality:'highest' });
+         console.log();
+         
+          if(multipleData.length < 1){
+            return  this.myRef.current.show('请至少选择一个上传文件', 2000)
+          }
+          // 编辑完成  导出数据  剪辑
+          if(fileEditor){
+            console.log('----编辑完成  导出数据  剪辑');
+            
+              const result = await RNEditViewManager.trimVideo({
+              videoPath: this.state.multipleSandBoxData[0],
+      // videoPath:"/var/mobile/Containers/Data/Application/8EC5F82F-0DCF-4326-8C77-694E309F8FA7/Documents/com.guakamoli.engine/composition/B9411F38-C648-43A7-959C-BB1CDC1E81FC.mp4",
+              startTime: 2.0,
+              endTime: 8.0,
+            });
+            console.log('-----result',result);
+            
+            //  发送选择的数据  
+          let uplaodFile = []
+          console.log('this.state.multipleData', this.state.multipleData);
+          let uploadFile = [result];
+          // 
+            // let type = outputPath.split('.')
+            // uploadFile.push({
+            //   Type : `${fileType}/${type[type.length - 1]}`,
+            //   path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
+            //   size : 0,
+            //   Name:outputPath
+            // })
+       
+          this.sendUploadFile(uploadFile)
+         
+          }
           
           // 裁剪
-          // AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality })？
-          //   return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
-          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100.0, cropOffsetY:800.0, cropWidth:800.0, cropHeight:800.0 });
+          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:0, cropOffsetY:100, cropWidth:800, cropHeight:800 });
+          // const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:multipleData[0].image.width, cropHeight:multipleData[0].image.width, quality:'highest' });
           // await AVService.crop({})
-          console.log('---data',data);
-          
-          // 进入修改
-          // multipleData.length < 1 ? this.myRef.current.show('请至少选择一个上传文件', 2000)  :  this.setState({fileEditor:true})
+          // console.log('---data',data);
+          this.setState({multipleSandBoxData:[data] })
+            // 进入修改
+          if(fileSelectType === 'image'){
+            this.setState({fileEditor:true})
+          }
+        
+         
         
 
-          // 发送选择的数据
-          // let uplaodFile = []
-          // console.log('this.state.multipleData', this.state.multipleData);
-          // if (this.state.multipleData.length > 0) {
-          //   this.state.multipleData.map(async (multipleDataItem) => {
-          //     const { image: { uri, width, height, filename, fileSize, playableDuration }, type } = multipleDataItem
-          //     let image_type = type + '/' + filename.split('.')[1]
-          //     let localUri = await CameraRoll.requestPhotoAccess(uri.slice(5));
-          //     if (this.state.fileSelectType === 'image') {
-          //       uplaodFile.push({
-          //         image_type,
-          //         image_dimensions: { width, height },
-          //         image_url: localUri,
-          //         image_size: fileSize,
-          //         title: filename
-          //       })
-          //     } else {
-          //       uplaodFile.push({
-          //         video_type: image_type,
-          //         type: "file",
-          //         title_link: localUri,
-          //         video_size: fileSize,
-          //         title: filename
-          //       })
-          //     }
-          //   })
-
-          // }
-          // // 选择本地文件 数据
-          // this.sendUploadFile(uplaodFile)
+         
           
         }}>
           <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
@@ -277,10 +304,14 @@ export default class CameraScreen extends Component<Props, State> {
   }
   postContent() {
     const { multipleData, CameraRollList, fileSelectType, videoFile, } = this.state;
+  
+    console.log('-----multipleData',multipleData);
+    console.log('w',width,'h',height-160,'multipleData[0]?.image.width/width',multipleData[0]?.image.width/width);
 
+    // 计算移动距离  通过宽
     return (
       <SafeAreaView style={{ flex: 1, padding: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ececec', position: 'relative' }}>
-
+        {/* 左侧尺寸按钮 */}
         <TouchableOpacity style={{
           width: 31,
           height: 31, marginRight: 10, position: 'absolute', left: 15, bottom: 20, zIndex: 99
@@ -302,16 +333,20 @@ export default class CameraScreen extends Component<Props, State> {
           margin: 'auto',
           paddingHorizontal: 0,
           backgroundColor: '#ececec',
-          width: this.state.scrollViewWidth ? width : width-60
+          width: this.state.scrollViewWidth ? width : width-90
+
         }}
           pinchGestureEnabled={true}
           onScroll = {(event)=>{{
-            console.log('multipleData',multipleData);
+            console.log('multipleData',multipleData[0]?.image);
             
             console.log(event.nativeEvent.contentOffset.x);//水平滚动距离
             console.log(event.nativeEvent.contentOffset.y);//垂直滚动距离 
-
-            this.setState({cropOffsetX: event.nativeEvent.contentOffset.x,cropOffsetY:event.nativeEvent.contentOffset.y})
+             
+            // 414    0   325
+            // 1080        1920
+            // 计算有问题  ------------
+            this.setState({cropOffsetX: event.nativeEvent.contentOffset.x * (multipleData[0]?.image.width/width),cropOffsetY:event.nativeEvent.contentOffset.y * (multipleData[0]?.image.width /width)})
            
           }}}
               
@@ -319,21 +354,22 @@ export default class CameraScreen extends Component<Props, State> {
           {
             fileSelectType === 'image' ?  <Image
             style={[{
-              width: '100%',
-              height: height - 300,
+              width: this.state.scrollViewWidth ? width : width-90,
+              height: height,
               // width: this.state.scrollViewWidth ? width : 320
             },]}
             // 安卓展示不出来 权限问题？？？？ 
             // source={{ uri: item.image.uri }}
             source={{ uri: (multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image?.uri : CameraRollList[0]?.image?.uri) }}
-            resizeMode={'stretch'}
+            resizeMode={'cover'}
           /> :
               <Video
                 source={{ uri: videoFile }}
                 style={{
                   width: width,
-                  height: height - 160,
-                }} />
+                  height: height-160,
+                }} 
+                />
           }
         </ScrollView>
       </SafeAreaView>
@@ -354,7 +390,9 @@ export default class CameraScreen extends Component<Props, State> {
             if (startmMltiple && multipleData.length) {
               this.setState({ multipleData: [multipleData[multipleData.length - 1]] })
             }
-            this.setState({ startmMltiple: !startmMltiple, })
+            // 暂时单张图㲏上传
+            // this.setState({ startmMltiple: !startmMltiple, })
+            this.setState({ startmMltiple: false, })
           }} >
             <Image
               style={[styles.multipleBtnImage, { marginRight: 10 }]}
@@ -421,7 +459,7 @@ export default class CameraScreen extends Component<Props, State> {
               const { fileSelectType, startmMltiple } = this.state
               // const a =timestamp
               return (
-                <TouchableOpacity onPress={() => {
+                <TouchableOpacity onPress={ async () => {
                   //  第一次
                   if (multipleData.length <= 1) {
                     // 获取第一次选择类型
@@ -429,6 +467,17 @@ export default class CameraScreen extends Component<Props, State> {
                     if (fileType === 'video') {
                       getVideFile(fileType, item)
                     }
+                    // let list = []
+                    // datalist.map(async(item)=>{
+                      
+                      //  let sandData =  await AVService.saveToSandBox({path:`${item.image.uri}`})
+                      // list.push(sandData)
+                      // console.log('123131',sandData);
+                     
+                      // multipleSandBoxData
+                      // this.setState({})
+                    // } )
+                    // this.setState({multipleSandBoxData:[sandData]})
                     this.setState({
                       fileSelectType: fileType,
                       multipleData: [item]
@@ -530,107 +579,109 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   postEditorViewData(){
-    
-    const data =  [1,3,4]
-    // let aa = true
-    const {multipleData}  = this.state
-    console.log('1231',multipleData);
+    const {multipleData,multipleSandBoxData}  = this.state
+    // console.log('1231',multipleData);
     // console.log('data.length',multipleData[0].length);
-    const onlyOne = multipleData.length === 1
-    if(onlyOne){
+    // const onlyOne = multipleSandBoxData.length === 1
+
+    // if(onlyOne){
+      console.log('11111111111',multipleSandBoxData);
+      
      return (
-      <View style={[{height:395,width:width,}]}>
+      // <View style={[{height:395,width:width,backgroundColor:'red',}]}>
         <VideoEditor
         ref={(edit) => (this.editor = edit)}
-        style={{width:'100%',height:'100%' }}
+        style={{height:411,width:411,}}
         filterName={this.state.filterName}
-        videoPath={multipleData[0].image.uri}
-        // imagePath={multipleData[0].image.uri}
+        // videoPath={"/var/mobile/Containers/Data/Application/9DBC4AB0-799C-4BD4-ADF1-E1F8339AF173/Documents/com.guakamoli.engine/composition/4AAF423D-3D69-4020-A695-37A855D5E460.mp4"}
+        // imagePath={multipleSandBoxData}
+        videoPath={multipleSandBoxData[0]}
         saveToPhotoLibrary={false}
-        // startExportVideo={this.state.startExportVideo}
-        // videoMute={this.state.mute}
+        startExportVideo={false}
+        videoMute={false}
         // onExportVideo={this.onExportVideo}
       />
-        {/* <Image   source ={multipleData[0].image} style={{width:'100%',height:'100%'}} / > */}
-      </View>
-     )
-    }
-    return(
-      <View style={{height:375,paddingHorizontal:0}}>
-        
-      <Carousel 
-      data={multipleData}
-      // containerCustomStyle={{backgroundColor:'green',}}
-      itemWidth={320}
-      sliderWidth={width}
-      enableSnap={this.state.aa}
-      onBeforeSnapToItem={(slideIndex = 0) => {
-        console.log('slideIndex',slideIndex,'multipleData.length',multipleData.length-1);
-        
-        if(slideIndex === multipleData.length -1){
-          console.log('aa:false');
-        this.setState({aa:false})
-        }else{
-          console.log('aa:true');
-          this.setState({aa:true})
-        }
-      }}
-      ListFooterComponent={()=>{
-        if(onlyOne) null
-        return (
-          <View style={{width:83,height:319,flexDirection:'row',alignItems:'center',marginTop:40}}>
-            
-          <TouchableOpacity  style={{}} onPress={()=>{
-            this.setState({fileEditor:false,startmMltiple:true})
-          }}>
-             <Image
-           style={[{
-             width: 83,
-             height: 83,
-             marginHorizontal:34
-           }]}
-           source={this.props.addPhotoBtnPng}
-         />
-          </TouchableOpacity>
-          </View>
-        )
-      }}
-      renderItem={({index,item})=>{
-        console.log('123',item);
-        const finall = (index == multipleData.length -1 && multipleData.length > 1)
-        
-        return (
-          <>
-          {/* <View style={{flexDirection:'row',alignItems:'center'}}> */}
-          <View style={[{height:319,width:319,marginTop:40},
-            // ,finall && {width:214}
-            
-            ]}>
-            {/* <Image   source ={item.image} style={{width:'100%',height:'100%'}} / > */}
 
-            <VideoEditor
-        ref={(edit) => (this.editor = edit)}
-        style={{width:'100%',height:'100%' }}
-        filterName={this.state.filterName}
-        videoPath={item.image.uri}
-        // imagePath={this.state.imagePath}
-        saveToPhotoLibrary={false}
-        // startExportVideo={this.state.startExportVideo}
-        // videoMute={this.state.mute}
-        // onExportVideo={this.onExportVideo}
-      />
-            </View>
-           {/* {finall && 
+      // </View>
+     )
+    // }
+    // 多图 展示
+    // return(
+    //   <View style={{height:375,paddingHorizontal:0}}>
+        
+    //   <Carousel 
+    //   data={multipleSandBoxData}
+    //   // containerCustomStyle={{backgroundColor:'green',}}
+    //   itemWidth={320}
+    //   sliderWidth={width}
+    //   enableSnap={this.state.aa}
+    //   onBeforeSnapToItem={(slideIndex = 0) => {
+    //     console.log('slideIndex',slideIndex,'multipleSandBoxData.length',multipleSandBoxData.length-1);
+        
+    //     if(slideIndex === multipleSandBoxData.length -1){
+    //       console.log('aa:false');
+    //     this.setState({aa:false})
+    //     }else{
+    //       console.log('aa:true');
+    //       this.setState({aa:true})
+    //     }
+    //   }}
+    //   ListFooterComponent={()=>{
+    //     if(onlyOne) null
+    //     return (
+    //       <View style={{width:83,height:319,flexDirection:'row',alignItems:'center',marginTop:40}}>
+            
+    //       <TouchableOpacity  style={{}} onPress={()=>{
+    //         this.setState({fileEditor:false,startmMltiple:true})
+    //       }}>
+    //          <Image
+    //        style={[{
+    //          width: 83,
+    //          height: 83,
+    //          marginHorizontal:34
+    //        }]}
+    //        source={this.props.addPhotoBtnPng}
+    //      />
+    //       </TouchableOpacity>
+    //       </View>
+    //     )
+    //   }}
+    //   renderItem={({index,item})=>{
+    //     console.log('123',item);
+    //     // const finall = (index == multipleSandBoxData.length -1 && multipleSandBoxData.length > 1)
+        
+    //     return (
+    //       <>
+    //       {/* <View style={{flexDirection:'row',alignItems:'center'}}> */}
+    //       <View style={[{height:319,width:319,marginTop:40},
+    //         // ,finall && {width:214}
+            
+    //         ]}>
+    //         {/* <Image   source ={{uri:item}} style={{width:'100%',height:'100%'}} / > */}
+
+    //         <VideoEditor
+    //     ref={(edit) => (this.editor = edit)}
+    //     style={{width:'100%',height:'100%' }}
+    //     filterName={this.state.filterName}
+    //     // videoPath={item.image.uri}
+    //     imagePath={item}
+    //     saveToPhotoLibrary={false}
+    //     // startExportVideo={this.state.startExportVideo}
+    //     // videoMute={this.state.mute}
+    //     // onExportVideo={this.onExportVideo}
+    //   />
+    //         </View>
+    //        {/* {finall && 
           
-           } */}
-           {/* </View> */}
-          </> 
-        )
-      }}
-      />
+    //        } */}
+    //        {/* </View> */}
+    //       </> 
+    //     )
+    //   }}
+    //   />
       
-    </View>
-    )
+    // </View>
+    // )
   }
   // 滤镜组件
   filterEditorFilter(){
@@ -664,67 +715,98 @@ export default class CameraScreen extends Component<Props, State> {
       trimmerLeftHandlePosition,
       trimmerRightHandlePosition,
       scrubberPosition,
-      playing,
+      totalDuration
     } = this.state;
-  
-    return null
-  //   const  playScrubber = () => {
-  //   this.setState({ playing: true });
 
-  //   this.scrubberInterval = setInterval(() => {
-  //     this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
-  //   }, scrubInterval)
-  // }
+      console.log();
+      let  scrubberInterval = null
+    // return null
+    const  playScrubber = () => {
+    // this.setState({ playing: true });
 
-  // const  pauseScrubber = () => {
-  //   clearInterval(scrubberInterval)
+    scrubberInterval = setInterval(() => {
+      this.setState({ scrubberPosition: this.state.scrubberPosition + scrubInterval })
+    }, scrubInterval)
+  }
 
-  //   this.setState({ playing: false, scrubberPosition: this.state.trimmerLeftHandlePosition });
-  // }
+  const  pauseScrubber = () => {
+    clearInterval(scrubberInterval)
 
-  // const  onHandleChange = ({ leftPosition, rightPosition }) => {
-  //   this.setState({
-  //     trimmerRightHandlePosition: rightPosition,
-  //     trimmerLeftHandlePosition: leftPosition
-  //   })
-  // }
+    this.setState({ scrubberPosition: this.state.trimmerLeftHandlePosition });
+  }
 
-  // const onScrubbingComplete = (newValue) => {
-  //   this.setState({ playing: false, scrubberPosition: newValue })
-  // }
+  const  onHandleChange = async  ( { leftPosition, rightPosition }) => {
+    console.log('12222',leftPosition, rightPosition );
+    // console.log('-----222',result);
+    //  await RNEditViewManager.pause()
+
+
+    //  await RNEditViewManager.replay()
+    //  await RNEditViewManager.play()
+    //  await RNEditViewManager.resume()
+    this.setState({
+      trimmerRightHandlePosition: rightPosition,
+      trimmerLeftHandlePosition: leftPosition
+    })
+  }
+
+  const onScrubbingComplete = (newValue) => {
+    this.setState({  scrubberPosition: newValue })
+  }
+  // 播放视频
+
+  // const { ,trimmerLeftHandlePosition,trimmerRightHandlePosition} = this.state
     return (
+      <>
+      <View style={{position:'absolute',bottom:200}}>
+      <TouchableOpacity onPress={async()=>{
+          // await RNEditViewManager.play()
+      playScrubber()
+      }}>
+        <Text style={{fontSize:20,color:"red"}}>播放</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async()=>{ 
+          //  await RNEditViewManager.pause()
+           pauseScrubber()
+           }}>
+        <Text style={{fontSize:20,color:"red",marginTop:20}}>暂停</Text>
+        </TouchableOpacity>
+        </View>
+    <View style={{marginTop:160,paddingHorizontal:20}}>
       
-    // <View style={{marginTop:160,paddingHorizontal:20}}>
-    //  <Trimmer
-    //       onHandleChange={onHandleChange}
-    //       totalDuration={totalDuration}
-    //       // 左 右侧数据
-    //       trimmerLeftHandlePosition={trimmerLeftHandlePosition}
-    //       trimmerRightHandlePosition={trimmerRightHandlePosition}
-    //       // 最小 最大 持续时间
-    //       minimumTrimDuration={minimumTrimDuration}
-    //       maxTrimDuration={maxTrimDuration}
-    //       // 缩放倍数
-    //       maximumZoomLevel={200}
-    //       zoomMultiplier={100}
-    //       //构造修剪器时的初始缩放
-    //       initialZoomValue={2}
-    //       scaleInOnInit={true}
-    //       tintColor="#333"
-    //       markerColor="#5a3d5c"
-    //       trackBackgroundColor="#382039"
-    //       trackBorderColor="#5a3d5c"
-    //       scrubberColor="#b7e778"
-    //       scrubberPosition={scrubberPosition}
-    //       onScrubbingComplete={onScrubbingComplete}
-    //       onLeftHandlePressIn={() => console.log('onLeftHandlePressIn')}
-    //       onRightHandlePressIn={() => console.log('onRightHandlePressIn')}
-    //       onScrubberPressIn={() => console.log('onScrubberPressIn')}
-    //     />
-    
-    // </View>
+    <Trimmer
+            // style={styles.trimViewContainer}
+            // 修改回调
+            onHandleChange={onHandleChange}
+            // 总时间
+            totalDuration={totalDuration}
+            // 渲染等级  以60000 为1 级别
+            initialZoomValue={1}
+            trimmerLeftHandlePosition={trimmerLeftHandlePosition}
+            trimmerRightHandlePosition={trimmerRightHandlePosition}
+            scrubberPosition={scrubberPosition}
+          //   minimumTrimDuration={minimumTrimDuration}
+              maxTrimDuration={60000}
+            // 滑块覆盖层颜色
+            // tintColor={'#651FFF'}
+            // 刻度颜色
+            // markerColor={'#651FFF'}
+            // 底部内容条颜色
+            // trackBackgroundColor={'#fff'}
+            // 底部内容条边框颜色
+            // trackBorderColor={'#fff'}
+            // scrubberColor={'#fff'}
 
-null
+            // 播放完成
+            onScrubbingComplete={()=>{console.log(123)} }
+            tintColor="#333"
+          markerColor="#5a3d5c"
+          trackBackgroundColor="#382039"
+          trackBorderColor="#5a3d5c"
+          scrubberColor="#b7e778"
+        />
+    </View>
+    </>
     )
   }
   // 封面
@@ -771,11 +853,14 @@ null
 
   photoEditorContent(){
     const {selectBottomModel,fileSelectType} = this.state;
-   
+
     return (
       <View style={{flex:1,backgroundColor:'#000',position:'relative'}}>
         {this.postEditorViewData()}
-        {/* <View style={{marginTop:100}}> */}
+        {/* <View style={{backgroundColor:'red',height:300}}> */}
+
+        {/* </View> */}
+        {/* <View style={{marginTop:100,backgroundColor:'red'}}> */}
         {
           selectBottomModel  === '滤镜' && this.filterEditorFilter()
         }
@@ -789,7 +874,7 @@ null
         {
           fileSelectType  != 'image' && this.switchProps()
         }
-{/* </View> */}
+          {/* </View> */}
         {}
       </View>
     )
@@ -798,14 +883,10 @@ null
     const {fileEditor} = this.state
     return (
       <>
-        {/* {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null} */}
-        {
-         
-              <>
+
                 {/* post */}
                 {this.postHead()}
                 {fileEditor ? 
-             
                this.photoEditorContent()
                 :
                 <>
@@ -813,11 +894,6 @@ null
                 {this.postFileUpload()}
                </>
                 }
-              
-               {/* {this.photoEditorContent()} */}
-              </>
-            
-        }
       </>
     );
   }
