@@ -18,11 +18,7 @@ export default class AVService {
   如果是图片，则不需要监听，只需要await path即可
 */
   static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight }) {
-<<<<<<< HEAD
-=======
-    console.log('11111',source, cropOffsetX, cropOffsetY, cropWidth,cropHeight);
     
->>>>>>> postUI
     return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight });
   }
 

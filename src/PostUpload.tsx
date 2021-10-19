@@ -89,6 +89,7 @@ const minimumTrimDuration = 1000;
 
 const scrubInterval = 50;
 let subscription = null
+let  trimVideoData  = null;
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any
@@ -152,7 +153,8 @@ export default class CameraScreen extends Component<Props, State> {
       console.log(reminder);
       
       if( reminder.progress == 1 && this.state.fileSelectType === 'video'  ){
-        this.setState({fileEditor:true})
+        console.log('---data',trimVideoData);
+        this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
       }
       //
     }
@@ -215,7 +217,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.getFilters()
   }
   componentWillUnmount(){
-    subscription.remove();
+    // subscription.remove();
     console.log('销毁');
     
   }
@@ -251,6 +253,10 @@ export default class CameraScreen extends Component<Props, State> {
           if(multipleData.length < 1){
             return  this.myRef.current.show('请至少选择一个上传文件', 2000)
           }
+          console.log(fileEditor);
+          console.log('this.state.multipleSandBoxData[0],',this.state.multipleSandBoxData[0],);
+          console.log('multipleData[0].image.uri',multipleData[0].image.uri);
+          
           // 编辑完成  导出数据  剪辑
           if(fileEditor){
             console.log('----编辑完成  导出数据  剪辑');
@@ -259,7 +265,7 @@ export default class CameraScreen extends Component<Props, State> {
               videoPath: this.state.multipleSandBoxData[0],
       // videoPath:"/var/mobile/Containers/Data/Application/8EC5F82F-0DCF-4326-8C77-694E309F8FA7/Documents/com.guakamoli.engine/composition/B9411F38-C648-43A7-959C-BB1CDC1E81FC.mp4",
               startTime: 2.0,
-              endTime: 8.0,
+              endTime: 3.0,
             });
             console.log('-----result',result);
             
@@ -281,11 +287,9 @@ export default class CameraScreen extends Component<Props, State> {
           }
           
           // 裁剪
-          const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:0, cropOffsetY:100, cropWidth:800, cropHeight:800 });
+          trimVideoData = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100, cropOffsetY:100, cropWidth:800, cropHeight:800 });
           // const data = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:multipleData[0].image.width, cropHeight:multipleData[0].image.width, quality:'highest' });
           // await AVService.crop({})
-          // console.log('---data',data);
-          this.setState({multipleSandBoxData:[data] })
             // 进入修改
           if(fileSelectType === 'image'){
             this.setState({fileEditor:true})
