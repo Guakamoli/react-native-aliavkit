@@ -9,20 +9,12 @@ export default class AVService {
   }
   // {sourcePth:"",resourceType:"photo/video"}
   static async saveResourceToPhotoLibrary({ sourcePath, resourceType }) {
-    return await AliAVServiceBridge.saveResourceToPhotoLibrary({ resourcePath, resourceType });
+    return await AliAVServiceBridge.saveResourceToPhotoLibrary({ sourcePath, resourceType });
   }
 
-  /*
-{
-  source:"",
-  cropOffsetX:0.0,
-  cropOffsetY:0.0,
-  cropWidth:100.0,
-  cropHeight:100.0,
-  quality:'highest',//lowest/medium/highest/640x480/960x540/1280x720/1920x1080
-}
-*/
-  static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality }) {
-    return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight, quality });
+  static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight }) {
+    return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight });
   }
+
+  
 }

@@ -504,6 +504,13 @@ AliyunIExporterCallback
     
 }
 
+- (void)stop
+{
+    [self.player stop];
+    [_editor stopEdit];
+    [self.generator cancel];
+}
+
 /// 尝试播放视频
 - (void)play
 {

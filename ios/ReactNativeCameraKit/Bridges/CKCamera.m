@@ -108,16 +108,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     
 }
 
-- (void)removeReactSubview:(UIView *)subview
+- (void)willMoveToSuperview:(UIView *)newSuperview
 {
-    [subview removeFromSuperview];
-    [super removeReactSubview:subview];
-}
-
-- (void)removeFromSuperview
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:[UIDevice currentDevice]];
-    [super removeFromSuperview];
+    if (!newSuperview) {
+        NSLog(@"---✅ %s",__PRETTY_FUNCTION__);
+        [self.cameraAction stopPreview];
+        [self.cameraAction stopRecordVideo];
+    } else {
+        
+        NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    }
 }
 
 - (AliCameraAction *)cameraAction {
