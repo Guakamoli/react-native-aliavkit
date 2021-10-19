@@ -33,6 +33,7 @@
 - (void)pause;
 - (void)stop;
 
+- (void)stop;
 - (int)seekToTime:(CGFloat)time;
 - (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 

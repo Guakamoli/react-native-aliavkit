@@ -1,4 +1,19 @@
 PODS:
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
+    - AFNetworking/NSURLSession
   - AlivcConan (1.0.5):
     - AlivcConan/AlivcConan (= 1.0.5)
   - AlivcConan/AlivcConan (1.0.5)
@@ -350,6 +365,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AFNetworking
     - AlivcConan
     - AliyunOSSiOS
     - AliyunVideoSDKPro
@@ -434,6 +450,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
   AliyunOSSiOS: b8f1dfc229cd9abf68c8ee0cb245c2d66e00dd96
   AliyunVideoSDKPro: a1ea93591ffc337559c8ebf9b0f79786cf81ccf8
