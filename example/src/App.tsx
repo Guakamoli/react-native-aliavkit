@@ -36,6 +36,12 @@ function HomeScreen({ navigation, route }) {
         >
           <Text style={styles.buttonText}>aa</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('ab')}
+        >
+          <Text style={styles.buttonText}>ab</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -69,6 +75,10 @@ function VideoEditor({ navigation }) {
 function aa (){
   return <StoryMusic />
 }
+
+function ab (){
+ return  <Example />
+}
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -80,6 +90,7 @@ export default function App() {
         <Stack.Screen name='CameraScreen' component={CameraScreen} />
         <Stack.Screen name='VideoEditor' component={VideoEditor} />
         <Stack.Screen name='aa' component={aa} />
+        <Stack.Screen name='ab' component={ab} />
       </Stack.Navigator>
     </NavigationContainer>
   );

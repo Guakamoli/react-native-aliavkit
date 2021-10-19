@@ -128,8 +128,15 @@ export default class StoryEditor extends Component<Props, State> {
   getFilters  = async() => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if(this.state.filterList.length < 1){
-      const infos = await RNEditViewManager.getFilterIcons({});
-      this.setState({filterList:infos})
+      if (Platform.OS === 'android') {
+        const filterList = await this.editor.getColorFilterList();
+        // console.log('filterList111', filterList);
+        this.setState({ filterList: filterList })
+      } else {
+        const infos = await RNEditViewManager.getFilterIcons({});
+        // console.log('getFilters', infos);
+        this.setState({ filterList: infos })
+      }
     }
   }
   componentDidMount() {
@@ -263,9 +270,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <View style={[styles.cameraContainer]}>
-          {/* <TouchableOpacity style={{ flex: 1, justifyContent:'flex-end', position: "relative" }} */}
-
- <TouchableOpacity style={[Platform.OS != 'android'&& {  flex: 1, justifyContent: 'flex-end',}, { }]}
+         <TouchableOpacity style={[Platform.OS != 'android'&& {  flex: 1, justifyContent: 'flex-end',}, { }]}
             onPress={() => {
               this.setState({ showFilterLens: false,})
               // !this.state.showFilterLens 

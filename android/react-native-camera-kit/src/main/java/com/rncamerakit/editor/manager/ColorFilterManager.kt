@@ -21,7 +21,7 @@ class ColorFilterManager (private val reactContext: ThemedReactContext){
         mColorFilterList.clear()
         EditorCommon.getColorFilterList(mContext).forEach { path ->
             val name = File(path).name
-            val icon = "$path/icon.png"
+            val icon = "file://$path/icon.png"
             mColorFilterList.add(ColorFilter(name,icon))
         }
         promise.resolve(GsonBuilder().create().toJson(mColorFilterList))
@@ -47,5 +47,5 @@ class ColorFilterManager (private val reactContext: ThemedReactContext){
     }
 
 
-    internal class ColorFilter(var name: String, var icon: String)
+    internal class ColorFilter(var filterName: String, var iconPath: String)
 }

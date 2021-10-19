@@ -892,7 +892,7 @@ componentWillUpdate(props,state){
     if( Platform.OS !== 'android'){
       sandData =  await AVService.saveToSandBox({path:image?.uri})
     }else{
-      let  sandData = image
+       sandData = image
     }
     if (this.props.allowCaptureRetake) {
       this.setState({ imageCaptured: sandData,fileType:"image" });
@@ -902,7 +902,6 @@ componentWillUpdate(props,state){
           captured: true,
           imageCaptured: sandData,
           fileType:"image",
-          videoPath:image,
           // captureImages: _.concat(this.state.captureImages, image?.uri),?
           captureImages: _.concat(this.state.captureImages, sandData),
         });

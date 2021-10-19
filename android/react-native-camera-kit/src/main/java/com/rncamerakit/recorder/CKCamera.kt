@@ -164,19 +164,11 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     }
 
     fun onRelease() {
-        if (mFocusView != null) {
-            mFocusView!!.activityStop()
-        }
-        if (mRecorder != null) {
-            mRecorder!!.release()
-            mRecorder = null
-        }
-        if (mRecorderManage != null) {
-            mRecorderManage!!.onRelease()
-        }
-        if (mDisposableObserver != null) {
-            mDisposableObserver!!.dispose()
-        }
+        mFocusView?.activityStop()
+        mRecorder?.release()
+        mRecorder = null
+        mRecorderManage?.onRelease()
+        mDisposableObserver?.dispose()
     }
 
     private val permissions = arrayOf(
