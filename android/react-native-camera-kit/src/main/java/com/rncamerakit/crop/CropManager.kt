@@ -2,12 +2,15 @@ package com.rncamerakit.crop
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
+import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.common.utils.UriUtils
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -18,11 +21,10 @@ import com.aliyun.svideosdk.crop.CropCallback
 import com.aliyun.svideosdk.crop.CropParam
 import com.aliyun.svideosdk.crop.impl.AliyunCropCreator
 import com.duanqu.transcode.NativeParser
+import com.facebook.common.util.UriUtil
 import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.uimanager.ThemedReactContext
 import com.google.gson.GsonBuilder
 import com.rncamerakit.RNEventEmitter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -32,8 +34,6 @@ import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 
 class CropManager {
@@ -49,23 +49,28 @@ class CropManager {
 
             val context = reactContext?.applicationContext
 
-            val imagePath =
-                if (readableMap.hasKey("filePath")) readableMap.getString("filePath") else ""
+            var imagePath =
+                if (readableMap.hasKey("source")) readableMap.getString("source") else ""
             if (TextUtils.isEmpty(imagePath)) {
                 promise.reject("cropImager", "error: imagePath is empty")
                 return
             }
-            BitmapUtils.checkAndAmendImgOrientation(imagePath)
+            imagePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+            val bitmap = BitmapFactory.decodeFile(imagePath)
+            val width = bitmap.width
+            val height = bitmap.height
 
             val outputWidth =
-                if (readableMap.hasKey("outputWidth")) readableMap.getInt("outputWidth") else 720
+                if (readableMap.hasKey("cropWidth")) readableMap.getInt("cropWidth") else width
             val outputHeight =
-                if (readableMap.hasKey("outputHeight")) readableMap.getInt("outputHeight") else 1280
+                if (readableMap.hasKey("cropHeight")) readableMap.getInt("cropHeight") else height
 
-            val startX = if (readableMap.hasKey("startX")) readableMap.getInt("startX") else 0
-            val startY = if (readableMap.hasKey("startY")) readableMap.getInt("startY") else 0
-            val endX = if (readableMap.hasKey("endX")) readableMap.getInt("endX") else outputWidth
-            val endY = if (readableMap.hasKey("endY")) readableMap.getInt("endY") else outputHeight
+            val startX =
+                if (readableMap.hasKey("cropOffsetX")) readableMap.getInt("cropOffsetX") else 0
+            val startY =
+                if (readableMap.hasKey("cropOffsetY")) readableMap.getInt("cropOffsetY") else 0
+            val endX = startX + outputWidth
+            val endY = startY + outputHeight
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
 
@@ -129,12 +134,14 @@ class CropManager {
 
             val context = reactContext?.applicationContext
 
-            val videoPath =
-                if (readableMap.hasKey("filePath")) readableMap.getString("filePath") else ""
+            var videoPath =
+                if (readableMap.hasKey("source")) readableMap.getString("source") else ""
             if (TextUtils.isEmpty(videoPath)) {
                 promise.reject("cropVideo", "error: videoPath is empty")
                 return
             }
+
+            videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
 
             var mVideoWidth = 720
             var mVideoHeight = 1280
@@ -154,22 +161,24 @@ class CropManager {
             }
 
             val outputWidth =
-                if (readableMap.hasKey("outputWidth")) readableMap.getInt("outputWidth") else mVideoWidth
+                if (readableMap.hasKey("cropWidth")) readableMap.getInt("cropWidth") else mVideoWidth
             val outputHeight =
-                if (readableMap.hasKey("outputHeight")) readableMap.getInt("outputHeight") else mVideoHeight
+                if (readableMap.hasKey("cropHeight")) readableMap.getInt("cropHeight") else mVideoHeight
 
-            val startX = if (readableMap.hasKey("startX")) readableMap.getInt("startX") else 0
-            val startY = if (readableMap.hasKey("startY")) readableMap.getInt("startY") else 0
-
-            val endX = if (readableMap.hasKey("endX")) readableMap.getInt("endX") else outputWidth
-            val endY = if (readableMap.hasKey("endY")) readableMap.getInt("endY") else outputHeight
+            val startX =
+                if (readableMap.hasKey("cropOffsetX")) readableMap.getInt("cropOffsetX") else 0
+            val startY =
+                if (readableMap.hasKey("cropOffsetY")) readableMap.getInt("cropOffsetY") else 0
+            val endX = startX + outputWidth
+            val endY = startY + outputHeight
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
             val duration = aliyunCrop.getVideoDuration(videoPath)
 
-            val startTime = if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") else 0
+            val startTime =
+                if (readableMap.hasKey("startTime")) readableMap.getInt("startTime")* 1000 else 0
             val endTime =
-                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") else duration
+                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")* 1000 else duration
 
             val file = File(videoPath)
             val fileName = "crop_" + file.name
@@ -191,8 +200,8 @@ class CropManager {
             param.outputHeight = outputHeight
 
             //startTime 单位：us
-            param.startTime = startTime.toLong()*1000
-            param.endTime = endTime.toLong()*1000
+            param.startTime = startTime.toLong()
+            param.endTime = endTime.toLong()
 
             param.quality = VideoQuality.SSD
             param.gop = 15
@@ -219,7 +228,7 @@ class CropManager {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
                     RNEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
-                    promise.resolve(videoPath)
+                    promise.resolve(outputPath)
                 }
 
                 override fun onCancelComplete() {

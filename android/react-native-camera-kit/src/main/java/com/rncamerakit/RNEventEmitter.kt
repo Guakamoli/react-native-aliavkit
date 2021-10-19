@@ -46,7 +46,7 @@ class RNEventEmitter {
          */
         fun startVideoCrop(reactContext: ReactContext?, progress: Int) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("startVideoCrop", "" + progress)
+                ?.emit("startVideoCrop", "" + progress.toDouble()/100)
         }
 
         /**
