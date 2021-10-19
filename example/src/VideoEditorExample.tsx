@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Alert, NativeModules } from 'react-native';
 import VideoEditor from '../../src/VideoEditor';
-const { RNEditViewManager } = NativeModules;
+const { RNEditViewManager, RNMusicService } = NativeModules;
 
 export default class VideoEditorExample extends Component {
   constructor(props) {
@@ -63,6 +63,11 @@ export default class VideoEditorExample extends Component {
     console.log('-------:', infos);
   }
 
+  async downloadMusic() {
+    const res = await RNMusicService.downloadMusic('Berlin - Take My Breath Away.mp3');
+    console.log(res);
+  }
+
   render() {
     return (
       <View style={styles.outContainer}>
@@ -84,8 +89,8 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('原片')}>
               <Text>原片</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('柔柔')}>
-              <Text>柔柔</Text>
+            <TouchableOpacity style={styles.buttonItem} onPress={() => this.downloadMusic()}>
+              <Text>music</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('波普')}>
               <Text>波普</Text>
@@ -94,7 +99,7 @@ export default class VideoEditorExample extends Component {
               style={styles.buttonItem}
               onPress={() => this.setState({ videoMute: !this.state.videoMute })}
             >
-              <Text style={{ color : 'orange' }}>🔇静音</Text>
+              <Text style={{ color: 'orange' }}>🔇静音</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.getThumbnails()}>
               <Text>抽帧</Text>
