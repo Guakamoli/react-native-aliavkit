@@ -1,5 +1,6 @@
 package com.rncamerakit.editor
 
+import android.text.TextUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.rncamerakit.crop.CropManager
@@ -113,10 +114,19 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun cropImage(options: ReadableMap, viewTag: Int, promise: Promise) {
+    fun crop(options: ReadableMap, promise: Promise) {
         val context = reactContext
         context.runOnUiQueueThread {
-            CropManager.cropImage(context, options, promise)
+            val filePath = if (options.hasKey("source")) options.getString("source") else ""
+            if (TextUtils.isEmpty(filePath)) {
+                promise.reject("crop", "error: source is empty")
+            } else {
+                if (isVideo(filePath)) {
+                    CropManager.cropVideo(context, options, promise)
+                } else {
+                    CropManager.cropImage(context, options, promise)
+                }
+            }
         }
     }
 
@@ -133,13 +143,13 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
      * 将沙盒的图片\视频 保存到相册
      */
     @ReactMethod
-    fun saveMediaStore(filePath: String, promise: Promise) {
+    fun saveMediaStore(filePath: String, sourceType: String, promise: Promise) {
         val context = reactContext
         context.runOnUiQueueThread {
-            if(isVideo(filePath)){
-                AliFileUtils.saveVideoToMediaStore(context.applicationContext,filePath)
-            }else{
-                AliFileUtils.saveImageToMediaStore(context.applicationContext,filePath)
+            if (isVideo(filePath)) {
+                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+            } else {
+                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
             }
         }
     }

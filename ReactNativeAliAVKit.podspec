@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
   s.dependency 'Queen', '1.3.1-official-pro'
-  
+  s.dependency 'AFNetworking'
   s.dependency 'FMDB'
   s.dependency 'JSONModel'
   s.dependency 'SSZipArchive'

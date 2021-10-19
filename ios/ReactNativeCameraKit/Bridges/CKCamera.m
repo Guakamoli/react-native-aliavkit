@@ -107,6 +107,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     
 }
+
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
     if (!newSuperview) {

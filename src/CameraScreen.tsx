@@ -127,6 +127,15 @@ type State = {
 }
 
 
+const TestTouchArea = () => {
+  return (
+    <TouchableOpacity style={{ width: 80, height: 80, backgroundColor: 'yellow', }}>
+      <Text>Test</Text>
+    </TouchableOpacity>
+  );
+};
+
+
 export default class CameraScreen extends Component<Props, State> {
 
   static propTypes = {
