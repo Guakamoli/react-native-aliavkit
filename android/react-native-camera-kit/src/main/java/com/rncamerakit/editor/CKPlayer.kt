@@ -187,32 +187,6 @@ class CKPlayer(val reactContext: ThemedReactContext) :
         }
     }
 
-
-    /**
-     * 导出视频
-     */
-    fun exportVideo(promise: Promise) {
-        if(mAliyunIEditor?.isPlaying == true){
-            mAliyunIEditor?.stop()
-        }
-        mAliyunIEditor?.applySourceChange()
-        mAliyunIEditor?.saveEffectToLocal()
-        mComposeManager?.startCompose(mProjectConfigure,promise,true)
-    }
-
-    /**
-     * 导出图片
-     */
-    fun exportImage(promise: Promise) {
-        if(mAliyunIEditor?.isPlaying == true){
-            mAliyunIEditor?.stop()
-        }
-        mAliyunIEditor?.applySourceChange()
-        mAliyunIEditor?.saveEffectToLocal()
-        mComposeManager?.startCompose(mProjectConfigure,promise,false)
-    }
-
-
     /**
      * 导入视频
      */

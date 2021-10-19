@@ -43,7 +43,8 @@ export type Props = {
   
   goback: any
  // 视频路径
- filePath: any, 
+ videoPath: any, 
+ imagePath:any,
  fileType:any
 }
 
@@ -105,19 +106,16 @@ export default class StoryEditor extends Component<Props, State> {
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
     console.log('1231',event);
-    const {filePath,fileType}  = this.props
+    const {fileType}  = this.props;
     if (event.exportProgress === 1) {
-      let  outputPath = event.outputPath
+      let  outputPath = event.outputPath;
       this.setState({ startExportVideo: false,outputPath:event.outputPath });
       // console.log('视频导出成功, path = ', event.outputPath);
       let uploadFile = [];
-      // 现在都是filePath 
       // 
-  
         let type = outputPath.split('.')
         uploadFile.push({
           Type : `${fileType}/${type[type.length - 1]}`,
-          // const videoPath = 
           path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
           size : 0,
           Name:outputPath
@@ -137,7 +135,8 @@ export default class StoryEditor extends Component<Props, State> {
   componentDidMount() {
     this.getFilters()
     // console.log(123131);
-      console.log('-------this.props.filePath',this.props.filePath);
+      console.log('-------this.props.videoPath',this.props.videoPath);
+      console.log('-------this.props.imagePath',this.props.imagePath);
       console.log('------fileType',this.props.fileType);
       
       
@@ -192,14 +191,15 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <>
         {/* 放弃 */}
-        <TouchableOpacity style={{ backgroundColor: '#F5FCFF',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',}} onPress={() => this.startExportVideo()}>
+        {/* <TouchableOpacity style={{ backgroundColor: '#F5FCFF',
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          alignItems: 'center',
+          justifyContent: 'center',}} 
+          onPress={() => this.startExportVideo()}>
               <Text style={{ color: 'orange' }}>导出</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         <TouchableOpacity onPress={() => {
           this.setState({  showFilterLens: false, filterLensSelect: 0,captureImages: [] })
           this.props.rephotograph()
@@ -250,7 +250,9 @@ export default class StoryEditor extends Component<Props, State> {
         ref={(edit) => (this.editor = edit)}
         style={{height:CameraHeight,justifyContent:'flex-end' }}
         filterName={this.state.filterName}
-        videoPath={this.props.filePath}
+        videoPath={this.props.videoPath}
+        imagePath={this.props.imagePath}
+       
         saveToPhotoLibrary={false}
         startExportVideo={this.state.startExportVideo}
         videoMute={this.state.mute}
@@ -261,7 +263,9 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <View style={[styles.cameraContainer]}>
-          <TouchableOpacity style={{ flex: 1, justifyContent:'flex-end', position: "relative" }}
+          {/* <TouchableOpacity style={{ flex: 1, justifyContent:'flex-end', position: "relative" }} */}
+
+ <TouchableOpacity style={[Platform.OS != 'android'&& {  flex: 1, justifyContent: 'flex-end',}, { }]}
             onPress={() => {
               this.setState({ showFilterLens: false,})
               // !this.state.showFilterLens 
@@ -369,13 +373,16 @@ export default class StoryEditor extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         /> 
-     <>
+    
               {/* story */}
                 {Platform.OS === 'android' && this.renderCamera()}
                 {Platform.OS !== 'android' && this.renderCamera()}
                 {Platform.OS === 'android' && <View style={styles.gap} />}
+                
+              <View style={{position:'absolute',bottom:0,width:width}}>
               {this.renderBottom()}
-            </>
+              </View>
+          
       </>
     );
   }

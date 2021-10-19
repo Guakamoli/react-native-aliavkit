@@ -108,6 +108,7 @@ class CropManager {
 
                 override fun onComplete(duration: Long) {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
+                    RNEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
                     promise.resolve(outputPath)
                 }
@@ -216,6 +217,7 @@ class CropManager {
 
                 override fun onComplete(duration: Long) {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
+                    RNEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
                     promise.resolve(videoPath)
                 }

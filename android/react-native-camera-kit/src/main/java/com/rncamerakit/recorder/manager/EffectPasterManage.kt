@@ -12,6 +12,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
+import com.manwei.libs.utils.FileUtils
 import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.RNEventEmitter
 import java.io.File
@@ -50,12 +51,22 @@ class EffectPasterManage private constructor() {
         mPasterList.add(emptyPaster)
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
             for (form in localInfos!!) {
-                form.isLocalRes = true
-                form.icon = "file://"+form.icon
+                if (form.id == 150) {
+                    form.icon = "file://" + form.icon
+                }
+                if(FileUtils.fileIsExists(form.path)){
+                    form.isLocalRes = true
+                    Log.e("AAA","icon："+form.icon+"\npath："+form.path)
+                }else{
+                    form.isLocalRes = false
+                    Log.e("AAA","icon："+form.icon+"\nURL："+form.url)
+                }
                 mPasterList.add(form)
+
             }
             for (mv in remoteInfos!!) {
                 mv.isLocalRes = false
+                Log.e("AAA","icon："+mv.icon+"\nURL："+mv.url)
                 mPasterList.add(mv)
             }
             val jsonList = GsonBuilder().create().toJson(mPasterList)

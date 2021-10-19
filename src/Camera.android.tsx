@@ -37,12 +37,19 @@ const Camera = React.forwardRef((props, ref) => {
   }));
 
   React.useEffect(() => {
+    //视频录制进度
     const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
       console.log("duration",duration);
+    });
+
+    //贴纸下载进度
+    const downloadPaster = DeviceEventEmitter.addListener('downloadPaster', (duration) => {
+      console.log("downloadPaster",duration);
     });
     return () => {
       // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
       subscription.remove();
+      downloadPaster.remove();
     };
   }, []);
 

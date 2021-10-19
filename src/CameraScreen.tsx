@@ -23,6 +23,7 @@ import PostUpload from './PostUpload'
 import  StoryEditor from './StoryEditor'
 import EventBus from './EventBus';
 import StoryMusic from './StoryMusic'
+import AVService from './AVService.ios'
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -254,10 +255,10 @@ export default class CameraScreen extends Component<Props, State> {
   }
  
   componentWillUnmount() {
-    // if( Platform.OS === 'android'){
-    //   console.log(Platform.OS === 'android');
-    //    this.camera.release();
-    // }
+    if( Platform.OS === 'android'){
+      console.log(Platform.OS === 'android');
+       this.camera.release();
+    }
     console.log('销毁');
     this.setState = ()=>false;
 }
@@ -330,7 +331,7 @@ componentWillUpdate(props,state){
               </TouchableOpacity>
             </View>}
           {/* 发布 */}
-          {this.state.ShootSuccess ?
+          {/* {this.state.ShootSuccess ?
             <TouchableOpacity onPress={() => {
               let uploadFile = []
               if (videoPath) {
@@ -355,7 +356,7 @@ componentWillUpdate(props,state){
                 <Text style={styles.uploadTitle}>发布快拍</Text>
               </View>
             </TouchableOpacity>
-            : null}
+            : null} */}
           {/* 相机翻转 */}
           {this.state.ShootSuccess ? null :
             <TouchableOpacity style={styles.switchScreen} onPress={() => this.onSwitchCameraPressed()}>
@@ -583,7 +584,7 @@ componentWillUpdate(props,state){
       });
     }
     if (pasterList.length < 1) {
-      getPasterData()
+      getPasterData();
       return null;
     }
     return (
@@ -742,7 +743,7 @@ componentWillUpdate(props,state){
 
         {/* 临时方案  安卓 拍摄不会触发 */}
         <TouchableOpacity
-          style={styles.captureButtonImage}
+          style={[styles.captureButtonImage,{}]}
           delayLongPress={500}
           disabled={Platform.OS !== 'android'}
           // 长按
@@ -881,19 +882,29 @@ componentWillUpdate(props,state){
   // onSetTorch() {
   //   this.setState({ torchMode: !this.state.torchMode });
   // }
-  // 拍照功能
+  // 拍照功能  改变文件类型
   async onCaptureImagePressed() {
     const image = await this.camera.capture();
     console.log('capture image path ', image);
+    //  ios 
+    let  sandData = ''
+    // 
+    if( Platform.OS !== 'android'){
+      sandData =  await AVService.saveToSandBox({path:image?.uri})
+    }else{
+      let  sandData = image
+    }
     if (this.props.allowCaptureRetake) {
-      this.setState({ imageCaptured: image?.uri,fileType:"image" });
+      this.setState({ imageCaptured: sandData,fileType:"image" });
     } else {
       if (image) {
         this.setState({
           captured: true,
-          imageCaptured: image?.uri,
+          imageCaptured: sandData,
           fileType:"image",
-          captureImages: _.concat(this.state.captureImages, image?.uri),
+          videoPath:image,
+          // captureImages: _.concat(this.state.captureImages, image?.uri),?
+          captureImages: _.concat(this.state.captureImages, sandData),
         });
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
  
@@ -1028,7 +1039,7 @@ componentWillUpdate(props,state){
                 this.state.ShootSuccess  ?  
                 <StoryEditor
                 rephotograph ={ ()=>{
-                  this.setState({ShootSuccess:false,videoPath:''})
+                  this.setState({ShootSuccess:false,videoPath:'',imageCaptured:''})
                 }}
                 getUploadFile={(data) => { this.sendUploadFile(data)  }}
                 AaImage = {this.props.AaImage}
@@ -1038,8 +1049,10 @@ componentWillUpdate(props,state){
                 noVolumeImage= {this.props.noVolumeImage}
                 tailorImage= {this.props.tailorImage}
                 volumeImage= {this.props.volumeImage}
-                filePath = {this.state.videoPath ?? this.state.imageCaptured}
+                videoPath = {this.state.videoPath }
                 fileType ={this.state.fileType}
+                imagePath = {this.state.imageCaptured }
+                // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
                 />
                 :
                 <>

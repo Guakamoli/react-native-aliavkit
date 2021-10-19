@@ -2,6 +2,8 @@ package com.rncamerakit.editor.manager
 
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.util.Log
+import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.DateTimeUtils
 import com.aliyun.svideo.common.utils.FileUtils
@@ -18,6 +20,7 @@ import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.utils.AliFileUtils
 import java.io.FileOutputStream
 import java.io.IOException
 
@@ -32,7 +35,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         mVodCompose?.init(mContext.applicationContext)
     }
 
-    private fun getCoverImager(promise: Promise?) {
+    private fun getCoverImager(promise: Promise?, isSaveToPhotoLibrary: Boolean) {
         var mVideoWidth = 720
         var frameHeight = 1280
         try {
@@ -64,7 +67,6 @@ class ComposeManager(private val mContext: ThemedReactContext) {
             override fun onThumbnailReady(frameBitmap: Bitmap?, time: Long) {
                 val timeMillis =
                     DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
-
                 val thumbnailPath = FileUtils.createFile(
                     Constants.SDCardConstants.getDir(mContext),
                     "thumbnail-$timeMillis.jpg"
@@ -85,6 +87,10 @@ class ComposeManager(private val mContext: ThemedReactContext) {
                         e.printStackTrace()
                     }
                 }
+                if(isSaveToPhotoLibrary){
+                    AliFileUtils.saveImageToMediaStore(mContext,thumbnailPath)
+                }
+                RNEventEmitter.startVideoCompose(mContext, 100,thumbnailPath)
                 promise?.resolve(thumbnailPath)
             }
 
@@ -95,14 +101,22 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         })
     }
 
-    fun startCompose(configPath: String?, promise: Promise?, isVideo: Boolean) {
+    fun startCompose(
+        configPath: String?,
+        promise: Promise?,
+        isVideo: Boolean,
+        isSaveToPhotoLibrary: Boolean
+    ) {
         val time = DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
         mOutputPath =
             Constants.SDCardConstants.getDir(mContext) + time + Constants.SDCardConstants.COMPOSE_SUFFIX
 
+        Log.e("AAA","mOutputPath:$mOutputPath")
+
         val errorCode: Int? =
             mVodCompose?.compose(configPath, mOutputPath, object : AliyunIComposeCallBack {
                 override fun onComposeError(errorCode: Int) {
+                    Log.e("AAA","onComposeError:$errorCode")
                     if (isVideo) {
                         promise?.reject("exportVideo", "errorCode:$errorCode")
                     } else {
@@ -111,19 +125,26 @@ class ComposeManager(private val mContext: ThemedReactContext) {
                 }
 
                 override fun onComposeProgress(progress: Int) {
-                    RNEventEmitter.startVideoCompose(mContext, progress)
+                    Log.e("AAA","onComposeProgress:$progress")
+                    RNEventEmitter.startVideoCompose(mContext, progress,"")
                 }
 
                 override fun onComposeCompleted() {
+                    Log.e("AAA","onComposeCompleted")
                     if (isVideo) {
+                        if(isSaveToPhotoLibrary){
+                            AliFileUtils.saveVideoToMediaStore(mContext,mOutputPath)
+                        }
+                        RNEventEmitter.startVideoCompose(mContext, 100,mOutputPath)
                         promise?.resolve(mOutputPath)
                     } else {
-                        getCoverImager(promise)
+                        getCoverImager(promise,isSaveToPhotoLibrary)
                     }
                 }
             })
 
         if (errorCode != AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS) {
+            Log.e("AAA","onComposeProgress:$errorCode")
             //合成失败
             if (isVideo) {
                 promise?.reject("exportVideo", "errorCode:$errorCode")
