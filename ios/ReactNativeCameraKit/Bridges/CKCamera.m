@@ -107,17 +107,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     
 }
-
-- (void)removeReactSubview:(UIView *)subview
+- (void)willMoveToSuperview:(UIView *)newSuperview
 {
-    [subview removeFromSuperview];
-    [super removeReactSubview:subview];
-}
-
-- (void)removeFromSuperview
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:[UIDevice currentDevice]];
-    [super removeFromSuperview];
+    if (!newSuperview) {
+        NSLog(@"---✅ %s",__PRETTY_FUNCTION__);
+        [self.cameraAction stopPreview];
+        [self.cameraAction stopRecordVideo];
+    } else {
+        
+        NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    }
 }
 
 - (AliCameraAction *)cameraAction {
@@ -315,13 +314,15 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (success) {
         NSLog(@"----- coverPath: %@",coverPath);
     }
-    ///var/mobile/Containers/Data/Application/840064A4-0DAB-4F2F-A1D1-06612A04066F/Documents/com.guakamoli.engine/composition/9D44B12C-58C2-461A-8301-F2568399CF96/cover.png
 }
 
 - (void)saveAsset:(PHAsset *)asset
 {
     NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
-    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset maxSize:CGSizeMake(1080, 1920) outputPath:tmpPhotoPath completion:^(NSError *error, UIImage * _Nullable result) {
+    [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset
+                                                          maxSize:CGSizeMake(1080, 1920)
+                                                       outputPath:tmpPhotoPath
+                                                       completion:^(NSError *error, UIImage * _Nullable result) {
         [[NSUserDefaults standardUserDefaults] setObject:tmpPhotoPath forKey:@"photoPath"];
     }];
 }

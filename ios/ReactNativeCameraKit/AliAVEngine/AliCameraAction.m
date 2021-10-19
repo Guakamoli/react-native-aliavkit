@@ -167,6 +167,7 @@ static AliCameraAction *_instance = nil;
     }
 }
 
+
 - (void)appDidBecomeActive:(id)sender
 {
     [self.recorder startPreview];

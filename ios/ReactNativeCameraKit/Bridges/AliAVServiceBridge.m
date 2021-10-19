@@ -7,23 +7,20 @@
 
 #import "AliAVServiceBridge.h"
 #import <React/RCTBridge.h>
-#import <AliyunVideoSDKPro/AliyunHttpClient.h>
 #import <Photos/Photos.h>
-#import "AVAsset+VideoInfo.h"
 #import <AVFoundation/AVFoundation.h>
+#import "AVAsset+VideoInfo.h"
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
+#import <AliyunVideoSDKPro/AliyunHttpClient.h>
 #import <AliyunVideoSDKPro/AliyunCrop.h>
 #import <AliyunVideoSDKPro/AliyunImageCrop.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
-#import <AliyunVideoSDKPro/AliyunErrorCode.h>
-#import "AVAsset+VideoInfo.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
 @interface AliAVServiceBridge ()<AliyunCropDelegate>
 {
-    RCTPromiseResolveBlock _resolve;
     BOOL _hasListeners;
 }
 
@@ -178,7 +175,6 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     CGFloat cropWidth = [[options valueForKey:@"cropWidth"] floatValue];
     CGFloat cropHeight = [[options valueForKey:@"cropHeight"] floatValue];
     
-    NSString *quality = [options valueForKey:@"quality"] ? : @"";
     
     if (cropWidth == 0.0 ) {
         reject(@"",@"Invalid cropWidth",nil);
@@ -195,18 +191,16 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     CGRect cropRect = CGRectMake(cropOffsetX, 1920-cropOffsetY, cropWidth, cropHeight);
     
-    _resolve = resolve;
     __weak typeof(self) weakSelf = self;
     if (phAsset.mediaType == PHAssetMediaTypeVideo) {
-        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:phAsset completion:^(AVAsset *avAsset, NSDictionary *info) {
+        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:phAsset
+                                                          completion:^(AVAsset *avAsset, NSDictionary *info) {
             AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
             NSString *sourcePath = [urlAsset.URL path];
             
             NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
             weakSelf.cutPanel = [[AliyunCrop alloc] initWithDelegate:(id<AliyunCropDelegate>)self];
             weakSelf.cutPanel.inputPath = sourcePath;
-//            CGSize outputSize = [avAsset avAssetNaturalSize];
-//            CGFloat resolution = [avAsset avAssetNaturalSize].width * [avAsset avAssetNaturalSize].height;
             weakSelf.cutPanel.outputSize = cropRect.size;
             weakSelf.cutPanel.outputPath = outputPath;
             weakSelf.cutPanel.startTime = 0;
@@ -251,27 +245,24 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             imageCrop.outputSize = cropRect.size;
             UIImage *generatedImage = [imageCrop generateImage];
             NSData *data = UIImagePNGRepresentation(generatedImage);
-            [data writeToFile:tmpPhotoPath atomically:YES];
+            BOOL writeSuccess = [data writeToFile:tmpPhotoPath atomically:YES];
+            if (writeSuccess) {
+                resolve(tmpPhotoPath);
+            } else {
+                reject(@"",@"write file failure",nil);
+            }
         }];
     }
 }
 
-/**
- 裁剪失败回调
 
- @param error 错误码å
- */
+#pragma mark - AliyunCropDelegate
 - (void)cropOnError:(int)error
 {
     NSLog(@"--- %s",__PRETTY_FUNCTION__);
     [self.cutPanel cancel];
 }
 
-/**
- 裁剪进度回调
-
- @param progress 当前进度 0-1
- */
 - (void)cropTaskOnProgress:(float)progress
 {
     NSLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
@@ -280,9 +271,6 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     }
 }
 
-/**
- 裁剪完成回调
- */
 - (void)cropTaskOnComplete
 {
     NSLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
@@ -292,82 +280,9 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     [self.cutPanel cancel];
 }
 
-/**
- 主动取消或退后台时回调
- */
 - (void)cropTaskOnCancel
 {
     NSLog(@"--- %s",__PRETTY_FUNCTION__);
-}
-
-
-
-
-- (NSURL *)_getSourceURL:(NSString *)source
-{
-    NSURL *sourceURL = nil;
-    if ([source containsString:@"assets-library"]) {
-        sourceURL = [NSURL URLWithString:source];
-    } else {
-        NSURL *bundleURL = [[NSBundle mainBundle] resourceURL];
-        sourceURL = [NSURL URLWithString:source relativeToURL:bundleURL];
-    }
-    
-    return sourceURL;
-}
-
-- (NSString *)_getQualityForAsset:(NSString *)quality asset:(AVAsset *)asset
-{
-    NSString *useQuality = AVAssetExportPresetPassthrough;
-    if ([quality containsString:@"low"]) {
-        useQuality = AVAssetExportPresetLowQuality;
-    }
-    else if ([quality containsString:@"medium"]) {
-        useQuality = AVAssetExportPresetMediumQuality;
-    }
-    else if ([quality containsString:@"highest"]) {
-        useQuality = AVAssetExportPresetHighestQuality;
-    }
-    else if ([quality containsString:@"640x480"]) {
-        useQuality = AVAssetExportPreset640x480;
-    }
-    else if ([quality containsString:@"960x540"]) {
-        useQuality = AVAssetExportPreset960x540;
-    }
-    else if ([quality containsString:@"1280x720"]) {
-        useQuality = AVAssetExportPreset1280x720;
-    }
-    else if ([quality containsString:@"1920x1080"]) {
-        useQuality = AVAssetExportPreset1920x1080;
-    }
-    
-    NSArray<NSString *> *arrary = [AVAssetExportSession exportPresetsCompatibleWithAsset:asset];
-    if (![arrary containsObject:useQuality]) {
-        useQuality = AVAssetExportPresetPassthrough;
-    }
-    return useQuality;
-}
-
-- (UIImageOrientation)_getVideoOrientationFromAsset:(AVAsset *)asset
-{
-    AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
-    CGSize size = videoTrack.naturalSize;
-    
-    CGAffineTransform txf = videoTrack.preferredTransform;
-    
-    if (size.width == txf.tx && size.height == txf.ty) {
-        return UIImageOrientationLeft;
-    }
-    else if (txf.tx == 0 && txf.ty == 0) {
-        return UIImageOrientationRight;
-    }
-    else if (txf.tx == 0 && txf.ty == size.width) {
-        return UIImageOrientationDown;
-    }
-    else {
-        return  UIImageOrientationUp;
-    }
-    
 }
 
 RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
@@ -405,45 +320,6 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
             complete(tmpPhotoPath);
         }];
     }
-}
-
-+ (BOOL)_saveImage:(UIImage *)image toFileName:(NSString *)fileName
-{
-    NSError *error;
-    NSFileManager *fileMgr = [NSFileManager defaultManager];
-    NSString *documentsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
-    NSArray<NSString *> *directoryFiles = [fileMgr contentsOfDirectoryAtPath:documentsDirectory error:&error];
-    
-    if (error == nil && ![directoryFiles containsObject:fileName]) {
-        NSString *imageUri = [documentsDirectory stringByAppendingPathComponent:fileName];
-        NSData *imageData = UIImageJPEGRepresentation(image, 1.0 / sqrt(2.0));
-    
-        [imageData writeToFile:imageUri atomically:YES];
-        
-        return YES;
-    }
-    
-    return NO;
-}
-
-+ (UIImage *)_getImageForAsset:(PHAsset *)asset withSize:(CGSize)size
-{
-    PHImageManager *phManager = [PHImageManager defaultManager];
-    __block UIImage *img;
-    
-    // Requesting image for asset
-    PHImageRequestOptions *requestOptions = [PHImageRequestOptions new];
-    requestOptions.synchronous = YES;
-
-    [phManager requestImageForAsset:asset
-                         targetSize:size
-                        contentMode:PHImageContentModeAspectFill
-                            options:requestOptions
-                      resultHandler:^void(UIImage *image, NSDictionary *info) {
-        img = image;
-    }];
-    
-    return img;
 }
 
 @end
