@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NativeModules } from 'react-native';
-const { AliAVServiceBridge } = NativeModules;
+const { AliAVServiceBridge, RNMusicService } = NativeModules;
 
 export default class AVService {
   static async getFacePasterInfos({}) {
@@ -16,5 +16,11 @@ export default class AVService {
     return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight });
   }
 
-  
+  static async saveToSandBox({ path }) {
+    return await AliAVServiceBridge.saveToSandBox({ path });
+  }
+
+  static async downloadMusic({ musicName }) {
+    return await RNMusicService.downloadMusic({ musicName });
+  }
 }

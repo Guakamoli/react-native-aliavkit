@@ -59,6 +59,12 @@ RCT_EXPORT_METHOD(stop)
     [self.editView stop];
 }
 
+RCT_EXPORT_METHOD(seekToTime:(NSNumber *)numberTime)
+{
+    CGFloat time = [numberTime floatValue];
+    [self.editView seekToTime:time];
+}
+
 RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

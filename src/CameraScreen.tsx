@@ -104,6 +104,15 @@ const CameraScreeCount = () => {
   );
 };
 
+const TestTouchArea = () => {
+  return (
+    <TouchableOpacity style={{ width: 80, height: 80, backgroundColor: 'yellow', }}>
+      <Text>Test</Text>
+    </TouchableOpacity>
+  );
+};
+
+
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
@@ -456,6 +465,7 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
+        <TestTouchArea />
         <CameraScreeCount />
         {this.renderPasterButtons()}
         {this.renderBottomButtons()}

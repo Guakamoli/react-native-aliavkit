@@ -31,6 +31,8 @@
 - (void)replay;
 /// 尝试暂停视频
 - (void)pause;
+
+- (void)stop;
 - (int)seekToTime:(CGFloat)time;
 - (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 
