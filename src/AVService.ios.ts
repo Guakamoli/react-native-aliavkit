@@ -28,7 +28,7 @@ export default class AVService {
     return await AliAVServiceBridge.saveToSandBox({ path });
   }
 
-  static async downloadMusic({ musicName }) {
-    return await RNMusicService.downloadMusic({ musicName });
+  static async downloadMusic(musicName) {
+    return await RNMusicService.downloadMusic(musicName);
   }
 }

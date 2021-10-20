@@ -12,16 +12,23 @@
 
 #import "AliyunEffectResourceModel.h"
 #import <AliyunVideoSDKPro/AliyunHttpClient.h>
+#import <AliyunVideoSDKPro/AVAsset+AliyunSDKInfo.h>
 #import "AliyunPathManager.h"
-
+#import <React/RCTBridge.h>
+#import <AFNetworking/AFNetworking.h>
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
+#import <AliyunVideoSDKPro/AliyunCrop.h>
 
 NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 NSString * const kOssBasePath =  @"https://static.paiyaapp.com";
 
-@interface RNMusicService ()
-
+@interface RNMusicService ()<AliyunCropDelegate>
+{
+    AliyunMusicPickModel *_currentMusicModel;
+    RCTPromiseResolveBlock _resolve;
+}
 @property (nonatomic, strong) AVPlayer *player;
-
+@property (nonatomic, strong) AliyunCrop *musicCrop;
 
 @end
 
@@ -36,95 +43,112 @@ RCT_EXPORT_MODULE()
     return _player;
 }
 
-+ (void)fetchMusicPlayUrl:(NSString *)musicId
-                  success:(void(^)(NSString *playPath,NSString *expireTime))success
-                  failure:(void(^)(NSString *errorStr))failure
-{
-    NSMutableDictionary *parameters = @{}.mutableCopy;
-    NSString *url = [NSString stringWithFormat:@"%@/music/getPlayPath",kAlivcQuUrlString];
-    if (musicId) {
-        [parameters setObject:musicId forKey:@"musicId"];
-    }
-    
-    [AlivcAppServer getWithUrlString:url
-                          parameters:parameters
-                   completionHandler:^(NSString * _Nullable errString, NSDictionary * _Nullable resultDic) {
-        if (errString) {
-            failure(errString);
-        }else{
-            BOOL result = [resultDic[@"result"] boolValue];
-            if (result) {
-                NSString *playPath = resultDic[@"data"][@"playPath"];
-                NSString *expireTime = resultDic[@"data"][@"expireTime"];
-                success(playPath,expireTime);
-            }else{
-                failure(resultDic[@"message"]);
-            }
-        }
-    }];
-}
-
-// https://static.paiyaapp.com/music/Berlin - Take My Breath Away.mp3
 RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *urlStr = [NSString stringWithFormat:@"%@/%@",kOssBasePath,musicName];
+    _resolve = resolve;
+    NSString *httpPath = [NSString stringWithFormat:@"%@/%@",kOssBasePath,musicName];
+    NSString *urlStr = [httpPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    NSString *m1 = @"https://static.paiyaapp.com/music/%E6%9D%8E%E5%AE%97%E7%9B%9B%2C%E5%91%A8%E5%8D%8E%E5%81%A5-%E6%BC%82%E6%B4%8B%E8%BF%87%E6%B5%B7%E6%9D%A5%E7%9C%8B%E4%BD%A0%20(Live).mp3?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634706639&Signature=Vm8J%2Ff9wXFDADUiePAtxGa2mUNQ%3D";
+    NSString *m2 = @"https://static.paiyaapp.com/music/Berlin%20-%20Take%20My%20Breath%20Away.mp3?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634646685&Signature=WNpS9%2BhnsdsGpAfm%2FQK5tcaW4B8%3D";
+    [self downloadLargeFileByURLStr:m2];
+}
 
-    // 下载资源
-    NSString *basePath= [[self storageFullPath] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    NSString *destination = [basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@", musicName]];
-    
-    AliyunHttpClient *httpClient = [[AliyunHttpClient alloc] initWithBaseUrl:nil];
-    [httpClient download:urlStr destination:destination progress:^(NSProgress *downloadProgress) {
-        NSLog(@"--- progress: %ll",downloadProgress.completedUnitCount/downloadProgress.totalUnitCount);
-    } completionHandler:^(NSURL *filePath, NSError *error) {
-        resolve(filePath.path);
+- (void)downloadLargeFileByURLStr:(NSString *)urlStr
+{
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithRequest:request
+                                                            completionHandler:^(NSURL * _Nullable location,
+                                                                                NSURLResponse * _Nullable response,
+                                                                                NSError * _Nullable error) {
+        NSString *fileName = response.suggestedFilename;
+        NSString *musicDirPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:@"music"];
+        [AliyunPathManager makeDirExist:musicDirPath];
+        NSString *destinationPath = [musicDirPath stringByAppendingPathComponent:fileName];
+        
+        BOOL success = [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:destinationPath] error:nil];
+        if (success) {
+            [self playItemWithPath:destinationPath];
+        }
+//        NSLog(@"fullPath: %@",destinationPath);
     }];
+    
+    [downloadTask resume];
 }
 
-- (NSString *)storageFullPath
-{
-    NSString *fullPath = [NSHomeDirectory() stringByAppendingPathComponent:@"musicRes"];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:fullPath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    return fullPath;
-}
-
-
-- (void)playItem:(AliyunMusicPickModel *)model
-{
-//    AliyunMusicPickModel *model = a;
-//    model.startTime = _startTime;
-//    model.duration = _duration;
-    AVMutableComposition *composition = [self generateMusicWithPath:model.path start:model.startTime duration:model.duration];
-    [self.player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithAsset:composition]];
-    [self.player play];
-}
-
-- (AVMutableComposition *)generateMusicWithPath:(NSString *)path
-                                          start:(float)start
-                                       duration:(float)duration
+- (void)playItemWithPath:(NSString *)path
 {
     if (!path) {
-        return nil;
-    }
-    NSLog(@"开始时间======%f",start);
-    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
-    AVMutableComposition *mutableComposition = [AVMutableComposition composition]; // Create the video composition track.
-    AVMutableCompositionTrack *mutableCompositionAudioTrack =[mutableComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-    NSArray *array = [asset tracksWithMediaType:AVMediaTypeAudio];
-    if (array.count > 0) {
-        AVAssetTrack *audioTrack = array[0];
-        CMTime startTime = CMTimeMake(start, 1000);
-        CMTime stopTime = CMTimeMake((start+duration*1000), 1000);
-        //    CMTimeRange range = CMTimeRangeMake(kCMTimeZero, CMTimeSubtract(stopTime, startTime));
-        CMTimeRange exportTimeRange = CMTimeRangeFromTimeToTime(startTime,stopTime);
-        [mutableCompositionAudioTrack insertTimeRange:exportTimeRange ofTrack:audioTrack atTime:kCMTimeZero error:nil];
+        return;
     }
     
-    return mutableComposition;
+    CGFloat start = 0.0;
+    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
+    float duration = [asset aliyunDuration];
+    AVMutableComposition *mutableComposition = [AVMutableComposition composition]; // Create the video composition track.
+    AVMutableCompositionTrack *mutableCompositionAudioTrack =
+    [mutableComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+    
+    NSArray *mediaTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+    if (mediaTracks.count <= 0) {
+        return;
+    }
+    AVAssetTrack *audioTrack = mediaTracks.firstObject;
+    CMTime startTime = CMTimeMake(start, 1000);
+    CMTime stopTime = CMTimeMake((start+duration*1000), 1000);
+    CMTimeRange exportTimeRange = CMTimeRangeFromTimeToTime(startTime,stopTime);
+    [mutableCompositionAudioTrack insertTimeRange:exportTimeRange ofTrack:audioTrack atTime:kCMTimeZero error:nil];
+    
+    [self.player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithAsset:mutableComposition]];
+    [self.player play];
+    
+    AliyunMusicPickModel *model = [AliyunMusicPickModel new];
+    model.startTime = 0;
+    model.duration = duration;
+    model.path = path;
+    [self audioTransformed:model];
 }
 
+- (void)audioTransformed:(AliyunMusicPickModel *)model
+{
+    //     配音功能只支持aac格式，mp3格式的音乐需要转码
+    //     建议使用aac格式的音乐资源
+    AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];
+    NSString *format = [parser getValueForKey:ALIYUN_AUDIO_CODEC];
+    if ([format isEqualToString:@"mp3"]) {
+        _musicCrop = [[AliyunCrop alloc] initWithDelegate:self];
+        NSString *fileName = [[model.path lastPathComponent] stringByReplacingOccurrencesOfString:@"mp3" withString:@"aac"];
+        NSString *outputPath = [[AliyunPathManager createMagicRecordDir] stringByAppendingPathComponent:fileName];
+        _musicCrop.inputPath = model.path;
+        _musicCrop.outputPath = outputPath;
+        _musicCrop.startTime = model.startTime;
+        _musicCrop.endTime = model.duration + model.startTime;
+        model.path = outputPath;
+        _currentMusicModel = model;
+        [_musicCrop startCrop];
+       
+    }
+}
+
+#pragma mark - AliyunCropDelegate -
+-(void)cropOnError:(int)error
+{
+    
+}
+
+-(void)cropTaskOnComplete
+{
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    if (_currentMusicModel) {
+        NSDictionary *dict = @{@"path":_currentMusicModel.path,
+                               @"startTime":@(_currentMusicModel.startTime),
+                               @"duration":@(_currentMusicModel.duration)};
+        NSLog(@"----: %@",dict);
+        _resolve(dict);
+    }
+}
+    
 @end

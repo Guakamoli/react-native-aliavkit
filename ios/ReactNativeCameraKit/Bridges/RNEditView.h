@@ -19,7 +19,7 @@
 ///单个视频的本地路径 - 录制进入编辑传这个值
 @property (nonatomic, strong) NSString *videoPath;
 @property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
-
+@property (nonatomic, copy) RCTBubblingEventBlock onPlayProgress;
 
 - (instancetype)initWithManager:(RNEditViewManager *)manager bridge:(RCTBridge *)bridge;
 
@@ -39,6 +39,8 @@
 
 - (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete;
 - (void)removeImages;
+
+
 @end
 
 
