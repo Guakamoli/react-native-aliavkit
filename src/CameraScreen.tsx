@@ -106,6 +106,28 @@ const CameraScreeCount = () => {
   );
 };
 
+const TestComponent = () => {
+  return (
+    <>
+      <TouchableOpacity
+        style={{
+          width: 80,
+          height: 80,
+          backgroundColor: '#3f0',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 40,
+        }}
+        onPress={ async () => {
+          const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
+          console.log('---- downloadMusic: ', path);
+        }}
+      >
+        <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
+      </TouchableOpacity>
+    </>
+  );
+};
 
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
@@ -451,11 +473,6 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
 
-  downloadMusic = async () => {
-    const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
-    console.log('---- downloadMusic: ', path);
-  }
-
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: 'black' }} {...this.props}>
@@ -464,17 +481,7 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
-        {
-          <TouchableOpacity
-            style={{ width: 80, height: 80, backgroundColor: 'yellow' }}
-            onPress={async () => {
-              const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
-              console.log('---- downloadMusic: ', path);
-            }}
-          >
-            <Text>Test</Text>
-          </TouchableOpacity>
-        }
+        <TestComponent />
         <CameraScreeCount />
         {this.renderPasterButtons()}
         {this.renderBottomButtons()}
