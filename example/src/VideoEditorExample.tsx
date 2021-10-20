@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Alert, NativeModules } from 'react-native';
 import VideoEditor from '../../src/VideoEditor';
-const { RNEditViewManager, RNMusicService } = NativeModules;
+const { RNEditViewManager } = NativeModules;
 
 export default class VideoEditorExample extends Component {
   constructor(props) {
@@ -13,6 +13,7 @@ export default class VideoEditorExample extends Component {
       startExportVideo: false,
       thumbnails: [],
       videoMute: false,
+      musicInfo: {},
     };
     this.onExportVideo = this.onExportVideo.bind(this);
 
@@ -63,11 +64,18 @@ export default class VideoEditorExample extends Component {
     console.log('-------:', infos);
   }
 
-  async downloadMusic() {
-    const res = await RNMusicService.downloadMusic('Berlin - Take My Breath Away.mp3');
-    console.log(res);
+  //
+  applyMusic() {
+    this.setState({
+      musicInfo: {
+        path:
+          '/var/mobile/Containers/Data/Application/2A6F7EE0-4C5F-4396-A3A1-A66CC4265B34/Documents/com.guakamoli.engine/composition/music/ChAKC11sg22ABl56AB2HjB36SoY.64.aac',
+        startTime: 0,
+        duration: 238.5850372314453,
+      },
+    });
   }
-
+  //'play: ', { nativeEvent: { target: 685, streamProgress: 4.906666, playProgress: 4.906666 } }
   render() {
     return (
       <View style={styles.outContainer}>
@@ -82,6 +90,14 @@ export default class VideoEditorExample extends Component {
           saveToPhotoLibrary={true}
           startExportVideo={this.state.startExportVideo}
           onExportVideo={this.onExportVideo}
+          onPlayProgress={({ nativeEvent }) => {
+            // if (nativeEvent.playEnd === true) {
+            //   console.log('playEnd', nativeEvent.playEnd);
+            // } else {
+            //   console.log('play: ', nativeEvent.playProgress);
+            // }
+          }}
+          musicInfo={this.state.musicInfo}
         >
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.startExportVideo()}>
@@ -90,7 +106,7 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('原片')}>
               <Text>原片</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonItem} onPress={() => this.downloadMusic()}>
+            <TouchableOpacity style={styles.buttonItem} onPress={() => this.applyMusic()}>
               <Text>music</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('波普')}>

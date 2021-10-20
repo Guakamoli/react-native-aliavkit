@@ -142,8 +142,8 @@ const TestComponent = () => {
           borderRadius: 40,
         }}
         onPress={ async () => {
-          const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
-          console.log('---- downloadMusic: ', path);
+          const music = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
+          console.log('---- downloadMusic: ', music);
         }}
       >
         <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
