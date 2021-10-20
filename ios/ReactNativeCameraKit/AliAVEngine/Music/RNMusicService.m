@@ -50,9 +50,9 @@ RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
     _resolve = resolve;
     NSString *httpPath = [NSString stringWithFormat:@"%@/%@",kOssBasePath,musicName];
     NSString *urlStr = [httpPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    NSString *m1 = @"https://static.paiyaapp.com/music/%E6%9D%8E%E5%AE%97%E7%9B%9B%2C%E5%91%A8%E5%8D%8E%E5%81%A5-%E6%BC%82%E6%B4%8B%E8%BF%87%E6%B5%B7%E6%9D%A5%E7%9C%8B%E4%BD%A0%20(Live).mp3?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634706639&Signature=Vm8J%2Ff9wXFDADUiePAtxGa2mUNQ%3D";
+    NSString *m1 = @"https://static.paiyaapp.com/music/794-%E6%9C%89%E4%BD%95%E4%B8%8D%E5%8F%AF/ChAKC11sg22ABl56AB2HjB36SoY.64.aac?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634730233&Signature=A1QZ2UckazCPNNmoiQtH5kXgdGE%3D";
     NSString *m2 = @"https://static.paiyaapp.com/music/Berlin%20-%20Take%20My%20Breath%20Away.mp3?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634646685&Signature=WNpS9%2BhnsdsGpAfm%2FQK5tcaW4B8%3D";
-    [self downloadLargeFileByURLStr:m2];
+    [self downloadLargeFileByURLStr:m1];
 }
 
 - (void)downloadLargeFileByURLStr:(NSString *)urlStr
@@ -109,28 +109,10 @@ RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
     model.startTime = 0;
     model.duration = duration;
     model.path = path;
-    [self audioTransformed:model];
-}
-
-- (void)audioTransformed:(AliyunMusicPickModel *)model
-{
-    //     配音功能只支持aac格式，mp3格式的音乐需要转码
-    //     建议使用aac格式的音乐资源
-    AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];
-    NSString *format = [parser getValueForKey:ALIYUN_AUDIO_CODEC];
-    if ([format isEqualToString:@"mp3"]) {
-        _musicCrop = [[AliyunCrop alloc] initWithDelegate:self];
-        NSString *fileName = [[model.path lastPathComponent] stringByReplacingOccurrencesOfString:@"mp3" withString:@"aac"];
-        NSString *outputPath = [[AliyunPathManager createMagicRecordDir] stringByAppendingPathComponent:fileName];
-        _musicCrop.inputPath = model.path;
-        _musicCrop.outputPath = outputPath;
-        _musicCrop.startTime = model.startTime;
-        _musicCrop.endTime = model.duration + model.startTime;
-        model.path = outputPath;
-        _currentMusicModel = model;
-        [_musicCrop startCrop];
-       
-    }
+    NSDictionary *dict = @{@"path":model.path,
+                           @"startTime":@(model.startTime),
+                           @"duration":@(model.duration)};
+    _resolve(dict);
 }
 
 #pragma mark - AliyunCropDelegate -
@@ -141,14 +123,7 @@ RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
 
 -(void)cropTaskOnComplete
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
-    if (_currentMusicModel) {
-        NSDictionary *dict = @{@"path":_currentMusicModel.path,
-                               @"startTime":@(_currentMusicModel.startTime),
-                               @"duration":@(_currentMusicModel.duration)};
-        NSLog(@"----: %@",dict);
-        _resolve(dict);
-    }
+    
 }
     
 @end
