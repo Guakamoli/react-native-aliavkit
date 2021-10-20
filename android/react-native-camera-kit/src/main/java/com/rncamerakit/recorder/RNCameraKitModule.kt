@@ -1,10 +1,17 @@
 package com.rncamerakit.recorder
 
 import android.app.Activity
+import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
+import com.liulishuo.filedownloader.BaseDownloadTask
+import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.recorder.manager.EffectPasterManage
+import com.rncamerakit.recorder.manager.MediaPlayerManage
+import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
+import java.io.File
 
 class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -84,6 +91,47 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         reactContext.runOnUiQueueThread {
             EffectPasterManage.instance.getPasterInfos(promise)
         }
+    }
+
+    @ReactMethod
+    fun playMusic(musicPath: String, promise: Promise) {
+        MediaPlayerManage.instance.start(musicPath,promise)
+    }
+
+    @ReactMethod
+    fun stopMusic(promise: Promise) {
+        MediaPlayerManage.instance.release()
+        promise.resolve(true)
+    }
+
+    /**
+     * 下载音乐
+     */
+    @ReactMethod
+    fun downloadMusic(musicUrl: String, promise: Promise) {
+        val savePath = File(
+            StorageUtils.getFilesDirectory(reactContext.applicationContext),
+            "/music/download"
+        ).absolutePath
+        DownloadUtils.downloadFile(musicUrl, savePath, object : MyFileDownloadCallback() {
+            override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
+                super.progress(task, soFarBytes, totalBytes)
+                val progress = soFarBytes.toDouble() / totalBytes.toDouble() * 100
+                RNEventEmitter.downloadMusicProgress(reactContext, progress.toInt())
+            }
+
+            override fun completed(task: BaseDownloadTask) {
+                super.completed(task)
+                RNEventEmitter.downloadMusicProgress(reactContext, 100)
+                val filePath = task.targetFilePath
+                promise.resolve(filePath)
+            }
+
+            override fun error(task: BaseDownloadTask, e: Throwable) {
+                super.error(task, e)
+                promise.reject("downloadMusic", "error：" + e.message)
+            }
+        })
     }
 
 

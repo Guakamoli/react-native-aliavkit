@@ -26,10 +26,28 @@ const Camera = React.forwardRef((props, ref) => {
 
     //获取服务器端的贴纸
     getPasterInfos: async () => {
-      var  pasterInfos = await RNCameraKitModule.getPasterInfos();
+      var pasterInfos = await RNCameraKitModule.getPasterInfos();
       return JSON.parse(pasterInfos)
     },
-    
+
+    //下载音乐, musicPath:音乐下载后的本地路径
+    downloadMusic: async (musicUrl) => {
+      var musicPath = await RNCameraKitModule.downloadMusic(musicUrl);
+      return musicPath
+    },
+
+    //播放本地音乐
+    playMusic: async (musicPath) => {
+      var playMusic = await RNCameraKitModule.playMusic(musicPath);
+      return playMusic
+    },
+
+     //播放本地音乐
+     stopMusic: async () => {
+      var playMusic = await RNCameraKitModule.stopMusic();
+      return playMusic
+    },
+
     //释放资源，退出页面时调用
     release: async () => {
       return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
@@ -39,12 +57,12 @@ const Camera = React.forwardRef((props, ref) => {
   React.useEffect(() => {
     //视频录制进度
     const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
-      console.log("duration",duration);
+      console.log("duration", duration);
     });
 
     //贴纸下载进度
     const downloadPaster = DeviceEventEmitter.addListener('downloadPaster', (duration) => {
-      console.log("downloadPaster",duration);
+      console.log("downloadPaster", duration);
     });
     return () => {
       // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
@@ -64,6 +82,7 @@ const Camera = React.forwardRef((props, ref) => {
       style={{ minWidth: 100, minHeight: 100 }}
       flashMode={props.flashMode}
       ref={nativeRef}
+      backgroundMusic = {"需设置背景音乐的手机本地路径：musicPath"}
       {...transformedProps}
     />);
 });

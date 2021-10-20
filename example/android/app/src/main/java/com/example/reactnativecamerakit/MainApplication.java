@@ -14,6 +14,7 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.horcrux.svg.SvgPackage;
+import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 
@@ -56,6 +57,9 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager()); // Remove this line if you don't want Flipper enabled
         DownloaderManager.getInstance().init(this);
+
+        //下载管理
+        FileDownloader.setupOnApplicationOnCreate(this);
     }
 
     /**

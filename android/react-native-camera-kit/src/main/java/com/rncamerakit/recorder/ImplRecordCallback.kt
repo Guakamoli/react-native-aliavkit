@@ -24,22 +24,22 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
     }
 
     override fun onComplete(validClip: Boolean, clipDuration: Long) {
-        mCallbacks!!.onComplete(validClip, clipDuration)
+        mCallbacks?.onComplete(validClip, clipDuration)
     }
 
     override fun onFinish(outputPath: String?) {
-        mCallbacks!!.onFinish(outputPath)
+        mCallbacks?.onFinish(outputPath)
     }
 
     override fun onProgress(duration: Long) {
-        mCallbacks!!.onProgress(duration)
+        mCallbacks?.onProgress(duration)
     }
 
     override fun onMaxDuration() {
     }
 
     override fun onError(errorCode: Int) {
-        mCallbacks!!.onError(errorCode)
+        mCallbacks?.onError(errorCode)
     }
 
     override fun onInitReady() {

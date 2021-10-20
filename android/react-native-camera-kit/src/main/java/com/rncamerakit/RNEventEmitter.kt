@@ -22,7 +22,16 @@ class RNEventEmitter {
          */
         fun downloadPasterProgress(reactContext: ReactContext?, progress: Int) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("downloadPaster", "" + progress)
+                ?.emit("downloadPaster", "" + progress.toDouble()/100)
+        }
+
+
+        /**
+         * 下载音乐
+         */
+        fun downloadMusicProgress(reactContext: ReactContext?, progress: Int) {
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("downloadPaster", "" + progress.toDouble()/100)
         }
 
         /**
