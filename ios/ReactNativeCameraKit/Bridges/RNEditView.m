@@ -28,6 +28,7 @@
 #import "AliyunCompositionInfo.h"
 #import "AliyunAlbumModel.h"
 #import "AliyunPhotoLibraryManager.h"
+#import "AliyunMusicPickModel.h"
 
 @interface RNEditView()<
 AliyunIPlayerCallback,
@@ -54,14 +55,16 @@ AliyunIExporterCallback
 
 @property (nonatomic, strong) AliyunVodPublishManager *publishManager;
 
-@property (nonatomic, strong) NSString *filterName;
+@property (nonatomic, copy) NSString *filterName;
 @property (nonatomic) BOOL startExportVideo;
 @property (nonatomic) BOOL saveToPhotoLibrary;
 @property (nonatomic, strong) AliAssetImageGenerator *generator;
 
 @property (nonatomic) BOOL videoMute;
-@property (nonatomic, strong) NSString *imagePath;
+@property (nonatomic, copy) NSString *imagePath;
 @property (nonatomic, strong) AliyunCompositionInfo *compositionInfo;
+@property (nonatomic, copy) NSDictionary *musicInfo;
+
 @end
 
 @implementation RNEditView
@@ -108,7 +111,6 @@ AliyunIExporterCallback
         self.manager = manager;
         self.bridge = bridge;
         self.backgroundColor = [UIColor blackColor];
-//        self.imagePath = @"";
     }
     return self;
 }
@@ -235,11 +237,21 @@ AliyunIExporterCallback
     self.pasterManager.delegate = (id)self;
 }
 
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-}
 
+- (void)composeMusic:(AliyunMusicPickModel *)music
+{
+    [self.editor removeMusics];
+    AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
+    effectMusic.startTime = music.startTime * 0.001;
+    effectMusic.duration = music.duration;
+    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+    int code = [self.editor applyMusic:effectMusic];
+    if (code == ALIVC_COMMON_RETURN_SUCCESS) {
+        NSLog(@"----- success");
+    }
+    
+    [self resume];
+}
 
 - (void)prepareForExport
 {
@@ -312,6 +324,13 @@ AliyunIExporterCallback
     }
 }
 
+- (void)setOnPlayProgress:(RCTBubblingEventBlock)onPlayProgress
+{
+    if (_onPlayProgress != onPlayProgress) {
+        _onPlayProgress = onPlayProgress;
+    }
+}
+
 - (void)setFilterName:(NSString *)filterName
 {
     if (_filterName != filterName) {
@@ -341,6 +360,23 @@ AliyunIExporterCallback
     if (_videoMute != videoMute) {
         _videoMute = videoMute;
         [self.editor setMute:videoMute];
+    }
+}
+
+- (void)setMusicInfo:(NSDictionary *)musicInfo
+{
+    if (_musicInfo != musicInfo) {
+        _musicInfo = musicInfo;
+        
+        if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
+            AliyunMusicPickModel *model = [AliyunMusicPickModel new];
+            model.path = [musicInfo valueForKey:@"path"];
+            model.startTime = [[musicInfo valueForKey:@"startTime"] floatValue];
+            model.duration = [[musicInfo valueForKey:@"duration"] floatValue];
+            if (model.path && model.duration > 0.0) {
+                [self composeMusic:model];
+            }
+        }
     }
 }
 
@@ -403,12 +439,14 @@ AliyunIExporterCallback
 - (void)playerDidEnd
 {
     NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    _onPlayProgress(@{@"playEnd":@(YES)});
     [self replay];
 }
 
 - (void)playProgress:(double)playSec streamProgress:(double)streamSec
 {
-    
+    _onPlayProgress(@{ @"playProgress":@(playSec),
+                       @"streamProgress":@(streamSec)});
 }
 
 - (void)changeFilterByName:(NSString *)filterName

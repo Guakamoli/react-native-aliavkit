@@ -35,6 +35,8 @@ const captureIcon2 = (width - 20) / 2;
 const captureIcon3 = (width - 30) / 2;
 const CameraHeight = (height-100)
 
+import AVService from './AVService.ios.ts';
+
 export enum CameraType {
   Front = 'front',
   Back = 'back',
@@ -127,14 +129,28 @@ type State = {
 }
 
 
-const TestTouchArea = () => {
+const TestComponent = () => {
   return (
-    <TouchableOpacity style={{ width: 80, height: 80, backgroundColor: 'yellow', }}>
-      <Text>Test</Text>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity
+        style={{
+          width: 80,
+          height: 80,
+          backgroundColor: '#3f0',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 40,
+        }}
+        onPress={ async () => {
+          const path = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
+          console.log('---- downloadMusic: ', path);
+        }}
+      >
+        <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
+      </TouchableOpacity>
+    </>
   );
 };
-
 
 export default class CameraScreen extends Component<Props, State> {
 
