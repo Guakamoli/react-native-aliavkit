@@ -6,29 +6,26 @@
 //
 
 #import "RNMusicService.h"
-#import "AlivcAppServer.h"
 #import <AVFoundation/AVFoundation.h>
-#import "AliyunMusicPickModel.h"
-
+#import "RNMusicInfo.h"
 #import "AliyunEffectResourceModel.h"
 #import <AliyunVideoSDKPro/AliyunHttpClient.h>
 #import <AliyunVideoSDKPro/AVAsset+AliyunSDKInfo.h>
 #import "AliyunPathManager.h"
 #import <React/RCTBridge.h>
 #import <AFNetworking/AFNetworking.h>
-#import <AliyunVideoSDKPro/AliyunNativeParser.h>
-#import <AliyunVideoSDKPro/AliyunCrop.h>
+#import "RNStorageManager.h"
 
-NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
-NSString * const kOssBasePath =  @"https://static.paiyaapp.com";
+static NSString * const kOssBasePath =  @"https://static.paiyaapp.com/music";
+static NSString * const kJsonURL = @"https://static.paiyaapp.com/music/songs.json";
 
-@interface RNMusicService ()<AliyunCropDelegate>
+@interface RNMusicService ()
 {
-    AliyunMusicPickModel *_currentMusicModel;
     RCTPromiseResolveBlock _resolve;
 }
+
 @property (nonatomic, strong) AVPlayer *player;
-@property (nonatomic, strong) AliyunCrop *musicCrop;
+@property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *musics;
 
 @end
 
@@ -43,19 +40,75 @@ RCT_EXPORT_MODULE()
     return _player;
 }
 
-RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
+- (NSMutableArray<RNMusicInfo *> *)musics
+{
+    if (!_musics) {
+        _musics = [NSMutableArray array];
+    }
+    return _musics;
+}
+
+/*
+ name:"", //all-music,
+ page:1,
+ */
+
+RCT_EXPORT_METHOD(getMusics:(NSDictionary *)musicRequest
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    _resolve = resolve;
-    NSString *httpPath = [NSString stringWithFormat:@"%@/%@",kOssBasePath,musicName];
-    NSString *urlStr = [httpPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    NSString *m1 = @"https://static.paiyaapp.com/music/794-%E6%9C%89%E4%BD%95%E4%B8%8D%E5%8F%AF/ChAKC11sg22ABl56AB2HjB36SoY.64.aac?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634730233&Signature=A1QZ2UckazCPNNmoiQtH5kXgdGE%3D";
-    NSString *m2 = @"https://static.paiyaapp.com/music/Berlin%20-%20Take%20My%20Breath%20Away.mp3?OSSAccessKeyId=LTAI4G3ydMZChzG5mGHoojLx&Expires=1634646685&Signature=WNpS9%2BhnsdsGpAfm%2FQK5tcaW4B8%3D";
-    [self downloadLargeFileByURLStr:m1];
+    NSString *songName = [musicRequest valueForKey:@"name"];
+    NSUInteger page = [[musicRequest valueForKey:@"page"] integerValue];
+    if ([songName isEqualToString:@"all-music"]) {
+        if (self.musics.count == 0) {
+            [self requestJson:^(NSArray<RNMusicInfo *> *infos, NSError *error) {
+                if (error) {
+                    reject(@"",@"json request fail",error);
+                } else {
+                    [self.musics addObjectsFromArray:infos];
+                    NSArray *array = [[RNStorageManager shared] getPageDataWithPage:page inArray:infos];
+                    resolve(array);
+                }
+            }];
+        } else {
+            NSArray *array = [[RNStorageManager shared] getPageDataWithPage:page inArray:self.musics];
+            resolve(array);
+        }
+    } else {
+        NSArray *array= [[RNStorageManager shared] findMusicByName:songName inArray:self.musics];
+        resolve(array);
+    }
 }
 
-- (void)downloadLargeFileByURLStr:(NSString *)urlStr
+RCT_EXPORT_METHOD(playMusic:(NSString *)musicID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:musicID inArray:self.musics];
+    if (music.isDBContain) {
+        [self _playItemAtPath:music.localPath];
+    } else {
+        NSString *urlStr = [music.url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+        [self _downloadMusicByURLStr:urlStr complete:^(BOOL success, NSString *path) {
+            music.localPath = path;
+            [self _playItemAtPath:path];
+        }];
+    }
+    resolve([music convertModelToInfo]);
+}
+
+RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    if (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+        [self.player pause];
+        BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused);
+        resolve(@(isPaused));
+    }
+}
+
+- (void)_downloadMusicByURLStr:(NSString *)urlStr complete:(void(^)(BOOL, NSString *))complete
 {
     NSURL *url = [NSURL URLWithString:urlStr];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
@@ -70,21 +123,16 @@ RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
         NSString *destinationPath = [musicDirPath stringByAppendingPathComponent:fileName];
         
         BOOL success = [[NSFileManager defaultManager] moveItemAtURL:location toURL:[NSURL fileURLWithPath:destinationPath] error:nil];
-        if (success) {
-            [self playItemWithPath:destinationPath];
+        if (complete) {
+            complete(success, destinationPath);
         }
-//        NSLog(@"fullPath: %@",destinationPath);
     }];
     
     [downloadTask resume];
 }
 
-- (void)playItemWithPath:(NSString *)path
+- (void)_playItemAtPath:(NSString *)path
 {
-    if (!path) {
-        return;
-    }
-    
     CGFloat start = 0.0;
     AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
     float duration = [asset aliyunDuration];
@@ -104,26 +152,29 @@ RCT_EXPORT_METHOD(downloadMusic:(NSString *)musicName
     
     [self.player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithAsset:mutableComposition]];
     [self.player play];
-    
-    AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-    model.startTime = 0;
-    model.duration = duration;
-    model.path = path;
-    NSDictionary *dict = @{@"path":model.path,
-                           @"startTime":@(model.startTime),
-                           @"duration":@(model.duration)};
-    _resolve(dict);
 }
 
-#pragma mark - AliyunCropDelegate -
--(void)cropOnError:(int)error
+- (void)requestJson:(void(^)(NSArray<RNMusicInfo *> *, NSError *error))complete
 {
+    NSURL *url = [NSURL URLWithString:kJsonURL];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSURLSession *session = [NSURLSession sharedSession];
     
+    NSMutableArray<RNMusicInfo *> *musics = [NSMutableArray array];
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                            completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+        NSArray *songs = dict[@"songs"];
+        for (NSDictionary *song in songs) {
+            RNMusicInfo *info = [[RNMusicInfo alloc] initWithDictionary:song];
+            [musics addObject:info];
+        }
+        if (complete) {
+            complete(musics, error);
+        }
+    }];
+    [task resume];
 }
 
--(void)cropTaskOnComplete
-{
-    
-}
-    
+
 @end

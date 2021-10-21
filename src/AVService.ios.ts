@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NativeModules } from 'react-native';
 const { AliAVServiceBridge, RNMusicService } = NativeModules;
@@ -20,7 +19,15 @@ export default class AVService {
     return await AliAVServiceBridge.saveToSandBox({ path });
   }
 
-  static async downloadMusic(musicName) {
-    return await RNMusicService.downloadMusic(musicName);
+  static async playMusic(musicID) {
+    return await RNMusicService.playMusic(musicID);
+  }
+
+  static async pauseMusic(musicID) {
+    return await RNMusicService.pauseMusic(musicID);
+  }
+
+  static async getMusics({ name, page, songID }) {
+    return await RNMusicService.getMusics({ name, page, songID });
   }
 }

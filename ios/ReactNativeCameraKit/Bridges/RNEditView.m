@@ -12,6 +12,8 @@
 #import <AliyunVideoSDKPro/AliyunPasterManager.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
 #import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
+#import <AliyunVideoSDKPro/AliyunCrop.h>
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
 
 #import "RNEditViewManager.h"
 #import "AliyunMediaConfig.h"
@@ -30,14 +32,19 @@
 #import "AliyunPhotoLibraryManager.h"
 #import "AliyunMusicPickModel.h"
 
+
+typedef void(^TransCode_blk_t)(CGFloat);
+
 @interface RNEditView()<
 AliyunIPlayerCallback,
 AliyunIRenderCallback,
 AliyunEditZoneViewDelegate,
-AliyunIExporterCallback
+AliyunIExporterCallback,
+AliyunCropDelegate
 >
 {
     BOOL _prePlaying;
+    AliyunCrop *_musicCrop;
 }
 @property(nonatomic, assign) CGSize inputOutputSize;
 @property(nonatomic, assign) CGSize outputSize;
@@ -64,6 +71,7 @@ AliyunIExporterCallback
 @property (nonatomic, copy) NSString *imagePath;
 @property (nonatomic, strong) AliyunCompositionInfo *compositionInfo;
 @property (nonatomic, copy) NSDictionary *musicInfo;
+@property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
 @end
 
@@ -238,21 +246,7 @@ AliyunIExporterCallback
 }
 
 
-- (void)composeMusic:(AliyunMusicPickModel *)music
-{
-    [self.editor removeMusics];
-    AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
-    effectMusic.startTime = music.startTime * 0.001;
-    effectMusic.duration = music.duration;
-    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
-    int code = [self.editor applyMusic:effectMusic];
-    if (code == ALIVC_COMMON_RETURN_SUCCESS) { //-10002001  文件解析失败
-        NSLog(@"----- success");
-    }
-    
-    
-    [self resume];
-}
+
 
 - (void)prepareForExport
 {
@@ -370,13 +364,79 @@ AliyunIExporterCallback
     
     if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
         AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-        model.path = [musicInfo valueForKey:@"path"];
-        model.startTime = [[musicInfo valueForKey:@"startTime"] floatValue];
-        model.duration = [[musicInfo valueForKey:@"duration"] floatValue];
+        model.path = [musicInfo valueForKey:@"localPath"];
+        model.startTime = 0;
+        
+        AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];
+        NSString *format = [parser getValueForKey:ALIYUN_AUDIO_CODEC];
+        model.duration = [parser getAudioDuration];
+        float outputVolume = [[AVAudioSession sharedInstance] outputVolume];
+        model.volume = outputVolume;
+        NSLog(@"outputVolume: %lf", outputVolume);
+        
         if (model.path && model.duration > 0.0) {
-            [self composeMusic:model];
+            if ([format isEqualToString:@"mp3"] ) {
+                __weak typeof(self) weakSelf = self;
+                [self transcode:model complete:^(CGFloat progress) {
+                    if (progress == 1.0) {
+                        [weakSelf composeAACFormatMusic:model];
+                    }
+                }];
+            } else {
+                [self composeAACFormatMusic:model];
+            }
         }
     }
+}
+
+- (void)transcode:(AliyunMusicPickModel *)model complete:(TransCode_blk_t)complete
+{
+    //配音功能只支持aac格式，mp3格式的音乐需要转码
+    //建议使用aac格式的音乐资源
+    _musicCrop = [[AliyunCrop alloc] initWithDelegate:self];
+    NSString *outputPath = [[AliyunPathManager createMagicRecordDir] stringByAppendingPathComponent:[model.path lastPathComponent]];
+    _musicCrop.inputPath = model.path;
+    _musicCrop.outputPath = outputPath;
+    _musicCrop.startTime = model.startTime;
+    _musicCrop.endTime = model.duration + model.startTime;
+    model.path = outputPath;
+    int num = [_musicCrop startCrop];
+    if (num == 0) {
+        NSLog(@"---- startCrop: %d",num);
+        self.transCode_blk = complete;
+    }
+}
+
+- (void)cropTaskOnProgress:(float)progress
+{
+    NSLog(@"--- %s : %f", __PRETTY_FUNCTION__, progress);
+    self.transCode_blk(progress);
+}
+
+- (void)cropTaskOnComplete
+{
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    self.transCode_blk(1.0);
+}
+
+/// 合成应用ACC格式的音乐，非此格式需要转码
+/// @param music AliyunMusicPickModel
+- (void)composeAACFormatMusic:(AliyunMusicPickModel *)music
+{
+    [self.editor removeMusics];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:music.path]) {
+        NSLog(@"----- music.path: %@",music.path);
+    }
+    AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
+    effectMusic.startTime = music.startTime * 0.001;
+    effectMusic.duration = music.duration;
+    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+    int code = [self.editor applyMusic:effectMusic];
+    if (code == ALIVC_COMMON_RETURN_SUCCESS) {
+        NSLog(@"----- composeAACFormatMusic success");
+    }
+    
+    [self resume];
 }
 
 - (void)requestAuthorization:(void(^)(void))completion

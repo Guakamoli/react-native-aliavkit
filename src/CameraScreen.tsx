@@ -481,7 +481,6 @@ export default class CameraScreen extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {this.renderRatioStrip()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
-        <TestComponent />
         <CameraScreeCount />
         {this.renderPasterButtons()}
         {this.renderBottomButtons()}
