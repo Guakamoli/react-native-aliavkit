@@ -246,9 +246,10 @@ AliyunIExporterCallback
     effectMusic.duration = music.duration;
     effectMusic.audioMixWeight = (int)roundf(music.volume*100);
     int code = [self.editor applyMusic:effectMusic];
-    if (code == ALIVC_COMMON_RETURN_SUCCESS) {
+    if (code == ALIVC_COMMON_RETURN_SUCCESS) { //-10002001  文件解析失败
         NSLog(@"----- success");
     }
+    
     
     [self resume];
 }
@@ -276,12 +277,12 @@ AliyunIExporterCallback
             [self initEditorSDK];
         } else {
             //**For test only**
-            NSString * photoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"photoPath"];
-            if (photoPath) {
-                [self _setPhotoTaskPath:photoPath];
-                _imagePath = photoPath;
-            }
-            [self initEditorSDK];
+//            NSString * photoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"photoPath"];
+//            if (photoPath) {
+//                [self _setPhotoTaskPath:photoPath];
+//                _imagePath = photoPath;
+//            }
+//            [self initEditorSDK];
         }
         NSLog(@"------imagePath：%@",_imagePath);
     }
@@ -299,9 +300,9 @@ AliyunIExporterCallback
             [self initEditorSDK];
         } else {
             //**For test only**
-//            NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-//            _videoPath = videoSavePath;
-//            [self initEditorSDK];
+            NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+            _videoPath = videoSavePath;
+            [self initEditorSDK];
         }
         NSLog(@"------videoPath：%@",_videoPath);
     }
@@ -365,17 +366,15 @@ AliyunIExporterCallback
 
 - (void)setMusicInfo:(NSDictionary *)musicInfo
 {
-    if (_musicInfo != musicInfo) {
-        _musicInfo = musicInfo;
-        
-        if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
-            AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-            model.path = [musicInfo valueForKey:@"path"];
-            model.startTime = [[musicInfo valueForKey:@"startTime"] floatValue];
-            model.duration = [[musicInfo valueForKey:@"duration"] floatValue];
-            if (model.path && model.duration > 0.0) {
-                [self composeMusic:model];
-            }
+    _musicInfo = musicInfo;
+    
+    if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
+        AliyunMusicPickModel *model = [AliyunMusicPickModel new];
+        model.path = [musicInfo valueForKey:@"path"];
+        model.startTime = [[musicInfo valueForKey:@"startTime"] floatValue];
+        model.duration = [[musicInfo valueForKey:@"duration"] floatValue];
+        if (model.path && model.duration > 0.0) {
+            [self composeMusic:model];
         }
     }
 }
@@ -439,14 +438,19 @@ AliyunIExporterCallback
 - (void)playerDidEnd
 {
     NSLog(@"--- %s",__PRETTY_FUNCTION__);
-    _onPlayProgress(@{@"playEnd":@(YES)});
+    if (_onPlayProgress) {
+        _onPlayProgress(@{@"playEnd":@(YES)});
+    }
     [self replay];
 }
 
 - (void)playProgress:(double)playSec streamProgress:(double)streamSec
 {
-    _onPlayProgress(@{ @"playProgress":@(playSec),
-                       @"streamProgress":@(streamSec)});
+    id event = @{ @"playProgress":@(playSec),
+                  @"streamProgress":@(streamSec)};
+    if (_onPlayProgress) {
+        _onPlayProgress(event);
+    }
 }
 
 - (void)changeFilterByName:(NSString *)filterName

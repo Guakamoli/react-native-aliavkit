@@ -34,7 +34,7 @@ RCT_EXPORT_VIEW_PROPERTY(startExportVideo, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToPhotoLibrary, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(videoMute, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(musicInfo, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(onPlayProgress,RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onPlayProgress, RCTBubblingEventBlock)
 
 RCT_EXPORT_METHOD(play)
 {
