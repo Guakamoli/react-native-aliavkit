@@ -1,15 +1,15 @@
 package com.rncamerakit.recorder.manager
 
 import android.content.Context
+import android.text.TextUtils
 import com.aliyun.common.utils.CommonUtil
+import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.ScreenUtils
-import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.util.SharedPreferenceUtils
-import com.aliyun.svideo.recorder.view.effects.EffectBody
 import com.aliyun.svideosdk.common.struct.common.AliyunSnapVideoParam
 import com.aliyun.svideosdk.common.struct.common.VideoQuality
 import com.aliyun.svideosdk.common.struct.effect.EffectFilter
@@ -25,10 +25,13 @@ import com.aliyun.svideosdk.recorder.AliyunIClipManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ThemedReactContext
+import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
+import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -36,10 +39,10 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.util.*
 
-class RecorderManage(mContext: ThemedReactContext) {
+class RecorderManage(private val mContext: ThemedReactContext) {
 
     var cameraType: CameraType? = null
-    var mRecorder: AlivcIMixRecorderInterface? = null
+    var mRecorder: AlivcRecorder? = null
 
     private var mClipManager: AliyunIClipManager? = null
     private var mRecordCallback: ImplRecordCallback? = null
@@ -75,6 +78,28 @@ class RecorderManage(mContext: ThemedReactContext) {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(mDisposableObserver)
     }
+
+//    private fun downloadMusic(mode: String?){
+//        var url = if (mode == "back") {
+//            "https://static.paiyaapp.com/music/Berlin%20-%20Take%20My%20Breath%20Away.mp3"
+//        } else {
+//            "https://static.paiyaapp.com/music/%E6%9D%8E%E5%AE%97%E7%9B%9B%2C%E5%91%A8%E5%8D%8E%E5%81%A5-%E6%BC%82%E6%B4%8B%E8%BF%87%E6%B5%B7%E6%9D%A5%E7%9C%8B%E4%BD%A0%20(Live).mp3"
+//        }
+//        val path = StorageUtils.getFilesDirectory(mContext.applicationContext)
+//            .toString() + "/music/download"
+//        DownloadUtils.downloadFile(
+//            url,
+//            path,
+//            object : MyFileDownloadCallback() {
+//                override fun completed(task: BaseDownloadTask) {
+//                    super.completed(task)
+//                    mRecorder?.setMute(false)
+//                    val filePath = task.targetFilePath
+//                    MediaPlayerManage.instance.start(filePath)
+//                    mRecorder?.setMusic(filePath, 0, 30 * 1000)
+//                }
+//            })
+//    }
 
 
     /**
@@ -120,6 +145,18 @@ class RecorderManage(mContext: ThemedReactContext) {
      */
     fun setTorchMode(mode: String?) {
         mRecorder?.setLight(if ("on" == mode) FlashType.TORCH else mFlashType)
+    }
+
+
+    /**
+     * 设置背景音乐
+     */
+    fun setBackgroundMusic(bgm: String?) {
+        if (TextUtils.isEmpty(bgm)) {
+            mRecorder?.setMusic(null, 0, 0)
+        } else {
+            mRecorder?.setMusic(bgm, 0, 30 * 1000)
+        }
     }
 
 
@@ -283,12 +320,13 @@ class RecorderManage(mContext: ThemedReactContext) {
         mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
         mRecorder?.setCamera(CameraType.FRONT)
         mRecorder?.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
-        mClipManager = mRecorder?.getClipManager()
+        mClipManager = mRecorder?.clipManager
+        //最大时间必须设置，否则设置录制背景音乐无效
+        mClipManager?.maxDuration = 30 * 1000
         mRecordCallback = ImplRecordCallback(mContext)
         mRecorder?.setRecordCallback(mRecordCallback)
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
 
     }
-
 
 }

@@ -29,22 +29,12 @@ export default class Editor extends Component<Props, State> {
     this.nativeRef = React.createRef();
   };
 
-  _onExportVideo = (event) => {
-    if (!this.props.onExportVideo) {
-      return;
-    }
-    this.props.onExportVideo(event.nativeEvent);
-  };
 
 
   //获取滤镜列表
   getColorFilterList = async () => {
     let colorFilterList = await RNEditorKitModule.getColorFilterList(findNodeHandle(this.nativeRef.current));
     return JSON.parse(colorFilterList)
-    // console.log("getColorFilterList", colorFilterList);
-    // this.setState({
-    //   colorFilterList: JSON.parse(colorFilterList),
-    // });
   };
 
 
@@ -68,15 +58,15 @@ export default class Editor extends Component<Props, State> {
   };
 
   //定位播放
-  onSeek = async () => {
+  onSeek = async (time) => {
     // * seek到某个时间点   @param time 时间，单位：毫秒
-    let seek = await RNEditorKitModule.seek(2000,findNodeHandle(this.nativeRef.current));
+    let seek = await RNEditorKitModule.seek(time,findNodeHandle(this.nativeRef.current));
     console.log("onSeek", seek);
   };
 
-  //获取视频封面
-  onVideoCover = async () => {
-    let videoCover = await RNEditorKitModule.videoCover(2000,findNodeHandle(this.nativeRef.current));
+  //获取视频封面    @param time 时间，单位：毫秒
+  onVideoCover = async (time) => {
+    let videoCover = await RNEditorKitModule.videoCover(time,findNodeHandle(this.nativeRef.current));
     console.log("onVideoCover", videoCover);
   };
 
@@ -92,36 +82,6 @@ export default class Editor extends Component<Props, State> {
   };
 
 
-  onCropImage = async ()=>{
-    let cropParam = {
-      'filePath': '/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634097852533-photo.jpg',
-      'outputWidth': 500,
-      'outputHeight': 500,
-      'startX': 0,
-      'startY': 200,
-      'endX': 500,
-      'endY': 700,
-    }
-    let cropImage = await RNEditorKitModule.cropImage(cropParam, findNodeHandle(this.nativeRef.current));
-    console.log("cropImage", cropImage);
-  }
-
-  onCropVideo = async ()=>{
-    let cropParam = {
-      'filePath': '/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record.mp4',
-      'outputWidth': 500,
-      'outputHeight': 500,
-      'startX': 0,
-      'startY': 200,
-      'endX': 500,
-      'endY': 700,
-      'startTime': 2000,
-      'endTime': 9000,
-    }
-    let cropVideo = await RNEditorKitModule.cropVideo(cropParam, findNodeHandle(this.nativeRef.current));
-    console.log("cropVideo", cropVideo);
-  }
-
 
   componentDidMount() {
     //播放回调
@@ -129,10 +89,10 @@ export default class Editor extends Component<Props, State> {
       // console.log("startVideoEditor", duration);
     });
 
-    //视频裁剪进度
-    this.startVideoCropListener = DeviceEventEmitter.addListener('startVideoCrop', (progress) => {
-      console.log("startVideoCrop", progress);
-    });
+    // //视频裁剪进度
+    // this.startVideoCropListener = DeviceEventEmitter.addListener('startVideoCrop', (progress) => {
+    //   console.log("startVideoCrop", progress);
+    // });
 
     //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
@@ -147,9 +107,9 @@ export default class Editor extends Component<Props, State> {
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }
-    if (this.startVideoCropListener != null) {
-      this.startVideoCropListener.remove();
-    }
+    // if (this.startVideoCropListener != null) {
+    //   this.startVideoCropListener.remove();
+    // }
     if (this.startVideoComposeListener != null) {
       this.startVideoComposeListener.remove();
     }
@@ -162,17 +122,8 @@ export default class Editor extends Component<Props, State> {
           ref={this.nativeRef}
           style={{ minWidth: 100, minHeight: 100 }}
           {...this.props}
-          startExportVideo = {this.props.startExportVideo}
+          // startExportVideo = {this.props.startExportVideo}
         />
-       
-
-
-        <View style={styles.captureButtonContainer}>
-          <TouchableOpacity onPress={() => this.onCropVideo()}>
-            <Image source={this.props.captureButtonImage} resizeMode='contain' />
-          </TouchableOpacity>
-        </View>
-
       </View>
     );
   }

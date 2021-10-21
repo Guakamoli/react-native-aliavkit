@@ -12,9 +12,6 @@ import com.facebook.react.common.ReactConstants.TAG
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
-import com.rncamerakit.recorder.manager.EffectPasterManage
-import java.util.*
-import kotlin.collections.HashMap
 
 
 class CKCameraManager : SimpleViewManager<CKCamera>() {
@@ -25,7 +22,6 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
     override fun createViewInstance(context: ThemedReactContext): CKCamera {
         //初始化贴纸管理
-        EffectPasterManage.instance.init(context)
         return CKCamera(context)
     }
 
@@ -63,7 +59,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
      */
     @ReactProp(name = "facePasterInfo")
     fun setFacePasterInfo(view: CKCamera, readableMap: ReadableMap?) {
-        if (readableMap != null && readableMap.toHashMap().size>0) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
             val previewPaster = PreviewPasterForm()
             previewPaster.icon =
                 if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
@@ -116,6 +112,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     @ReactProp(name = "cameraType")
     fun setCameraType(view: CKCamera, type: String?) {
         view.mRecorderManage?.setCameraType(type)
+
     }
 
     //是否开启闪光灯
@@ -128,6 +125,13 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     @ReactProp(name = "torchMode")
     fun setTorchMode(view: CKCamera, mode: String?) {
         view.mRecorderManage?.setTorchMode(mode)
+    }
+
+
+    //设置背景音乐
+    @ReactProp(name = "backgroundMusic")
+    fun setBackgroundMusic(view: CKCamera, bgm: String?) {
+        view.mRecorderManage?.setBackgroundMusic(bgm)
     }
 
     @ReactProp(name = "focusMode")

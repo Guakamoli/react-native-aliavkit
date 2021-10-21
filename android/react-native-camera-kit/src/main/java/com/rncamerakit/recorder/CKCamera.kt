@@ -12,10 +12,12 @@ import com.aliyun.svideo.common.utils.PermissionUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideo.downloader.DownloaderManager
-import com.aliyun.svideo.recorder.mixrecorder.AlivcIMixRecorderInterface
+import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.uimanager.ThemedReactContext
+import com.rncamerakit.recorder.manager.EffectPasterManage
+import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -29,12 +31,13 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
 
+    private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
     private var mVideoContainer: FrameLayout? = null
     var mRecorderManage: RecorderManage? = null
         private set
-    private var mRecorder: AlivcIMixRecorderInterface? = null
+    private var mRecorder: AlivcRecorder? = null
     private var mDisposableObserver: DisposableObserver<String>? = null
     private var mWidth = 0
     private var mHeight = 0
@@ -44,6 +47,7 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         mRecorder = mRecorderManage!!.mRecorder
         mRecorder?.setDisplayView(mRecorderSurfaceView, null)
         mRecorder?.startPreview()
+
     }
 
     private fun initVideoContainer() {
@@ -141,6 +145,8 @@ class CKCamera(private val reactContext: ThemedReactContext) :
                     mRecorderManage!!.initColorFilterAssets()
                 }
                 setFaceTrackModePath()
+
+                EffectPasterManage.instance.init(reactContext)
             }
 
             override fun onError(e: Throwable?) {
@@ -169,6 +175,8 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         mRecorder = null
         mRecorderManage?.onRelease()
         mDisposableObserver?.dispose()
+
+        MediaPlayerManage.instance.release()
     }
 
     private val permissions = arrayOf(
@@ -191,7 +199,6 @@ class CKCamera(private val reactContext: ThemedReactContext) :
     }
 
     init {
-        onRelease()
         if (!isPermissions()) {
             getPermissions()
         }
@@ -203,5 +210,6 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         initRecorder()
         initFocusView()
         copyAssets()
+
     }
 }

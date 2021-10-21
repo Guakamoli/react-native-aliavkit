@@ -156,7 +156,11 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun importVideo(filePath: String?, isVideo: Boolean) {
         this.isVideo = isVideo
-        mProjectConfigure = mImportManager?.importVideo(filePath).toString()
+        if(isVideo){
+            mProjectConfigure = mImportManager?.importVideo(filePath).toString()
+        }else{
+            mProjectConfigure = mImportManager?.importImage(filePath).toString()
+        }
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
     }
 
