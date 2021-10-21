@@ -14,7 +14,6 @@ import {
   TextInput
 } from 'react-native';
 
-import _ from 'lodash';
 
 import Carousel from 'react-native-snap-carousel';
 

@@ -35,7 +35,7 @@ const captureIcon2 = (width - 20) / 2;
 const captureIcon3 = (width - 30) / 2;
 const CameraHeight = (height-100)
 
-import AVService from './AVService.ios.ts';
+// import AVService from './AVService.ios.ts';
 
 export enum CameraType {
   Front = 'front',
@@ -600,9 +600,8 @@ componentWillUpdate(props,state){
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess ,pasterList,musicOpen} = this.state
     const getPasterData = async () => {
-      // console.log('getPasterInfos');
       const pasters = await this.camera.getPasterInfos();
-      console.log('--------pasters',pasters)
+      // console.log('--------pasters',pasters)
       this.setState({
         pasterList: pasters,
         facePasterInfo: pasters[0]
