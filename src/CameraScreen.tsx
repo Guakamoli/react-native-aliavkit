@@ -714,7 +714,7 @@ export default class CameraScreen extends Component<Props, State> {
           enableMomentum={true}
           scrollInterpolator={this._scrollInterpolator}
           slideInterpolatedStyle={this._animatedStyles}
-          // onScroll={this._onScroll}
+          onScroll={this._onScroll}
           enableSnap={true}
           data={pasterList}
           decelerationRate={'normal'}
@@ -728,8 +728,9 @@ export default class CameraScreen extends Component<Props, State> {
           contentContainerCustomStyle={{ height: 100, justifyContent: 'center', alignItems: 'center' }}
           // justifyContent='center'
           useScrollView={true}
-          // firstItem={this.state.currentIndex}
+          firstItem={this.state.currentIndex}
           onBeforeSnapToItem={(slideIndex = 0) => {
+            console.log('asdasdasd', slideIndex);
             this.setState({
               currentIndex: slideIndex,
               facePasterInfo: pasterList[slideIndex],

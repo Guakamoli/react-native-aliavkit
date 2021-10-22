@@ -114,7 +114,7 @@ export default class Carousel extends Component {
         // and this results in an absolutely crappy behavior on Android while swiping (see #156)
         const initialActiveItem = this._getFirstItem(props.firstItem);
         this._activeItem = initialActiveItem;
-        this._previousActiveItem = initialActiveItem;
+        this._previousActiveItem = null;
         this._previousFirstItem = initialActiveItem;
         this._previousItemsLength = initialActiveItem;
 
@@ -140,6 +140,7 @@ export default class Carousel extends Component {
         this._onMomentumScrollEnd = props.enableMomentum ? this._onMomentumScrollEnd.bind(this) : undefined;
         this._onTouchStart = this._onTouchStart.bind(this);
         this._onTouchEnd = this._onTouchEnd.bind(this);
+        this._onTouchEndWrapper = this._onTouchEndWrapper.bind(this);
         this._onTouchRelease = this._onTouchRelease.bind(this);
 
         this._getKeyExtractor = this._getKeyExtractor.bind(this);
@@ -189,7 +190,7 @@ export default class Carousel extends Component {
             if (!this._mounted) {
                 return;
             }
-
+            console.info("kaishi")
             this._snapToItem(_firstItem, false, false, true, false);
             this._hackActiveSlideAnimation(_firstItem, 'start', true);
 
@@ -789,7 +790,7 @@ export default class Carousel extends Component {
             if (this._activeItem !== nextActiveItem) {
                 this._activeItem = nextActiveItem;
             }
-
+            console.info("你看", itemReached, this._canFireBeforeCallback, nextActiveItem, this._itemToSnapTo)
             if (itemReached) {
                 if (this._canFireBeforeCallback) {
                     this._onBeforeSnap(this._getDataIndex(nextActiveItem));
@@ -848,7 +849,24 @@ export default class Carousel extends Component {
             onTouchStart(e)
         }
     }
+    _onTouchEndWrapper() {
+        if (this._ignoreNextMomentum) {
+            // iOS fix
+            this._ignoreNextMomentum = false;
+            return;
+        }
 
+        if (this._currentContentOffset === this._scrollEndOffset) {
+            return;
+        }
+        const { autoplayDelay, enableSnap } = this.props;
+
+        this._scrollEndActive = this._getActiveItem(this._scrollEndOffset);
+
+        if (enableSnap) {
+            this._snapScroll(this._scrollEndOffset - this._scrollStartOffset, false);
+        }
+    }
     _onTouchEnd() {
         const { onTouchEnd } = this.props
 
@@ -898,7 +916,8 @@ export default class Carousel extends Component {
         const { onMomentumScrollEnd } = this.props;
 
         if (this._carouselRef) {
-            this._onScrollEnd && this._onScrollEnd();
+            this._onScrollEnd && this._onScrollEnd(false);
+            this._onScroll(event)
         }
 
         if (onMomentumScrollEnd) {
@@ -906,7 +925,7 @@ export default class Carousel extends Component {
         }
     }
 
-    _onScrollEnd(event) {
+    _onScrollEnd(event, flag = true) {
 
         const { autoplayDelay, enableSnap } = this.props;
 
@@ -924,7 +943,7 @@ export default class Carousel extends Component {
         this._scrollEndActive = this._getActiveItem(this._scrollEndOffset);
 
         if (enableSnap) {
-            this._snapScroll(this._scrollEndOffset - this._scrollStartOffset);
+            this._snapScroll(this._scrollEndOffset - this._scrollStartOffset, flag);
         }
 
         // The touchEnd event is buggy on Android, so this will serve as a fallback whenever needed
@@ -967,7 +986,7 @@ export default class Carousel extends Component {
         }
     }
 
-    _snapScroll(delta) {
+    _snapScroll(delta, toItem = true) {
         const { swipeThreshold } = this.props;
 
         // When using momentum and releasing the touch with
@@ -976,35 +995,34 @@ export default class Carousel extends Component {
             this._scrollEndActive = this._scrollStartActive;
         }
 
-        if (this._scrollStartActive !== this._scrollEndActive) {
+        if (this._scrollStartActive !== this._scrollEndActive && toItem) {
             // Snap to the new active item
             this._snapToItem(this._scrollEndActive);
         } else {
             // Snap depending on delta
             if (delta > 0) {
                 if (delta > swipeThreshold) {
-                    this._snapToItem(this._scrollStartActive + 1);
+                    this._snapToItem(this._scrollStartActive + 1, true, true, false, true, !toItem);
                 } else {
-                    this._snapToItem(this._scrollEndActive);
+                    this._snapToItem(this._scrollEndActive, true, true, false, true, !toItem);
                 }
             } else if (delta < 0) {
                 if (delta < -swipeThreshold) {
-                    this._snapToItem(this._scrollStartActive - 1);
+                    this._snapToItem(this._scrollStartActive - 1, true, true, false, true, !toItem);
                 } else {
-                    this._snapToItem(this._scrollEndActive);
+                    this._snapToItem(this._scrollEndActive, true, true, false, true, !toItem);
                 }
             } else {
                 // Snap to current
-                this._snapToItem(this._scrollEndActive);
+                this._snapToItem(this._scrollEndActive, true, true, false, true, !toItem);
             }
         }
     }
 
-    _snapToItem(index, animated = true, fireCallback = true, initial = false, lockScroll = true) {
+    _snapToItem(index, animated = true, fireCallback = true, initial = false, lockScroll = true, onlySetFlag = false) {
         const { enableMomentum, onSnapToItem, onBeforeSnapToItem } = this.props;
         const itemsLength = this._getCustomDataLength();
         const wrappedRef = this._getWrappedRef();
-
         if (!itemsLength || !wrappedRef) {
             return;
         }
@@ -1040,6 +1058,17 @@ export default class Carousel extends Component {
 
         if (!this._scrollOffsetRef && this._scrollOffsetRef !== 0) {
             return;
+        }
+
+        if (onlySetFlag) {
+            if (onBeforeSnapToItem) {
+                this._canFireBeforeCallback = true;
+            }
+
+            if (onSnapToItem) {
+                this._canFireCallback = true;
+            }
+            return
         }
 
         this._scrollTo(this._scrollOffsetRef, animated);
@@ -1334,7 +1363,7 @@ export default class Carousel extends Component {
             onResponderRelease: this._onTouchRelease,
             onStartShouldSetResponderCapture: this._onStartShouldSetResponderCapture,
             onTouchStart: this._onTouchStart,
-            // onTouchEnd: this._onScrollEnd,
+            onTouchEnd: this._onTouchEndWrapper,
             onLayout: this._onLayout,
             ...specificProps
         };
