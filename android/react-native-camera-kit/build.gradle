@@ -44,19 +44,24 @@ dependencies {
     implementation 'com.google.mlkit:barcode-scanning:16.0.3'
 
     implementation project(':lib:lib-base')
-    implementation project (':common:AlivcMedia')
-    implementation project (':common:AliyunEditor')
-    implementation project (':common:AliyunCrop:crop')
-    implementation project (':common:AliyunRecorder:record')
-    implementation project (':common:AliyunVideoCommon')
-    implementation project (':common:AliyunFileDownLoader')
-    implementation project (':common:AliyunResample')
-    implementation project (':common:AliyunSVideoBase')
-    implementation project (':common:AliyunSvideoMusic')
+    implementation project(':common:AlivcMedia')
+    implementation project(':common:AliyunEditor')
+    implementation project(':common:AliyunCrop:crop')
+    implementation project(':common:AliyunRecorder:record')
+    implementation project(':common:AliyunVideoCommon')
+    implementation project(':common:AliyunFileDownLoader')
+    implementation project(':common:AliyunResample')
+    implementation project(':common:AliyunSVideoBase')
+    implementation project(':common:AliyunSvideoMusic')
 
     implementation externalAliyunQueen
 
+//    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha07"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
 
+    implementation "org.jetbrains.anko:anko:0.10.8"
+
+//    implementation "androidx.datastore:datastore-preferences:1.0.0"
+//    implementation "androidx.datastore:datastore-preferences-core:1.0.0"
 
 }
