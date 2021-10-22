@@ -2,11 +2,15 @@ package com.rncamerakit.recorder
 
 import android.app.Activity
 import com.aliyun.common.utils.StorageUtils
+import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
+import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.db.MusicFileInfo
+import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.DownloadUtils
@@ -94,8 +98,14 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun getMusicList(promise: Promise) {
+        val list = MusicFileInfoDao.instance.queryAll()
+        promise.resolve(GsonBuilder().create().toJson(list))
+    }
+
+    @ReactMethod
     fun playMusic(musicPath: String, promise: Promise) {
-        MediaPlayerManage.instance.start(musicPath,promise)
+        MediaPlayerManage.instance.start(musicPath, promise)
     }
 
     @ReactMethod
@@ -105,33 +115,18 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     /**
-     * 下载音乐
+     * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
      */
     @ReactMethod
-    fun downloadMusic(musicUrl: String, promise: Promise) {
-        val savePath = File(
-            StorageUtils.getFilesDirectory(reactContext.applicationContext),
-            "/music/download"
-        ).absolutePath
-        DownloadUtils.downloadFile(musicUrl, savePath, object : MyFileDownloadCallback() {
-            override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
-                super.progress(task, soFarBytes, totalBytes)
-                val progress = soFarBytes.toDouble() / totalBytes.toDouble() * 100
-                RNEventEmitter.downloadMusicProgress(reactContext, progress.toInt())
-            }
-
-            override fun completed(task: BaseDownloadTask) {
-                super.completed(task)
-                RNEventEmitter.downloadMusicProgress(reactContext, 100)
-                val filePath = task.targetFilePath
-                promise.resolve(filePath)
-            }
-
-            override fun error(task: BaseDownloadTask, e: Throwable) {
-                super.error(task, e)
-                promise.reject("downloadMusic", "error：" + e.message)
-            }
-        })
+    fun getMusicPath(songID: Int, musicUrl: String, promise: Promise) {
+        val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(songID)
+        if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
+            promise.resolve(musicInfo.localPath)
+            return
+        }
+        reactContext.runOnUiQueueThread {
+            DownloadUtils.downloadMusic(reactContext, songID, musicUrl, promise)
+        }
     }
 
 

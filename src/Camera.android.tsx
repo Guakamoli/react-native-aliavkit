@@ -30,9 +30,9 @@ const Camera = React.forwardRef((props, ref) => {
       return JSON.parse(pasterInfos)
     },
 
-    //下载音乐, musicPath:音乐下载后的本地路径
-    downloadMusic: async (musicUrl) => {
-      var musicPath = await RNCameraKitModule.downloadMusic(musicUrl);
+    //获取背景音乐地址
+    getMusicPath: async (songID,musicUrl) => {
+      var musicPath = await RNCameraKitModule.downloadMusic(songID,musicUrl);
       return musicPath
     },
 
@@ -82,7 +82,7 @@ const Camera = React.forwardRef((props, ref) => {
       style={{ minWidth: 100, minHeight: 100 }}
       flashMode={props.flashMode}
       ref={nativeRef}
-      backgroundMusic = {"需设置背景音乐的手机本地路径：musicPath"}
+      backgroundMusic = {"/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/music/download/10020_许嵩-庐州月.aac"}
       {...transformedProps}
     />);
 });

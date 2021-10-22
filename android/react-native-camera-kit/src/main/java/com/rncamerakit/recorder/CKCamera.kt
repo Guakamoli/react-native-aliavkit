@@ -8,28 +8,38 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleObserver
-import com.aliyun.svideo.common.utils.PermissionUtils
-import com.aliyun.svideo.common.utils.ScreenUtils
-import com.aliyun.svideo.common.utils.ThreadUtils
+import com.aliyun.svideo.common.utils.*
 import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
+import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.uimanager.ThemedReactContext
+import com.manwei.libs.utils.GsonManage
+import com.rncamerakit.db.MusicFileBaseInfo
+import com.rncamerakit.db.MusicFileInfo
+import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
+import com.rncamerakit.utils.DownloadUtils
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.io.File
+import java.net.URL
 import java.util.*
 
 @SuppressLint("ViewConstructor")
-class CKCamera(private val reactContext: ThemedReactContext) :
+class CKCamera(
+    private val reactContext: ThemedReactContext,
+) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
+
 
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
@@ -175,7 +185,6 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         mRecorder = null
         mRecorderManage?.onRelease()
         mDisposableObserver?.dispose()
-
         MediaPlayerManage.instance.release()
     }
 
@@ -211,5 +220,38 @@ class CKCamera(private val reactContext: ThemedReactContext) :
         initFocusView()
         copyAssets()
 
+        MusicFileInfoDao.instance.init(mContext)
+
+        doAsync {
+            val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
+            val md5Text = MD5Utils.getMD5(text)
+            val spKey = "MUSIC_JSON_FILE_MD5_KEY"
+            val md5Value = SPUtils.getInstance().getString(spKey)
+            uiThread {
+                if (md5Text == md5Value) {
+                    downloadAllMusic()
+                    return@uiThread
+                }
+                val baseInfo: MusicFileBaseInfo = GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                MusicFileInfoDao.instance.insertList(baseInfo.songs)
+                SPUtils.getInstance().put(spKey, md5Text)
+                downloadAllMusic()
+            }
+        }
+
     }
+
+
+    private fun downloadAllMusic(){
+       val list =  MusicFileInfoDao.instance.queryAll()
+        list?.forEach continuing@{
+            val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(it.songID)
+            if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
+                return@continuing
+            }
+            DownloadUtils.downloadMusic(reactContext, it.songID, it.url, null)
+        }
+    }
+
+
 }
