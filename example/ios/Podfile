@@ -14,6 +14,7 @@ target 'CameraKitExample' do
   pod 'RNGestureHandler', :path => '../../node_modules/react-native-gesture-handler'
   pod 'react-native-image-filter-kit',:path => '../../node_modules/react-native-image-filter-kit'  
   # pod 'react-native-safte-area-context', :path => '../../node_modules/react-native-safe-area-context'  
+
   pod 'ReactNativeAliAVKit', :path => '../..'
 
   # Enables Flipper.

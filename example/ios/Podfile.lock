@@ -319,7 +319,9 @@ PODS:
     - VODUpload (= 1.6.1)
   - RNGestureHandler (1.10.3):
     - React-Core
-  - RNScreens (3.8.0):
+  - RNGestureHandler (1.10.3):
+    - React-Core
+  - RNScreens (3.7.2):
     - React-Core
     - React-RCTImage
   - RNSVG (12.1.1):
@@ -364,8 +366,9 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeAliAVKit (from `../..`)
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
-  - RNScreens (from `../../node_modules/react-native-screens`)
+  - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -449,6 +452,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeAliAVKit:
     :path: "../.."
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
   RNScreens:
@@ -467,7 +472,7 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 3393208292f685741b535f591340641645049cd8
+  FBReactNativeSpec: 86153ff2624bcf8b4b61e6e2573429f8c7185045
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
@@ -501,13 +506,14 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeAliAVKit: a75eb0bdff6bb7b33557ad13066d92bbab3f8833
+  RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
+  RNScreens: 0591543e343c7444ea1756b6265d81a4295922c9
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 2fd473e372c3f0a3bc248f21cc0502514389bf8e
+PODFILE CHECKSUM: f9e60324937f8a56925cc632d40abf95b537ef7b
 
 COCOAPODS: 1.10.1
