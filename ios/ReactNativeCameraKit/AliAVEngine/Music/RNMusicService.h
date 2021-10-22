@@ -11,6 +11,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RNMusicService : NSObject<RCTBridgeModule>
 
+
++ (void)downloadMusicWithSongID:(NSString *)songID
+                         urlStr:(NSString *)urlStr
+                       complete:(void(^)(BOOL, NSString *))complete;
+
 @end
 
 NS_ASSUME_NONNULL_END

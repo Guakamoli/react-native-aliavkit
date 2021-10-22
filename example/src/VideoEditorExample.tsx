@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Alert, NativeModules } from 'react-native';
 import VideoEditor from '../../src/VideoEditor';
 const { RNEditViewManager } = NativeModules;
+import AVService from '../../src/AVService.ios';
 
 export default class VideoEditorExample extends Component {
   constructor(props) {
@@ -13,7 +14,9 @@ export default class VideoEditorExample extends Component {
       startExportVideo: false,
       thumbnails: [],
       videoMute: false,
+      setMusic: false,
       musicInfo: {},
+      musics: [],
     };
     this.onExportVideo = this.onExportVideo.bind(this);
 
@@ -64,17 +67,6 @@ export default class VideoEditorExample extends Component {
     console.log('-------:', infos);
   }
 
-  //
-  applyMusic() {
-    this.setState({
-      musicInfo: {
-        path:
-          '/var/mobile/Containers/Data/Application/2A6F7EE0-4C5F-4396-A3A1-A66CC4265B34/Documents/com.guakamoli.engine/composition/music/ChAKC11sg22ABl56AB2HjB36SoY.64.aac',
-        startTime: 0,
-        duration: 238.5850372314453,
-      },
-    });
-  }
   //'play: ', { nativeEvent: { target: 685, streamProgress: 4.906666, playProgress: 4.906666 } }
   render() {
     return (
@@ -97,8 +89,62 @@ export default class VideoEditorExample extends Component {
             //   console.log('play: ', nativeEvent.playProgress);
             // }
           }}
-          musicInfo={this.state.musicInfo}
+          musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
         >
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const musics = await AVService.getMusics({ name: 'all-music', page: 6, pageSize:5 });
+                console.log('---- getMusics: ', musics);
+                this.setState({ musics });
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>get-musics</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const song = await AVService.playMusic(this.state.musics[2].songID);
+                console.log('---- playMusic: ', song);
+                this.setState({ musicInfo: song });
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>play</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const playingSong = await AVService.pauseMusic(this.state.musics[2].songID);
+                console.log('---- pauseMusic: ', playingSong);
+                
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>pause</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.startExportVideo()}>
               <Text style={{ color: 'orange' }}>导出</Text>
@@ -106,7 +152,16 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('原片')}>
               <Text>原片</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonItem} onPress={() => this.applyMusic()}>
+            <TouchableOpacity
+              style={styles.buttonItem}
+              onPress={async () => {
+                const status = await AVService.pauseMusic(this.state.musicInfo.songID);
+                if (status === true) {
+                  console.log('---- pauseMusic: ', status);
+                  this.setState({ setMusic: true });
+                }
+              }}
+            >
               <Text>music</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.changeFilter('波普')}>
