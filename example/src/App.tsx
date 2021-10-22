@@ -1,99 +1,57 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { Component } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 
 import CameraScreenExample from './CameraScreenExample';
+import BarcodeScreenExample from './BarcodeScreenExample';
 import CameraExample from './CameraExample';
-import VideoEditorExample from './VideoEditorExample';
-import Example from './trimmer'
-import StoryMusic from '../../src/StoryMusic'
-function HomeScreen({ navigation, route }) {
-  return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.headerContainer}>
-        <Text style={{ fontSize: 60 }}>🎈</Text>
-        <Text style={styles.headerText}>React Native Camera Kit</Text>
+
+export default class App extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      example: undefined,
+    };
+  }
+
+  render() {
+    if (this.state.example) {
+      const Example = this.state.example;
+      return <Example />;
+    }
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={styles.headerContainer}>
+          <Text style={{ fontSize: 60 }}>🎈</Text>
+          <Text style={styles.headerText}>
+            React Native Camera Kit
+          </Text>
+        </View>
+        <View style={styles.container}>
+          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraExample })}>
+            <Text style={styles.buttonText}>
+              Camera
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraScreenExample })}>
+            <Text style={styles.buttonText}>
+              Camera Screen
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: BarcodeScreenExample })}>
+            <Text style={styles.buttonText}>
+              Barcode Scanner
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.container}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Camera')}>
-          <Text style={styles.buttonText}>Camera</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CameraScreen')}>
-          <Text style={styles.buttonText}>Camera Screen</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('VideoEditor')}
-        >
-          <Text style={styles.buttonText}>Video Play</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('aa')}
-        >
-          <Text style={styles.buttonText}>aa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('ab')}
-        >
-          <Text style={styles.buttonText}>ab</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
-function CameraScreen({ navigation }) {
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: 'Camera',
-      headerRight: () => <Button title='play' onPress={() => navigation.navigate('VideoEditor')} />,
-    });
-  }, [navigation]);
-
-  return <CameraScreenExample />;
-}
-
-function Camera({ navigation }) {
-  return <CameraExample />;
-}
-
-function VideoEditor({ navigation }) {
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: 'Camera',
-      headerRight: () => <Button title='Home' onPress={() => navigation.navigate('Home')} />,
-    });
-  }, [navigation]);
-
-  return <VideoEditorExample />;
-}
-function aa (){
-  return <StoryMusic />
-}
-
-function ab (){
- return  <Example />
-}
-const Stack = createNativeStackNavigator();
-
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name='Home' component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name='Camera' component={Camera} />
-        <Stack.Screen name='CameraScreen' component={CameraScreen} />
-        <Stack.Screen name='VideoEditor' component={VideoEditor} />
-        <Stack.Screen name='aa' component={aa} />
-        <Stack.Screen name='ab' component={ab} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({

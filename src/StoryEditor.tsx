@@ -153,6 +153,8 @@ export default class StoryEditor extends Component<Props, State> {
     //   console.log(Platform.OS === 'android');
     //    this.camera.release();
     // }
+    // 结束编辑页面
+    RNEditViewManager.stop()
     console.log('销毁');
     this.setState = ()=>false;
 }
