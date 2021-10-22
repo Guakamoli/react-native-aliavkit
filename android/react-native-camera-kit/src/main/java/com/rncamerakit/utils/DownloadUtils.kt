@@ -7,7 +7,6 @@ import com.facebook.react.bridge.ReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloader
 import com.rncamerakit.RNEventEmitter
-import com.rncamerakit.db.MusicFileInfo
 import com.rncamerakit.db.MusicFileInfoDao
 import java.io.File
 
@@ -17,7 +16,7 @@ class DownloadUtils {
 
         fun downloadMusic(context: ReactContext,songID:Int, musicUrl: String?, promise: Promise?) {
             val fileName: String? = musicUrl?.lastIndexOf("/")?.plus(1)?.let {
-                musicUrl?.substring(
+                musicUrl.substring(
                     it
                 )
             }
@@ -27,7 +26,7 @@ class DownloadUtils {
             ).absolutePath
 
             musicUrl?.let {
-                DownloadUtils.downloadFile(it, savePath, object : MyFileDownloadCallback() {
+                downloadFile(it, savePath, object : MyFileDownloadCallback() {
                     override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
                         super.progress(task, soFarBytes, totalBytes)
                         val progress = soFarBytes.toDouble() / totalBytes.toDouble() * 100

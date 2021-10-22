@@ -1,8 +1,5 @@
 package com.rncamerakit.db
 
-import java.io.Serializable
-
-
 class MusicFileBaseInfo {
     var songs: MutableList<MusicFileInfo>? = null
 }

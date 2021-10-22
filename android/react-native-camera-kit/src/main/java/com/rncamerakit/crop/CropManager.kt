@@ -10,7 +10,6 @@ import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.common.utils.UriUtils
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -21,7 +20,6 @@ import com.aliyun.svideosdk.crop.CropCallback
 import com.aliyun.svideosdk.crop.CropParam
 import com.aliyun.svideosdk.crop.impl.AliyunCropCreator
 import com.duanqu.transcode.NativeParser
-import com.facebook.common.util.UriUtil
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
@@ -55,7 +53,8 @@ class CropManager {
                 promise.reject("cropImager", "error: imagePath is empty")
                 return
             }
-            imagePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+            imagePath =
+                com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
             val bitmap = BitmapFactory.decodeFile(imagePath)
             val width = bitmap.width
             val height = bitmap.height
@@ -94,9 +93,9 @@ class CropManager {
             param.outputHeight = outputHeight
 
             //视频编码方式
-            param.videoCodec = VideoCodecs.H264_HARDWARE;
+            param.videoCodec = VideoCodecs.H264_HARDWARE
             //填充颜色
-            param.fillColor = Color.BLACK;
+            param.fillColor = Color.BLACK
 
             aliyunCrop.setCropParam(param)
 
@@ -130,7 +129,7 @@ class CropManager {
         /**
          * 视频裁剪
          */
-        fun cropVideo(reactContext: ReactContext, readableMap: ReadableMap, promise: Promise) {
+        fun cropVideo(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
 
             val context = reactContext?.applicationContext
 
@@ -141,7 +140,8 @@ class CropManager {
                 return
             }
 
-            videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+            videoPath =
+                com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
 
             var mVideoWidth = 720
             var mVideoHeight = 1280
@@ -176,9 +176,9 @@ class CropManager {
             val duration = aliyunCrop.getVideoDuration(videoPath)
 
             val startTime =
-                if (readableMap.hasKey("startTime")) readableMap.getInt("startTime")* 1000 else 0
+                if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") * 1000 else 0
             val endTime =
-                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")* 1000 else duration
+                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") * 1000 else duration
 
             val file = File(videoPath)
             val fileName = "crop_" + file.name
@@ -208,9 +208,9 @@ class CropManager {
             param.frameRate = 30
             param.crf = 23
             //视频编码方式
-            param.videoCodec = VideoCodecs.H264_HARDWARE;
+            param.videoCodec = VideoCodecs.H264_HARDWARE
             //填充颜色
-            param.fillColor = Color.BLACK;
+            param.fillColor = Color.BLACK
 
             aliyunCrop.setCropParam(param)
             aliyunCrop.setCropCallback(object : CropCallback {
@@ -254,7 +254,7 @@ class CropManager {
                 return
             }
             //ms
-            var intervalTime =
+            val intervalTime =
                 if (options.hasKey("intervalTime")) options.getInt("intervalTime") else 1000
             val startTime = if (options.hasKey("startTime")) options.getInt("startTime") else 0
             val videoWidth = if (options.hasKey("videoWidth")) options.getInt("videoWidth") else 200
@@ -276,7 +276,7 @@ class CropManager {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            val coverTimes: MutableList<Long> = ArrayList<Long>()
+            val coverTimes: MutableList<Long> = ArrayList()
             for (i in 0 until cacheSize) {
                 var coverTime: Int = intervalTime * i + startTime
                 if (coverTime > duration) {
@@ -306,13 +306,13 @@ class CropManager {
                 coverTimes.size
             )
 
-            val videoFramePaths: MutableList<String?> = ArrayList<String?>()
+            val videoFramePaths: MutableList<String?> = ArrayList()
             Observable.fromIterable(coverTimes).flatMap { longs ->
                 Observable.create<String?> { emitter ->
                     thumbnailFetcher.requestThumbnailImage(longArrayOf(longs), object :
                         AliyunIThumbnailFetcher.OnThumbnailCompletion {
                         override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
-                            if (bitmap != null && !bitmap.isRecycled) {
+                            if (!bitmap.isRecycled) {
                                 var videoFramePath =
                                     FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
                                 val name = File(videoPath).nameWithoutExtension

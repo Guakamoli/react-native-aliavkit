@@ -3,7 +3,6 @@ package com.rncamerakit.recorder.manager
 import android.content.Context
 import android.text.TextUtils
 import com.aliyun.common.utils.CommonUtil
-import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
@@ -25,13 +24,10 @@ import com.aliyun.svideosdk.recorder.AliyunIClipManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ThemedReactContext
-import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
-import com.rncamerakit.utils.DownloadUtils
-import com.rncamerakit.utils.MyFileDownloadCallback
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
@@ -39,7 +35,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.util.*
 
-class RecorderManage(private val mContext: ThemedReactContext) {
+class RecorderManage(mContext: ThemedReactContext) {
 
     var cameraType: CameraType? = null
     var mRecorder: AlivcRecorder? = null
@@ -161,7 +157,7 @@ class RecorderManage(private val mContext: ThemedReactContext) {
 
 
     companion object {
-        var photoPath: String? = null;
+        var photoPath: String? = null
     }
 
     /**
