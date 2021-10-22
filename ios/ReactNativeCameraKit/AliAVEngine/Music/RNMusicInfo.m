@@ -7,6 +7,7 @@
 
 #import "RNMusicInfo.h"
 #import <AVFoundation/AVFoundation.h>
+#import "AliyunPathManager.h"
 
 @implementation RNMusicInfo
 
@@ -20,6 +21,7 @@
         self.cover = dictionary[@"cover"];
         self.url = dictionary[@"url"];
         self.artist = dictionary[@"artist"];
+        self.format = dictionary[@"format"];
         
         self.isDBContain = NO;
         self.startTime = 0;
@@ -38,6 +40,19 @@
         @"cover": self.cover ? : @"",
         @"url": self.url ? : @""
     };
+}
+
+- (BOOL)isDBContain {
+    
+    NSString *dirPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:@"music"];
+    NSString *fileName = [NSString stringWithFormat:@"%@-%@.%@",self.songID,self.name,self.format];
+    NSString *filePath = [dirPath stringByAppendingPathComponent:fileName];
+    
+    BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
+    if (isExist && [self.localPath isEqualToString:@""]) {
+        self.localPath = filePath;
+    }
+    return isExist;
 }
 
 @end

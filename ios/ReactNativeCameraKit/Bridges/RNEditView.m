@@ -31,7 +31,7 @@
 #import "AliyunAlbumModel.h"
 #import "AliyunPhotoLibraryManager.h"
 #import "AliyunMusicPickModel.h"
-
+#import "RNMusicInfo.h"
 
 typedef void(^TransCode_blk_t)(CGFloat);
 

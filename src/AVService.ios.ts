@@ -2,6 +2,13 @@ import React from 'react';
 import { NativeModules } from 'react-native';
 const { AliAVServiceBridge, RNMusicService } = NativeModules;
 
+type MusicRequestType = {
+  name: string,
+  songID: string,
+  page: number,
+  pageSize: number,
+}
+
 export default class AVService {
   static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
@@ -19,15 +26,16 @@ export default class AVService {
     return await AliAVServiceBridge.saveToSandBox({ path });
   }
 
-  static async playMusic(musicID) {
-    return await RNMusicService.playMusic(musicID);
+  static async playMusic(songID: string) {
+    return await RNMusicService.playMusic(songID);
   }
 
-  static async pauseMusic(musicID) {
-    return await RNMusicService.pauseMusic(musicID);
+  static async pauseMusic(songID: string) {
+    return await RNMusicService.pauseMusic(songID);
   }
-
-  static async getMusics({ name, page, songID }) {
-    return await RNMusicService.getMusics({ name, page, songID });
+  // name:'all-music' 分页传all-music'，其他传歌曲名 
+  static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
+    return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
 }
+

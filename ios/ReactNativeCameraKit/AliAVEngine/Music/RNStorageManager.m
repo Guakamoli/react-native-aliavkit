@@ -33,20 +33,26 @@ static RNStorageManager *_instance = nil;
     return self;
 }
 
-- (NSArray *)getPageDataWithPage:(NSUInteger)page inArray:(NSArray *)array
+- (NSArray<RNMusicInfo *> *)getPageDataWithPage:(NSUInteger)page
+                                       pageSize:(NSUInteger)pageSize
+                                        inArray:(NSArray<RNMusicInfo *> *)array
 {
-    int pageDataCount = 10;
     NSUInteger num = array.count % page;
-    if (array.count <= pageDataCount) {
+    if (array.count <= pageSize) {
         return array;
     }
     else if (num != 0) {
-        if (page * pageDataCount > array.count) {
-            return [array subarrayWithRange:NSMakeRange((page-1) * pageDataCount, array.count)];
+        if (page * pageSize > array.count) {
+            NSUInteger index = array.count / pageSize;
+            NSUInteger length = array.count - index * pageSize;
+            return [array subarrayWithRange:NSMakeRange(index * pageSize, length)];
         }
-        
     }
-    return [array subarrayWithRange:NSMakeRange(0, pageDataCount * page)];
+    NSArray *tmpArray = [array subarrayWithRange:NSMakeRange(0, pageSize * page)];
+    [tmpArray enumerateObjectsUsingBlock:^(RNMusicInfo *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [obj isDBContain];
+    }];
+    return tmpArray;
 }
 
 - (RNMusicInfo *)findMusicByID:(NSString *)songID inArray:(NSArray<RNMusicInfo *> *)array
@@ -58,10 +64,10 @@ static RNStorageManager *_instance = nil;
             *stop = YES;
         }
     }];
-//    if (song) {
-//        NSString *cacheID = [NSString stringWithFormat:@"%@-%@",song.songID,song.name];
-//        [cacheID setValue:song forKey:cacheID];
-//    }
+    if (song) {
+        [song isDBContain];
+    }
+    
     return song;
 }
 

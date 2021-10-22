@@ -16,6 +16,7 @@ export default class VideoEditorExample extends Component {
       videoMute: false,
       setMusic: false,
       musicInfo: {},
+      musics: [],
     };
     this.onExportVideo = this.onExportVideo.bind(this);
 
@@ -89,42 +90,59 @@ export default class VideoEditorExample extends Component {
           }}
           musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
         >
-        <>
-          {/* <TouchableOpacity
-            style={{
-              width: 80,
-              height: 80,
-              backgroundColor: '#3f0',
-              // justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 40,
-            }}
-            onPress={async () => {
-              const musicInfo = await AVService.playMusic('');
-              console.log('---- downloadMusic: ', musicInfo);
-              this.setState({ musicInfo });
-            }}
-          >
-            <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
-          </TouchableOpacity> */}
-
-          <TouchableOpacity
-            style={{
-              width: 80,
-              height: 80,
-              backgroundColor: '#3f0',
-              // justifyContent: 'flex-start',
-              alignItems: 'center',
-              borderRadius: 40,
-            }}
-            onPress={async () => {
-              const musicInfo = await AVService.getMusics({});
-              console.log('---- getMusics: ', musicInfo);
-            }}
-          >
-            <Text style={{ fontSize: 25, color: 'white' }}>musics</Text>
-          </TouchableOpacity>
-          </>
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const musics = await AVService.getMusics({ name: 'all-music', page: 6, pageSize:5 });
+                console.log('---- getMusics: ', musics);
+                this.setState({ musics });
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>get-musics</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const song = await AVService.playMusic(this.state.musics[2].songID);
+                console.log('---- playMusic: ', song);
+                this.setState({ musicInfo: song });
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>play</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: 80,
+                height: 80,
+                backgroundColor: '#3f0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 40,
+              }}
+              onPress={async () => {
+                const playingSong = await AVService.pauseMusic(this.state.musics[2].songID);
+                console.log('---- pauseMusic: ', playingSong);
+                
+              }}
+            >
+              <Text style={{ fontSize: 20, color: 'white' }}>pause</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.buttonItem} onPress={() => this.startExportVideo()}>
@@ -136,7 +154,7 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity
               style={styles.buttonItem}
               onPress={async () => {
-                const status = await AVService.pauseMusic('');
+                const status = await AVService.pauseMusic(this.state.musicInfo.songID);
                 if (status === true) {
                   console.log('---- pauseMusic: ', status);
                   this.setState({ setMusic: true });

@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *cover;
 @property (nonatomic, copy) NSString *artist;
 @property (nonatomic, copy) NSString *url;
+@property (nonatomic, copy) NSString *format;
 
 @property (nonatomic) BOOL isDBContain;
 
@@ -28,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 音量大小
 @property (nonatomic, assign) float volume;
+
+/// 下载的时候作为唯一标志符
+@property (assign, nonatomic) NSInteger keyId;
 
 - (instancetype)initWithDictionary:(NSDictionary *)dictionary;
 - (NSDictionary *)convertModelToInfo;

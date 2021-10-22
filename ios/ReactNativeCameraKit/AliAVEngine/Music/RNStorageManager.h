@@ -14,7 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)shared;
 
-- (NSArray *)getPageDataWithPage:(NSUInteger)page inArray:(NSArray *)array;
+- (NSArray<RNMusicInfo *> *)getPageDataWithPage:(NSUInteger)page
+                                       pageSize:(NSUInteger)pageSize
+                                        inArray:(NSArray<RNMusicInfo *> *)array;
 
 - (RNMusicInfo *)findMusicByID:(NSString *)songID inArray:(NSArray<RNMusicInfo *> *)array;
 

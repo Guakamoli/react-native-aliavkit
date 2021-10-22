@@ -26,6 +26,7 @@ static NSString * const kJsonURL = @"https://static.paiyaapp.com/music/songs.jso
 
 @property (nonatomic, strong) AVPlayer *player;
 @property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *musics;
+@property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *downloadingMusics;
 
 @end
 
@@ -59,48 +60,68 @@ RCT_EXPORT_METHOD(getMusics:(NSDictionary *)musicRequest
 {
     NSString *songName = [musicRequest valueForKey:@"name"];
     NSUInteger page = [[musicRequest valueForKey:@"page"] integerValue];
+    NSUInteger pageSize = [[musicRequest valueForKey:@"pageSize"] integerValue] ? : 10;
     if ([songName isEqualToString:@"all-music"]) {
         if (self.musics.count == 0) {
-            [self requestJson:^(NSArray<RNMusicInfo *> *infos, NSError *error) {
+            [self _requestJson:^(NSArray<RNMusicInfo *> *infos, NSError *error) {
                 if (error) {
                     reject(@"",@"json request fail",error);
                 } else {
                     [self.musics addObjectsFromArray:infos];
-                    NSArray *array = [[RNStorageManager shared] getPageDataWithPage:page inArray:infos];
-                    resolve(array);
+                    NSArray *array = [[RNStorageManager shared] getPageDataWithPage:page pageSize:pageSize inArray:infos];
+                    NSMutableArray *tmpArray = [NSMutableArray array];
+                    for (RNMusicInfo *info in array) {
+                        [tmpArray addObject:[info convertModelToInfo]];
+                    }
+                    resolve(tmpArray);
                 }
             }];
         } else {
-            NSArray *array = [[RNStorageManager shared] getPageDataWithPage:page inArray:self.musics];
+            NSArray<RNMusicInfo *> *array = [[RNStorageManager shared] getPageDataWithPage:page pageSize:pageSize inArray:self.musics];
+
             resolve(array);
         }
     } else {
-        NSArray *array= [[RNStorageManager shared] findMusicByName:songName inArray:self.musics];
+        NSArray<RNMusicInfo *> *array= [[RNStorageManager shared] findMusicByName:songName inArray:self.musics];
+
         resolve(array);
     }
 }
 
-RCT_EXPORT_METHOD(playMusic:(NSString *)musicID
+RCT_EXPORT_METHOD(playMusic:(NSString *)songID
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:musicID inArray:self.musics];
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
     if (music.isDBContain) {
         [self _playItemAtPath:music.localPath];
+        NSDictionary *info = [music convertModelToInfo];
+        resolve(info);
     } else {
         NSString *urlStr = [music.url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        [self _downloadMusicByURLStr:urlStr complete:^(BOOL success, NSString *path) {
+        [RNMusicService downloadMusicWithSongID:songID
+                                urlStr:urlStr
+                              complete:^(BOOL success, NSString *path) {
             music.localPath = path;
             [self _playItemAtPath:path];
+            NSDictionary *info = [music convertModelToInfo];
+            resolve(info);
         }];
     }
-    resolve([music convertModelToInfo]);
 }
 
-RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
+RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
+
     if (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
         [self.player pause];
         BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused);
@@ -108,7 +129,9 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
     }
 }
 
-- (void)_downloadMusicByURLStr:(NSString *)urlStr complete:(void(^)(BOOL, NSString *))complete
++ (void)downloadMusicWithSongID:(NSString *)songID
+                         urlStr:(NSString *)urlStr
+                       complete:(void(^)(BOOL, NSString *))complete
 {
     NSURL *url = [NSURL URLWithString:urlStr];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
@@ -117,7 +140,7 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
                                                             completionHandler:^(NSURL * _Nullable location,
                                                                                 NSURLResponse * _Nullable response,
                                                                                 NSError * _Nullable error) {
-        NSString *fileName = response.suggestedFilename;
+        NSString *fileName = [NSString stringWithFormat:@"%@-%@", songID, response.suggestedFilename];
         NSString *musicDirPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:@"music"];
         [AliyunPathManager makeDirExist:musicDirPath];
         NSString *destinationPath = [musicDirPath stringByAppendingPathComponent:fileName];
@@ -133,6 +156,9 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
 
 - (void)_playItemAtPath:(NSString *)path
 {
+    if (!path || [path isEqualToString:@""]) {
+        return;
+    }
     CGFloat start = 0.0;
     AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
     float duration = [asset aliyunDuration];
@@ -154,7 +180,7 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)musicID
     [self.player play];
 }
 
-- (void)requestJson:(void(^)(NSArray<RNMusicInfo *> *, NSError *error))complete
+- (void)_requestJson:(void(^)(NSArray<RNMusicInfo *> *, NSError *error))complete
 {
     NSURL *url = [NSURL URLWithString:kJsonURL];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
