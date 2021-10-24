@@ -1,16 +1,10 @@
 package com.rncamerakit.recorder
 
-import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.MediaScannerConnection
-import android.os.Build
 import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
-import com.aliyun.svideo.common.utils.PermissionUtils
 import com.aliyun.svideo.common.utils.ThreadUtils
-import com.aliyun.svideo.common.utils.ToastUtils
-import com.aliyun.svideo.common.utils.UriUtils
 import com.aliyun.svideosdk.recorder.RecordCallback
 import java.io.File
 import java.io.IOException

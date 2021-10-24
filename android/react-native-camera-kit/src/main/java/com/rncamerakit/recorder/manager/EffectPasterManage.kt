@@ -2,8 +2,6 @@ package com.rncamerakit.recorder.manager
 
 import android.text.TextUtils
 import android.util.Log
-import com.aliyun.common.utils.UriUtil
-import com.aliyun.svideo.common.utils.UriUtils
 import com.aliyun.svideo.downloader.FileDownloaderCallback
 import com.aliyun.svideo.downloader.zipprocessor.DownloadFileUtils
 import com.aliyun.svideo.recorder.view.effects.manager.EffectLoader
@@ -13,9 +11,7 @@ import com.facebook.react.bridge.ReactContext
 import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.FileUtils
-import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.RNEventEmitter
-import java.io.File
 import java.util.*
 
 

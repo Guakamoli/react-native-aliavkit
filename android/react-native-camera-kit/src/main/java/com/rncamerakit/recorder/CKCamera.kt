@@ -33,7 +33,6 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-@SuppressLint("ViewConstructor")
 class CKCamera(
     private val reactContext: ThemedReactContext,
 ) :
@@ -222,6 +221,13 @@ class CKCamera(
 
         MusicFileInfoDao.instance.init(mContext)
 
+        val list = MusicFileInfoDao.instance.queryAll()
+        val list1 = MusicFileInfoDao.instance.queryList(null,1,10)
+        val list2 = MusicFileInfoDao.instance.queryList(null,2,10)
+        val list3 = MusicFileInfoDao.instance.queryList(null,3,10)
+        val list4 = MusicFileInfoDao.instance.queryList(null,4,10)
+        val list5 = MusicFileInfoDao.instance.queryList("海",1,10)
+
         doAsync {
             val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
             val md5Text = MD5Utils.getMD5(text)
@@ -229,29 +235,14 @@ class CKCamera(
             val md5Value = SPUtils.getInstance().getString(spKey)
             uiThread {
                 if (md5Text == md5Value) {
-                    downloadAllMusic()
                     return@uiThread
                 }
                 val baseInfo: MusicFileBaseInfo = GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
                 MusicFileInfoDao.instance.insertList(baseInfo.songs)
                 SPUtils.getInstance().put(spKey, md5Text)
-                downloadAllMusic()
             }
         }
 
     }
-
-
-    private fun downloadAllMusic(){
-       val list =  MusicFileInfoDao.instance.queryAll()
-        list?.forEach continuing@{
-            val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(it.songID)
-            if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
-                return@continuing
-            }
-            DownloadUtils.downloadMusic(reactContext, it.songID, it.url, null)
-        }
-    }
-
 
 }

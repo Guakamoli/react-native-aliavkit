@@ -1,21 +1,15 @@
 package com.rncamerakit.recorder
 
-import android.app.Activity
-import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
-import com.liulishuo.filedownloader.BaseDownloadTask
-import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.db.MusicFileInfo
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.DownloadUtils
-import com.rncamerakit.utils.MyFileDownloadCallback
-import java.io.File
 
 class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -39,9 +33,6 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
             "LANDSCAPE_RIGHT" to LANDSCAPE_RIGHT
         )
     }
-
-    private var mActivity: Activity? = null
-
 
     //设置滤镜
     @ReactMethod
@@ -137,21 +128,15 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     fun downloadPaster(readableMap: ReadableMap, viewTag: Int, promise: Promise) {
         if (readableMap.toHashMap().size > 0) {
             val context = reactContext
-            val uiManager = context.getNativeModule(UIManagerModule::class.java)
             context.runOnUiQueueThread {
-                val view = uiManager?.resolveView(viewTag) as CKCamera
-
                 val previewPaster = PreviewPasterForm()
-
                 previewPaster.icon =
                     if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
-
                 previewPaster.type =
                     if (readableMap.hasKey("type")) readableMap.getInt("type") else 0
                 previewPaster.id = if (readableMap.hasKey("id")) readableMap.getInt("id") else 0
                 previewPaster.sort =
                     if (readableMap.hasKey("sort")) readableMap.getInt("sort") else 0
-
                 previewPaster.url =
                     if (readableMap.hasKey("url")) readableMap.getString("url") else ""
                 previewPaster.md5 =
@@ -160,18 +145,14 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
                     if (readableMap.hasKey("preview")) readableMap.getString("preview") else ""
                 previewPaster.name =
                     if (readableMap.hasKey("name")) readableMap.getString("name") else ""
-
                 previewPaster.fontId =
                     if (readableMap.hasKey("fontId")) readableMap.getInt("fontId") else 0
                 previewPaster.level =
                     if (readableMap.hasKey("level")) readableMap.getInt("level") else 0
-
                 previewPaster.isLocalRes =
                     if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
-
                 previewPaster.path =
                     if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-
                 EffectPasterManage.instance.downloadPaster(previewPaster, promise)
             }
         }
