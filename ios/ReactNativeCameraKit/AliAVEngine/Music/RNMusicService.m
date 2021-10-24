@@ -78,13 +78,19 @@ RCT_EXPORT_METHOD(getMusics:(NSDictionary *)musicRequest
             }];
         } else {
             NSArray<RNMusicInfo *> *array = [[RNStorageManager shared] getPageDataWithPage:page pageSize:pageSize inArray:self.musics];
-
-            resolve(array);
+            NSMutableArray *tmpArray = [NSMutableArray array];
+            for (RNMusicInfo *info in array) {
+                [tmpArray addObject:[info convertModelToInfo]];
+            }
+            resolve(tmpArray);
         }
     } else {
         NSArray<RNMusicInfo *> *array= [[RNStorageManager shared] findMusicByName:songName inArray:self.musics];
-
-        resolve(array);
+        NSMutableArray *tmpArray = [NSMutableArray array];
+        for (RNMusicInfo *info in array) {
+            [tmpArray addObject:[info convertModelToInfo]];
+        }
+        resolve(tmpArray);
     }
 }
 

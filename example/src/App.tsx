@@ -9,6 +9,7 @@ import {
 import CameraScreenExample from './CameraScreenExample';
 import BarcodeScreenExample from './BarcodeScreenExample';
 import CameraExample from './CameraExample';
+import StoryMusic from '../../src/StoryMusic';
 
 export default class App extends Component {
 
@@ -44,6 +45,11 @@ export default class App extends Component {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: BarcodeScreenExample })}>
+            <Text style={styles.buttonText}>
+              Barcode Scanner
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: StoryMusic })}>
             <Text style={styles.buttonText}>
               Barcode Scanner
             </Text>
