@@ -18,7 +18,7 @@ import { useInterval } from 'ahooks';
 import _ from 'lodash';
 import Camera from './Camera';
 import VideoEditor from './VideoEditor';
-import Carousel, { getInputRangeFromIndexes } from './react-native-snap-carousel';
+import Carousel, { getInputRangeFromIndexes } from './react-native-snap-carousel/src';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -145,7 +145,7 @@ const TestComponent = () => {
           alignItems: 'center',
           borderRadius: 40,
         }}
-        onPress={ async () => {
+        onPress={async () => {
           const music = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
           console.log('---- downloadMusic: ', music);
         }}
