@@ -101,15 +101,19 @@ const PostEditor = (props) => {
             // uploadFile(123)
 
             console.log(1231, multipleSandBoxData);
-
-            const result = await RNEditViewManager.trimVideo({
+            // 裁剪视频
+            RNEditViewManager.trimVideo({
               videoPath: multipleSandBoxData[0],
-              startTime: 2.4,
-              endTime: 5.1,
+              startTime: 1.4,
+              endTime: 5.0,
             });
-
-
-            console.log('22222', result);
+            // 导出视频
+            if (exportVideo) {
+              return;
+            }
+            setexportVideo(true)
+            // this.setState({ startExportVideo: true });
+            console.log('22222');
 
           }}
           style={{
@@ -175,15 +179,16 @@ const PostEditor = (props) => {
     // await RNEditViewManager.removeThumbnaiImages({})
     coverData = await RNEditViewManager.generateImages({
       videoPath: multipleSandBoxData[0],
-      duration: videoTime / 1000 > 7 ? 7 : videoTime / 1000,
+      duration: 1,
       startTime: 0,
       itemPerTime: 1000,
     });
     // console.log('=====coverList:',coverList);
 
     console.log('------', coverData);
-    setcoverList(coverData)
+    // setcoverList(coverData)
     // this.setState({coverList:coverData})
+    setcoverImage(coverData[0])
   }
   useEffect(() => {
     console.log("获取封面", multipleSandBoxData);
@@ -194,8 +199,6 @@ const PostEditor = (props) => {
   }, [multipleSandBoxData])
 
   const onExportVideo = (event) => {
-    console.log('1231', event);
-    // const {fileType}  = this.props;
     if (event.exportProgress === 1) {
       let outputPath = event.outputPath;
       // this.setState({ startExportVideo: false,outputPath:event.outputPath });
@@ -207,9 +210,10 @@ const PostEditor = (props) => {
         Type: `${fileType}/${type[type.length - 1]}`,
         path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
         size: 0,
-        Name: outputPath
+        Name: outputPath,
+        coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
       })
-
+      props.getUploadFile(uploadFile)
       // this.sendUploadFile(uploadFile)
 
     }
@@ -250,17 +254,17 @@ const PostEditor = (props) => {
           saveToPhotoLibrary={false}
           startExportVideo={exportVideo}
           videoMute={false}
-
+          onExportVideo={(event) => { onExportVideo(event) }}
           onPlayProgress={({ nativeEvent }) => {
 
             if (fileType === 'video') {
               //  // 播放进度p
               // // 播放到右侧
-              // console.log( nativeEvent.playProgress );
+              console.log(nativeEvent.playProgress);
 
               // console.log('trimmerRightHandlePosition',trimmerRightHandlePosition);
 
-              if (Math.round(nativeEvent.playProgress) * 1000 == Math.ceil(trimmerRightHandlePosition / 1000) * 1000) {
+              if (Math.round(nativeEvent.playProgress) * 1000 >= Math.ceil(trimmerRightHandlePosition / 1000) * 1000) {
                 // console.log('nativeEvent.playProgress',nativeEvent.playProgress);
 
                 setTimeout(() => {
@@ -278,7 +282,6 @@ const PostEditor = (props) => {
             //   console.log('play: ', nativeEvent.playProgress);
             // }
           }}
-          onExportVideo={(event) => { onExportVideo(event) }}
         />
 
       </View>
@@ -481,8 +484,8 @@ const PostEditor = (props) => {
         </TouchableOpacity>
         </View> */}
         <View style={{ marginTop: 160, paddingHorizontal: 20, position: "relative" }}>
-          <ScrollView horizontal={true} contentContainerStyle={{ position: "relative", width: 1000, height: 100, backgroundColor: 'red' }} showsHorizontalScrollIndicator={false} >
-          </ScrollView>
+          {/* <ScrollView horizontal={true} contentContainerStyle={{ position: "relative", width: 1000, height: 100, backgroundColor: 'red' }} showsHorizontalScrollIndicator={false} >
+          </ScrollView> */}
           <View style={{ position: "absolute", }}>
             <Trimmer
               // style={styles.trimViewContainer}
@@ -565,7 +568,7 @@ const PostEditor = (props) => {
   }
   // 切换底部功能
   const switchProps = () => {
-    const switchProps = ['滤镜', '修剪', '封面'];
+    const switchProps = ['滤镜', '修剪'];
     // const {selectBottomModel} = this.state;
     return (
       <View style={{ height: 60, width: width, flexDirection: "row", justifyContent: 'space-evenly', alignItems: 'flex-start', position: "absolute", bottom: 0 }}>
@@ -653,9 +656,9 @@ const PostEditor = (props) => {
       {
         selectBottomModel === '修剪' && postTrimer()
       }
-      {
+      {/* {
         selectBottomModel === '封面' && postCover()
-      }
+      } */}
       {fileType !== 'image' &&
         switchProps()
       }

@@ -584,7 +584,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ progress: 0 });
     const stopRecording = async () => {
       const videoPath = await this.camera.stopRecording();
-      console.log('video saved to ', videoPath);
+      console.log('video saved to  ios 2 超时', videoPath);
       this.setState({ videoPath })
     }
     this.setState({
@@ -599,8 +599,8 @@ export default class CameraScreen extends Component<Props, State> {
         // }
         if (progress > 1) {
           progress = 1;
-          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
           stopRecording()
+          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) })
           clearInterval(this.state.timer)
         }
         this.setState({ progress, });
@@ -717,7 +717,7 @@ export default class CameraScreen extends Component<Props, State> {
                     }
                   ).start();
                   const success = await this.camera.startRecording();
-                  this.setState({ startShoot: success })
+                  this.setState({ fileType: "video", startShoot: success })
                   console.log('success', success);
                   if (success) {
                     // 调用进度条 开始拍摄
@@ -736,7 +736,7 @@ export default class CameraScreen extends Component<Props, State> {
 
                     // const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`
                     const videoPath = await this.camera.stopRecording()
-                    console.log('video saved to2 ', videoPath);
+                    console.log('video saved to2 ios ', videoPath);
 
 
                     // 判断是否大于2秒
@@ -839,7 +839,7 @@ export default class CameraScreen extends Component<Props, State> {
             if (!startShoot || progress === 0) {
               // 拍照
               this.onCaptureImagePressed()
-              this.setState({ fileType: "image" })
+              // this.setState({ fileType: "image" })
             }
           }}
         >
@@ -1083,12 +1083,14 @@ export default class CameraScreen extends Component<Props, State> {
               this.state.ShootSuccess ?
                 <StoryEditor
                   rephotograph={() => {
-                    this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' })
+                    this.setState({ ShootSuccess: false, videoPath: null, imageCaptured: null })
                   }}
                   getUploadFile={(data) => { this.sendUploadFile(data) }}
                   AaImage={this.props.AaImage}
                   filterImage={this.props.filterImage}
                   musicRevampImage={this.props.musicRevampImage}
+                  videomusicIcon={this.props.videomusicIcon}
+                  musicSearch={this.props.musicSearch}
                   giveUpImage={this.props.giveUpImage}
                   noVolumeImage={this.props.noVolumeImage}
                   tailorImage={this.props.tailorImage}
@@ -1098,7 +1100,7 @@ export default class CameraScreen extends Component<Props, State> {
                   imagePath={this.state.imageCaptured}
                   musicDynamicGif={this.props.musicDynamicGif}
                   musicIconPng={this.props.musicIconPng}
-                // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+                  musicIcongray={this.props.musicIcongray}
                 />
                 :
                 <>

@@ -21,7 +21,9 @@ import AVService from './AVService.ios'
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => {
-  const { musicDynamicGif, musicIconPng, getmusicInfo } = props
+  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray } = props;
+  console.log('-----', props);
+
   // const [musicSelect,setMusicSelect] = useState(1);
   const [musicChoice, setMmusicChoice] = useState(false);
   // const [currentIndex, setCurrentIndex] = useState(0);
@@ -170,12 +172,12 @@ const StoryMusic = (props) => {
         </View>
         <View style={styles.searchMusic}>
 
-          <Image source={musicIconPng} style={{ width: 12, height: 12, marginRight: 5 }} />
+          <Image source={musicSearch} style={{ width: 12, height: 12, marginRight: 5 }} />
 
           <TextInput
             multiline={true}
             textAlignVertical={'top'}
-            numberOfLines={3}
+            numberOfLines={1}
             onChange={onLengthHandle}
             style={[
               { paddingHorizontal: 15, width: '100%', borderRadius: 14 },
@@ -200,16 +202,16 @@ const StoryMusic = (props) => {
 
 
               }}>
-                <View style={[{ width: width - 30, height: 84, backgroundColor: 'rgba(0, 0, 0, 0.8)', marginTop: 20, borderRadius: 15, padding: 15, marginHorizontal: 15 }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
+                <View style={[{ width: width - 30, height: 84, backgroundColor: 'rgba(0, 0, 0, 0.8)', marginTop: 20, borderRadius: 15, padding: 15, marginHorizontal: 15, alignItems: 'center', justifyContent: 'center' }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
                   <View style={[{ flexDirection: 'row', marginBottom: 10, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Image source={{ uri: 'https://guakamoli1-video-message-dev.oss-cn-qingdao.aliyuncs.com/default/3494e33ecbbb5b955a1c84bd6b8a0626/116c7efd-96bc-46ca-92d7-3008f32c09c5.jpg' }} style={{ width: 19, height: 19 }} />
+                    <Image source={checkedData?.songID == item?.songID ? musicIconPng : musicIcongray} style={{ width: 19, height: 19, marginRight: 5 }} />
                     <View style={{ flexDirection: "row", justifyContent: "space-between", flex: 1, alignItems: "center" }}>
                       <Text style={[{ fontWeight: '400', fontSize: 16, color: '#fff', marginLeft: 15, lineHeight: 21, }, checkedData?.songID == item?.songID && { color: "#000" }]}>{item?.name}</Text>
                       {/* 播放展示gif */}
                       {checkedData?.songID == item?.songID && <Image source={musicDynamicGif} style={{ width: 30, height: 18 }} />}
                     </View>
                   </View>
-                  <Text style={{ fontWeight: '400', color: "#a6a5a2", fontSize: 15, lineHeight: 21, }}>长大以后我只能奔跑 我多害怕黑暗中跌倒</Text>
+                  {/* <Text style={{ fontWeight: '400', color: "#a6a5a2", fontSize: 15, lineHeight: 21, }}>长大以后我只能奔跑 我多害怕黑暗中跌倒</Text> */}
                 </View>
               </TouchableOpacity>
             )
@@ -223,8 +225,9 @@ const StoryMusic = (props) => {
     <View >
       {!musicChoice &&
         <TouchableOpacity onPress={() => { setMmusicChoice(!musicChoice); pauseMusic(checkedData) }}>
-          <View style={{ width: 63, height: 31, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 16, justifyContent: 'center', alignItems: "center", marginLeft: (width - 298) / 2 }}>
-            <Text>搜索</Text>
+          <View style={{ width: 63, height: 31, flexDirection: 'row', backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 16, paddingHorizontal: 9, alignItems: "center", marginLeft: (width - 298) / 2 }}>
+            <Image source={musicSearch} style={{ width: 12, height: 12, marginRight: 5 }} />
+            <Text style={{ fontSize: 13, lineHeight: 13, fontWeight: '500', color: '#fff' }}>搜索</Text>
           </View>
         </TouchableOpacity>}
 
@@ -253,7 +256,7 @@ const StoryMusic = (props) => {
         </View>
 
       }
-    </View>
+    </View >
   )
 }
 
