@@ -32,7 +32,7 @@ const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
-
+const cropWidth = width - 30 * 2;
 const PostEditor = (props) => {
   // const {videoTime} = props;
 
@@ -58,8 +58,8 @@ const PostEditor = (props) => {
   const [videoTime, setVideoTime] = useState(0);
   const [scrubberPosition, setscrubberPosition] = useState(0);
   const [exportVideo, setexportVideo] = useState(false);
-  const scrollAniRef = useRef(new Animated.Value(0)).current;
-  console.log('props', props);
+  const scrollAniRef = useRef(new Animated.Value(10)).current;
+  const stopRef = useRef(false);
 
   // console.log('navigationnavigation',navigation);
 
@@ -182,6 +182,8 @@ const PostEditor = (props) => {
 
     console.log('------', coverData);
     setcoverList(coverData);
+    console.log('------', coverData);
+
     // this.setState({coverList:coverData})
   };
   useEffect(() => {
@@ -234,12 +236,12 @@ const PostEditor = (props) => {
     // return null
 
     console.log('exportVideo', exportVideo);
+    const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
 
     return (
-      <View style={{}}>
+      <View>
         <VideoEditor
           ref={(edit) => (editor = edit)}
-          style={{ height: 211, width: 411 }}
           filterName={filterName}
           // videoPath={"/var/mobile/Containers/Data/Application/9DBC4AB0-799C-4BD4-ADF1-E1F8339AF173/Documents/com.guakamoli.engine/composition/4AAF423D-3D69-4020-A695-37A855D5E460.mp4"}
           // imagePath={multipleSandBoxData[0]}
@@ -249,13 +251,30 @@ const PostEditor = (props) => {
           videoMute={false}
           onPlayProgress={({ nativeEvent }) => {
             if (fileType === 'video') {
-              if (Math.round(nativeEvent.playProgress) * 1000 == Math.ceil(trimmerRightHandlePosition / 1000) * 1000) {
-                // console.log('nativeEvent.playProgress',nativeEvent.playProgress);
+              if (!stopRef.current && nativeEvent.playProgress) {
+                scrollAniRef.setValue(
+                  ((nativeEvent.playProgress * 1000 - trimmerLeftHandlePosition) / delta) *
+                    (Math.min(delta / videoTime, 1) * cropWidth),
+                );
+              }
+
+              if (
+                nativeEvent.playProgress === undefined ||
+                (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current)
+              ) {
+                stopRef.current = true;
+                RNEditViewManager.pause();
+
                 RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
+                scrollAniRef.setValue(0);
                 setTimeout(() => {
+                  stopRef.current = false;
+
                   RNEditViewManager.play();
                 }, 500);
+                return;
               }
+
               // setscrubberPosition(nativeEvent.playProgress * 1000 ?? 0)
             }
           }}
@@ -415,10 +434,13 @@ const PostEditor = (props) => {
       if (rightPosition < 2000) {
         rightPosition = 2000;
       }
+      scrollAniRef.setValue(0);
       RNEditViewManager.seekToTime(leftPosition / 1000);
       setTimeout(() => {
         RNEditViewManager.play();
+        stopRef.current = false;
       }, 500);
+      console.info(leftPosition, rightPosition, 'leftPosition, rightPosition ');
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
@@ -447,54 +469,54 @@ const PostEditor = (props) => {
         <Text style={{fontSize:20,color:"red",marginTop:20}}>暂停</Text>
         </TouchableOpacity>
         </View> */}
-        <View style={{ marginTop: 160, paddingHorizontal: 20, position: 'relative' }}>
-          <ScrollView
-            horizontal={true}
-            contentContainerStyle={{ position: 'relative', width: 1000, height: 100, backgroundColor: 'red' }}
-            showsHorizontalScrollIndicator={false}
-          ></ScrollView>
-          <View style={{ position: 'absolute' }}>
-            <Trimmer
-              onHandleChange={onHandleChange}
-              totalDuration={videoTime}
-              initialZoomValue={1}
-              maxTrimDuration={trimmerRightHandlePosition}
-              trimmerLeftHandlePosition={trimmerLeftHandlePosition}
-              trimmerRightHandlePosition={trimmerRightHandlePosition}
-              scrubberPosition={scrubberPosition}
-              onScrubbingComplete={() => {
-                // RNEditViewManager.replay();
-              }}
-              scrollAniRef={scrollAniRef}
-              tintColor='white'
-              markerColor='#5a3d5c'
-              trackBackgroundColor='white'
-              trackBorderColor='#5a3d5c'
-              scrubberColor='white'
-              onScrubberPressIn={() => {
-                console.log('onScrubberPressIn');
-              }}
-              onRightHandlePressIn={() => {
-                RNEditViewManager.pause();
-              }}
-              onLeftHandlePressIn={() => {
-                RNEditViewManager.pause();
-              }}
-              trackHeight={50}
-            >
-              <View style={{ flexDirection: 'row' }}>
-                {coverList.map((i) => {
-                  return (
-                    <Image
-                      source={{ uri: i }}
-                      style={{ width: width / coverList.length, height: 50, flex: 1 }}
-                      resizeMode={'cover'}
-                    />
-                  );
-                })}
-              </View>
-            </Trimmer>
-          </View>
+        <View style={{ paddingHorizontal: 20, position: 'relative' }}>
+          <Trimmer
+            onHandleChange={onHandleChange}
+            totalDuration={videoTime}
+            initialZoomValue={1}
+            maxTrimDuration={trimmerRightHandlePosition}
+            trimmerLeftHandlePosition={trimmerLeftHandlePosition}
+            trimmerRightHandlePosition={trimmerRightHandlePosition}
+            scrubberPosition={scrubberPosition}
+            onScrubbingComplete={() => {
+              // RNEditViewManager.replay();
+            }}
+            scrollAniRef={scrollAniRef}
+            tintColor='white'
+            markerColor='#5a3d5c'
+            trackBackgroundColor='white'
+            trackBorderColor='#5a3d5c'
+            scrubberColor='white'
+            onScrubberPressIn={() => {
+              console.log('onScrubberPressIn');
+            }}
+            onRightHandlePressIn={() => {
+              stopRef.current = true;
+              scrollAniRef.setValue(0);
+
+              RNEditViewManager.pause();
+            }}
+            trackWidth={cropWidth}
+            onLeftHandlePressIn={() => {
+              stopRef.current = true;
+              scrollAniRef.setValue(0);
+
+              RNEditViewManager.pause();
+            }}
+            trackHeight={50}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              {coverList.map((i) => {
+                return (
+                  <Image
+                    source={{ uri: i }}
+                    style={{ width: cropWidth / coverList.length, height: 50 }}
+                    resizeMode={'cover'}
+                  />
+                );
+              })}
+            </View>
+          </Trimmer>
         </View>
       </>
     );

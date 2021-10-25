@@ -355,6 +355,7 @@ export default class Trimmer extends React.Component {
       centerOnLayout = CENTER_ON_LAYOUT,
       showScrollIndicator = SHOW_SCROLL_INDICATOR,
       trackHeight = 40,
+      trackWidth = screenWidth * trackScale * 0.75,
     } = this.props;
 
     // if(maxTrimDuration < trimmerRightHandlePosition - trimmerLeftHandlePosition) {
@@ -380,8 +381,9 @@ export default class Trimmer extends React.Component {
       trimmingRightHandleValue
     } = this.state;
 
-    let trackWidth = screenWidth * trackScale
-    trackWidth = trackWidth * 0.75;
+
+    // let trackWidth = screenWidth * trackScale
+    // trackWidth = trackWidth * 0.75;
     if (isNaN(trackWidth)) {
       console.log('ERROR render() trackWidth !== number. screenWidth', screenWidth, ', trackScale', trackScale, ', ', trackWidth)
     }
