@@ -27,7 +27,6 @@ typedef NS_ENUM(NSUInteger, RNAVAssetType) {
 @property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
 @property (nonatomic, copy) RCTBubblingEventBlock onPlayProgress;
 
-- (instancetype)initWithManager:(RNEditViewManager *)manager bridge:(RCTBridge *)bridge;
 
 /// 尝试播放视频
 - (void)play;
@@ -39,7 +38,6 @@ typedef NS_ENUM(NSUInteger, RNAVAssetType) {
 - (void)pause;
 - (void)stop;
 
-- (void)stop;
 - (int)seekToTime:(CGFloat)time;
 - (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 
