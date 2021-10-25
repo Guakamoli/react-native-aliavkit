@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.SurfaceView
 import android.view.View
@@ -15,7 +16,10 @@ import com.aliyun.svideo.editor.util.FixedToastUtils
 import com.aliyun.svideo.editor.view.EditorVideHelper
 import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
+import com.aliyun.svideosdk.common.struct.effect.EffectBean
+import com.aliyun.svideosdk.common.struct.project.Source
 import com.aliyun.svideosdk.editor.AliyunIEditor
+import com.aliyun.svideosdk.editor.EffectType
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReadableMap
@@ -28,8 +32,6 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
-import java.net.FileNameMap
-import java.net.URLConnection
 
 @SuppressLint("ViewConstructor")
 class CKEditor(val reactContext: ThemedReactContext) :
@@ -92,7 +94,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private fun initSurfaceView() {
         mSurfaceView = SurfaceView(mContext)
         val layoutParams = LayoutParams(mWidth, mHeight)
-        mVideoContainer!!.addView(mSurfaceView, layoutParams)
+        mVideoContainer?.addView(mSurfaceView, layoutParams)
     }
 
     private fun copyAssets() {
@@ -145,9 +147,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
         reactContext.runOnUiQueueThread {
-            if (isVideo) {
-                mAliyunIEditor!!.replay()
-            }
+//            if (isVideo) {
+            mAliyunIEditor?.replay()
+//            }
         }
     }
 
@@ -156,9 +158,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun importVideo(filePath: String?, isVideo: Boolean) {
         this.isVideo = isVideo
-        if(isVideo){
+        if (isVideo) {
             mProjectConfigure = mImportManager?.importVideo(filePath).toString()
-        }else{
+        } else {
             mProjectConfigure = mImportManager?.importImage(filePath).toString()
         }
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
@@ -273,7 +275,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     private fun replay() {
-        if (!mAliyunIEditor?.isPlaying!!) {
+        if (mAliyunIEditor?.isPlaying == false) {
             if (mAliyunIEditor?.isPaused == true) {
                 mAliyunIEditor?.resume()
             } else {
@@ -288,6 +290,52 @@ class CKEditor(val reactContext: ThemedReactContext) :
     fun seek(seekTime: Int, promise: Promise) {
         // time 时间，单位：微秒
         mAliyunIEditor?.seek(seekTime.toLong() * 1000)
+    }
+
+    private var lastMusicBean: EffectBean? = null
+
+    /**
+     * 背景音乐
+     */
+    fun setBackgroundMusic(bgmPath: String?) {
+        //重制mv和混音的音效
+        mAliyunIEditor?.resetEffect(EffectType.EFFECT_TYPE_MIX)
+        mAliyunIEditor?.resetEffect(EffectType.EFFECT_TYPE_MV_AUDIO)
+
+        if (TextUtils.isEmpty(bgmPath) && lastMusicBean != null) {
+            //清空背景音乐
+            mAliyunIEditor?.removeMusic(lastMusicBean)
+            mAliyunIEditor?.setVolume(50)
+            lastMusicBean = null
+            return
+        }
+
+        if (lastMusicBean != null) {
+            mAliyunIEditor?.removeMusic(lastMusicBean)
+        }
+
+        val musicEffect = EffectBean()
+        musicEffect.id = 1
+        musicEffect.source = Source(bgmPath)
+
+        //切换音乐seek到0清音乐缓存，避免响一声
+        musicEffect.startTime = 0 * 1000 //单位是us所以要x1000
+        musicEffect.streamStartTime = 0 * 1000
+
+        //设置为最大时长
+        musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
+        musicEffect.streamDuration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
+
+        musicEffect.weight = 50
+
+        mAliyunIEditor?.applyMusic(musicEffect)
+
+        mAliyunIEditor?.setVolume(50)
+        mAliyunIEditor?.seek(0)
+        // 重新播放
+        replay()
+
+        lastMusicBean = musicEffect
     }
 
     /**

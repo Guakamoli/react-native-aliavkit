@@ -117,11 +117,11 @@ class ComposeManager(private val mContext: ThemedReactContext) {
             mVodCompose?.compose(configPath, mOutputPath, object : AliyunIComposeCallBack {
                 override fun onComposeError(errorCode: Int) {
                     Log.e("AAA","onComposeError:$errorCode")
-                    if (isVideo) {
+//                    if (isVideo) {
                         promise?.reject("exportVideo", "errorCode:$errorCode")
-                    } else {
-                        promise?.reject("exportImage", "errorCode:$errorCode")
-                    }
+//                    } else {
+//                        promise?.reject("exportImage", "errorCode:$errorCode")
+//                    }
                 }
 
                 override fun onComposeProgress(progress: Int) {
@@ -131,15 +131,15 @@ class ComposeManager(private val mContext: ThemedReactContext) {
 
                 override fun onComposeCompleted() {
                     Log.e("AAA","onComposeCompleted")
-                    if (isVideo) {
+//                    if (isVideo) {
                         if(isSaveToPhotoLibrary){
                             AliFileUtils.saveVideoToMediaStore(mContext,mOutputPath)
                         }
                         RNEventEmitter.startVideoCompose(mContext, 100,mOutputPath)
                         promise?.resolve(mOutputPath)
-                    } else {
-                        getCoverImager(promise,isSaveToPhotoLibrary)
-                    }
+//                    } else {
+//                        getCoverImager(promise,isSaveToPhotoLibrary)
+//                    }
                 }
             })
 
