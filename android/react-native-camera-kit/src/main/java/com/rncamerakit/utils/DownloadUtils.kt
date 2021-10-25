@@ -1,7 +1,10 @@
 package com.rncamerakit.utils
 
-import android.util.Log
+import android.content.Context
+import android.media.MediaPlayer
+import android.net.Uri
 import com.aliyun.common.utils.StorageUtils
+import com.blankj.utilcode.util.LogUtils
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
@@ -13,8 +16,13 @@ import java.io.File
 class DownloadUtils {
     companion object {
 
-
-        fun downloadMusic(context: ReactContext,songID:Int, musicUrl: String?, promise: Promise?) {
+        fun downloadMusic(
+            context: ReactContext,
+            songID: Int,
+            musicUrl: String?,
+            promise: Promise?,
+            callback:MyFileDownloadCallback?
+        ) {
             val fileName: String? = musicUrl?.lastIndexOf("/")?.plus(1)?.let {
                 musicUrl.substring(
                     it
@@ -27,7 +35,11 @@ class DownloadUtils {
 
             musicUrl?.let {
                 downloadFile(it, savePath, object : MyFileDownloadCallback() {
-                    override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
+                    override fun progress(
+                        task: BaseDownloadTask,
+                        soFarBytes: Int,
+                        totalBytes: Int
+                    ) {
                         super.progress(task, soFarBytes, totalBytes)
                         val progress = soFarBytes.toDouble() / totalBytes.toDouble() * 100
                         RNEventEmitter.downloadMusicProgress(context, progress.toInt())
@@ -37,8 +49,10 @@ class DownloadUtils {
                         super.completed(task)
                         RNEventEmitter.downloadMusicProgress(context, 100)
                         val filePath = task.targetFilePath
-                        MusicFileInfoDao.instance.updateLocalPath(songID,filePath)
-                        Log.e("DownloadUtils", "completed：$filePath")
+                        val duration = getAudioDuration(context.applicationContext, filePath)
+                        MusicFileInfoDao.instance.updateLocalPath(songID, filePath, duration)
+                        LogUtils.e("DownloadUtils", "completed：$filePath")
+                        callback?.completed(task)
                         promise?.resolve(filePath)
                     }
 
@@ -50,12 +64,33 @@ class DownloadUtils {
             }
         }
 
+        private fun getAudioDuration(context: Context, uriString: String): Int {
+            var audioTime = 0
+            val mediaPlayer = MediaPlayer()
+            try {
+                mediaPlayer.setDataSource(context, Uri.parse(uriString))
+                mediaPlayer.prepare();
+                audioTime = mediaPlayer.duration
+            } catch (e: Exception) {
+                e.printStackTrace();
+            } finally {
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+                mediaPlayer.release();
+            }
+            return audioTime
+        }
+
         /**
          * @param url     下载url
          * @param path    本地保存的目录
          */
-        private fun downloadFile(url: String, path: String, downloadCallback: MyFileDownloadCallback?) {
-            Log.e("DownloadUtils", "url:$url; path:$path")
+        private fun downloadFile(
+            url: String,
+            path: String,
+            downloadCallback: MyFileDownloadCallback?
+        ) {
+            LogUtils.e("DownloadUtils", "url:$url; path:$path")
             FileDownloader.getImpl().create(url)
                 // 如果pathAsDirectory是true,path就是存储下载文件的文件目录(而不是路径)，
                 // 此时默认情况下文件名filename将会默认从response#header中的contentDisposition中获得

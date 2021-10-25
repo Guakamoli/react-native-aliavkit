@@ -5,7 +5,7 @@ import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
-import com.rncamerakit.db.MusicFileInfo
+import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
@@ -117,13 +117,13 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun getMusicPath(songID: Int, promise: Promise) {
-        val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(songID)
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
         }
         reactContext.runOnUiQueueThread {
-            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise)
+            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise,null)
         }
     }
 
@@ -170,8 +170,8 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKCamera
-//            view.onRelease()
+            val view = uiManager?.resolveView(viewTag) as CKCamera
+            view.onRelease()
         }
     }
 

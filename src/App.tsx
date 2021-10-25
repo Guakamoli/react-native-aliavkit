@@ -6,7 +6,7 @@ import CameraScreen from './CameraScreen';
 import PostUpload from './PostUpload';
 import PostEditor from './PostEditor'
 // export { useNavigation, useIsFocused } from '@react-navigation/native';
-// closeImage={}
+// 
 
 function Post({ navigation }) {
   return (
@@ -25,6 +25,7 @@ function Post({ navigation }) {
       changeSizeImage={require('../images/changeSize.png')}
       addPhotoBtnPng={require('../images/addPhotoBtn.png')}
       postMutePng={require('../images/postEditorMute.png')}
+      closePng={require('../images/close.png')}
       postNoMutePng={require('../images/postEditorNoMute.png')}
       captureButtonImage={require('../images/cameraButton.png')}
       cameraModule={true}
@@ -37,7 +38,7 @@ function PostEditorBox(props) {
 
   return (
 
-    <PostEditor {...props} uploadFile={(data) => { console.log('uploadfile------s', data); }}
+    <PostEditor {...props} getUploadFile={(data) => { console.log('uploadfile------s', data); }}
       volume={require('../images/volume.png')}
       noVolume={require('../images/noVolume.png')}
     />
@@ -68,6 +69,8 @@ function Story(props) {
       AaImage={require('../images/Aa.png')}
       filterImage={require('../images/filter.png')}
       musicRevampImage={require('../images/musicRevamp.png')}
+      videomusicIcon={require('../images/videomusicIcon.png')}
+      musicSearch={require('../images/musicSearch.png')}
       giveUpImage={require('../images/giveUp.png')}
       noVolumeImage={require('../images/noVolume.png')}
       tailorImage={require('../images/tailor.png')}
@@ -75,6 +78,7 @@ function Story(props) {
 
       musicDynamicGif={require('../images/musicDynamic.gif')}
       musicIconPng={require('../images/musicIcon.png')}
+      musicIcongray={require('../images/musicIcongray.png')}
       showCapturedImageCount
       cameraModule={true}
     />

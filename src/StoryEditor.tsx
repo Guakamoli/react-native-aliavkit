@@ -149,9 +149,9 @@ export default class StoryEditor extends Component<Props, State> {
   componentDidMount() {
     this.getFilters()
     // console.log(123131);
-    console.log('-------this.props.videoPath', this.props.videoPath);
-    console.log('-------this.props.imagePath', this.props.imagePath);
-    console.log('------fileType', this.props.fileType);
+    // console.log('-------this.props.videoPath', this.props.videoPath);
+    // console.log('-------this.props.imagePath', this.props.imagePath);
+    // console.log('------fileType', this.props.fileType);
 
 
   }
@@ -192,6 +192,8 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 编辑头部按钮
   renderUpdateTop() {
+    // console.log(this.props.fileType, 'this.props.fileType');
+
     const imglist = [
       // 'filter': 
       { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
@@ -201,7 +203,7 @@ export default class StoryEditor extends Component<Props, State> {
       // { 'img': this.props.tailorImage, 'onPress': () => { } },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.props.musicRevampImage : this.props.musicRevampImage, 'onPress': () => {
+        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
           if (this.props.fileType == 'video') {
 
             this.setState({ musicOpen: !this.state.musicOpen })
@@ -267,6 +269,8 @@ export default class StoryEditor extends Component<Props, State> {
     //   }
     // }
     const VideoEditors = () => {
+      // console.log('this.videoPath', this.props.videoPath, 'this.imagePth', this.props.imagePath);
+
       return (
         <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
           <VideoEditor
@@ -278,8 +282,8 @@ export default class StoryEditor extends Component<Props, State> {
 
             saveToPhotoLibrary={true}
             startExportVideo={this.state.startExportVideo}
-            videoMute={this.state.mute}
             onExportVideo={this.onExportVideo}
+            videoMute={this.state.mute}
             musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
           />
         </View>
@@ -405,7 +409,11 @@ export default class StoryEditor extends Component<Props, State> {
 
           {this.state.musicOpen
             ?
-            <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng}
+            <StoryMusic
+              musicDynamicGif={this.props.musicDynamicGif}
+              musicIconPng={this.props.musicIconPng}
+              musicSearch={this.props.musicSearch}
+              musicIcongray={this.props.musicIcongray}
               getmusicInfo={(data) => {
 
 

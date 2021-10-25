@@ -1,6 +1,6 @@
 package com.rncamerakit.utils
 
-import android.util.Log
+import com.blankj.utilcode.util.LogUtils
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloadListener
 
@@ -13,7 +13,7 @@ import com.liulishuo.filedownloader.FileDownloadListener
 open class MyFileDownloadCallback : FileDownloadListener() {
 
     override fun pending(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
-        Log.e("DownloadUtils", "pending:$soFarBytes/$totalBytes")
+        LogUtils.e("DownloadUtils", "pending:$soFarBytes/$totalBytes")
     }
 
     override fun started(task: BaseDownloadTask) {
@@ -27,18 +27,18 @@ open class MyFileDownloadCallback : FileDownloadListener() {
         soFarBytes: Int,
         totalBytes: Int
     ) {
-        Log.e("DownloadUtils", "connected:$soFarBytes/$totalBytes")
+        LogUtils.e("DownloadUtils", "connected:$soFarBytes/$totalBytes")
     }
 
-    override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
-        Log.e(
+    public override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
+        LogUtils.e(
             "DownloadUtils",
             "progress:" + soFarBytes.toFloat() / totalBytes.toFloat() + " ~ " + soFarBytes + "/" + totalBytes
         )
     }
 
     override fun blockComplete(task: BaseDownloadTask) {
-        Log.e("DownloadUtils", "blockComplete:" + task.targetFilePath)
+        LogUtils.e("DownloadUtils", "blockComplete:" + task.targetFilePath)
     }
 
     override fun retry(
@@ -49,13 +49,13 @@ open class MyFileDownloadCallback : FileDownloadListener() {
     ) {
     }
 
-    override fun completed(task: BaseDownloadTask) {
-        Log.e("DownloadUtils", "completed:" + task.targetFilePath)
+    public override fun completed(task: BaseDownloadTask) {
+        LogUtils.e("DownloadUtils", "completed:" + task.targetFilePath)
     }
 
     override fun paused(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {}
 
-    override fun error(task: BaseDownloadTask, e: Throwable) {}
+    public override fun error(task: BaseDownloadTask, e: Throwable) {}
 
     override fun warn(task: BaseDownloadTask) {}
 

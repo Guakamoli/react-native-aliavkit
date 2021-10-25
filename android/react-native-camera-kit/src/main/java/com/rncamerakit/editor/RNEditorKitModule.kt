@@ -1,10 +1,16 @@
 package com.rncamerakit.editor
 
 import android.text.TextUtils
+import com.aliyun.svideo.common.utils.FileUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
+import com.google.gson.GsonBuilder
 import com.rncamerakit.crop.CropManager
+import com.rncamerakit.db.MusicFileBean
+import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
+import com.rncamerakit.utils.DownloadUtils
 import java.net.FileNameMap
 import java.net.URLConnection
 
@@ -13,6 +19,38 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName(): String {
         return "RNEditorKitModule"
+    }
+
+    @ReactMethod
+    fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
+        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
+        promise.resolve(GsonBuilder().create().toJson(list))
+    }
+
+    /**
+     * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
+     */
+    @ReactMethod
+    fun getMusicPath(songID: Int, promise: Promise) {
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
+        if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
+            promise.resolve(musicInfo.localPath)
+            return
+        }
+        reactContext.runOnUiQueueThread {
+            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise,null)
+        }
+    }
+
+    @ReactMethod
+    fun playMusic(musicPath: String, promise: Promise) {
+        MediaPlayerManage.instance.start(musicPath, promise)
+    }
+
+    @ReactMethod
+    fun stopMusic(promise: Promise) {
+        MediaPlayerManage.instance.release()
+        promise.resolve(true)
     }
 
     //获取滤镜列表
@@ -166,6 +204,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
+            MediaPlayerManage.instance.release()
             val view = uiManager?.resolveView(viewTag) as CKEditor
             view.onRelease()
         }

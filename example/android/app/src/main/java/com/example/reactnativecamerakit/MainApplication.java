@@ -6,6 +6,7 @@ import android.content.Context;
 import androidx.multidex.MultiDexApplication;
 
 import com.aliyun.svideo.downloader.DownloaderManager;
+import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
@@ -54,6 +55,7 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
     @Override
     public void onCreate() {
         super.onCreate();
+        LogUtils.getConfig().setLogSwitch(true);
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager()); // Remove this line if you don't want Flipper enabled
         DownloaderManager.getInstance().init(this);

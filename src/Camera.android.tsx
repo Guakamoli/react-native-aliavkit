@@ -98,7 +98,7 @@ const Camera = React.forwardRef((props, ref) => {
       style={{ minWidth: 100, minHeight: 100 }}
       flashMode={props.flashMode}
       ref={nativeRef}
-      backgroundMusic={"/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/music/download/10020_许嵩-庐州月.aac"}
+      // backgroundMusic={"/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/music/download/10020_许嵩-庐州月.aac"}
       {...transformedProps}
     />);
 });

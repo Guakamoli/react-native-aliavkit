@@ -29,6 +29,31 @@ export default class Editor extends Component<Props, State> {
     this.nativeRef = React.createRef();
   };
 
+  /**
+   * 获取音乐列表
+   */
+  getMusicList = async (name, page, pageSize) => {
+    var musicList = await RNEditorKitModule.getMusicList(name, page, pageSize);
+    return JSON.parse(musicList)
+  };
+
+  //获取背景音乐地址
+  getMusicPath = async (songID) => {
+    var musicPath = await RNCameraKitModule.getMusicPath(songID);
+    return musicPath
+  };
+
+  //播放本地音乐
+  playMusic = async (musicPath) => {
+    var playMusic = await RNEditorKitModule.playMusic(musicPath);
+    return playMusic
+  };
+
+  //停止播放
+  stopMusic = async () => {
+    var playMusic = await RNEditorKitModule.stopMusic();
+    return playMusic
+  };
 
 
   //获取滤镜列表
@@ -60,13 +85,13 @@ export default class Editor extends Component<Props, State> {
   //定位播放
   onSeek = async (time) => {
     // * seek到某个时间点   @param time 时间，单位：毫秒
-    let seek = await RNEditorKitModule.seek(time,findNodeHandle(this.nativeRef.current));
+    let seek = await RNEditorKitModule.seek(time, findNodeHandle(this.nativeRef.current));
     console.log("onSeek", seek);
   };
 
   //获取视频封面    @param time 时间，单位：毫秒
   onVideoCover = async (time) => {
-    let videoCover = await RNEditorKitModule.videoCover(time,findNodeHandle(this.nativeRef.current));
+    let videoCover = await RNEditorKitModule.videoCover(time, findNodeHandle(this.nativeRef.current));
     console.log("onVideoCover", videoCover);
   };
 
@@ -83,10 +108,13 @@ export default class Editor extends Component<Props, State> {
 
 
 
-  componentDidMount() {
+  async componentDidMount() {
+
+    let list = await this.getMusicList("", 2, 10);
+    console.log("getMusicList", list);
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
-      console.log("startVideoEditor", duration);
+      // console.log("startVideoEditor", duration);
     });
 
     // //视频裁剪进度
@@ -100,6 +128,11 @@ export default class Editor extends Component<Props, State> {
       // console.log("startVideoCompose", param);
       this.props.onExportVideo(param);
     });
+
+      //音乐下载进度
+      this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
+        console.log("downloadMusic", progress);
+      });
   }
 
   componentWillUnmount() {
@@ -113,6 +146,12 @@ export default class Editor extends Component<Props, State> {
     if (this.startVideoComposeListener != null) {
       this.startVideoComposeListener.remove();
     }
+
+    if (this.downloadMusicListener != null) {
+      this.downloadMusicListener.remove();
+    }
+
+    this.stopMusic();
   }
 
   render() {
@@ -122,7 +161,8 @@ export default class Editor extends Component<Props, State> {
           ref={this.nativeRef}
           style={{ minWidth: 100, minHeight: 100 }}
           {...this.props}
-          // startExportVideo = {this.props.startExportVideo}
+        // startExportVideo = {this.props.startExportVideo}
+
         />
       </View>
     );
