@@ -32,6 +32,7 @@
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
     NSString *_videoSavePath;
+    VideoRecordEndBlk_t _complete;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -298,10 +299,10 @@ static AliCameraAction *_instance = nil;
     return ([self.recorder startRecording]) == 0; // ==0 YES
 }
 
-- (NSString *)stopRecordVideo
+- (void)stopRecordVideo:(VideoRecordEndBlk_t)complete;
 {
+    _complete = complete;
     [self.recorder stopRecording];
-    return _videoSavePath;
 }
 
 #pragma mark - face paster
@@ -395,13 +396,16 @@ static AliCameraAction *_instance = nil;
 {
     NSLog(@"----✅ finish all record ✅");
     [self.recorder stopPreview];
+    _complete = nil;
 }
 
 - (void)_recorderFinishRecording
 {
     [self.recorder finishRecording];  //will call `recorderDidFinishRecording`
     NSString *outputPath = self.mediaConfig.outputPath;
-    //    NSLog(@"---- outputPath: %@",outputPath);
+    _complete(outputPath);
+    
+    //save for test
     [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
 }

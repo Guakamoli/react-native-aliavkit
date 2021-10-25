@@ -11,6 +11,12 @@
 @class RCTBridge;
 @class AliyunMediaConfig;
 
+
+typedef NS_ENUM(NSUInteger, RNAVAssetType) {
+    RNAVAssetTypeVideo,
+    RNAVAssetTypePhoto
+};
+
 @interface RNEditView : UIView
 ///视频配置参数
 @property (nonatomic, strong) AliyunMediaConfig *mediaConfig;

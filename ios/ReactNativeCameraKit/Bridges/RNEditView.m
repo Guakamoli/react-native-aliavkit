@@ -245,9 +245,6 @@ AliyunCropDelegate
     self.pasterManager.delegate = (id)self;
 }
 
-
-
-
 - (void)prepareForExport
 {
     [self.player stop];
@@ -267,9 +264,11 @@ AliyunCropDelegate
             if ([imagePath containsString:@"file://"]) { //in case path contains scheme
                 _imagePath = [NSURL URLWithString:imagePath].path;
             }
+            NSLog(@"------imagePath：%@",_imagePath);
             [self _setPhotoTaskPath:_imagePath];
             [self initEditorSDK];
-        } else {
+        }
+//        else {
             //**For test only**
 //            NSString * photoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"photoPath"];
 //            if (photoPath) {
@@ -277,28 +276,29 @@ AliyunCropDelegate
 //                _imagePath = photoPath;
 //            }
 //            [self initEditorSDK];
-        }
-        NSLog(@"------imagePath：%@",_imagePath);
+//        }
     }
 }
 
 - (void)setVideoPath:(NSString *)videoPath
 {
     if (_videoPath != videoPath) {
-        _videoPath = videoPath;
-        
         if (videoPath && ![videoPath isEqualToString:@""]) {
+            _videoPath = videoPath;
             if ([videoPath containsString:@"file://"]) { //in case path contains scheme
                 _videoPath = [NSURL URLWithString:videoPath].path;
             }
+            NSLog(@"------videoPath：%@",_videoPath);
             [self initEditorSDK];
-        } else {
-            //**For test only**
-            NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+        }
+    }
+    else {
+        //**For test only**
+        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+        if (videoSavePath) {
             _videoPath = videoSavePath;
             [self initEditorSDK];
         }
-        NSLog(@"------videoPath：%@",_videoPath);
     }
 }
 

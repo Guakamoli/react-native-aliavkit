@@ -112,11 +112,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     if (!newSuperview) {
         NSLog(@"---✅ %s",__PRETTY_FUNCTION__);
-        [self.cameraAction stopPreview];
-        [self.cameraAction stopRecordVideo];
+//        [self.cameraAction stopRecordVideo];
+//        [self.cameraAction stopPreview];
     } else {
-        
         NSLog(@"--- %s",__PRETTY_FUNCTION__);
+        if (self.cameraAction) {
+            [self.cameraAction startFrontPreview];
+        }
     }
 }
 
@@ -283,8 +285,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
               success:(VideoStopBlock)onSuccess
               onError:(void (^)(NSString *))onError
 {
-    NSString *path = [self.cameraAction stopRecordVideo];
-    onSuccess(path);
+//    NSString *path = [self.cameraAction stopRecordVideo];
+//    onSuccess(path);
+    
+    [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
+        if (videoSavePath) {
+            onSuccess(videoSavePath);
+        } else {
+            onError(@"no path exist");
+        }
+    }];
 }
 
 - (void)snapStillImage:(NSDictionary*)options
