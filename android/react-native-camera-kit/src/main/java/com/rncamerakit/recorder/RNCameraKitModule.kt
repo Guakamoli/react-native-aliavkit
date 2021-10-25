@@ -88,9 +88,16 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+//    @ReactMethod
+//    fun getMusicList(promise: Promise) {
+//        val list = MusicFileInfoDao.instance.queryAll()
+//        promise.resolve(GsonBuilder().create().toJson(list))
+//    }
+
+
     @ReactMethod
-    fun getMusicList(promise: Promise) {
-        val list = MusicFileInfoDao.instance.queryAll()
+    fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
+        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
         promise.resolve(GsonBuilder().create().toJson(list))
     }
 
@@ -109,14 +116,14 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
      */
     @ReactMethod
-    fun getMusicPath(songID: Int, musicUrl: String, promise: Promise) {
+    fun getMusicPath(songID: Int, promise: Promise) {
         val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(songID)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
         }
         reactContext.runOnUiQueueThread {
-            DownloadUtils.downloadMusic(reactContext, songID, musicUrl, promise)
+            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise)
         }
     }
 
@@ -163,8 +170,8 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.onRelease()
+//            val view = uiManager?.resolveView(viewTag) as CKCamera
+//            view.onRelease()
         }
     }
 

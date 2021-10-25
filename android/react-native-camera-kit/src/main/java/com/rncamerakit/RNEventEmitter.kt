@@ -31,7 +31,7 @@ class RNEventEmitter {
          */
         fun downloadMusicProgress(reactContext: ReactContext?, progress: Int) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("downloadPaster", "" + progress.toDouble()/100)
+                ?.emit("downloadMusic", "" + progress.toDouble()/100)
         }
 
         /**

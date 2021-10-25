@@ -4,6 +4,7 @@ import android.text.TextUtils
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
+import com.rncamerakit.recorder.CKCamera
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
 
@@ -26,11 +27,11 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     //文件地址
     @ReactProp(name = "videoPath")
     fun setVideoPath(view: CKEditor, videoPath: String?) {
-        if(TextUtils.isEmpty(videoPath)){
+        if (TextUtils.isEmpty(videoPath)) {
             return
         }
         view.reactContext.runOnUiQueueThread {
-            view.importVideo(videoPath,true)
+            view.importVideo(videoPath, true)
         }
     }
 
@@ -38,11 +39,11 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     //文件地址
     @ReactProp(name = "imagePath")
     fun setImagePath(view: CKEditor, imagePath: String?) {
-        if(TextUtils.isEmpty(imagePath)){
+        if (TextUtils.isEmpty(imagePath)) {
             return
         }
         view.reactContext.runOnUiQueueThread {
-            view.importVideo(imagePath,false)
+            view.importVideo(imagePath, false)
         }
     }
 
@@ -74,12 +75,18 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     @ReactProp(name = "startExportVideo")
     fun startExportVideo(view: CKEditor, save: Boolean?) {
         view.reactContext.runOnUiQueueThread {
-            if(save == true){
+            if (save == true) {
                 view.exportVideo(null)
             }
         }
     }
 
-
+    //设置背景音乐
+    @ReactProp(name = "backgroundMusic")
+    fun setBackgroundMusic(view: CKEditor, bgm: String?) {
+        view.reactContext.runOnUiQueueThread {
+            view.setBackgroundMusic(bgm)
+        }
+    }
 
 }
