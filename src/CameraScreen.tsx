@@ -590,7 +590,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({
       timer: setInterval(() => {
         progress += 1 / 140;
-        console.log('进度条');
+        // console.log('进度条');
         // if(progress < 20 / 140){
         //   this.myRef.current.show('摄像失败,请勿小于2秒', 2000);
         //   this.setState({ startShoot: false, ShootSuccess: false, fadeInOpacity: new Animated.Value(60) })

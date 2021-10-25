@@ -132,7 +132,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (instancetype)init
 {
     if (self = [super init]) {
-        [self.cameraAction startFrontPreview];
+//        [self.cameraAction startFrontPreview];
     }
     return self;
 }

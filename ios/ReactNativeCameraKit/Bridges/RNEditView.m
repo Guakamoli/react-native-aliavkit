@@ -77,12 +77,6 @@ AliyunCropDelegate
 
 @implementation RNEditView
 
-- (void)dealloc
-{
-    [_editor stopEdit];
-    [self.generator cancel];
-}
-
 - (AliyunMediaConfig *)mediaConfig
 {
     if (!_mediaConfig) {//默认配置
@@ -218,6 +212,28 @@ AliyunCropDelegate
     return _preview;
 }
 
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    if (!newSuperview) {
+        //clearing...
+        [self stop];
+        [_editor stopEdit];
+        [self.generator cancel];
+        self.imagePath = nil;
+        self.videoPath = nil;
+    } else {
+        if (self.videoPath) {
+            [self initEditorSDK];
+            return;
+        }
+        if (self.imagePath) {
+            [self _setPhotoTaskPath:_imagePath];
+            [self initEditorSDK];
+        }
+    }
+}
+
 /// 初始化sdk相关
 - (void)initSDKAbout
 {
@@ -259,23 +275,19 @@ AliyunCropDelegate
 - (void)setImagePath:(NSString *)imagePath
 {
     if (_imagePath != imagePath) {
-        _imagePath = imagePath;
         if (imagePath && ![imagePath isEqualToString:@""]) {
+            _imagePath = imagePath;
             if ([imagePath containsString:@"file://"]) { //in case path contains scheme
                 _imagePath = [NSURL URLWithString:imagePath].path;
             }
             NSLog(@"------imagePath：%@",_imagePath);
-            [self _setPhotoTaskPath:_imagePath];
-            [self initEditorSDK];
         }
 //        else {
             //**For test only**
 //            NSString * photoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"photoPath"];
 //            if (photoPath) {
-//                [self _setPhotoTaskPath:photoPath];
 //                _imagePath = photoPath;
 //            }
-//            [self initEditorSDK];
 //        }
     }
 }
@@ -289,16 +301,14 @@ AliyunCropDelegate
                 _videoPath = [NSURL URLWithString:videoPath].path;
             }
             NSLog(@"------videoPath：%@",_videoPath);
-            [self initEditorSDK];
         }
     }
     else {
         //**For test only**
-        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
-        if (videoSavePath) {
-            _videoPath = videoSavePath;
-            [self initEditorSDK];
-        }
+//        NSString * videoSavePath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
+//        if (videoSavePath) {
+//            _videoPath = videoSavePath;
+//        }
     }
 }
 
