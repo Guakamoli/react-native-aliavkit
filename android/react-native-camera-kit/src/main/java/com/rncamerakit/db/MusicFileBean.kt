@@ -1,19 +1,17 @@
 package com.rncamerakit.db
 
 class MusicFileBaseInfo {
-    var songs: MutableList<MusicFileInfo>? = null
+    var songs: MutableList<MusicFileBean>? = null
 }
 
-
-class MusicFileInfo {
-
+class MusicFileBean {
 
     var songID = 0
 
     /**
      * 文件名
      */
-    var name: String = "null"
+    var name: String? = null
 
     /**
      * 作者

@@ -17,24 +17,19 @@ import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.uimanager.ThemedReactContext
 import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.db.MusicFileBaseInfo
-import com.rncamerakit.db.MusicFileInfo
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
-import com.rncamerakit.utils.DownloadUtils
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.observers.DisposableObserver
-import io.reactivex.rxjava3.schedulers.Schedulers
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.net.URL
 import java.util.*
 
+@SuppressLint("ViewConstructor")
 class CKCamera(
-    private val reactContext: ThemedReactContext,
+    val reactContext: ThemedReactContext,
 ) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
@@ -47,13 +42,12 @@ class CKCamera(
     var mRecorderManage: RecorderManage? = null
         private set
     private var mRecorder: AlivcRecorder? = null
-    private var mDisposableObserver: DisposableObserver<String>? = null
     private var mWidth = 0
     private var mHeight = 0
 
     private fun initRecorder() {
         mRecorderManage = RecorderManage(reactContext)
-        mRecorder = mRecorderManage!!.mRecorder
+        mRecorder = mRecorderManage?.mRecorder
         mRecorder?.setDisplayView(mRecorderSurfaceView, null)
         mRecorder?.startPreview()
 
@@ -77,7 +71,7 @@ class CKCamera(
         slp.gravity = Gravity.CENTER
         container.addView(mRecorderSurfaceView, slp)
         val layoutParams = LayoutParams(slp.width, slp.height)
-        mVideoContainer!!.addView(container, layoutParams)
+        mVideoContainer?.addView(container, layoutParams)
         val scaleGestureDetector = ScaleGestureDetector(context, object : OnScaleGestureListener {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val factorOffset = detector.scaleFactor - lastScaleFactor
@@ -91,7 +85,7 @@ class CKCamera(
                 }
                 if (mRecorder != null) {
                     //设置缩放
-                    mRecorder!!.setZoom(scaleFactor)
+                    mRecorder?.setZoom(scaleFactor)
                 }
                 return false
             }
@@ -110,16 +104,24 @@ class CKCamera(
                     if (mRecorder == null) {
                         return true
                     }
-                    val x = e.x / mRecorderSurfaceView!!.width
-                    val y = e.y / mRecorderSurfaceView!!.height
+                    val width = mRecorderSurfaceView?.width
+                    val height = mRecorderSurfaceView?.height
+                    var pointX = 0F
+                    if (width != null) {
+                        pointX = e.x / width.toFloat()
+                    }
+                    var pointY = 0F
+                    if (height != null) {
+                        pointY = e.y / height.toFloat()
+                    }
                     //手动对焦
-                    mRecorder!!.setFocus(x, y)
-                    mFocusView!!.showView()
-                    mFocusView!!.setLocation(e.rawX, e.rawY)
+                    mRecorder?.setFocus(pointX, pointY)
+                    mFocusView?.showView()
+                    mFocusView?.setLocation(e.rawX, e.rawY)
                     return true
                 }
             })
-        mRecorderSurfaceView!!.setOnTouchListener { _, event ->
+        mRecorderSurfaceView?.setOnTouchListener { _, event ->
             if (event.pointerCount >= 2) {
                 scaleGestureDetector.onTouchEvent(event)
             } else if (event.pointerCount == 1) {
@@ -131,10 +133,10 @@ class CKCamera(
 
     private fun initFocusView() {
         mFocusView = FocusView(context)
-        mFocusView!!.setPadding(10, 10, 10, 10)
+        mFocusView?.setPadding(10, 10, 10, 10)
         val params = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         addView(mFocusView, params)
-        mFocusView!!.showViewInVisible()
+        mFocusView?.showViewInVisible()
     }
 
 
@@ -148,34 +150,16 @@ class CKCamera(
     }
 
     private fun copyAssets() {
-        mDisposableObserver = object : DisposableObserver<String>() {
-            override fun onNext(s: String) {
+        doAsync {
+            RecordCommon.copyAll(reactContext)
+            uiThread {
                 if (mRecorderManage != null) {
-                    mRecorderManage!!.initColorFilterAssets()
+                    mRecorderManage?.initColorFilterAssets()
                 }
                 setFaceTrackModePath()
-
                 EffectPasterManage.instance.init(reactContext)
             }
-
-            override fun onError(e: Throwable?) {
-            }
-
-            override fun onComplete() {
-            }
         }
-        Observable.create<String> { emitter ->
-            try {
-                RecordCommon.copyAll(reactContext)
-                emitter.onNext("")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emitter.onError(e)
-            }
-            emitter.onComplete()
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(mDisposableObserver)
     }
 
     fun onRelease() {
@@ -183,7 +167,6 @@ class CKCamera(
         mRecorder?.release()
         mRecorder = null
         mRecorderManage?.onRelease()
-        mDisposableObserver?.dispose()
         MediaPlayerManage.instance.release()
     }
 
@@ -199,14 +182,18 @@ class CKCamera(
     }
 
     fun getPermissions() {
-        ActivityCompat.requestPermissions(
-            Objects.requireNonNull(reactContext.currentActivity)!!,
-            permissions,
-            0
-        )
+        Objects.requireNonNull(reactContext.currentActivity)?.let {
+            ActivityCompat.requestPermissions(
+                it,
+                permissions,
+                0
+            )
+        }
     }
 
+
     init {
+        MusicFileInfoDao.instance.init(mContext)
         if (!isPermissions()) {
             getPermissions()
         }
@@ -218,15 +205,12 @@ class CKCamera(
         initRecorder()
         initFocusView()
         copyAssets()
-
-        MusicFileInfoDao.instance.init(mContext)
-
         val list = MusicFileInfoDao.instance.queryAll()
-        val list1 = MusicFileInfoDao.instance.queryList(null,1,10)
-        val list2 = MusicFileInfoDao.instance.queryList(null,2,10)
-        val list3 = MusicFileInfoDao.instance.queryList(null,3,10)
-        val list4 = MusicFileInfoDao.instance.queryList(null,4,10)
-        val list5 = MusicFileInfoDao.instance.queryList("海",1,10)
+        val list1 = MusicFileInfoDao.instance.queryList(null, 1, 10)
+        val list2 = MusicFileInfoDao.instance.queryList(null, 2, 10)
+        val list3 = MusicFileInfoDao.instance.queryList(null, 3, 10)
+        val list4 = MusicFileInfoDao.instance.queryList(null, 4, 10)
+        val list5 = MusicFileInfoDao.instance.queryList("海", 1, 10)
 
         doAsync {
             val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
@@ -237,7 +221,8 @@ class CKCamera(
                 if (md5Text == md5Value) {
                     return@uiThread
                 }
-                val baseInfo: MusicFileBaseInfo = GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                val baseInfo: MusicFileBaseInfo =
+                    GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
                 MusicFileInfoDao.instance.insertList(baseInfo.songs)
                 SPUtils.getInstance().put(spKey, md5Text)
             }

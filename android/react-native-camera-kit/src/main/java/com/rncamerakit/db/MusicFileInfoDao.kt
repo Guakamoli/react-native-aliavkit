@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.text.TextUtils
-import androidx.core.content.contentValuesOf
 import java.sql.SQLException
 import java.util.*
 
@@ -46,7 +45,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         }
     }
 
-    override fun insert(info: MusicFileInfo) {
+    override fun insert(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -67,7 +66,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(null)
     }
 
-    override fun insertList(list: MutableList<MusicFileInfo>?) {
+    override fun insertList(list: MutableList<MusicFileBean>?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -97,7 +96,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         return haveData
     }
 
-    override fun createOrUpdate(info: MusicFileInfo) {
+    override fun createOrUpdate(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -122,7 +121,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(cursor)
     }
 
-    override fun replace(info: MusicFileInfo) {
+    override fun replace(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -140,7 +139,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(null)
     }
 
-    override fun updateLocalPath(songID: Int?, localPath: String?) {
+    override fun updateLocalPath(songID: Int?, localPath: String?,duration:Int?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -148,11 +147,12 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         val values = ContentValues()
         values.put("IS_DB_CONTAIN", 1)
         values.put("LOCAL_PATH", localPath)
+        values.put("DURATION", duration)
         mDatabase?.update(tableName, values, "SONG_ID = ?", arrayOf(songID.toString()))
         close(null)
     }
 
-    override fun queryAll(): MutableList<MusicFileInfo>? {
+    override fun queryAll(): MutableList<MusicFileBean>? {
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -163,9 +163,9 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             close(cursor)
             return null
         }
-        val infoList: MutableList<MusicFileInfo> = ArrayList()
+        val infoList: MutableList<MusicFileBean> = ArrayList()
         while (cursor.moveToNext()) {
-            val info = MusicFileInfo()
+            val info = MusicFileBean()
             info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
             info.artist = cursor.getString(cursor.getColumnIndex("ARTIST"))
@@ -180,7 +180,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         return infoList
     }
 
-    override fun query(songID: Int?): MusicFileInfo? {
+    override fun query(songID: Int?): MusicFileBean? {
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -192,7 +192,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             close(cursor)
             return null
         }
-        val info = MusicFileInfo()
+        val info = MusicFileBean()
         while (cursor.moveToNext()) {
             info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
@@ -212,7 +212,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         queryMsg: String?,
         page: Int?,
         total: Int?
-    ): MutableList<MusicFileInfo>? {
+    ): MutableList<MusicFileBean>? {
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -234,9 +234,9 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
                 "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         }
-        val infoList: MutableList<MusicFileInfo> = ArrayList()
+        val infoList: MutableList<MusicFileBean> = ArrayList()
         while (cursor.moveToNext()) {
-            val info = MusicFileInfo()
+            val info = MusicFileBean()
             info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
             info.artist = cursor.getString(cursor.getColumnIndex("ARTIST"))
