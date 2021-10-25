@@ -16,46 +16,47 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      example: undefined,
+      example: CameraScreenExample,
     };
   }
 
   render() {
-    if (this.state.example) {
-      const Example = this.state.example;
-      return <Example />;
-    }
+    // if (this.state.example) {
+    //   const Example = this.state.example;
+    //   return 
+    // }
     return (
-      <View style={{ flex: 1 }}>
-        <View style={styles.headerContainer}>
-          <Text style={{ fontSize: 60 }}>🎈</Text>
-          <Text style={styles.headerText}>
-            React Native Camera Kit
-          </Text>
-        </View>
-        <View style={styles.container}>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraExample })}>
-            <Text style={styles.buttonText}>
-              Camera
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraScreenExample })}>
-            <Text style={styles.buttonText}>
-              Camera Screen
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: BarcodeScreenExample })}>
-            <Text style={styles.buttonText}>
-              Barcode Scanner
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: StoryMusic })}>
-            <Text style={styles.buttonText}>
-              Barcode Scanner
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CameraScreenExample />
+      // <View style={{ flex: 1 }}>
+      //   <View style={styles.headerContainer}>
+      //     <Text style={{ fontSize: 60 }}>🎈</Text>
+      //     <Text style={styles.headerText}>
+      //       React Native Camera Kit
+      //     </Text>
+      //   </View>
+      //   <View style={styles.container}>
+      //     <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraExample })}>
+      //       <Text style={styles.buttonText}>
+      //         Camera
+      //       </Text>
+      //     </TouchableOpacity>
+      //     <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: CameraScreenExample })}>
+      //       <Text style={styles.buttonText}>
+      //         Camera Screen
+      //       </Text>
+      //     </TouchableOpacity>
+      //     <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: BarcodeScreenExample })}>
+      //       <Text style={styles.buttonText}>
+      //         Barcode Scanner
+      //       </Text>
+      //     </TouchableOpacity>
+      //     <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: StoryMusic })}>
+      //       <Text style={styles.buttonText}>
+      //         Barcode Scanner
+      //       </Text>
+      //     </TouchableOpacity>
+      //   </View>
+      // </View>
     );
   }
 }

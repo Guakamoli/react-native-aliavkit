@@ -214,7 +214,7 @@ export default class CameraScreen extends Component<Props, State> {
     // trimVideoData = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100, cropOffsetY:100, cropWidth:800, cropHeight:800 });
     console.log('裁剪数据', multipleData);
 
-    // trimVideoData = await AVService.crop({ source: `${multipleData[0].image.uri}`, cropOffsetX, cropOffsetY, cropWidth: multipleData[0].image.width, cropHeight: multipleData[0].image.width, });
+    trimVideoData = await AVService.crop({ source: `${multipleData[0].image.uri}`, cropOffsetX, cropOffsetY, cropWidth: multipleData[0].image.width, cropHeight: multipleData[0].image.width, });
     // await AVService.crop({})
     this.myRef.current.show('请稍后', DURATION.FOREVER);
 
@@ -223,22 +223,22 @@ export default class CameraScreen extends Component<Props, State> {
     // 进入修改
     if (fileSelectType === 'image') {
       console.log('开始裁剪');
+      trimVideoData = await AVService.crop({ source: `${multipleData[0].image.uri}`, cropOffsetX, cropOffsetY, cropWidth: multipleData[0].image.width, cropHeight: multipleData[0].image.width, });
+      // let a = multipleData.map(async (item, index) => {
+      //   console.log('开始裁剪1');
+      //   console.log('12313', item);
 
-      let a = multipleData.map(async (item, index) => {
-        console.log('开始裁剪1');
-        console.log('12313', item);
+      //   return 
+      //   console.log(index, '------', trimVideoData);
 
-        return trimVideoData = await AVService.crop({ source: `${item.image.uri}`, cropOffsetX, cropOffsetY, cropWidth: item.image.width, cropHeight: item.image.width, });
-        console.log(index, '------', trimVideoData);
+      // })
 
-      })
-
-      console.log(a);
+      // console.log(a);
 
       // this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
       // this.sendUploadFile(trimVideoData)
       this.myRef.current.close();
-      // this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType })
+      this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType })
     }
 
   }
@@ -530,9 +530,9 @@ export default class CameraScreen extends Component<Props, State> {
               // 取最后一张
               this.setState({ multipleData: [multipleData[multipleData.length - 1]] })
             }
-            this.setState({ startmMltiple: !startmMltiple, })
+            // this.setState({ startmMltiple: !startmMltiple, })
             // 暂时单张图㲏上传
-            // this.setState({ startmMltiple: false, })
+            this.setState({ startmMltiple: false, })
           }} >
             <Image
               style={[styles.multipleBtnImage, { marginRight: 10 }]}
