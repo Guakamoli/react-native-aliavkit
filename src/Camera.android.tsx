@@ -30,9 +30,21 @@ const Camera = React.forwardRef((props, ref) => {
       return JSON.parse(pasterInfos)
     },
 
+    /**
+     * 获取音乐列表
+     * @param name 
+     * @param page 
+     * @param pageSize 
+     * @returns 
+     */
+    getMusicList: async (name, page, pageSize) => {
+      var musicList = await RNCameraKitModule.getMusicList(name, page, pageSize);
+      return JSON.parse(musicList)
+    },
+
     //获取背景音乐地址
-    getMusicPath: async (songID,musicUrl) => {
-      var musicPath = await RNCameraKitModule.downloadMusic(songID,musicUrl);
+    getMusicPath: async (songID) => {
+      var musicPath = await RNCameraKitModule.getMusicPath(songID);
       return musicPath
     },
 
@@ -42,8 +54,8 @@ const Camera = React.forwardRef((props, ref) => {
       return playMusic
     },
 
-     //播放本地音乐
-     stopMusic: async () => {
+    //停止播放
+    stopMusic: async () => {
       var playMusic = await RNCameraKitModule.stopMusic();
       return playMusic
     },
@@ -59,15 +71,19 @@ const Camera = React.forwardRef((props, ref) => {
     const subscription = DeviceEventEmitter.addListener('startVideoRecord', (duration) => {
       console.log("duration", duration);
     });
-
     //贴纸下载进度
-    const downloadPaster = DeviceEventEmitter.addListener('downloadPaster', (duration) => {
-      console.log("downloadPaster", duration);
+    const downloadPaster = DeviceEventEmitter.addListener('downloadPaster', (progress) => {
+      console.log("downloadPaster", progress);
+    });
+    //音乐下载进度
+    const downloadMusic = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
+      console.log("downloadMusic", progress);
     });
     return () => {
       // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
       subscription.remove();
       downloadPaster.remove();
+      downloadMusic.remove();
     };
   }, []);
 
@@ -82,7 +98,7 @@ const Camera = React.forwardRef((props, ref) => {
       style={{ minWidth: 100, minHeight: 100 }}
       flashMode={props.flashMode}
       ref={nativeRef}
-      backgroundMusic = {"/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/music/download/10020_许嵩-庐州月.aac"}
+      // backgroundMusic={"/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/music/download/10020_许嵩-庐州月.aac"}
       {...transformedProps}
     />);
 });

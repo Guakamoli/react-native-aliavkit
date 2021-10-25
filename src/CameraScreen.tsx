@@ -638,7 +638,6 @@ export default class CameraScreen extends Component<Props, State> {
                   this.FlatListRef.scrollToIndex({ index: 0, animated: false  })   
                   // listRef.current.scrollToIndex({ index: 0, animated: false })
                   }} >
-
               <Image style={[{width:20,height:20},{position:"absolute",bottom:90,left:captureIcon3,}]} source={this.props.closeImage } />
                 </TouchableOpacity> */}
                 {/* {this.switchProp()} */}
@@ -714,7 +713,7 @@ export default class CameraScreen extends Component<Props, State> {
           enableMomentum={true}
           scrollInterpolator={this._scrollInterpolator}
           slideInterpolatedStyle={this._animatedStyles}
-          onScroll={this._onScroll}
+          // onScroll={this._onScroll}
           enableSnap={true}
           data={pasterList}
           decelerationRate={'normal'}

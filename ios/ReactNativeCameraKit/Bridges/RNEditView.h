@@ -11,6 +11,12 @@
 @class RCTBridge;
 @class AliyunMediaConfig;
 
+
+typedef NS_ENUM(NSUInteger, RNAVAssetType) {
+    RNAVAssetTypeVideo,
+    RNAVAssetTypePhoto
+};
+
 @interface RNEditView : UIView
 ///视频配置参数
 @property (nonatomic, strong) AliyunMediaConfig *mediaConfig;
@@ -21,7 +27,6 @@
 @property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
 @property (nonatomic, copy) RCTBubblingEventBlock onPlayProgress;
 
-- (instancetype)initWithManager:(RNEditViewManager *)manager bridge:(RCTBridge *)bridge;
 
 /// 尝试播放视频
 - (void)play;
@@ -33,7 +38,6 @@
 - (void)pause;
 - (void)stop;
 
-- (void)stop;
 - (int)seekToTime:(CGFloat)time;
 - (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 

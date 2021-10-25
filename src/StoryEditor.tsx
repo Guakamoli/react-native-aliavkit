@@ -19,7 +19,7 @@ import VideoEditor from './VideoEditor';
 import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
-
+import StoryMusic from './StoryMusic';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
@@ -40,12 +40,14 @@ export type Props = {
   rephotograph: () => void;
 
   getUploadFile: (any) => void;
-  
+
   goback: any
- // 视频路径
- videoPath: any, 
- imagePath:any,
- fileType:any
+  // 视频路径
+  videoPath: any,
+  imagePath: any,
+  fileType: any
+  musicDynamicGif: any
+  musicIconPng: any
 }
 
 type State = {
@@ -60,19 +62,22 @@ type State = {
   showFilterLens: boolean,
   filterLensSelect: number,
 
- 
-// 滤镜名称
-  filterName:string
-  filterList:Array<any>
-// 导出
-  startExportVideo:Boolean
+
+  // 滤镜名称
+  filterName: string
+  filterList: Array<any>
+  // 导出
+  startExportVideo: Boolean
+
+  musicOpen: Boolean
+  musicInfo: any
 }
 
 
 export default class StoryEditor extends Component<Props, State> {
   camera: any;
   myRef: any
-  editor:any
+  editor: any
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -88,10 +93,12 @@ export default class StoryEditor extends Component<Props, State> {
       showFilterLens: false,
       filterLensSelect: 0,
       // 视频 照片地址
-      filterName:"柔柔",
-      filterList:[],
+      filterName: "柔柔",
+      filterList: [],
 
       startExportVideo: false,
+      musicOpen: false,
+      musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
@@ -105,29 +112,29 @@ export default class StoryEditor extends Component<Props, State> {
 
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
-    console.log('1231',event);
-    const {fileType}  = this.props;
+    console.log('1231', event);
+    const { fileType } = this.props;
     if (event.exportProgress === 1) {
-      let  outputPath = event.outputPath;
-      this.setState({ startExportVideo: false,outputPath:event.outputPath });
+      let outputPath = event.outputPath;
+      this.setState({ startExportVideo: false, outputPath: event.outputPath });
       // console.log('视频导出成功, path = ', event.outputPath);
       let uploadFile = [];
       // 
-        let type = outputPath.split('.')
-        uploadFile.push({
-          Type : `${fileType}/${type[type.length - 1]}`,
-          path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
-          size : 0,
-          Name:outputPath
-        })
-   
+      let type = outputPath.split('.')
+      uploadFile.push({
+        Type: `${fileType}/${type[type.length - 1]}`,
+        path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
+        size: 0,
+        Name: outputPath
+      })
+
       this.sendUploadFile(uploadFile)
-      
+
     }
   }
-  getFilters  = async() => {
+  getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
-    if(this.state.filterList.length < 1){
+    if (this.state.filterList.length < 1) {
       if (Platform.OS === 'android') {
         const filterList = await this.editor.getColorFilterList();
         // console.log('filterList111', filterList);
@@ -142,11 +149,11 @@ export default class StoryEditor extends Component<Props, State> {
   componentDidMount() {
     this.getFilters()
     // console.log(123131);
-      console.log('-------this.props.videoPath',this.props.videoPath);
-      console.log('-------this.props.imagePath',this.props.imagePath);
-      console.log('------fileType',this.props.fileType);
-      
-      
+    // console.log('-------this.props.videoPath', this.props.videoPath);
+    // console.log('-------this.props.imagePath', this.props.imagePath);
+    // console.log('------fileType', this.props.fileType);
+
+
   }
   componentWillUnmount() {
     // if( Platform.OS === 'android'){
@@ -155,36 +162,38 @@ export default class StoryEditor extends Component<Props, State> {
     // }
     // 结束编辑页面
     RNEditViewManager.stop()
-    console.log('销毁');
-    this.setState = ()=>false;
-}
+    console.log('拍摄编辑销毁');
+    this.setState = () => false;
+  }
 
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state
-   
+
     return (
       <View style={styles.BottomBox}>
         <>
           {/*  作品快拍 切换*/}
-          
+
           {/* 发布 */}
-       
-            <TouchableOpacity onPress={ () => {
-               this.startExportVideo()
-            }}>
-              <View style={styles.uploadBox}>
-                <Text style={styles.uploadTitle}>发布快拍</Text>
-              </View>
-            </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => {
+            this.startExportVideo()
+          }}>
+            <View style={styles.uploadBox}>
+              <Text style={styles.uploadTitle}>发布快拍</Text>
+            </View>
+          </TouchableOpacity>
         </>
       </View>
     );
   }
 
-  
+
   // 编辑头部按钮
   renderUpdateTop() {
+    // console.log(this.props.fileType, 'this.props.fileType');
+
     const imglist = [
       // 'filter': 
       { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
@@ -192,8 +201,15 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // // 'tailor': 
       // { 'img': this.props.tailorImage, 'onPress': () => { } },
-      // 'git':
-      { 'img': this.props.musicRevampImage, 'onPress': () => { } },
+      // 'music':
+      {
+        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
+          if (this.props.fileType == 'video') {
+
+            this.setState({ musicOpen: !this.state.musicOpen })
+          }
+        },
+      },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
     ]
@@ -210,7 +226,7 @@ export default class StoryEditor extends Component<Props, State> {
               <Text style={{ color: 'orange' }}>导出</Text>
             </TouchableOpacity> */}
         <TouchableOpacity onPress={() => {
-          this.setState({  showFilterLens: false, filterLensSelect: 0,captureImages: [] })
+          this.setState({ showFilterLens: false, filterLensSelect: 0, captureImages: [] })
           this.props.rephotograph()
         }} style={[styles.UpdateBox, { left: 20 }]}>
           <Image
@@ -222,7 +238,7 @@ export default class StoryEditor extends Component<Props, State> {
         {/* 编辑按钮组 */}
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
           {
-            imglist.map((item,index) => {
+            imglist.map((item, index) => {
               return (
                 <TouchableOpacity onPress={item.onPress} key={index}>
                   <Image
@@ -252,38 +268,41 @@ export default class StoryEditor extends Component<Props, State> {
     //    console.log('视频导出成功, path = ', event.outputPath);
     //   }
     // }
-    const  VideoEditors =()=>{
+    const VideoEditors = () => {
+      // console.log('this.videoPath', this.props.videoPath, 'this.imagePth', this.props.imagePath);
+
       return (
-      <View style={{height:'100%',backgroundColor:'#fff',borderRadius:20}}>
-    <VideoEditor
-        ref={(edit) => (this.editor = edit)}
-        style={{height:CameraHeight,justifyContent:'flex-end' }}
-        filterName={this.state.filterName}
-        videoPath={this.props.videoPath}
-        imagePath={this.props.imagePath}
-       
-        saveToPhotoLibrary={false}
-        startExportVideo={this.state.startExportVideo}
-        videoMute={this.state.mute}
-        onExportVideo={this.onExportVideo}
-      />
-   </View>
+        <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
+          <VideoEditor
+            ref={(edit) => (this.editor = edit)}
+            style={{ height: CameraHeight, justifyContent: 'flex-end' }}
+            filterName={this.state.filterName}
+            videoPath={this.props.videoPath}
+            imagePath={this.props.imagePath}
+
+            saveToPhotoLibrary={true}
+            startExportVideo={this.state.startExportVideo}
+            onExportVideo={this.onExportVideo}
+            videoMute={this.state.mute}
+            musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
+          />
+        </View>
       )
     }
     return (
       <View style={[styles.cameraContainer]}>
-         <TouchableOpacity style={[Platform.OS != 'android'&& {  flex: 1, justifyContent: 'flex-end',}, { }]}
-            onPress={() => {
-              this.setState({ showFilterLens: false,})
-              // !this.state.showFilterLens 
-            }}
-            activeOpacity={1}
-            disabled={this.state.showBeautify}
-          >
-             { VideoEditors()}
-          {this.renderUpdateTop() }
-          </TouchableOpacity>
-           
+        <TouchableOpacity style={[Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end', }, {}]}
+          onPress={() => {
+            this.setState({ showFilterLens: false, })
+            // !this.state.showFilterLens 
+          }}
+          activeOpacity={1}
+          disabled={this.state.showBeautify}
+        >
+          {VideoEditors()}
+          {this.renderUpdateTop()}
+        </TouchableOpacity>
+
       </View>
     );
   }
@@ -307,10 +326,10 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={{ height: 189, backgroundColor: "#000" }}>
         <View style={styles.beautifyBoxHead}>
           <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
-          
+
         </View>
         {this.state.showFilterLens
-          ?
+          &&
           <View style={{ paddingHorizontal: 20 }}>
             <FlatList
               data={this.state.filterList}
@@ -320,15 +339,15 @@ export default class StoryEditor extends Component<Props, State> {
                 return (
                   <>
                     <TouchableOpacity onPress={() => {
-                      this.setState({ filterLensSelect: index ,filterName:item.filterName})
+                      this.setState({ filterLensSelect: index, filterName: item.filterName })
                     }}>
                       <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginRight: 20 }}>
                         <Image style={[styles.beautifySelect,
                         this.state.filterLensSelect === index && styles.beautifySelecin
                         ]}
-                        source={{uri:item.iconPath}}
+                          source={{ uri: item.iconPath }}
                         />
-                          {/* <Image
+                        {/* <Image
               style={styles.beautyAdjustIcon}
               source={{uri:item.iconPath}}
               resizeMode="contain"
@@ -344,9 +363,8 @@ export default class StoryEditor extends Component<Props, State> {
               }}
             />
           </View>
-          :
-          null
         }
+
 
       </View >
     )
@@ -354,14 +372,14 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 底部渲染
   renderBottom() {
-    if ( this.state.showFilterLens) {
+    if (this.state.showFilterLens) {
       return (
         this.renderFilterBox()
       )
     }
     return (
       <>
-        <View style={{ height: 125, backgroundColor: "#000", justifyContent:'center',alignContent:'center'}}>
+        <View style={{ height: 125, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -370,6 +388,7 @@ export default class StoryEditor extends Component<Props, State> {
 
 
   render() {
+    console.log('getmusicInfo-----', this.state.musicInfo);
     return (
       <>
         <Toast
@@ -379,17 +398,34 @@ export default class StoryEditor extends Component<Props, State> {
           fadeInDuration={750}
           fadeOutDuration={1000}
           opacity={0.8}
-        /> 
-    
-              {/* story */}
-                {Platform.OS === 'android' && this.renderCamera()}
-                {Platform.OS !== 'android' && this.renderCamera()}
-                {Platform.OS === 'android' && <View style={styles.gap} />}
-                
-              <View style={{position:'absolute',bottom:0,width:width}}>
-              {this.renderBottom()}
-              </View>
-          
+        />
+
+        {/* story */}
+        {Platform.OS === 'android' && this.renderCamera()}
+        {Platform.OS !== 'android' && this.renderCamera()}
+        {Platform.OS === 'android' && <View style={styles.gap} />}
+
+        <View style={{ position: 'absolute', bottom: 0, width: width }}>
+
+          {this.state.musicOpen
+            ?
+            <StoryMusic
+              musicDynamicGif={this.props.musicDynamicGif}
+              musicIconPng={this.props.musicIconPng}
+              musicSearch={this.props.musicSearch}
+              musicIcongray={this.props.musicIcongray}
+              getmusicInfo={(data) => {
+
+
+                this.setState({ musicInfo: data })
+              }} />
+            :
+            this.renderBottom()}
+
+
+
+        </View>
+
       </>
     );
   }
@@ -397,9 +433,6 @@ export default class StoryEditor extends Component<Props, State> {
 
 const styles = StyleSheet.create(
   {
-  
-   
-    
     BottomBox: {
       flex: 1,
       flexDirection: 'row',

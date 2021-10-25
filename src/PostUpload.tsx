@@ -221,27 +221,22 @@ export default class CameraScreen extends Component<Props, State> {
     // 进入修改
     if (fileSelectType === 'image') {
       console.log('开始裁剪');
+      // trimVideoData = await AVService.crop({ source: `${multipleData[0].image.uri}`, cropOffsetX, cropOffsetY, cropWidth: multipleData[0].image.width, cropHeight: multipleData[0].image.width, });
+      // let a = multipleData.map(async (item, index) => {
+      //   console.log('开始裁剪1');
+      //   console.log('12313', item);
 
-      let a = multipleData.map(async (item, index) => {
-        console.log('开始裁剪1');
-        console.log('12313', item);
+      //   return
+      //   console.log(index, '------', trimVideoData);
 
-        return (trimVideoData = await AVService.crop({
-          source: `${item.image.uri}`,
-          cropOffsetX,
-          cropOffsetY,
-          cropWidth: item.image.width,
-          cropHeight: item.image.width,
-        }));
-        console.log(index, '------', trimVideoData);
-      });
+      // })
 
-      console.log(a);
+      // console.log(a);
 
       // this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
       // this.sendUploadFile(trimVideoData)
       this.myRef.current.close();
-      // this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType })
+      this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
     }
   };
   // getFilters  = async() => {
@@ -368,25 +363,16 @@ export default class CameraScreen extends Component<Props, State> {
       >
         <TouchableOpacity
           onPress={async () => {
-            await RNEditViewManager.stop();
-            await RNEditViewManager.removeThumbnaiImages({});
-            console.log('stopandf removeThumbnaiImages ');
-            coverData = [];
+            // await RNEditViewManager.stop()
+            // await RNEditViewManager.removeThumbnaiImages({})
+            // console.log('stopandf removeThumbnaiImages ');
+            // coverData = []
             // 取消按钮
-            fileEditor
-              ? this.setState({
-                  fileEditor: false,
-                  multipleData: [],
-                  selectBottomModel: '滤镜',
-                  startmMltiple: false,
-                  multipleSandBoxData: [],
-                  coverImage: '',
-                  coverList: [],
-                })
-              : this.props.goback();
+
+            this.props.goback();
           }}
         >
-          <Image style={styles.closeIcon} source={this.props.closeImage} resizeMode='contain' />
+          <Image style={styles.closeIcon} source={this.props.closePng} resizeMode='contain' />
         </TouchableOpacity>
         {fileEditor ? (
           fileSelectType === 'video' &&
@@ -402,52 +388,7 @@ export default class CameraScreen extends Component<Props, State> {
 
         <TouchableOpacity
           onPress={async () => {
-            console.log();
-
-            // if(multipleData.length < 1){
-            //   return  this.myRef.current.show('请至少选择一个上传文件', 2000)
-            // }
-            // // console.log(fileEditor);
-            // // console.log('this.state.multipleSandBoxData[0],',this.state.multipleSandBoxData[0],);
-            // // console.log('multipleData[0].image.uri',multipleData[0].image.uri);
-
-            // // 编辑完成  导出数据  剪辑
-            // if(fileEditor){
-            //   console.log('----编辑完成  导出数据  剪辑');
-
-            //     const result = await RNEditViewManager.trimVideo({
-            //     videoPath: this.state.multipleSandBoxData[0],
-            //     startTime: 2.0,
-            //     endTime: 3.0,
-            //   });
-            //   console.log('-----result',result);
-
-            //   //  发送选择的数据
-            // let uplaodFile = []
-            // console.log('this.state.multipleData', this.state.multipleData);
-            // let uploadFile = [result];
-            // //
-            //   // let type = outputPath.split('.')
-            //   // uploadFile.push({
-            //   //   Type : `${fileType}/${type[type.length - 1]}`,
-            //   //   path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
-            //   //   size : 0,
-            //   //   Name:outputPath
-            //   // })
-
-            // }
-
-            // // 裁剪
-            // // trimVideoData = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100, cropOffsetY:100, cropWidth:800, cropHeight:800 });
-            // trimVideoData = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX, cropOffsetY, cropWidth:multipleData[0].image.width, cropHeight:multipleData[0].image.width,});
-            // // await AVService.crop({})
-
-            //   // 进入修改
-            // if(fileSelectType === 'image'){
-
-            //   this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
-            //   // this.sendUploadFile(trimVideoData)
-            // }
+            this.postEditor();
           }}
         >
           <Text style={{ fontSize: 15, fontWeight: '400', color: '#fff', lineHeight: 21 }}>继续</Text>
@@ -580,9 +521,9 @@ export default class CameraScreen extends Component<Props, State> {
                 // 取最后一张
                 this.setState({ multipleData: [multipleData[multipleData.length - 1]] });
               }
-              this.setState({ startmMltiple: !startmMltiple });
+              // this.setState({ startmMltiple: !startmMltiple, })
               // 暂时单张图㲏上传
-              // this.setState({ startmMltiple: false, })
+              this.setState({ startmMltiple: false });
             }}
           >
             <Image

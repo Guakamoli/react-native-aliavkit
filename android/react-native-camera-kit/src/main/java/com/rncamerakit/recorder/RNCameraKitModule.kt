@@ -5,7 +5,7 @@ import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
-import com.rncamerakit.db.MusicFileInfo
+import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
@@ -88,9 +88,16 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+//    @ReactMethod
+//    fun getMusicList(promise: Promise) {
+//        val list = MusicFileInfoDao.instance.queryAll()
+//        promise.resolve(GsonBuilder().create().toJson(list))
+//    }
+
+
     @ReactMethod
-    fun getMusicList(promise: Promise) {
-        val list = MusicFileInfoDao.instance.queryAll()
+    fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
+        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
         promise.resolve(GsonBuilder().create().toJson(list))
     }
 
@@ -109,14 +116,14 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
      */
     @ReactMethod
-    fun getMusicPath(songID: Int, musicUrl: String, promise: Promise) {
-        val musicInfo: MusicFileInfo? = MusicFileInfoDao.instance.query(songID)
+    fun getMusicPath(songID: Int, promise: Promise) {
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
         }
         reactContext.runOnUiQueueThread {
-            DownloadUtils.downloadMusic(reactContext, songID, musicUrl, promise)
+            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise,null)
         }
     }
 

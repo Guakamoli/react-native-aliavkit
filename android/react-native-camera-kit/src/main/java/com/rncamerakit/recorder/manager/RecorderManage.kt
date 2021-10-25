@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import com.aliyun.common.utils.CommonUtil
 import com.aliyun.svideo.base.Constants
+import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.FixedToastUtils
@@ -24,18 +25,22 @@ import com.aliyun.svideosdk.recorder.AliyunIClipManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ThemedReactContext
+import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.observers.DisposableObserver
-import io.reactivex.rxjava3.schedulers.Schedulers
+import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.io.File
 import java.util.*
 
-class RecorderManage(mContext: ThemedReactContext) {
+class RecorderManage(
+    val mContext: ThemedReactContext
+) {
 
     var cameraType: CameraType? = null
     var mRecorder: AlivcRecorder? = null
@@ -44,7 +49,6 @@ class RecorderManage(mContext: ThemedReactContext) {
     private var mRecordCallback: ImplRecordCallback? = null
     private var mRecorderQueenManage: RecorderQueenManage? = null
 
-    private var mDisposableObserver: DisposableObserver<List<String>>? = null
     private val mColorFilterList: MutableList<String> = ArrayList()
 
     /**
@@ -53,26 +57,13 @@ class RecorderManage(mContext: ThemedReactContext) {
     private var mEffectPaster: EffectPaster? = null
 
     fun initColorFilterAssets() {
-        mDisposableObserver = object : DisposableObserver<List<String>>() {
-            override fun onNext(list: List<String>) {
+        doAsync {
+            val colorFilterList = RecordCommon.getColorFilterList()
+            uiThread {
                 mColorFilterList.clear()
-                mColorFilterList.addAll(list)
+                mColorFilterList.addAll(colorFilterList)
             }
-
-            override fun onError(e: Throwable) {}
-            override fun onComplete() {}
         }
-        Observable.create<List<String>> { emitter ->
-            try {
-                emitter.onNext(RecordCommon.getColorFilterList())
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emitter.onError(e)
-            }
-            emitter.onComplete()
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(mDisposableObserver)
     }
 
 //    private fun downloadMusic(mode: String?){
@@ -152,6 +143,27 @@ class RecorderManage(mContext: ThemedReactContext) {
             mRecorder?.setMusic(null, 0, 0)
         } else {
             mRecorder?.setMusic(bgm, 0, 30 * 1000)
+        }
+    }
+
+    fun setMusicInfo(bean: MusicFileBean?) {
+        if (bean?.isDbContain == 1 && FileUtils.fileIsExists((bean.localPath))) {
+            setBackgroundMusic(bean.localPath)
+        } else {
+            if (bean != null) {
+                DownloadUtils.downloadMusic(
+                    mContext,
+                    bean.songID,
+                    bean.url,
+                    null,
+                    object : MyFileDownloadCallback() {
+                        override fun completed(task: BaseDownloadTask) {
+                            super.completed(task)
+                            val filePath = task.targetFilePath
+                            setBackgroundMusic(filePath)
+                        }
+                    })
+            }
         }
     }
 
@@ -289,7 +301,6 @@ class RecorderManage(mContext: ThemedReactContext) {
      *
      */
     fun onRelease() {
-        mDisposableObserver?.dispose()
         mRecorder?.release()
         mRecorder = null
         mRecorderQueenManage?.onRelease()

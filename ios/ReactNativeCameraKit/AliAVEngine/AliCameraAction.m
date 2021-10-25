@@ -32,6 +32,7 @@
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
     NSString *_videoSavePath;
+    VideoRecordEndBlk_t _complete;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -84,13 +85,6 @@ static AliCameraAction *_instance = nil;
 - (AliyunIRecorder *)recorder
 {
     if (!_recorder) {
-        //clean previous path
-        NSString *recordDir = [AliyunPathManager createRecrodDir];
-        [AliyunPathManager clearDir:recordDir];
-        NSString *taskPath = [recordDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
-        NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
-        _videoSavePath = videoSavePath;
-        
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
         _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
         _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK only support YUV
@@ -104,9 +98,7 @@ static AliCameraAction *_instance = nil;
         _recorder.bitrate = 15*1000*1000; // 15Mbps
         _recorder.encodeMode = 1; // Force hardware encoding
         _recorder.recordFps = self.mediaConfig.fps;
-        _recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
-        self.mediaConfig.outputPath = _recorder.outputPath;
-        _recorder.taskPath = taskPath;
+        
         _recorder.beautifyStatus = YES;
         _recorder.videoFlipH = self.mediaConfig.videoFlipH;
         _recorder.frontCameraSupportVideoZoomFactor = YES;
@@ -248,10 +240,30 @@ static AliCameraAction *_instance = nil;
 
 - (void)startFrontPreview
 {
+    NSString *recordDir = [AliyunPathManager createRecrodDir];
+    [AliyunPathManager clearDir:recordDir];
+    NSString *taskPath = [recordDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    _videoSavePath = videoSavePath;
+    
+    self.recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
+    self.mediaConfig.outputPath = self.recorder.outputPath;
+    self.recorder.taskPath = taskPath;
+    
     [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
 }
 - (void)startPreview
 {
+    NSString *recordDir = [AliyunPathManager createRecrodDir];
+    [AliyunPathManager clearDir:recordDir];
+    NSString *taskPath = [recordDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    _videoSavePath = videoSavePath;
+    
+    self.recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
+    self.mediaConfig.outputPath = self.recorder.outputPath;
+    self.recorder.taskPath = taskPath;
+    
     [self.recorder startPreview];
 }
 
@@ -298,10 +310,10 @@ static AliCameraAction *_instance = nil;
     return ([self.recorder startRecording]) == 0; // ==0 YES
 }
 
-- (NSString *)stopRecordVideo
+- (void)stopRecordVideo:(VideoRecordEndBlk_t)complete;
 {
+    _complete = complete;
     [self.recorder stopRecording];
-    return _videoSavePath;
 }
 
 #pragma mark - face paster
@@ -400,9 +412,11 @@ static AliCameraAction *_instance = nil;
 - (void)_recorderFinishRecording
 {
     [self.recorder finishRecording];  //will call `recorderDidFinishRecording`
-    NSString *outputPath = self.mediaConfig.outputPath;
-    //    NSLog(@"---- outputPath: %@",outputPath);
-    [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
+//    NSString *outputPath = self.mediaConfig.outputPath;
+    _complete(_videoSavePath);
+//    NSLog(@"----outputPath : %@",_videoSavePath);
+    //save for test
+//    [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;
 }
 ///while recording time up to limit

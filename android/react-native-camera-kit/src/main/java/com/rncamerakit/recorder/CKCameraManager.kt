@@ -10,6 +10,7 @@ import com.facebook.react.common.ReactConstants.TAG
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
+import com.rncamerakit.db.MusicFileBean
 
 
 class CKCameraManager : SimpleViewManager<CKCamera>() {
@@ -132,6 +133,37 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         view.mRecorderManage?.setBackgroundMusic(bgm)
     }
 
+    //设置背景音乐
+    @ReactProp(name = "musicInfo")
+    fun setMusicInfo(view: CKCamera, readableMap: ReadableMap?) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            val songID = if (readableMap.hasKey("songID")) readableMap.getInt("songID") else 0
+            val name = if (readableMap.hasKey("name")) readableMap.getString("name") else ""
+            val artist = if (readableMap.hasKey("artist")) readableMap.getString("artist") else ""
+            val isDbContain =
+                if (readableMap.hasKey("isDbContain")) readableMap.getInt("isDbContain") else 0
+            val duration = if (readableMap.hasKey("duration")) readableMap.getInt("duration") else 0
+            val localPath =
+                if (readableMap.hasKey("localPath")) readableMap.getString("localPath") else ""
+            val cover = if (readableMap.hasKey("cover")) readableMap.getString("cover") else ""
+            val url = if (readableMap.hasKey("url")) readableMap.getString("url") else ""
+
+            val bean = MusicFileBean()
+            bean.songID = songID
+            bean.name = name
+            bean.artist = artist
+            bean.isDbContain = isDbContain
+            bean.duration = duration
+            bean.localPath = localPath
+            bean.cover = cover
+            bean.url = url
+
+            view.reactContext.runOnUiQueueThread {
+                view.mRecorderManage?.setMusicInfo(bean)
+            }
+        }
+
+    }
 
 
 }

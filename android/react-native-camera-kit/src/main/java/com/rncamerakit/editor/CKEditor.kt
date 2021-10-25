@@ -4,32 +4,43 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.SurfaceView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleObserver
+import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.common.utils.MD5Utils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
 import com.aliyun.svideo.editor.view.EditorVideHelper
 import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
+import com.aliyun.svideosdk.common.struct.effect.EffectBean
+import com.aliyun.svideosdk.common.struct.project.Source
 import com.aliyun.svideosdk.editor.AliyunIEditor
+import com.aliyun.svideosdk.editor.EffectType
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
+import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.ThemedReactContext
+import com.liulishuo.filedownloader.BaseDownloadTask
+import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.db.MusicFileBaseInfo
+import com.rncamerakit.db.MusicFileBean
+import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.*
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.observers.DisposableObserver
-import io.reactivex.rxjava3.schedulers.Schedulers
+import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.io.File
-import java.net.FileNameMap
-import java.net.URLConnection
+import java.net.URL
 
 @SuppressLint("ViewConstructor")
 class CKEditor(val reactContext: ThemedReactContext) :
@@ -55,8 +66,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     private var mAliyunIEditor: AliyunIEditor? = null
 
-    private var mDisposableObserver: DisposableObserver<String>? = null
-
     private var mVideoContainer: FrameLayout? = null
     private var mSurfaceView: SurfaceView? = null
 
@@ -71,16 +80,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //视频合成
     private var mComposeManager: ComposeManager? = null
 
-    init {
-        mWidth = ScreenUtils.getWidth(mContext)
-        mHeight = mWidth * 16 / 9
-        initVideoContainer()
-        initSurfaceView()
-        mImportManager = ImportManager(reactContext)
-        mColorFilterManager = ColorFilterManager(reactContext)
-        mComposeManager = ComposeManager(reactContext)
-        copyAssets()
-    }
 
     private fun initVideoContainer() {
         mVideoContainer = FrameLayout(mContext)
@@ -92,33 +91,16 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private fun initSurfaceView() {
         mSurfaceView = SurfaceView(mContext)
         val layoutParams = LayoutParams(mWidth, mHeight)
-        mVideoContainer!!.addView(mSurfaceView, layoutParams)
+        mVideoContainer?.addView(mSurfaceView, layoutParams)
     }
 
     private fun copyAssets() {
-        mDisposableObserver = object : DisposableObserver<String>() {
-            override fun onNext(s: String) {
+        doAsync {
+            EditorCommon.copyAll(mContext, View(mContext))
+            uiThread {
                 isCopyAssets = true
             }
-
-            override fun onError(e: Throwable?) {
-            }
-
-            override fun onComplete() {
-            }
         }
-        Observable.create<String> { emitter ->
-            try {
-                EditorCommon.copyAll(mContext, View(mContext))
-                emitter.onNext("")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emitter.onError(e)
-            }
-            emitter.onComplete()
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(mDisposableObserver)
     }
 
     private fun initEditor(uri: Uri, isVideo: Boolean) {
@@ -145,9 +127,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
         reactContext.runOnUiQueueThread {
-            if (isVideo) {
-                mAliyunIEditor!!.replay()
-            }
+//            if (isVideo) {
+            mAliyunIEditor?.replay()
+//            }
         }
     }
 
@@ -156,12 +138,18 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun importVideo(filePath: String?, isVideo: Boolean) {
         this.isVideo = isVideo
-        if(isVideo){
-            mProjectConfigure = mImportManager?.importVideo(filePath).toString()
-        }else{
-            mProjectConfigure = mImportManager?.importImage(filePath).toString()
+        mProjectConfigure = if (isVideo) {
+            mImportManager?.importVideo(filePath).toString()
+        } else {
+            mImportManager?.importImage(filePath).toString()
         }
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
+
+
+        //TODO 测试音频
+        val list = MusicFileInfoDao.instance.queryAll()
+        val bean = list?.get(0)
+        setMusicInfo(bean)
     }
 
 
@@ -273,7 +261,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     private fun replay() {
-        if (!mAliyunIEditor?.isPlaying!!) {
+        if (mAliyunIEditor?.isPlaying == false) {
             if (mAliyunIEditor?.isPaused == true) {
                 mAliyunIEditor?.resume()
             } else {
@@ -290,12 +278,109 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.seek(seekTime.toLong() * 1000)
     }
 
+    private var lastMusicBean: EffectBean? = null
+
+    /**
+     * 背景音乐
+     */
+    fun setBackgroundMusic(bgmPath: String?) {
+        //重制mv和混音的音效
+        mAliyunIEditor?.resetEffect(EffectType.EFFECT_TYPE_MIX)
+        mAliyunIEditor?.resetEffect(EffectType.EFFECT_TYPE_MV_AUDIO)
+
+        if (TextUtils.isEmpty(bgmPath) && lastMusicBean != null) {
+            //清空背景音乐
+            mAliyunIEditor?.removeMusic(lastMusicBean)
+            mAliyunIEditor?.setVolume(50)
+            lastMusicBean = null
+            return
+        }
+
+        if (lastMusicBean != null) {
+            mAliyunIEditor?.removeMusic(lastMusicBean)
+        }
+
+        val musicEffect = EffectBean()
+        musicEffect.id = 1
+        musicEffect.source = Source(bgmPath)
+
+        //切换音乐seek到0清音乐缓存，避免响一声
+        musicEffect.startTime = 0 * 1000 //单位是us所以要x1000
+        musicEffect.streamStartTime = 0 * 1000
+
+        //设置为最大时长
+        musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
+        musicEffect.streamDuration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
+
+        musicEffect.weight = 50
+
+        mAliyunIEditor?.applyMusic(musicEffect)
+
+        mAliyunIEditor?.setVolume(50)
+        mAliyunIEditor?.seek(0)
+        // 重新播放
+        replay()
+
+        lastMusicBean = musicEffect
+    }
+
+    fun setMusicInfo(bean: MusicFileBean?) {
+        if (bean?.isDbContain == 1 && FileUtils.fileIsExists((bean.localPath))) {
+            setBackgroundMusic(bean.localPath)
+        } else {
+            if (bean != null) {
+                DownloadUtils.downloadMusic(
+                    reactContext,
+                    bean.songID,
+                    bean.url,
+                    null,
+                    object : MyFileDownloadCallback() {
+                        override fun completed(task: BaseDownloadTask) {
+                            super.completed(task)
+                            val filePath = task.targetFilePath
+                            setBackgroundMusic(filePath)
+                        }
+                    })
+            }
+        }
+    }
+
+
+    init {
+        MusicFileInfoDao.instance.init(mContext)
+        mWidth = ScreenUtils.getWidth(mContext)
+        mHeight = mWidth * 16 / 9
+        initVideoContainer()
+        initSurfaceView()
+        mImportManager = ImportManager(reactContext)
+        mColorFilterManager = ColorFilterManager(reactContext)
+        mComposeManager = ComposeManager(reactContext)
+        copyAssets()
+
+        doAsync {
+            val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
+            val md5Text = MD5Utils.getMD5(text)
+            val spKey = "MUSIC_JSON_FILE_MD5_KEY"
+            val md5Value = SPUtils.getInstance().getString(spKey)
+            uiThread {
+                if (md5Text == md5Value) {
+                    return@uiThread
+                }
+                val baseInfo: MusicFileBaseInfo =
+                    GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                MusicFileInfoDao.instance.insertList(baseInfo.songs)
+                SPUtils.getInstance().put(spKey, md5Text)
+            }
+        }
+    }
+
+
     /**
      *
      */
     fun onRelease() {
+        mAliyunIEditor?.stop()
         mAliyunIEditor?.onDestroy()
-        mDisposableObserver?.dispose()
         mComposeManager?.onRelease()
     }
 

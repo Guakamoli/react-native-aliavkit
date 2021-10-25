@@ -95,14 +95,19 @@ const PostEditor = (props) => {
             // uploadFile(123)
 
             console.log(1231, multipleSandBoxData);
-
-            const result = await RNEditViewManager.trimVideo({
+            // 裁剪视频
+            RNEditViewManager.trimVideo({
               videoPath: multipleSandBoxData[0],
-              startTime: 2.4,
-              endTime: 5.1,
+              startTime: 1.4,
+              endTime: 5.0,
             });
-
-            console.log('22222', result);
+            // 导出视频
+            if (exportVideo) {
+              return;
+            }
+            setexportVideo(true);
+            // this.setState({ startExportVideo: true });
+            console.log('22222');
           }}
           style={{
             width: 30,
@@ -182,9 +187,8 @@ const PostEditor = (props) => {
 
     console.log('------', coverData);
     setcoverList(coverData);
-    console.log('------', coverData);
-
     // this.setState({coverList:coverData})
+    setcoverImage(coverData[0]);
   };
   useEffect(() => {
     console.log('获取封面', multipleSandBoxData);
@@ -194,8 +198,6 @@ const PostEditor = (props) => {
   }, [multipleSandBoxData]);
 
   const onExportVideo = (event) => {
-    console.log('1231', event);
-    // const {fileType}  = this.props;
     if (event.exportProgress === 1) {
       let outputPath = event.outputPath;
       // this.setState({ startExportVideo: false,outputPath:event.outputPath });
@@ -208,8 +210,9 @@ const PostEditor = (props) => {
         path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
         size: 0,
         Name: outputPath,
+        coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
       });
-
+      props.getUploadFile(uploadFile);
       // this.sendUploadFile(uploadFile)
     }
   };
@@ -249,6 +252,9 @@ const PostEditor = (props) => {
           saveToPhotoLibrary={false}
           startExportVideo={exportVideo}
           videoMute={false}
+          onExportVideo={(event) => {
+            onExportVideo(event);
+          }}
           onPlayProgress={({ nativeEvent }) => {
             if (fileType === 'video') {
               if (!stopRef.current && nativeEvent.playProgress) {
@@ -561,7 +567,7 @@ const PostEditor = (props) => {
   };
   // 切换底部功能
   const switchProps = () => {
-    const switchProps = ['滤镜', '修剪', '封面'];
+    const switchProps = ['滤镜', '修剪'];
     // const {selectBottomModel} = this.state;
     return (
       <View
@@ -643,7 +649,9 @@ const PostEditor = (props) => {
 
       {selectBottomModel === '滤镜' && filterEditorFilter()}
       {selectBottomModel === '修剪' && postTrimer()}
-      {selectBottomModel === '封面' && postCover()}
+      {/* {
+        selectBottomModel === '封面' && postCover()
+      } */}
       {fileType !== 'image' && switchProps()}
     </View>
   );

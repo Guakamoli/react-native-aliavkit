@@ -86,7 +86,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
         mAliyunIImport?.addMediaClip(
             AliyunImageClip.Builder()
                 .source(filePath)
-                .duration(10)
+                .duration(5000)
                 .build()
         )
         mProjectConfigure = mAliyunIImport?.generateProjectConfigure()

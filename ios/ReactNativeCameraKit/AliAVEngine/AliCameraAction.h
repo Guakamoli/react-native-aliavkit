@@ -37,7 +37,7 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
-- (NSString *)stopRecordVideo;
+- (void)stopRecordVideo:(VideoRecordEndBlk_t)complete;
 
 - (void)addFocusGesture;
 - (void)removeFocusGesture;
