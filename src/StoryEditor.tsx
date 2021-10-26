@@ -60,11 +60,11 @@ type State = {
 
   mute: boolean,
   showFilterLens: boolean,
-  filterLensSelect: number,
+
 
 
   // 滤镜名称
-  filterName: string
+  filterName: any
   filterList: Array<any>
   // 导出
   startExportVideo: Boolean
@@ -91,9 +91,8 @@ export default class StoryEditor extends Component<Props, State> {
       mute: false,
 
       showFilterLens: false,
-      filterLensSelect: 0,
       // 视频 照片地址
-      filterName: "柔柔",
+      filterName: null,
       filterList: [],
 
       startExportVideo: false,
@@ -141,18 +140,15 @@ export default class StoryEditor extends Component<Props, State> {
         this.setState({ filterList: filterList })
       } else {
         const infos = await RNEditViewManager.getFilterIcons({});
-        // console.log('getFilters', infos);
+        console.log('getFilters', infos);
+        infos.unshift({ filterName: null, iconPath: '', title: "无效果" })
+        console.log('getFilters', infos);
         this.setState({ filterList: infos })
       }
     }
   }
   componentDidMount() {
     this.getFilters()
-    // console.log(123131);
-    // console.log('-------this.props.videoPath', this.props.videoPath);
-    // console.log('-------this.props.imagePath', this.props.imagePath);
-    // console.log('------fileType', this.props.fileType);
-
 
   }
   componentWillUnmount() {
@@ -199,8 +195,6 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
       // 'volume':
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
-      // // 'tailor': 
-      // { 'img': this.props.tailorImage, 'onPress': () => { } },
       // 'music':
       {
         'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
@@ -216,17 +210,8 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <>
         {/* 放弃 */}
-        {/* <TouchableOpacity style={{ backgroundColor: '#F5FCFF',
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          alignItems: 'center',
-          justifyContent: 'center',}} 
-          onPress={() => this.startExportVideo()}>
-              <Text style={{ color: 'orange' }}>导出</Text>
-            </TouchableOpacity> */}
         <TouchableOpacity onPress={() => {
-          this.setState({ showFilterLens: false, filterLensSelect: 0, captureImages: [] })
+          this.setState({ showFilterLens: false, filterName: null, captureImages: [] })
           this.props.rephotograph()
         }} style={[styles.UpdateBox, { left: 20 }]}>
           <Image
@@ -262,15 +247,8 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    //  function  onExportVideo(event) {
-    //   if (event.exportProgress === 1) {
-    //     // this.setState({ startExportVideo: false });
-    //    console.log('视频导出成功, path = ', event.outputPath);
-    //   }
-    // }
-    const VideoEditors = () => {
-      // console.log('this.videoPath', this.props.videoPath, 'this.imagePth', this.props.imagePath);
 
+    const VideoEditors = () => {
       return (
         <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
           <VideoEditor
@@ -314,14 +292,6 @@ export default class StoryEditor extends Component<Props, State> {
   }
   // 美颜 滤镜 box
   renderFilterBox() {
-    const list = [
-      { title: "原片" },
-      { title: "灰白" },
-      { title: "柔柔" },
-      { title: "波普" },
-      { title: "胶片" },
-
-    ]
     return (
       <View style={{ height: 189, backgroundColor: "#000" }}>
         <View style={styles.beautifyBoxHead}>
@@ -339,23 +309,17 @@ export default class StoryEditor extends Component<Props, State> {
                 return (
                   <>
                     <TouchableOpacity onPress={() => {
-                      this.setState({ filterLensSelect: index, filterName: item.filterName })
+                      this.setState({ filterName: item.filterName })
                     }}>
                       <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginRight: 20 }}>
                         <Image style={[styles.beautifySelect,
-                        this.state.filterLensSelect === index && styles.beautifySelecin
+                        this.state.filterName == item.filterName && styles.beautifySelecin
                         ]}
                           source={{ uri: item.iconPath }}
                         />
-                        {/* <Image
-              style={styles.beautyAdjustIcon}
-              source={{uri:item.iconPath}}
-              resizeMode="contain"
-            />
-                        </View> */}
                         <Text style={[styles.filterLensSelectTitle,
-                        this.state.filterLensSelect === index && { color: '#836BFF' }
-                        ]}>{item.filterName}</Text>
+                        this.state.filterName == item.filterName && { color: '#836BFF' }
+                        ]}>{item.filterName ? item.filterName : item.title}</Text>
                       </View>
                     </TouchableOpacity>
                   </>
@@ -497,7 +461,8 @@ const styles = StyleSheet.create(
 
     beautifySelecin: {
       borderWidth: 2,
-      borderColor: "#836BFF"
+      borderColor: "#FFF",
+      backgroundColor: "rgba(69, 69, 73, 0.7)",
     },
     uploadBox: {
       width: 130,

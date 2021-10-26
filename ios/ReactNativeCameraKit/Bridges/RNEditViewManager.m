@@ -59,7 +59,7 @@ RCT_EXPORT_METHOD(stop)
     [self.editView stop];
 }
 
-RCT_EXPORT_METHOD(seekToTime:(NSNumber *)numberTime)
+RCT_EXPORT_METHOD(seekToTime:(nonnull NSNumber *)numberTime)
 {
     CGFloat time = [numberTime floatValue];
     [self.editView seekToTime:time];

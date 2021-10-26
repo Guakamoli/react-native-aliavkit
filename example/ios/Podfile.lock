@@ -319,6 +319,8 @@ PODS:
     - VODUpload (= 1.6.1)
   - RNGestureHandler (1.10.3):
     - React-Core
+  - RNReanimated (1.9.0):
+    - React
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
@@ -365,6 +367,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeAliAVKit (from `../..`)
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
+  - RNReanimated (from `../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../node_modules/react-native-screens`)
   - RNSVG (from `../../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -451,6 +454,8 @@ EXTERNAL SOURCES:
     :path: "../.."
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
+  RNReanimated:
+    :path: "../../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../../node_modules/react-native-screens"
   RNSVG:
@@ -502,12 +507,13 @@ SPEC CHECKSUMS:
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeAliAVKit: a75eb0bdff6bb7b33557ad13066d92bbab3f8833
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
+  RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 0ca5b132b4e5d5397c8580bfe0fd4535022ab266
+PODFILE CHECKSUM: b7bf1f2dc598bd5492646124706fdff14772f914
 
 COCOAPODS: 1.11.0

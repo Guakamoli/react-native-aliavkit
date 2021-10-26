@@ -49,16 +49,10 @@ const StoryMusic = (props) => {
     }
 
   }, [])
-  const aa = async () => {
 
-  }
   useEffect(() => {
     palyMusic(checkedData)
 
-    console.log('aaa', checkedData);
-
-    // pauseMusic(checkedData)
-    // getmusicInfo(checkedData)
   }, [checkedData])
   useEffect(() => {
     if (songData.length > 0) {
@@ -67,15 +61,7 @@ const StoryMusic = (props) => {
       setCheckedData(songData[0])
     }
   }, [songData])
-  // useEffect(() => {
-  //   console.log('musicSearchValue', musicSearchValue);
-  //   if (!musicSearchValue) {
-  //     console.log('getmusicSearchValue');
 
-  //     getSong(musicSearchValue)
-  //   }
-
-  // }, [musicSearchValue])
   const onLengthHandle = useCallback(
 
     e => {
