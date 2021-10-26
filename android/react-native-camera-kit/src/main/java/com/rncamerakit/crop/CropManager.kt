@@ -5,11 +5,14 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -285,6 +288,29 @@ class CropManager {
                 coverTimes.add(coverTime.toLong())
             }
             getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
+        }
+
+
+        fun getVideoFrame(context: Context, videoPath: String, longTime: Long): String? {
+            var bitmap: Bitmap? = null
+            try {
+                val retriever = MediaMetadataRetriever()
+                retriever.setDataSource(videoPath)
+                bitmap =
+                    retriever.getFrameAtTime(longTime, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                retriever.release()
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+            var videoFramePath =
+                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
+            val name = File(videoPath).nameWithoutExtension
+            videoFramePath = FileUtils.createFile(
+                videoFramePath,
+                "VideoFrame-$name-$longTime.jpg"
+            ).path
+            BitmapUtils.saveBitmap(bitmap, videoFramePath)
+            return videoFramePath
         }
 
 

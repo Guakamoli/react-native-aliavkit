@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.net.Uri
 import android.text.TextUtils
+import android.util.Log
 import android.view.Gravity
 import android.view.SurfaceView
 import android.view.View
@@ -29,6 +30,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.GsonManage
+import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.db.MusicFileBaseInfo
@@ -37,11 +39,13 @@ import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.*
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
+import kotlinx.coroutines.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.net.URL
 
+@DelicateCoroutinesApi
 @SuppressLint("ViewConstructor")
 class CKEditor(val reactContext: ThemedReactContext) :
     FrameLayout(reactContext.applicationContext),
@@ -239,9 +243,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
     /**
      * 暂停播放
      */
-    fun pause(promise: Promise) {
+    fun pause(promise: Promise?) {
         mAliyunIEditor?.pause()
-        promise.resolve(true)
+        promise?.resolve(true)
     }
 
     /**
@@ -372,8 +376,60 @@ class CKEditor(val reactContext: ThemedReactContext) :
                 SPUtils.getInstance().put(spKey, md5Text)
             }
         }
+
+//        val videoFrameList: MutableList<String?> = ArrayList()
+//        val videoPath = "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record_1635215195144.mp4"
+//        GlobalScope.launch(Dispatchers.IO) {
+//            val jobList: MutableList<Deferred<String?>> = ArrayList()
+//            for (i in 0 until 10) {
+//                jobList.add(async { getVideoFrame(videoPath, ((i + 1) * 1000 * 1000).toLong()) })
+//            }
+//            jobList.forEach {
+//                videoFrameList.add(it.await())
+//            }
+//            GlobalScope.launch(Dispatchers.Main) {
+//                videoFrameList.forEach {
+//                    Log.e("CCC ", "sync：$it")
+//                }
+//            }
+//        }
+
+        initLifecycle()
     }
 
+//    private suspend fun getVideoFrame(videoPath: String, longTime: Long): String? {
+//        val videoFramePath = CropManager.getVideoFrame(mContext, videoPath, longTime)
+//        val position = longTime / 1000 / 1000
+//        Log.e("CCC ", "async：$position - $videoFramePath")
+//        return videoFramePath
+//    }
+
+    private fun initLifecycle(){
+        BaseEventListener(reactContext,object : BaseEventListener.LifecycleEventListener() {
+            override fun onHostResume() {
+                super.onHostResume()
+                Log.e("AAA","onHostResume()")
+                replay()
+            }
+
+            override fun onHostPause() {
+                super.onHostPause()
+                Log.e("AAA","onHostPause()")
+                pause(null)
+            }
+
+            override fun onHostDestroy() {
+                super.onHostDestroy()
+                Log.e("AAA","onHostDestroy()")
+                onRelease()
+            }
+
+            override fun onWindowFocusChange(hasFocus: Boolean) {
+                super.onWindowFocusChange(hasFocus)
+                Log.e("AAA","onWindowFocusChange(hasFocus)：$hasFocus")
+            }
+        })
+    }
 
     /**
      *

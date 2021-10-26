@@ -2,6 +2,7 @@ package com.rncamerakit.recorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.ScaleGestureDetector.OnScaleGestureListener
@@ -16,6 +17,7 @@ import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.uimanager.ThemedReactContext
 import com.manwei.libs.utils.GsonManage
+import com.rncamerakit.BaseEventListener
 import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
@@ -205,12 +207,12 @@ class CKCamera(
         initRecorder()
         initFocusView()
         copyAssets()
-        val list = MusicFileInfoDao.instance.queryAll()
-        val list1 = MusicFileInfoDao.instance.queryList(null, 1, 10)
-        val list2 = MusicFileInfoDao.instance.queryList(null, 2, 10)
-        val list3 = MusicFileInfoDao.instance.queryList(null, 3, 10)
-        val list4 = MusicFileInfoDao.instance.queryList(null, 4, 10)
-        val list5 = MusicFileInfoDao.instance.queryList("海", 1, 10)
+//        val list = MusicFileInfoDao.instance.queryAll()
+//        val list1 = MusicFileInfoDao.instance.queryList(null, 1, 10)
+//        val list2 = MusicFileInfoDao.instance.queryList(null, 2, 10)
+//        val list3 = MusicFileInfoDao.instance.queryList(null, 3, 10)
+//        val list4 = MusicFileInfoDao.instance.queryList(null, 4, 10)
+//        val list5 = MusicFileInfoDao.instance.queryList("海", 1, 10)
 
         doAsync {
             val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
@@ -228,6 +230,33 @@ class CKCamera(
             }
         }
 
+        initLifecycle()
+
+    }
+
+    private fun initLifecycle(){
+        BaseEventListener(reactContext,object : BaseEventListener.LifecycleEventListener() {
+            override fun onHostResume() {
+                super.onHostResume()
+                Log.e("AAA","onHostResume()")
+            }
+
+            override fun onHostPause() {
+                super.onHostPause()
+                Log.e("AAA","onHostPause()")
+            }
+
+            override fun onHostDestroy() {
+                super.onHostDestroy()
+                Log.e("AAA","onHostDestroy()")
+                onRelease()
+            }
+
+            override fun onWindowFocusChange(hasFocus: Boolean) {
+                super.onWindowFocusChange(hasFocus)
+                Log.e("AAA","onWindowFocusChange(hasFocus)：$hasFocus")
+            }
+        })
     }
 
 }
