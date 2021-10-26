@@ -152,12 +152,13 @@ export default class StoryEditor extends Component<Props, State> {
 
   }
   componentWillUnmount() {
-    // if( Platform.OS === 'android'){
-    //   console.log(Platform.OS === 'android');
-    //    this.camera.release();
-    // }
+    if( Platform.OS === 'android'){
+      // console.log(Platform.OS === 'android');
+      //  this.camera.release();
+    }else{
+      RNEditViewManager.stop()
+    }
     // 结束编辑页面
-    RNEditViewManager.stop()
     console.log('拍摄编辑销毁');
     this.setState = () => false;
   }

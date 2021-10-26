@@ -59,8 +59,10 @@ class MediaPlayerManage private constructor() {
     private fun stop() {
         this.isPlaying = false
         this.duration = 0
-        mMediaPlayer?.stop()
-        mMediaPlayer?.reset()
+        if(mMediaPlayer?.isPlaying == true){
+            mMediaPlayer?.stop()
+            mMediaPlayer?.reset()
+        }
     }
 
 

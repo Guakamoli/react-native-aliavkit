@@ -11,25 +11,32 @@ import com.google.gson.GsonBuilder
 import java.io.File
 import java.util.*
 
-class ColorFilterManager (private val reactContext: ThemedReactContext){
+class ColorFilterManager(private val reactContext: ThemedReactContext) {
 
     private var mContext = reactContext.applicationContext
 
     private val mColorFilterList: MutableList<ColorFilter> = ArrayList()
 
-    fun getColorFilter(promise: Promise){
+    fun getColorFilter(promise: Promise) {
         mColorFilterList.clear()
+        mColorFilterList.add(ColorFilter("无效果", ""))
         EditorCommon.getColorFilterList(mContext).forEach { path ->
             val name = File(path).name
             val icon = "file://$path/icon.png"
-            mColorFilterList.add(ColorFilter(name,icon))
+            mColorFilterList.add(ColorFilter(name, icon))
         }
         promise.resolve(GsonBuilder().create().toJson(mColorFilterList))
     }
 
 
-    fun setColorFilter(filterName: String?,mAliyunIEditor : AliyunIEditor?) {
-       val path = File(
+    fun setColorFilter(filterName: String?, mAliyunIEditor: AliyunIEditor?) {
+        if (filterName != null && filterName == "无效果") {
+            val effect = EffectBean()
+            effect.path = null
+            mAliyunIEditor?.applyFilter(effect)
+            return
+        }
+        val path = File(
             EditorCommon.SD_DIR + EditorCommon.QU_NAME + File.separator + EditorCommon.QU_COLOR_FILTER,
             filterName
         ).absolutePath

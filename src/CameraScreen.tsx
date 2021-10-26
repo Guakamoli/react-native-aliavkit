@@ -161,9 +161,11 @@ const ProgressCircleWrapper = (props) => {
   let [timer, setTimer] = useState(null);
   useInterval(() => {
     const newprogress = (progress += 1 / 140);
-    setProgress(newprogress);
     if (newprogress >= 1) {
       recordeSuccess();
+      setProgress(0);
+    } else {
+      setProgress(newprogress);
     }
   }, timer);
   useEffect(() => {
@@ -300,7 +302,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       console.log(Platform.OS === 'android');
-      this.camera.release();
+      if(this.camera){
+        this.camera.release();
+      }
     }
     console.log('销毁');
     this.setState = () => false;
