@@ -153,8 +153,8 @@ export default class StoryEditor extends Component<Props, State> {
   }
   componentWillUnmount() {
     if( Platform.OS === 'android'){
-      console.log(Platform.OS === 'android');
-       this.camera.release();
+      // console.log(Platform.OS === 'android');
+      //  this.camera.release();
     }else{
       RNEditViewManager.stop()
     }
