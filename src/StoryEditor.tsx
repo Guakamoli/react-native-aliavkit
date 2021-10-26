@@ -352,7 +352,7 @@ export default class StoryEditor extends Component<Props, State> {
 
 
   render() {
-    console.log('getmusicInfo-----', this.state.musicInfo);
+    // console.log('getmusicInfo-----', this.state.musicInfo);
     return (
       <>
         <Toast

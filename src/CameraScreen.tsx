@@ -455,27 +455,27 @@ export default class CameraScreen extends Component<Props, State> {
       flag: Math.random(),
     });
     return;
-    let progress = 0;
-    this.setState({ progress: 0 });
-    const stopRecording = async () => {
-      const videoPath = await this.camera.stopRecording();
-      console.log('video saved to ', videoPath);
-      this.setState({ videoPath });
-    };
-    this.setState({
-      timer: setInterval(() => {
-        progress += 1 / 140;
-        console.log('进度条');
+    // let progress = 0;
+    // this.setState({ progress: 0 });
+    // const stopRecording = async () => {
+    //   const videoPath = await this.camera.stopRecording();
+    //   console.log('video saved to ', videoPath);
+    //   this.setState({ videoPath });
+    // };
+    // this.setState({
+    //   timer: setInterval(() => {
+    //     progress += 1 / 140;
+    //     console.log('进度条');
 
-        if (progress > 1) {
-          progress = 1;
-          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
-          stopRecording();
-          clearInterval(this.state.timer);
-        }
-        this.setState({ progress });
-      }, 100),
-    });
+    //     if (progress > 1) {
+    //       progress = 1;
+    //       this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
+    //       stopRecording();
+    //       clearInterval(this.state.timer);
+    //     }
+    //     this.setState({ progress });
+    //   }, 100),
+    // });
   }
   //  拍摄按钮
   renderCaptureButton() {
@@ -508,15 +508,17 @@ export default class CameraScreen extends Component<Props, State> {
                 <ProgressCircleWrapper
                   flag={this.state.flag}
                   recordeSuccess={async (data) => {
+                    const videoPath = await this.camera.stopRecording();
+                    console.log('-------- video saved to ', videoPath);
                     this.setState({
+                      videoPath,
                       flag: null,
                       ShootSuccess: true,
                       startShoot: false,
                     });
-                    const videoPath = await this.camera.stopRecording();
-                    this.setState({
-                      videoPath,
-                    });
+                    // this.setState({
+                    //   videoPath,
+                    // });
                   }}
                 />
               </View>
@@ -665,10 +667,12 @@ export default class CameraScreen extends Component<Props, State> {
                 console.log('onPressOut');
 
                 if (this.state.startShoot) {
-                  const videoPath = `file://${encodeURI(await this.camera.stopRecording())}`;
-                  // console.log('video saved to an ', videoPath);
-                  this.setState({ fileType: 'video', videoPath });
+                  const videoPath = await this.camera.stopRecording();
+                  // console.log('------onPressOut video saved to an ', videoPath);
+                  // this.setState({ });
                   this.setState({
+                    fileType: 'video', 
+                    videoPath,
                     startShoot: false,
                     ShootSuccess: true,
                     fadeInOpacity: new Animated.Value(60),

@@ -340,7 +340,7 @@ static AliCameraAction *_instance = nil;
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
-            NSLog(@"------download progress: %lf",pgs);
+//            NSLog(@"------download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;
         task.completionHandler = ^(NSString *path, NSError *err) {
@@ -407,14 +407,12 @@ static AliCameraAction *_instance = nil;
 {
     NSLog(@"----✅ finish all record ✅");
     [self.recorder stopPreview];
+    _complete(_videoSavePath);
 }
 
 - (void)_recorderFinishRecording
 {
     [self.recorder finishRecording];  //will call `recorderDidFinishRecording`
-//    NSString *outputPath = self.mediaConfig.outputPath;
-    _complete(_videoSavePath);
-//    NSLog(@"----outputPath : %@",_videoSavePath);
     //save for test
 //    [[NSUserDefaults standardUserDefaults] setObject:outputPath forKey:@"videoSavePath"];
     self.recordStartHandler = nil;

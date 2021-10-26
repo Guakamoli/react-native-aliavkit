@@ -215,8 +215,15 @@ AliyunCropDelegate
     if (!_isPresented && self.window) { //准备出现
         NSLog(@"---- 🪝准备出现");
         if (self.videoPath) {
+            NSString *path = [[NSUserDefaults standardUserDefaults] valueForKey:@"path"];
+            if (!path) {
+                [[NSUserDefaults standardUserDefaults] setValue:self.videoPath forKey:@"path"];
+                path = self.videoPath;
+            }
+//            AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:path];
+//            NSLog(@"---------:%@  ==== duration %f",self.videoPath,[parser getVideoDuration]);
             [self initBaseData];
-            [self setVideoTaskPathWithVideopath:self.videoPath];
+            [self setVideoTaskPathWithVideopath:path];
             [self addSubview:self.preview];
             [self initSDKAbout];
             
@@ -315,7 +322,7 @@ AliyunCropDelegate
                 _videoPath = [NSURL URLWithString:videoPath].path;
             }
             NSLog(@"------videoPath：%@",_videoPath);
-            
+
         }
     }
     else {
