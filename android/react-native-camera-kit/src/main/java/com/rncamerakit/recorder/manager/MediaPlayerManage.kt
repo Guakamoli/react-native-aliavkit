@@ -22,10 +22,10 @@ class MediaPlayerManage private constructor() {
         mMediaPlayer = MediaPlayer()
     }
 
-    fun start(path: String,promise: Promise) {
+    fun start(path: String,promise: Promise?) {
         release()
         if (TextUtils.isEmpty(path)) {
-            promise.reject("playMusic","error: musicPath is empty")
+            promise?.reject("playMusic","error: musicPath is empty")
             return
         }
 
@@ -40,7 +40,7 @@ class MediaPlayerManage private constructor() {
         mMediaPlayer?.prepare()
         mMediaPlayer?.setOnPreparedListener {
             mMediaPlayer?.start()
-            promise.resolve(true)
+            promise?.resolve(true)
         }
 
         //循环播放
@@ -56,7 +56,7 @@ class MediaPlayerManage private constructor() {
     }
 
 
-    private fun stop() {
+    fun stop() {
         this.isPlaying = false
         this.duration = 0
         if(mMediaPlayer?.isPlaying == true){

@@ -50,7 +50,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
         }
-        if(haveInfo(info.songID)){
+        if (haveInfo(info.songID)) {
             return
         }
         val values = ContentValues()
@@ -72,7 +72,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             throw SQLException("SQLiteDatabase is null")
         }
         list?.forEach { info ->
-            if(!haveInfo(info.songID)){
+            if (!haveInfo(info.songID)) {
                 val values = ContentValues()
                 values.put("SONG_ID", info.songID)
                 values.put("NAME", info.name)
@@ -90,8 +90,8 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
 
     private fun haveInfo(songID: Int?): Boolean {
         val sql = "SELECT * FROM $tableName WHERE SONG_ID = ?"
-        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID.toString()))?: throw SQLException("Cursor is null")
-        val haveData  = cursor.count > 0
+        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID.toString())) ?: throw SQLException("Cursor is null")
+        val haveData = cursor.count > 0
         cursor.close()
         return haveData
     }
@@ -139,7 +139,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(null)
     }
 
-    override fun updateLocalPath(songID: Int?, localPath: String?,duration:Int?) {
+    override fun updateLocalPath(songID: Int?, localPath: String?, duration: Int?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -158,7 +158,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             throw android.database.SQLException("SQLiteDatabase is null")
         }
         val sql = "SELECT * FROM $tableName"
-        val cursor = mDatabase?.rawQuery(sql, null)?: throw SQLException("Cursor is null")
+        val cursor = mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         if (cursor.count <= 0) {
             close(cursor)
             return null
@@ -181,6 +181,9 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
     }
 
     override fun query(songID: Int?): MusicFileBean? {
+        if (songID == null) {
+            return null
+        }
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -225,7 +228,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         if (total == null) {
             total = 10
         }
-        val offset = (page - 1) * total
+        val offset = (page - 1)*total
         val cursor = if (TextUtils.isEmpty(queryMsg)) {
             val sql = "SELECT * FROM $tableName ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")

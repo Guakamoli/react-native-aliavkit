@@ -5,14 +5,17 @@ import com.aliyun.svideo.common.utils.FileUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
+import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
 import java.net.FileNameMap
 import java.net.URLConnection
+import java.util.ArrayList
 
 class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -21,36 +24,63 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         return "RNEditorKitModule"
     }
 
+//    /**
+//     * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
+//     */
+//    @ReactMethod
+//    fun getMusicPath(songID: Int, promise: Promise) {
+//        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
+//        if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
+//            promise.resolve(musicInfo.localPath)
+//            return
+//        }
+//        reactContext.runOnUiQueueThread {
+//            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise, null)
+//        }
+//    }
+
     @ReactMethod
-    fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
+    fun getMusicList(name: String, songID: String, page: Int, pageSize: Int, promise: Promise) {
+        if (!TextUtils.isEmpty(songID) && songID.toIntOrNull() != null) {
+            val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
+            if (musicInfo != null) {
+                val list: MutableList<MusicFileBean> = ArrayList()
+                list.add(musicInfo)
+                promise.resolve(GsonBuilder().create().toJson(list))
+                return
+            }
+        }
         val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
         promise.resolve(GsonBuilder().create().toJson(list))
     }
 
-    /**
-     * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
-     */
     @ReactMethod
-    fun getMusicPath(songID: Int, promise: Promise) {
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
+    fun playMusic(songID: String, promise: Promise) {
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
-            promise.resolve(musicInfo.localPath)
-            return
+            musicInfo.localPath?.let { MediaPlayerManage.instance.start(it, null) }
+            promise.resolve(GsonBuilder().create().toJson(musicInfo))
         }
         reactContext.runOnUiQueueThread {
-            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise,null)
+            if (musicInfo != null) {
+                DownloadUtils.downloadMusic(reactContext, musicInfo.songID, musicInfo.url, null,
+                    object : MyFileDownloadCallback() {
+                        override fun completed(task: BaseDownloadTask) {
+                            super.completed(task)
+                            val musicBean: MusicFileBean? = MusicFileInfoDao.instance.query(musicInfo.songID)
+                            promise.resolve(GsonBuilder().create().toJson(musicBean))
+                        }
+                    }
+                )
+            }
         }
     }
 
     @ReactMethod
-    fun playMusic(musicPath: String, promise: Promise) {
-        MediaPlayerManage.instance.start(musicPath, promise)
-    }
-
-    @ReactMethod
-    fun stopMusic(promise: Promise) {
-        MediaPlayerManage.instance.release()
-        promise.resolve(true)
+    fun stopMusic(songID: String, promise: Promise) {
+        MediaPlayerManage.instance.stop()
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
+        promise.resolve(GsonBuilder().create().toJson(musicInfo))
     }
 
     //获取滤镜列表
@@ -184,11 +214,17 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     fun saveMediaStore(filePath: String, sourceType: String, promise: Promise) {
         val context = reactContext
         context.runOnUiQueueThread {
-            if (isVideo(filePath)) {
+            if (sourceType == "video") {
                 AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
             } else {
                 AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
             }
+            promise.resolve(true)
+//            if (isVideo(filePath)) {
+//                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+//            } else {
+//                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+//            }
         }
     }
 

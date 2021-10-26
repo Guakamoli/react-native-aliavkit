@@ -150,10 +150,10 @@ class CKEditor(val reactContext: ThemedReactContext) :
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
 
 
-        //TODO 测试音频
-        val list = MusicFileInfoDao.instance.queryAll()
-        val bean = list?.get(0)
-        setMusicInfo(bean)
+//        //TODO 测试音频
+//        val list = MusicFileInfoDao.instance.queryAll()
+//        val bean = list?.get(0)
+//        setMusicInfo(bean)
     }
 
 
