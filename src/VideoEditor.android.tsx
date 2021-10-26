@@ -33,7 +33,7 @@ export default class Editor extends Component<Props, State> {
    * 获取音乐列表
    */
   getMusicList = async (name, page, pageSize) => {
-    var musicList = await RNEditorKitModule.getMusicList(name, page, pageSize);
+    var musicList = await RNEditorKitModule.getMusicList(name, "", page, pageSize);
     return JSON.parse(musicList)
   };
 
@@ -129,10 +129,10 @@ export default class Editor extends Component<Props, State> {
       this.props.onExportVideo(param);
     });
 
-      //音乐下载进度
-      this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
-        console.log("downloadMusic", progress);
-      });
+    //音乐下载进度
+    this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
+      console.log("downloadMusic", progress);
+    });
   }
 
   componentWillUnmount() {

@@ -38,7 +38,7 @@ const Camera = React.forwardRef((props, ref) => {
      * @returns 
      */
     getMusicList: async (name, page, pageSize) => {
-      var musicList = await RNCameraKitModule.getMusicList(name, page, pageSize);
+      var musicList = await RNCameraKitModule.getMusicList(name, "", page, pageSize);
       return JSON.parse(musicList)
     },
 
