@@ -274,18 +274,7 @@ export default class CameraScreen extends Component<Props, State> {
     };
   }
 
-  //  aa =async ()=>{
-  //    console.log(1231);
-
-  //   const pasters = await this.camera.getPasterInfos();
-  //   console.log('--------pasters',pasters)
-  //   this.setState({
-  //     pasterList: pasters,
-  //     facePasterInfo: pasters[0]
-  //   });
-  // }
   componentDidMount() {
-    // console.log('newDate',new Date().getMinutes());
 
     var getAlbums = CameraRoll.getAlbums({
       assetType: 'All',
@@ -327,34 +316,6 @@ export default class CameraScreen extends Component<Props, State> {
   isCaptureRetakeMode() {
     return !!(this.props.allowCaptureRetake && !_.isUndefined(this.state.imageCaptured));
   }
-  // 闪光灯拍摄    ？？？？
-  // renderFlashButton() {
-  //   return (
-  //     !this.isCaptureRetakeMode() && (
-  //       <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => this.onSetFlash()}>
-  //         <Image
-  //           style={{ flex: 1, justifyContent: 'center' }}
-  //           source={this.state.flashData.image}
-  //           resizeMode='contain'
-  //         />
-  //       </TouchableOpacity>
-  //     )
-  //   );
-  // }
-  // 闪光灯
-  // renderTorchButton() {
-  //   return (
-  //     !this.isCaptureRetakeMode() && (
-  //       <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => this.onSetTorch()}>
-  //         <Image
-  //           style={{ flex: 1, justifyContent: 'center' }}
-  //           source={this.state.torchMode ? this.props.torchOnImage : this.props.torchOffImage}
-  //           resizeMode='contain'
-  //         />
-  //       </TouchableOpacity>
-  //     )
-  //   );
-  // }
 
   // 底部 切换模块
   renderswitchModule() {
@@ -389,33 +350,6 @@ export default class CameraScreen extends Component<Props, State> {
               </TouchableOpacity>
             </View>
           )}
-          {/* 发布 */}
-          {/* {this.state.ShootSuccess ?
-            <TouchableOpacity onPress={() => {
-              let uploadFile = []
-              if (videoPath) {
-                let type = videoPath.split('.')
-                uploadFile.push({
-                  video_type: `video/${type[type.length - 1]}`,
-                  title_link: videoPath,
-                  type: "file"
-                })
-              } else {
-                let type = captureImages[0].uri.split('.')
-                uploadFile.push({
-                  image_url: captureImages[0].uri,
-                  image_type: `image/${type[type.length - 1]}`,
-                  image_size: captureImages[0].size,
-                  type: "file",
-                })
-              }
-              this.sendUploadFile(uploadFile)
-            }}>
-              <View style={styles.uploadBox}>
-                <Text style={styles.uploadTitle}>发布快拍</Text>
-              </View>
-            </TouchableOpacity>
-            : null} */}
           {/* 相机翻转 */}
           {this.state.ShootSuccess ? null : (
             <TouchableOpacity style={styles.switchScreen} onPress={() => this.onSwitchCameraPressed()}>
@@ -461,51 +395,6 @@ export default class CameraScreen extends Component<Props, State> {
       </>
     );
   }
-  // 编辑头部按钮
-  // renderUpdateTop() {
-  //   const imglist = [
-  //     // 'filter':
-  //     { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
-  //     // 'volume':
-  //     { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
-  //     // 'tailor':
-  //     { 'img': this.props.tailorImage, 'onPress': () => { } },
-  //     // 'git':
-  //     { 'img': this.props.musicRevampImage, 'onPress': () => { } },
-  //     // 'Aa':
-  //     { 'img': this.props.AaImage, 'onPress': () => { } }
-  //   ]
-  //   return (
-  //     <>
-  //       {/* 放弃 */}
-  //       <TouchableOpacity onPress={() => {
-  //         this.setState({ ShootSuccess: false, showFilterLens: false, filterLensSelect: 0, progress: 0, captureImages: [], uploadFile: null })
-  //       }} style={[styles.UpdateBox, { left: 20 }]}>
-  //         <Image
-  //           style={styles.updateTopIcon}
-  //           source={this.props.giveUpImage}
-  //           resizeMode="contain"
-  //         />
-  //       </TouchableOpacity>
-  //       {/* 编辑按钮组 */}
-  //       <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
-  //         {
-  //           imglist.map(item => {
-  //             return (
-  //               <TouchableOpacity onPress={item.onPress} >
-  //                 <Image
-  //                   style={styles.updateTopIcon}
-  //                   source={item.img}
-  //                   resizeMode="contain"
-  //                 />
-  //               </TouchableOpacity>
-  //             )
-  //           })
-  //         }
-  //       </View>
-  //     </>
-  //   )
-  // }
 
   _onRecordingDuration = (event) => {
     // EventBus.emit('record_duration', parseFloat(event.duration).toFixed(2));
@@ -513,29 +402,6 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    //  function  onExportVideo(event) {
-    //   if (event.exportProgress === 1) {
-    //     // this.setState({ startExportVideo: false });
-    //    console.log('视频导出成功, path = ', event.outputPath);
-    //   }
-    // }
-    // const  VideoEditors =()=>{
-    //   console.log('12313',this.state.videoPath);
-    //   return (
-
-    //     <VideoEditor
-    //     ref={(edit) => (this.editor = edit)}
-    //     style={{ flex: 1, justifyContent: 'flex-end'}}
-    //     filterName={this.state.filterName}
-    //     // filterName={'胶片'}
-    //     // videoPath={ this.state.captureImages.length > 0 ? this.state.captureImages[0].uri  :this.state.videoPath}
-    //     videoPath={this.state.videoPath}
-    //     saveToPhotoLibrary={true}
-    //     startExportVideo={false}
-    //     onExportVideo={onExportVideo}
-    //   />
-    //   )
-    // }
     const shoot = () => {
       return (
         <Camera
@@ -574,8 +440,6 @@ export default class CameraScreen extends Component<Props, State> {
             activeOpacity={1}
             disabled={!this.state.showBeautify}
           >
-            {/* {this.state.ShootSuccess ? this.renderUpdateTop() : this.renderLeftButtons()} */}
-            {/* {this.state.ShootSuccess ? VideoEditors(): shoot()} */}
             {this.renderLeftButtons()}
             {shoot()}
           </TouchableOpacity>
@@ -584,17 +448,6 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-  // 照片数量
-  // numberOfImagesTaken() {
-  //   const numberTook = this.state.captureImages.length;
-  //   if (numberTook >= 2) {
-  //     return numberTook;
-  //   } else if (this.state.captured) {
-  //     return '1';
-  //   } else {
-  //     return '';
-  //   }
-  // }
 
   // 进度条
   animate() {
@@ -669,15 +522,6 @@ export default class CameraScreen extends Component<Props, State> {
               </View>
               {/* 普通的切换按钮 */}
               <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
-                {/* <TouchableOpacity onPress={()=>{
-                  console.log(23333);
-                  
-                  this.FlatListRef.scrollToIndex({ index: 0, animated: false  })   
-                  // listRef.current.scrollToIndex({ index: 0, animated: false })
-                  }} >
-              <Image style={[{width:20,height:20},{position:"absolute",bottom:90,left:captureIcon3,}]} source={this.props.closeImage } />
-                </TouchableOpacity> */}
-                {/* {this.switchProp()} */}
                 {this.state.musicOpen ? (
                   <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng} />
                 ) : (
@@ -722,14 +566,6 @@ export default class CameraScreen extends Component<Props, State> {
             extrapolate: 'clamp',
           }),
         },
-        // {
-        //   rotateY: animatedValue.interpolate({
-        //     inputRange: [-3, -2, -1, 0, 1, 2, 3],
-        //     outputRange: ['-90deg', '-40deg', '-10deg', '0deg', '10deg', '40deg', '90deg'],
-        //     extrapolate: 'clamp',
-        //   }),
-        // },
-
         {},
       ],
     };
@@ -916,81 +752,17 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-  // ？？？
-  // renderRatioStrip() {
-  //   if (this.state.ratios.length === 0 || this.props.hideControls) {
-  //     return null;
-  //   }
-  //   return (
-  //     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
-  //       <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 10, paddingLeft: 20 }}>
-  //         <Text style={styles.ratioBestText}>Your images look best at a {this.state.ratios[0] || ''} ratio</Text>
-  //         <TouchableOpacity
-  //           style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', padding: 8 }}
-  //           onPress={() => this.onRatioButtonPressed()}
-  //         >
-  //           <Text style={styles.ratioText}>{this.state.ratioOverlay}</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //     </View>
-  //   );
-  // }
-  //  弹出照片数据 ???
-  sendBottomButtonPressedAction(type, captureRetakeMode, image) {
-    if (this.props.onBottomButtonPressed) {
-      this.props.onBottomButtonPressed({ type, captureImages: this.state.captureImages, captureRetakeMode, image });
-    }
-  }
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
     }
   }
-  // cancel 按钮点击 ???
-  // onButtonPressed(type) {
-  //   const captureRetakeMode = this.isCaptureRetakeMode();
-  //   if (captureRetakeMode) {
-  //     if (type === 'left') {
-  //       this.setState({ imageCaptured: undefined });
-  //     }
-  //   } else {
-  //     this.sendBottomButtonPressedAction(type, captureRetakeMode, null);
-  //   }
-  // }
-  // ????
-  // renderBottomButton(type) {
-  //   const showButton = true;
-  //   if (showButton) {
-  //     const buttonNameSuffix = this.isCaptureRetakeMode() ? 'CaptureRetakeButtonText' : 'ButtonText';
-  //     const buttonText = _(this.props).get(`actions.${type}${buttonNameSuffix}`);
-  //     return (
-  //       <TouchableOpacity
-  //         style={[styles.bottomButton, { justifyContent: type === 'left' ? 'flex-start' : 'flex-end' }]}
-  //       // onPress={() => this.onButtonPressed(type)}
-  //       >
-  //         <Text style={styles.textStyle}>{buttonText}</Text>
-  //       </TouchableOpacity>
-  //     );
-  //   } else {
-  //     return <View style={styles.bottomContainerGap} />;
-  //   }
-  // }
 
   // 相机切换
   onSwitchCameraPressed() {
     const direction = this.state.cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
     this.setState({ cameraType: direction });
   }
-  //闪光灯拍摄 事件
-  // onSetFlash() {
-  //   this.currentFlashArrayPosition = (this.currentFlashArrayPosition + 1) % 3;
-  //   const newFlashData = this.flashArray[this.currentFlashArrayPosition];
-  //   this.setState({ flashData: newFlashData });
-  // }
-  // 闪光 事件
-  // onSetTorch() {
-  //   this.setState({ torchMode: !this.state.torchMode });
-  // }
   // 拍照功能  改变文件类型
   async onCaptureImagePressed() {
     const image = await this.camera.capture();
@@ -1016,19 +788,10 @@ export default class CameraScreen extends Component<Props, State> {
         });
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
       }
-      // this.sendBottomButtonPressedAction('capture', false, image);
     }
   }
   // 美颜 滤镜 box
   renderbeautifyBox() {
-    // const list = [
-    //   { title: "原片" },
-    //   { title: "灰白" },
-    //   { title: "柔柔" },
-    //   { title: "波普" },
-    //   { title: "胶片" },
-
-    // ]
     return (
       <View style={{ height: 189, backgroundColor: '#000', width: width, zIndex: 99, position: 'absolute', bottom: 0 }}>
         <View style={styles.beautifyBoxHead}>
@@ -1037,35 +800,6 @@ export default class CameraScreen extends Component<Props, State> {
 
           <Image style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' />
         </View>
-        {/* {this.state.showFilterLens
-          ?
-          <View style={{ paddingHorizontal: 20 }}>
-            <FlatList
-              data={list}
-              horizontal={true}
-              style={{ margin: 0, padding: 0, height: 80 }}
-              renderItem={({ index, item }) => {
-                return (
-                  <>
-                    <TouchableOpacity onPress={() => {
-                      this.setState({ filterLensSelect: index ,filterName:item.title})
-                    }}>
-                      <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', marginRight: 20 }}>
-                        <View style={[styles.beautifySelect,
-                        this.state.filterLensSelect === index && styles.beautifySelecin
-                        ]}>
-                        </View>
-                        <Text style={[styles.filterLensSelectTitle,
-                        this.state.filterLensSelect === index && { color: '#836BFF' }
-                        ]}>{item.title}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </>
-                )
-              }}
-            />
-          </View>
-          : */}
         <View style={styles.beautifyBoxContent}>
           {[0, 1, 2, 3, 4, 5].map((item, index) => {
             return (
@@ -1098,8 +832,8 @@ export default class CameraScreen extends Component<Props, State> {
           {/* 拍摄按钮 */}
           {
             !this.props.hideControls &&
-              // <View style={[styles.bottomButtons]}>
-              this.renderCaptureButton()
+            // <View style={[styles.bottomButtons]}>
+            this.renderCaptureButton()
             // </View>
           }
         </View>
@@ -1146,7 +880,7 @@ export default class CameraScreen extends Component<Props, State> {
                 videoPath={this.state.videoPath}
                 fileType={this.state.fileType}
                 imagePath={this.state.imageCaptured}
-                // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+              // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
               />
             ) : (
               <>
