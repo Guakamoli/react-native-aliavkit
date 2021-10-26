@@ -302,7 +302,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       console.log(Platform.OS === 'android');
-      this.camera.release();
+      if(this.camera){
+        this.camera.release();
+      }
     }
     console.log('销毁');
     this.setState = () => false;
