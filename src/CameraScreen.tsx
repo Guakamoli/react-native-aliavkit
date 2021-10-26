@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component, useRef, useEffect } from 'react';
+import React, { Component, useRef, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -155,7 +155,36 @@ const TestComponent = () => {
     </>
   );
 };
-
+const ProgressCircleWrapper = (props) => {
+  const { flag, recordeSuccess } = props;
+  let [progress, setProgress] = useState(0);
+  let [timer, setTimer] = useState(null);
+  useInterval(() => {
+    const newprogress = (progress += 1 / 140);
+    setProgress(newprogress);
+    if (newprogress >= 1) {
+      recordeSuccess();
+    }
+  }, timer);
+  useEffect(() => {
+    if (flag) {
+      setTimer(60);
+    } else {
+      setTimer(null);
+    }
+  }, [flag]);
+  return (
+    <Progress.Circle
+      style={[styles.progress, { position: 'absolute' }]}
+      progress={progress}
+      indeterminate={false}
+      size={122}
+      color={'#EA3600'}
+      borderWidth={0}
+      thickness={6}
+    />
+  );
+};
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
@@ -569,10 +598,10 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 进度条
   animate() {
-    // this.setState({
-    //   flag: Math.random(),
-    // });
-    // return;
+    this.setState({
+      flag: Math.random(),
+    });
+    return;
     let progress = 0;
     this.setState({ progress: 0 });
     const stopRecording = async () => {
@@ -622,27 +651,21 @@ export default class CameraScreen extends Component<Props, State> {
                   style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}
                 ></Animated.View>
                 <View style={styles.captureButton}></View>
-                <Progress.Circle
-                  style={[styles.progress, { position: 'absolute' }]}
-                  progress={this.state.progress}
-                  indeterminate={false}
-                  size={122}
-                  color={'#EA3600'}
-                  borderWidth={0}
-                  thickness={6}
-                />
-                {/* <CircleWrapper
+
+                <ProgressCircleWrapper
                   flag={this.state.flag}
                   recordeSuccess={async (data) => {
-                    const videoPath = await this.camera.stopRecording();
                     this.setState({
-                      videoPath,
                       flag: null,
                       ShootSuccess: true,
                       startShoot: false,
                     });
+                    const videoPath = await this.camera.stopRecording();
+                    this.setState({
+                      videoPath,
+                    });
                   }}
-                /> */}
+                />
               </View>
               {/* 普通的切换按钮 */}
               <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
