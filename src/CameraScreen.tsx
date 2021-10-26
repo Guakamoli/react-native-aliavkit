@@ -161,9 +161,11 @@ const ProgressCircleWrapper = (props) => {
   let [timer, setTimer] = useState(null);
   useInterval(() => {
     const newprogress = (progress += 1 / 140);
-    setProgress(newprogress);
     if (newprogress >= 1) {
       recordeSuccess();
+      setProgress(0);
+    } else {
+      setProgress(newprogress);
     }
   }, timer);
   useEffect(() => {
