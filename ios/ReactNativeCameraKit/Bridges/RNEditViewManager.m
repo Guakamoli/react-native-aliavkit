@@ -8,7 +8,7 @@
 #import "RNEditViewManager.h"
 #import "RNEditView.h"
 
-@interface RNEditViewManager ()
+@interface RNEditViewManager ()<RCTInvalidating>
 
 @property (nonatomic, strong) RNEditView *editView;
 
@@ -20,9 +20,7 @@ RCT_EXPORT_MODULE()
 
 - (UIView *)view
 {
-    if (!self.editView) {
-        self.editView = [[RNEditView alloc] initWithManager:self bridge:self.bridge];
-    }
+    self.editView = [[RNEditView alloc] initWithBridge:self.bridge];
     return self.editView;
 }
 
@@ -109,6 +107,11 @@ RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
     NSLog(@"------filterInfos： %@",infos);
     resolve(infos);
     
+}
+
+- (void)invalidate
+{
+    NSLog(@"--- %s",__PRETTY_FUNCTION__);
 }
 
 @end

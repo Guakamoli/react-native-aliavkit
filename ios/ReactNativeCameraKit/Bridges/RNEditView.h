@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, RNAVAssetType) {
 @property (nonatomic, copy) RCTBubblingEventBlock onExportVideo;
 @property (nonatomic, copy) RCTBubblingEventBlock onPlayProgress;
 
-
+- (instancetype)initWithBridge:(RCTBridge *)bridge;
 /// 尝试播放视频
 - (void)play;
 /// 尝试继续播放视频

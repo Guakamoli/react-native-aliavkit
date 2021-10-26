@@ -66,7 +66,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @end
 
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
-
+{
+    BOOL _isPresented;
+}
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic, strong) CKMockPreview *mockPreview;
@@ -108,18 +110,38 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     
 }
 
-- (void)willMoveToSuperview:(UIView *)newSuperview
+- (void)didMoveToSuperview
 {
-    if (!newSuperview) {
-        NSLog(@"---✅ %s",__PRETTY_FUNCTION__);
-//        [self.cameraAction stopRecordVideo];
+    [super didMoveToSuperview];
+    if (_isPresented && !self.superview) { //出现了，要消失
+        NSLog(@"----： 📷 出现了，要消失");
+        if (self.cameraAction.isRecording) {
+            [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
+                
+            }];
+        }
 //        [self.cameraAction stopPreview];
-    } else {
-        NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    }
+}
+
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    if (self.window && _isPresented) {
+        NSLog(@"--- 📷回来了");
         if (self.cameraAction) {
             [self.cameraAction startFrontPreview];
         }
+        return;
     }
+    if (!_isPresented && self.window) { //准备出现
+        NSLog(@"----： 📷 准备出现");
+        if (self.cameraAction && !self.cameraAction.isRecording) {
+            [self.cameraAction startFrontPreview];
+        }
+        _isPresented = YES;
+    }
+    
 }
 
 - (AliCameraAction *)cameraAction {
@@ -132,7 +154,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (instancetype)init
 {
     if (self = [super init]) {
-//        [self.cameraAction startFrontPreview];
+        _isPresented = NO;
     }
     return self;
 }

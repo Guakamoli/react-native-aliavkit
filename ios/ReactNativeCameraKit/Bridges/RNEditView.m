@@ -45,6 +45,7 @@ AliyunCropDelegate
 {
     BOOL _prePlaying;
     AliyunCrop *_musicCrop;
+    BOOL _isPresented;
 }
 @property(nonatomic, assign) CGSize inputOutputSize;
 @property(nonatomic, assign) CGSize outputSize;
@@ -52,13 +53,11 @@ AliyunCropDelegate
 @property(nonatomic, strong) AliyunPasterManager *pasterManager;
 @property(nonatomic, strong) AliyunEditZoneView *editZoneView;
 @property(nonatomic, strong) AliyunEditor *editor;
-@property(nonatomic, strong) id<AliyunIPlayer> player;
-@property(nonatomic, strong) id<AliyunIClipConstructor> clipConstructor;
-
-@property (nonatomic, weak) RNEditViewManager *manager;
-@property (nonatomic, weak) RCTBridge *bridge;
+@property(nonatomic, weak) id<AliyunIPlayer> player;
+@property(nonatomic, weak) id<AliyunIClipConstructor> clipConstructor;
 
 @property (nonatomic, strong) UIView *preview;
+@property (nonatomic, weak) RCTBridge *bridge;
 
 @property (nonatomic, strong) AliyunVodPublishManager *publishManager;
 
@@ -88,6 +87,7 @@ AliyunCropDelegate
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
         _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
+//        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
     }
     return _mediaConfig;
 }
@@ -107,13 +107,13 @@ AliyunCropDelegate
     return _generator;
 }
 
-- (instancetype)initWithManager:(RNEditViewManager*)manager bridge:(RCTBridge *)bridge
+- (instancetype)initWithBridge:(RCTBridge *)bridge
 {
-    if ((self = [super init])) {
-        self.manager = manager;
+    if ((self = [super initWithFrame:CGRectZero])) {
         self.bridge = bridge;
-        self.backgroundColor = [UIColor blackColor];
+        _isPresented = NO;
     }
+    
     return self;
 }
 
@@ -126,19 +126,18 @@ AliyunCropDelegate
     // 校验视频分辨率，如果首段视频是横屏录制，则outputSize的width和height互换
     self.inputOutputSize = self.mediaConfig.outputSize;
     self.outputSize = [self.mediaConfig fixedSize];
-    self.mediaConfig.outputSize = _outputSize;
-    
-    [self _setVideoTaskPath];
+    NSLog(@"-----: %@", NSStringFromCGSize(self.outputSize));
+    self.mediaConfig.outputSize = self.outputSize;
     
     //防size异常奔溃处理
     if (_outputSize.height == 0 || _outputSize.width == 0) {
-        _outputSize.width = 720;
-        _outputSize.height = 1280;
+        _outputSize.width = 1080;
+        _outputSize.height = 1920;
         NSAssert(false, @"调试的时候崩溃,_outputSize分辨率异常处理");
     }
 }
 
-- (void)_setPhotoTaskPath:(NSString *)photoPath
+- (void)setPhotoTaskPathWithPhotoPath:(NSString *)photoPath
 {
     NSString *editDir = [AliyunPathManager compositionRootDir];
     NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
@@ -151,11 +150,12 @@ AliyunCropDelegate
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
-    param.bitrate = 15*1000*1000;
+    param.bitrate = 10*1000*1000;
     param.scaleMode = AliyunScaleModeFill;
     param.codecType = AliyunVideoCodecHardware;
     [importor setVideoParam:param];
     
+    NSLog(@"---- PhototaskPath: %@", taskPath);
     // generate config
     [importor generateProjectConfigure];
     // output path
@@ -164,38 +164,26 @@ AliyunCropDelegate
 }
 
 /// 单视频接入编辑页面，生成一个新的taskPath
-- (void)_setVideoTaskPath {
-    if (_taskPath) {
-        return;
-    }
-    _taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    
+- (void)setVideoTaskPathWithVideopath:(NSString *)videoPath
+{
+
+    self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
+    NSLog(@"---- VideotaskPath: %@", self.taskPath);
     AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
-    if (self.mediaConfig.videoQuality == AliyunMediaQualityVeryHight) {
-        param.bitrate = 10*1000*1000; // 10Mbps
-    } else {
-        param.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
-    }
-    if (self.mediaConfig.cutMode == AliyunMediaCutModeScaleAspectCut) {
-        param.scaleMode = AliyunScaleModeFit;
-    } else {
-        param.scaleMode = AliyunScaleModeFill;
-    }
+    param.bitrate = 10*1000*1000; // 10Mbps
+    param.scaleMode = AliyunScaleModeFill;
     // 编码模式
-    if (self.mediaConfig.encodeMode ==  AliyunEncodeModeHardH264) {
-        param.codecType = AliyunVideoCodecHardware;
-    }else if(self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) {
-        param.codecType = AliyunVideoCodecOpenh264;
-    }
+    param.codecType = AliyunVideoCodecHardware;
     
     [importer setVideoParam:param];
-    AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:_videoPath animDuration:0];
+    NSLog(@"----- _videoPath:  %@",videoPath);
+    AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-//    NSLog(@"----------clip.duration:%f",clip.duration);
+    NSLog(@"----------clip.duration:%f",clip.duration);
     self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 }
 
@@ -203,7 +191,7 @@ AliyunCropDelegate
 {
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
-        CGRect frame;
+        CGRect frame = CGRectZero;
         frame.size.width = [UIScreen mainScreen].bounds.size.width;
         frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
         _preview = [[UIView alloc] initWithFrame:frame];
@@ -212,24 +200,56 @@ AliyunCropDelegate
     return _preview;
 }
 
-
-- (void)willMoveToSuperview:(UIView *)newSuperview
+- (void)didMoveToSuperview
 {
-    if (!newSuperview) {
-        //clearing...
-        [self stop];
-        [_editor stopEdit];
-        [self.generator cancel];
-        self.imagePath = nil;
-        self.videoPath = nil;
-    } else {
+    [super didMoveToSuperview];
+    if (_isPresented && !self.superview) { //出现了，要消失
+        NSLog(@"---- 🪝出现了，要消失");
+//        [_editor stopEdit];
+    }
+}
+
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    if (!_isPresented && self.window) { //准备出现
+        NSLog(@"---- 🪝准备出现");
         if (self.videoPath) {
-            [self initEditorSDK];
+            [self initBaseData];
+            [self setVideoTaskPathWithVideopath:self.videoPath];
+            [self addSubview:self.preview];
+            [self initSDKAbout];
+            
+            int num = [self.editor startEdit];
+            if (num == ALIVC_COMMON_RETURN_SUCCESS) {
+                [[self.editor getPlayer] play];
+            }
+            else if (num == ALIVC_COMMON_INVALID_STATE) {
+                NSLog(@"-----状态不正确");
+            }
+            else if (num == ALIVC_COMMON_INVALID_PARAM) {
+                NSLog(@"-----参数不正确");
+            }
+            _isPresented = YES;
             return;
         }
         if (self.imagePath) {
-            [self _setPhotoTaskPath:_imagePath];
-            [self initEditorSDK];
+            [self initBaseData];
+            [self setPhotoTaskPathWithPhotoPath:self.imagePath];
+            [self addSubview:self.preview];
+            [self initSDKAbout];
+            
+            int num = [self.editor startEdit];
+            if (num == ALIVC_COMMON_RETURN_SUCCESS) {
+                [[self.editor getPlayer] play];
+            }
+            else if (num == ALIVC_COMMON_INVALID_STATE) {
+                NSLog(@"-----状态不正确");
+            }
+            else if (num == ALIVC_COMMON_INVALID_PARAM) {
+                NSLog(@"-----参数不正确");
+            }
+            _isPresented = YES;
         }
     }
 }
@@ -237,6 +257,9 @@ AliyunCropDelegate
 /// 初始化sdk相关
 - (void)initSDKAbout
 {
+    if ([[NSFileManager defaultManager] fileExistsAtPath:self.taskPath]) {
+        NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    }
     // editor
     self.editor = [[AliyunEditor alloc] initWithPath:self.taskPath preview:self.preview];
     
@@ -261,16 +284,7 @@ AliyunCropDelegate
     self.pasterManager.delegate = (id)self;
 }
 
-- (void)prepareForExport
-{
-    [self.player stop];
-    [self.editor stopEdit];
-    
-    int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
-    if (result != 0) {
-        NSLog(@"合成失败");
-    }
-}
+
 
 - (void)setImagePath:(NSString *)imagePath
 {
@@ -301,6 +315,7 @@ AliyunCropDelegate
                 _videoPath = [NSURL URLWithString:videoPath].path;
             }
             NSLog(@"------videoPath：%@",_videoPath);
+            
         }
     }
     else {
@@ -314,12 +329,18 @@ AliyunCropDelegate
 
 - (void)initEditorSDK
 {
-    [self initBaseData];
-    [self addSubview:self.preview];
-    [self initSDKAbout];
     
-    [self.editor startEdit];
-    [self play];
+}
+
+- (void)prepareForExport
+{
+    [self.player stop];
+    [self.editor stopEdit];
+    
+    int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
+    if (result != 0) {
+        NSLog(@"合成失败");
+    }
 }
 
 - (void)setOnExportVideo:(RCTBubblingEventBlock)onExportVideo
