@@ -12,6 +12,9 @@ target 'CameraKitExample' do
   pod 'react-native-cameraroll', :path => '../../node_modules/@react-native-community/cameraroll'
   pod 'RNScreens', :path => '../../node_modules/react-native-screens'
   pod 'RNGestureHandler', :path => '../../node_modules/react-native-gesture-handler'
+  pod 'RNReanimated', :path => '../../node_modules/react-native-reanimated'
+
+  
   pod 'react-native-image-filter-kit',:path => '../../node_modules/react-native-image-filter-kit'  
   pod 'react-native-safe-area-context', :path => '../../node_modules/react-native-safe-area-context'  
   pod 'ReactNativeAliAVKit', :path => '../..'

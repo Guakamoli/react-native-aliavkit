@@ -4,21 +4,23 @@ import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostUpload';
-import PostEditor from './PostEditor'
+import PostEditor from './PostEditor';
 // export { useNavigation, useIsFocused } from '@react-navigation/native';
-// 
+//
 
-function Post({ navigation }) {
+function Post(props) {
+  console.info(props, 'ahshash');
   return (
-
     <PostUpload
-      navigation={navigation}
+      {...props}
       //  退出操作
       goback={() => {
         console.log(12313);
       }}
       // 拿到上传数据
-      getUploadFile={(data) => { console.log('getUploadFile-----------', data); }}
+      getUploadFile={(data) => {
+        console.log('getUploadFile-----------', data);
+      }}
       multipleBtnImage={require('../images/multipleBtn.png')}
       startMultipleBtnImage={require('../images/startMultipleBtn.png')}
       postCameraImage={require('../images/postCamera.png')}
@@ -37,12 +39,15 @@ function PostEditorBox(props) {
   // console.log(1111,props);
 
   return (
-
-    <PostEditor {...props} getUploadFile={(data) => { console.log('uploadfile------s', data); }}
+    <PostEditor
+      {...props}
+      getUploadFile={(data) => {
+        console.log('uploadfile------s', data);
+      }}
       volume={require('../images/volume.png')}
       noVolume={require('../images/noVolume.png')}
     />
-  )
+  );
 }
 function Story(props) {
   return (
@@ -56,7 +61,9 @@ function Story(props) {
         console.log(12313);
       }}
       // 拿到上传数据
-      getUploadFile={(data) => { console.log('getUploadFilesss-----------', data); }}
+      getUploadFile={(data) => {
+        console.log('getUploadFilesss-----------', data);
+      }}
       // 1
       cameraFlipImage={require('../images/cameraFlipIcon.png')}
       captureButtonImage={require('../images/cameraButton.png')}
@@ -75,14 +82,13 @@ function Story(props) {
       noVolumeImage={require('../images/noVolume.png')}
       tailorImage={require('../images/tailor.png')}
       volumeImage={require('../images/volume.png')}
-
       musicDynamicGif={require('../images/musicDynamic.gif')}
       musicIconPng={require('../images/musicIcon.png')}
       musicIcongray={require('../images/musicIcongray.png')}
       showCapturedImageCount
       cameraModule={true}
     />
-  )
+  );
 }
 const Stack = createNativeStackNavigator();
 
@@ -90,9 +96,9 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={Story} />
-        <Stack.Screen name="PostUpload" component={Post} />
-        <Stack.Screen name="PostEditorBox" component={PostEditorBox} />
+        <Stack.Screen name='Home' component={Story} />
+        <Stack.Screen name='PostUpload' component={Post} />
+        <Stack.Screen name='PostEditorBox' component={PostEditorBox} />
       </Stack.Navigator>
     </NavigationContainer>
   );

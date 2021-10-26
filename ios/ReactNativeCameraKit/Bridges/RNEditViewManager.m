@@ -20,9 +20,7 @@ RCT_EXPORT_MODULE()
 
 - (UIView *)view
 {
-    if (!self.editView) {
-        self.editView = [[RNEditView alloc] initWithManager:self bridge:self.bridge];
-    }
+    self.editView = [[RNEditView alloc] init];
     return self.editView;
 }
 
@@ -61,7 +59,7 @@ RCT_EXPORT_METHOD(stop)
     [self.editView stop];
 }
 
-RCT_EXPORT_METHOD(seekToTime:(NSNumber *)numberTime)
+RCT_EXPORT_METHOD(seekToTime:(nonnull NSNumber *)numberTime)
 {
     CGFloat time = [numberTime floatValue];
     [self.editView seekToTime:time];
