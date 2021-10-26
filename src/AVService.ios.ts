@@ -10,7 +10,7 @@ type MusicRequestType = {
 }
 
 export default class AVService {
-  static async getFacePasterInfos({ }) {
+  static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }
 
@@ -24,7 +24,6 @@ export default class AVService {
   如果是图片，则不需要监听，只需要await path即可
 */
   static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight }) {
-
     return await AliAVServiceBridge.crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight });
   }
 
@@ -40,10 +39,19 @@ export default class AVService {
   static async pauseMusic(songID: string) {
     return await RNMusicService.pauseMusic(songID);
   }
-  // name:'all-music' 分页传all-music'，其他传歌曲名 
+  // name:'all-music' 分页传all-music'，其他传歌曲名
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     console.log('123', { name, page, songID, pageSize });
 
     return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
+
+  static async getThumbnails({ videoPath, startTime, itemPerTime }) {
+    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime });
+  }
+
+  static async removeThumbnaiImages() {
+    return await AliAVServiceBridge.removeThumbnaiImages();
+  }
+  
 }

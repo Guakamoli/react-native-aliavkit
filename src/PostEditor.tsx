@@ -157,7 +157,7 @@ const PostEditor = (props) => {
       console.log('销毁了');
 
       //
-      RNEditViewManager.removeThumbnaiImages({});
+      AVService.removeThumbnaiImages();
       RNEditViewManager.stop();
     };
   }, []);
@@ -169,17 +169,15 @@ const PostEditor = (props) => {
     if (fileType == 'image') {
       return null;
     }
-    // await RNEditViewManager.removeThumbnaiImages({})
+    // await AVService.removeThumbnaiImages()
     const videoTimeSecond = videoTime / 1000;
 
     let itemPerTime = videoTime / 13;
     if (videoTimeSecond < 10) {
       itemPerTime = videoTime / 8;
     }
-    coverData = await RNEditViewManager.generateImages({
+    coverData = await AVService.getThumbnails({
       videoPath: multipleSandBoxData[0],
-      duration: videoTime / 1000,
-      // duration: videoTime / 1000 > 7 ? 7 : videoTime / 1000,
       startTime: 0,
       itemPerTime: itemPerTime,
     });

@@ -364,7 +364,7 @@ export default class CameraScreen extends Component<Props, State> {
         <TouchableOpacity
           onPress={async () => {
             // await RNEditViewManager.stop()
-            // await RNEditViewManager.removeThumbnaiImages({})
+            // await AVService.removeThumbnaiImages()
             // console.log('stopandf removeThumbnaiImages ');
             // coverData = []
             // 取消按钮

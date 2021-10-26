@@ -43,12 +43,12 @@ export default class VideoEditorExample extends Component {
   }
 
   async getThumbnails() {
-    const imgPaths = await RNEditViewManager.generateImages({
+    const imgPaths = await AVService.getThumbnails({
       videoPath: this.state.videoPath,
-      duration: 10,
       startTime: 0,
       itemPerTime: 1000,
     });
+
     console.log(imgPaths);
   }
 
@@ -102,7 +102,7 @@ export default class VideoEditorExample extends Component {
                 borderRadius: 40,
               }}
               onPress={async () => {
-                const musics = await AVService.getMusics({ name: 'all-music', page: 6, pageSize:5 });
+                const musics = await AVService.getMusics({ name: 'all-music', page: 6, pageSize: 5 });
                 console.log('---- getMusics: ', musics);
                 this.setState({ musics });
               }}
@@ -138,7 +138,6 @@ export default class VideoEditorExample extends Component {
               onPress={async () => {
                 const playingSong = await AVService.pauseMusic(this.state.musics[2].songID);
                 console.log('---- pauseMusic: ', playingSong);
-                
               }}
             >
               <Text style={{ fontSize: 20, color: 'white' }}>pause</Text>
