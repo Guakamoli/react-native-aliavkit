@@ -1,4 +1,4 @@
-import React, { Component, useRef } from 'react';
+import React, { Component, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -24,6 +24,7 @@ import Carousel from 'react-native-snap-carousel';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService.ios';
 // import Trimmer from './Trimer';
+import ImageCropper from './react-native-simple-image-cropper/src';
 
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
@@ -93,7 +94,150 @@ let subscription = null;
 let trimVideoData = null;
 let coverData = [];
 // const navigation = useNavigation();
-export default class PostUpload extends Component<Props, State> {
+const PostContent = (props) => {
+  const [cropWidth, setCropWidth] = useState(width * 1);
+  const { multipleData, CameraRollList, fileSelectType, videoFile } = props;
+  const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
+  const toggleCropWidth = () => {
+    if (cropWidth < width) {
+      setCropWidth(width);
+    } else {
+      setCropWidth(width * 0.9);
+    }
+  };
+  return (
+    <View
+      style={{
+        padding: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ececec',
+        position: 'relative',
+        height: width,
+        width: '100%',
+      }}
+    >
+      {/* 左侧尺寸按钮 */}
+      <TouchableOpacity
+        style={{
+          width: 31,
+          height: 31,
+          marginRight: 10,
+          position: 'absolute',
+          left: 15,
+          bottom: 20,
+          zIndex: 99,
+        }}
+        onPress={toggleCropWidth}
+      >
+        <Image
+          style={[
+            {
+              width: 31,
+              height: 31,
+            },
+          ]}
+          source={props.changeSizeImage}
+        />
+      </TouchableOpacity>
+
+      <View
+        style={{
+          backgroundColor: '#ececec',
+          width: '100%',
+        }}
+      >
+        {fileSelectType === 'image' ? (
+          <View style={{ backgroundColor: 'red' }}>
+            <ImageCropper
+              imageUri={imageItem?.uri}
+              cropAreaWidth={width}
+              cropAreaHeight={width}
+              containerColor='black'
+              areaColor='black'
+              areaOverlay={
+                <View style={{ height: '100%', width: '100%' }}>
+                  <View
+                    style={[
+                      {
+                        left: '33.33%',
+                        width: 1,
+                        height: '100%',
+                        backgroundColor: 'rgba(255,255,255,0.4)',
+                        position: 'absolute',
+                      },
+                      styles.shadow,
+                    ]}
+                  ></View>
+                  <View
+                    style={[
+                      {
+                        left: '66.33%',
+                        width: 1,
+                        height: '100%',
+                        backgroundColor: 'rgba(255,255,255,0.4)',
+                        position: 'absolute',
+                      },
+                      styles.shadow,
+                    ]}
+                  ></View>
+                  <View
+                    style={[
+                      {
+                        top: '33.33%',
+                        width: '100%',
+                        height: 1,
+                        backgroundColor: 'rgba(255,255,255,0.4)',
+                        position: 'absolute',
+                      },
+                      styles.shadow,
+                    ]}
+                  ></View>
+                  <View
+                    style={[
+                      {
+                        top: '66.33%',
+                        width: '100%',
+                        height: 1,
+                        backgroundColor: 'rgba(255,255,255,0.4)',
+                        position: 'absolute',
+                      },
+                      styles.shadow,
+                    ]}
+                  ></View>
+                </View>
+              }
+              setCropperParams={async (cropperParams) => {
+                const result = await ImageCropper.crop({
+                  ...cropperParams,
+                  imageUri: imageItem?.uri,
+                  cropSize: {
+                    width,
+                    height: width,
+                  },
+                  cropAreaSize: {
+                    width,
+                    height: width,
+                  },
+                });
+                console.info(result);
+              }}
+            />
+          </View>
+        ) : (
+          <Video
+            source={{ uri: videoFile }}
+            style={{
+              width: width,
+              height: height - 160,
+            }}
+          />
+        )}
+      </View>
+    </View>
+  );
+};
+export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
   editor: any;
@@ -413,15 +557,18 @@ export default class PostUpload extends Component<Props, State> {
   postContent() {
     const { multipleData, CameraRollList, fileSelectType, videoFile } = this.state;
     // 计算移动距离  通过宽
+    const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
+
     return (
       <View
         style={{
-          flex: 1,
           padding: 0,
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ececec',
           position: 'relative',
+          height: width,
+          width: '100%',
         }}
       >
         {/* 左侧尺寸按钮 */}
@@ -450,52 +597,42 @@ export default class PostUpload extends Component<Props, State> {
           />
         </TouchableOpacity>
 
-        <ScrollView
+        <View
           style={{
-            height: 'auto',
-            margin: 'auto',
-            paddingHorizontal: 0,
             backgroundColor: '#ececec',
-            width: this.state.scrollViewWidth ? width : width - 90,
-          }}
-          pinchGestureEnabled={true}
-          onScroll={(event) => {
-            {
-              // console.log('multipleData',multipleData[0]?.image);
-
-              console.log(event.nativeEvent.contentOffset.x); //水平滚动距离
-              console.log(event.nativeEvent.contentOffset.y); //垂直滚动距离
-
-              // 414    0   325
-              // 1080        1920
-              // 计算有问题  ------------
-              this.setState({
-                cropOffsetX: event.nativeEvent.contentOffset.x * (multipleData[0]?.image.width / width),
-                cropOffsetY: event.nativeEvent.contentOffset.y * (multipleData[0]?.image.width / width),
-              });
-            }
+            width: '100%',
           }}
         >
           {fileSelectType === 'image' ? (
-            <Image
-              style={[
-                {
-                  width: this.state.scrollViewWidth ? width : width - 90,
-                  height: height,
-                  // width: this.state.scrollViewWidth ? width : 320
-                },
-              ]}
-              // 安卓展示不出来 权限问题？？？？
-              // source={{ uri: item.image.uri }}
-              source={{
-                uri:
-                  multipleData.length > 0
-                    ? multipleData[multipleData.length - 1]?.image?.uri
-                    : CameraRollList[0]?.image?.uri,
-              }}
-              resizeMode={'cover'}
-            />
+            <View style={{ backgroundColor: 'red' }}>
+              <ImageCropper
+                imageUri={imageItem?.uri}
+                cropAreaWidth={width}
+                cropAreaHeight={width}
+                containerColor='black'
+                areaColor='black'
+                setCropperParams={() => {}}
+              />
+            </View>
           ) : (
+            // <Image
+            //   style={[
+            //     {
+            //       width: this.state.scrollViewWidth ? width : width - 90,
+            //       height: height,
+            //       // width: this.state.scrollViewWidth ? width : 320
+            //     },
+            //   ]}
+            //   // 安卓展示不出来 权限问题？？？？
+            //   // source={{ uri: item.image.uri }}
+            //   source={{
+            //     uri:
+            //       multipleData.length > 0
+            //         ? multipleData[multipleData.length - 1]?.image?.uri
+            //         : CameraRollList[0]?.image?.uri,
+            //   }}
+            //   resizeMode={'cover'}
+            // />
             <Video
               source={{ uri: videoFile }}
               style={{
@@ -504,7 +641,7 @@ export default class PostUpload extends Component<Props, State> {
               }}
             />
           )}
-        </ScrollView>
+        </View>
       </View>
     );
   }
@@ -1120,10 +1257,11 @@ export default class PostUpload extends Component<Props, State> {
     const { fileEditor } = this.state;
     const { selectBottomModel, fileSelectType } = this.state;
     return (
-      <>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: 'black' }}>
         {/* <Trimmer /> */}
         {/* post */}
-        {this.postHead()}
+
+        {/* {this.postHead()} */}
         {/* {  this.postEditorViewData()  }
                 {fileEditor ? 
                 <>
@@ -1147,11 +1285,17 @@ export default class PostUpload extends Component<Props, State> {
         {/* </> */}
         {/* : */}
         <>
-          {this.postContent()}
+          <PostContent
+            {...this.props}
+            multipleData={this.state.multipleData}
+            CameraRollList={this.state.CameraRollList}
+            fileSelectType={this.state.fileSelectType}
+            videoFile={this.state.videoFile}
+          />
           {this.postFileUpload()}
         </>
         {/* } */}
-      </>
+      </ScrollView>
     );
   }
 }
@@ -1184,5 +1328,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8E8E8E',
     fontWeight: '500',
+  },
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
 });
