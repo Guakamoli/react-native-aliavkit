@@ -20,9 +20,7 @@ RCT_EXPORT_MODULE()
 
 - (UIView *)view
 {
-    if (!self.editView) {
-        self.editView = [[RNEditView alloc] initWithManager:self bridge:self.bridge];
-    }
+    self.editView = [[RNEditView alloc] init];
     return self.editView;
 }
 

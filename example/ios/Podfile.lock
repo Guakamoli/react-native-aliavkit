@@ -317,13 +317,11 @@ PODS:
     - React-Core
     - SSZipArchive
     - VODUpload (= 1.6.1)
-  - RNCMaskedView (0.2.6):
-    - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
   - RNReanimated (1.9.0):
     - React
-  - RNScreens (3.7.2):
+  - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
   - RNSVG (12.1.1):
@@ -353,7 +351,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - "react-native-cameraroll (from `../../node_modules/@react-native-community/cameraroll`)"
   - react-native-image-filter-kit (from `../../node_modules/react-native-image-filter-kit`)
-  - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-video (from `../../node_modules/react-native-video`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -368,10 +366,9 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeAliAVKit (from `../..`)
-  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../../node_modules/react-native-reanimated`)
-  - RNScreens (from `../node_modules/react-native-screens`)
+  - RNScreens (from `../../node_modules/react-native-screens`)
   - RNSVG (from `../../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -426,7 +423,7 @@ EXTERNAL SOURCES:
   react-native-image-filter-kit:
     :path: "../../node_modules/react-native-image-filter-kit"
   react-native-safe-area-context:
-    :path: "../node_modules/react-native-safe-area-context"
+    :path: "../../node_modules/react-native-safe-area-context"
   react-native-video:
     :path: "../../node_modules/react-native-video"
   React-perflogger:
@@ -455,14 +452,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeAliAVKit:
     :path: "../.."
-  RNCMaskedView:
-    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
   RNReanimated:
     :path: "../../node_modules/react-native-reanimated"
   RNScreens:
-    :path: "../node_modules/react-native-screens"
+    :path: "../../node_modules/react-native-screens"
   RNSVG:
     :path: "../../node_modules/react-native-svg"
   Yoga:
@@ -511,15 +506,14 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
   ReactNativeAliAVKit: a75eb0bdff6bb7b33557ad13066d92bbab3f8833
-  RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
-  RNScreens: 0591543e343c7444ea1756b6265d81a4295922c9
+  RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 5ce186de5dde6c04a57cb193178d2017698097be
+PODFILE CHECKSUM: b7bf1f2dc598bd5492646124706fdff14772f914
 
 COCOAPODS: 1.10.1

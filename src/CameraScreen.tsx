@@ -347,7 +347,12 @@ export default class CameraScreen extends Component<Props, State> {
           {/*  作品快拍 切换*/}
           {this.state.startShoot || this.state.ShootSuccess ? null : (
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-              <TouchableOpacity onPress={() => this.setState({ storyShow: false })}>
+              <TouchableOpacity
+                onPress={() => {
+                  // this.props.navigation.navigate('PostEditorBox')
+                  console.log(this.props.navigation.push('PostUpload'));
+                }}
+              >
                 <Text style={styles.videoTitle}>作品</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => this.setState({ storyShow: true })}>
@@ -564,10 +569,10 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 进度条
   animate() {
-    this.setState({
-      flag: Math.random(),
-    });
-    return;
+    // this.setState({
+    //   flag: Math.random(),
+    // });
+    // return;
     let progress = 0;
     this.setState({ progress: 0 });
     const stopRecording = async () => {
@@ -617,7 +622,16 @@ export default class CameraScreen extends Component<Props, State> {
                   style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}
                 ></Animated.View>
                 <View style={styles.captureButton}></View>
-                <CircleWrapper
+                <Progress.Circle
+                  style={[styles.progress, { position: 'absolute' }]}
+                  progress={this.state.progress}
+                  indeterminate={false}
+                  size={122}
+                  color={'#EA3600'}
+                  borderWidth={0}
+                  thickness={6}
+                />
+                {/* <CircleWrapper
                   flag={this.state.flag}
                   recordeSuccess={async (data) => {
                     const videoPath = await this.camera.stopRecording();
@@ -628,7 +642,7 @@ export default class CameraScreen extends Component<Props, State> {
                       startShoot: false,
                     });
                   }}
-                />
+                /> */}
               </View>
               {/* 普通的切换按钮 */}
               <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
@@ -1121,29 +1135,7 @@ export default class CameraScreen extends Component<Props, State> {
             )}
           </>
         ) : (
-          <>
-            {/* post */}
-            <PostUpload
-              // 退出操作
-              goback={() => {
-                this.props.goback();
-              }}
-              //   // 拿到上传数据
-              getUploadFile={(data) => {
-                this.sendUploadFile(data);
-              }}
-              multipleBtnImage={this.props.multipleBtnImage}
-              startMultipleBtnImage={this.props.startMultipleBtnImage}
-              postCameraImage={this.props.postCameraImage}
-              captureButtonImage={this.props.captureButtonImage}
-              changeSizeImage={this.props.changeSizeImage}
-              closeImage={this.props.closeImage}
-              addPhotoBtnPng={this.props.addPhotoBtnPng}
-              postMutePng={this.props.postMutePng}
-              postNoMutePng={this.props.postNoMutePng}
-              cameraModule={true}
-            />
-          </>
+          <>{/* post */}</>
         )}
       </>
     );

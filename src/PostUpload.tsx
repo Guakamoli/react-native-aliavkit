@@ -103,7 +103,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     console.log('----', props);
     const Navigation = this.props.navigation;
-    Navigation.setOptions({
+    props.navigation.setOptions({
       headerTitle: '新作品',
       // headerRight: () => <Button title='play' onPress={() =>  }  />,
 
