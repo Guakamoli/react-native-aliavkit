@@ -19,7 +19,7 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
 
     fun getColorFilter(promise: Promise) {
         mColorFilterList.clear()
-        mColorFilterList.add(ColorFilter("无效果", ""))
+        mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty"))
         EditorCommon.getColorFilterList(mContext).forEach { path ->
             val name = File(path).name
             val icon = "file://$path/icon.png"
