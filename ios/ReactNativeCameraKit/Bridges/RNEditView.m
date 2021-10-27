@@ -211,8 +211,12 @@ AliyunCropDelegate
                 [[NSUserDefaults standardUserDefaults] setValue:self.videoPath forKey:@"path"];
                 path = self.videoPath;
             }
-//            AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:path];
-//            NSLog(@"---------:%@  ==== duration %f",self.videoPath,[parser getVideoDuration]);
+            AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:path];
+            if ([parser getVideoDuration] == 0.0 && path) {
+                [[NSUserDefaults standardUserDefaults] setValue:self.videoPath forKey:@"path"];
+                path = self.videoPath;
+            }
+            NSLog(@"---------:%@  ==== duration %f",self.videoPath,[parser getVideoDuration]);
             [self initBaseData];
             [self setVideoTaskPathWithVideopath:path];
             [self addSubview:self.preview];
