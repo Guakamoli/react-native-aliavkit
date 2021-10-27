@@ -233,7 +233,14 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
         CGSize outputSize = CGSizeMake(1080, 1920);
-        NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+        NSString *rootDirPath = [AliyunPathManager compositionRootDir];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:rootDirPath]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        
+        NSString *tmpPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
+        
+        
         [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
                                                               maxSize:outputSize
                                                            outputPath:tmpPhotoPath
