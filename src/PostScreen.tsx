@@ -104,11 +104,11 @@ export default class PostUpload extends Component<Props, State> {
     console.log('----', props);
     const Navigation = this.props.navigation;
     // 1231
-    props.refs.current = {
-      empty: () => {
-        this.postEditor()
-      }
-    }
+    // props.refs.current = {
+    //   empty: () => {
+    //     this.postEditor()
+    //   }
+    // }
     // props.navigation.setOptions({
     //   headerTitle: '新作品',
     //   // headerRight: () => <Button title='play' onPress={() =>  }  />,
@@ -243,7 +243,7 @@ export default class PostUpload extends Component<Props, State> {
       // this.sendUploadFile(trimVideoData)
       this.myRef.current.close();
       this.sendUploadFile({ trimVideoData, fileType: fileSelectType })
-      // this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
+      this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
     }
   };
   // getFilters  = async() => {
