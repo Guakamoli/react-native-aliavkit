@@ -25,14 +25,14 @@ import com.aliyun.svideosdk.editor.AliyunIEditor
 import com.aliyun.svideosdk.editor.EffectType
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.blankj.utilcode.util.SPUtils
-import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
@@ -360,7 +360,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
         copyAssets()
-
+        initLifecycle()
         doAsync {
             val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
             val md5Text = MD5Utils.getMD5(text)
@@ -393,11 +393,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
 //                }
 //            }
 //        }
+//        val options = WritableNativeMap()
+//        options.putString("videoPath",videoPath)
+//        CropManager.corpVideoFrame(mContext,options,null)
 
-        initLifecycle()
     }
 
-//    private suspend fun getVideoFrame(videoPath: String, longTime: Long): String? {
+//    private  suspend fun getVideoFrame(videoPath: String, longTime: Long): String? {
 //        val videoFramePath = CropManager.getVideoFrame(mContext, videoPath, longTime)
 //        val position = longTime / 1000 / 1000
 //        Log.e("CCC ", "async：$position - $videoFramePath")

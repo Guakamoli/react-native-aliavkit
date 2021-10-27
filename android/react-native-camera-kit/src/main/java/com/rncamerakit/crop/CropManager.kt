@@ -34,7 +34,9 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.*
 import java.io.File
+import kotlin.coroutines.resume
 
 
 class CropManager {
@@ -179,9 +181,9 @@ class CropManager {
             val duration = aliyunCrop.getVideoDuration(videoPath)
 
             val startTime =
-                if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") * 1000 else 0
+                if (readableMap.hasKey("startTime")) readableMap.getInt("startTime")*1000 else 0
             val endTime =
-                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") * 1000 else duration
+                if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")*1000 else duration
 
             val file = File(videoPath)
             val fileName = "crop_" + file.name
@@ -247,13 +249,13 @@ class CropManager {
         /**
          * 视频抽帧
          */
-        fun corpVideoFrame(context: Context, options: ReadableMap, promise: Promise) {
+        fun corpVideoFrame(context: Context, options: ReadableMap, promise: Promise?) {
             val videoPath =
                 if (options.hasKey("videoPath")) options.getString("videoPath")
                 else null
 //                else Constants.SDCardConstants.getDir(context.applicationContext) + File.separator + "paiya-record.mp4"
             if (TextUtils.isEmpty(videoPath)) {
-                promise.reject("corpVideoFrame", "error: videoPath is empty")
+                promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
             }
             //ms
@@ -281,14 +283,146 @@ class CropManager {
             }
             val coverTimes: MutableList<Long> = ArrayList()
             for (i in 0 until cacheSize) {
-                var coverTime: Int = intervalTime * i + startTime
+                var coverTime: Int = intervalTime*i + startTime
                 if (coverTime > duration) {
                     coverTime = duration.toInt()
                 }
                 coverTimes.add(coverTime.toLong())
             }
-            getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
+            getVideoFrame2(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
+//            getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
         }
+
+
+//        private fun getVideoFrame(
+//            context: Context,
+//            videoPath: String?,
+//            videoWidth: Int,
+//            videoHeight: Int,
+//            coverTimes: List<Long>,
+//            promise: Promise?
+//        ) {
+//            val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
+//            thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
+//            thumbnailFetcher.setParameters(
+//                videoWidth,
+//                videoHeight,
+//                AliyunIThumbnailFetcher.CropMode.Mediate,
+//                VideoDisplayMode.SCALE,
+//                coverTimes.size
+//            )
+//
+//            val videoFramePaths: MutableList<String?> = ArrayList()
+//            Observable.fromIterable(coverTimes).flatMap { longs ->
+//                Observable.create<String?> { emitter ->
+//                    thumbnailFetcher.requestThumbnailImage(longArrayOf(longs), object :
+//                        AliyunIThumbnailFetcher.OnThumbnailCompletion {
+//                        override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
+//                            if (!bitmap.isRecycled) {
+//                                var videoFramePath =
+//                                    FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
+//                                val name = File(videoPath).nameWithoutExtension
+//                                videoFramePath = FileUtils.createFile(
+//                                    videoFramePath,
+//                                    "VideoFrame-$name-$longTime.jpg"
+//                                ).path
+//                                BitmapUtils.saveBitmap(bitmap, videoFramePath)
+//                                if (!TextUtils.isEmpty(videoFramePath)) {
+//                                    emitter?.onNext(videoFramePath)
+//                                    emitter?.onComplete()
+//                                } else {
+//                                    emitter?.onError(Throwable("errorMsg:video Frame is empty"))
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onError(errorCode: Int) {
+//                            emitter?.onError(Throwable("errorCode:$errorCode"))
+//                        }
+//                    })
+//                }.subscribeOn(Schedulers.io())
+//            }
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(object : Observer<String?> {
+//                    override fun onSubscribe(d: @NonNull Disposable?) {
+//                        Log.e("BBB", "onSubscribe:")
+//                    }
+//
+//                    override fun onNext(path: @NonNull String?) {
+//                        Log.e("BBB", "onNext:$path")
+//                        videoFramePaths.add(path)
+//                    }
+//
+//                    override fun onError(e: @NonNull Throwable?) {
+//                        Log.e("BBB", "nError:" + e?.message)
+//                    }
+//
+//                    override fun onComplete() {
+//                        Log.e("BBB", "onComplete:")
+//                        promise?.resolve(GsonBuilder().create().toJson(videoFramePaths))
+//                    }
+//                })
+//        }
+
+
+        private fun getVideoFrame2(
+            context: Context,
+            videoPath: String?,
+            videoWidth: Int,
+            videoHeight: Int,
+            coverTimes: List<Long>,
+            promise: Promise?
+        ) {
+            val videoFrameList: MutableList<String?> = ArrayList()
+            GlobalScope.launch(Dispatchers.IO) {
+                val jobList: MutableList<Deferred<String?>> = ArrayList()
+                coverTimes.forEach {
+                    jobList.add(async { getJoinedGroupList(context, videoPath, videoWidth, videoHeight, it) })
+                }
+                jobList.forEach {
+                    videoFrameList.add(it.await())
+                }
+                GlobalScope.launch(Dispatchers.Main) {
+                    videoFrameList.forEach {
+                        Log.e("BBB ", "sync：$it")
+                        promise?.resolve(GsonBuilder().create().toJson(videoFrameList))
+                    }
+                }
+            }
+        }
+
+        private suspend fun getJoinedGroupList(context: Context, videoPath: String?, videoWidth: Int, videoHeight: Int, time: Long): String? =
+            suspendCancellableCoroutine { continuation ->
+                val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
+                thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
+                thumbnailFetcher.setParameters(videoWidth, videoHeight, AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1)
+
+                thumbnailFetcher.requestThumbnailImage(longArrayOf(time), object : AliyunIThumbnailFetcher.OnThumbnailCompletion {
+                    override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
+                        if (!bitmap.isRecycled) {
+                            var videoFramePath =
+                                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
+                            val name = File(videoPath).nameWithoutExtension
+                            videoFramePath = FileUtils.createFile(
+                                videoFramePath,
+                                "VideoFrame-$name-$longTime.jpg"
+                            ).path
+                            BitmapUtils.saveBitmap(bitmap, videoFramePath)
+                            Log.e("BBB ", "Async：$videoFramePath")
+                            if (!TextUtils.isEmpty(videoFramePath)) {
+                                continuation.resume(videoFramePath)
+                            } else {
+                                continuation.resume("")
+                            }
+                        }
+                    }
+
+                    override fun onError(errorCode: Int) {
+                        continuation.resume("")
+                    }
+                })
+            }
 
 
         fun getVideoFrame(context: Context, videoPath: String, longTime: Long): String? {
@@ -314,78 +448,6 @@ class CropManager {
         }
 
 
-        private fun getVideoFrame(
-            context: Context,
-            videoPath: String?,
-            videoWidth: Int,
-            videoHeight: Int,
-            coverTimes: List<Long>,
-            promise: Promise
-        ) {
-            val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
-            thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
-            thumbnailFetcher.setParameters(
-                videoWidth,
-                videoHeight,
-                AliyunIThumbnailFetcher.CropMode.Mediate,
-                VideoDisplayMode.SCALE,
-                coverTimes.size
-            )
-
-            val videoFramePaths: MutableList<String?> = ArrayList()
-            Observable.fromIterable(coverTimes).flatMap { longs ->
-                Observable.create<String?> { emitter ->
-                    thumbnailFetcher.requestThumbnailImage(longArrayOf(longs), object :
-                        AliyunIThumbnailFetcher.OnThumbnailCompletion {
-                        override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
-                            if (!bitmap.isRecycled) {
-                                var videoFramePath =
-                                    FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
-                                val name = File(videoPath).nameWithoutExtension
-                                videoFramePath = FileUtils.createFile(
-                                    videoFramePath,
-                                    "VideoFrame-$name-$longTime.jpg"
-                                ).path
-                                BitmapUtils.saveBitmap(bitmap, videoFramePath)
-                                if (!TextUtils.isEmpty(videoFramePath)) {
-                                    emitter!!.onNext(videoFramePath)
-                                    emitter.onComplete()
-                                } else {
-                                    emitter!!.onError(Throwable("errorMsg:video Frame is empty"))
-                                }
-                            }
-                        }
-
-                        override fun onError(errorCode: Int) {
-                            emitter!!.onError(Throwable("errorCode:$errorCode"))
-                        }
-                    })
-                }.subscribeOn(Schedulers.io())
-            }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : Observer<String?> {
-                    override fun onSubscribe(d: @NonNull Disposable?) {
-                        Log.e("BBB", "onSubscribe:")
-                    }
-
-                    override fun onNext(path: @NonNull String?) {
-                        Log.e("BBB", "onNext:$path")
-                        videoFramePaths.add(path)
-                    }
-
-                    override fun onError(e: @NonNull Throwable?) {
-                        Log.e("BBB", "nError:" + e?.message)
-                    }
-
-                    override fun onComplete() {
-                        Log.e("BBB", "onComplete:")
-                        promise.resolve(GsonBuilder().create().toJson(videoFramePaths))
-                    }
-                })
-        }
-
     }
-
 
 }
