@@ -351,7 +351,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
 
     init {
-        MusicFileInfoDao.instance.init(mContext)
         mWidth = ScreenUtils.getWidth(mContext)
         mHeight = mWidth * 16 / 9
         initVideoContainer()
@@ -361,21 +360,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mComposeManager = ComposeManager(reactContext)
         copyAssets()
         initLifecycle()
-        doAsync {
-            val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
-            val md5Text = MD5Utils.getMD5(text)
-            val spKey = "MUSIC_JSON_FILE_MD5_KEY"
-            val md5Value = SPUtils.getInstance().getString(spKey)
-            uiThread {
-                if (md5Text == md5Value) {
-                    return@uiThread
-                }
-                val baseInfo: MusicFileBaseInfo =
-                    GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
-                MusicFileInfoDao.instance.insertList(baseInfo.songs)
-                SPUtils.getInstance().put(spKey, md5Text)
-            }
-        }
+        DownloadUtils.getMusicJsonInfo()
 
 //        val videoFrameList: MutableList<String?> = ArrayList()
 //        val videoPath = "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record_1635215195144.mp4"

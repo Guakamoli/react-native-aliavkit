@@ -23,6 +23,7 @@ import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
+import com.rncamerakit.utils.DownloadUtils
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
@@ -195,7 +196,6 @@ class CKCamera(
 
 
     init {
-        MusicFileInfoDao.instance.init(mContext)
         if (!isPermissions()) {
             getPermissions()
         }
@@ -207,6 +207,10 @@ class CKCamera(
         initRecorder()
         initFocusView()
         copyAssets()
+
+        DownloadUtils.getMusicJsonInfo()
+        initLifecycle()
+
 //        val list = MusicFileInfoDao.instance.queryAll()
 //        val list1 = MusicFileInfoDao.instance.queryList(null, 1, 10)
 //        val list2 = MusicFileInfoDao.instance.queryList(null, 2, 10)
@@ -214,23 +218,7 @@ class CKCamera(
 //        val list4 = MusicFileInfoDao.instance.queryList(null, 4, 10)
 //        val list5 = MusicFileInfoDao.instance.queryList("海", 1, 10)
 
-        doAsync {
-            val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
-            val md5Text = MD5Utils.getMD5(text)
-            val spKey = "MUSIC_JSON_FILE_MD5_KEY"
-            val md5Value = SPUtils.getInstance().getString(spKey)
-            uiThread {
-                if (md5Text == md5Value) {
-                    return@uiThread
-                }
-                val baseInfo: MusicFileBaseInfo =
-                    GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
-                MusicFileInfoDao.instance.insertList(baseInfo.songs)
-                SPUtils.getInstance().put(spKey, md5Text)
-            }
-        }
 
-        initLifecycle()
 
     }
 

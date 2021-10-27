@@ -11,6 +11,8 @@ import java.util.*
 class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
 
     companion object {
+
+        @JvmField
         val instance = SingletonHolder.holder
     }
 
@@ -88,9 +90,9 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(null)
     }
 
-    private fun haveInfo(songID: Int?): Boolean {
+    private fun haveInfo(songID: String?): Boolean {
         val sql = "SELECT * FROM $tableName WHERE SONG_ID = ?"
-        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID.toString())) ?: throw SQLException("Cursor is null")
+        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID)) ?: throw SQLException("Cursor is null")
         val haveData = cursor.count > 0
         cursor.close()
         return haveData
@@ -139,7 +141,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         close(null)
     }
 
-    override fun updateLocalPath(songID: Int?, localPath: String?, duration: Int?) {
+    override fun updateLocalPath(songID: String?, localPath: String?, duration: Int?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw SQLException("SQLiteDatabase is null")
@@ -148,7 +150,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         values.put("IS_DB_CONTAIN", 1)
         values.put("LOCAL_PATH", localPath)
         values.put("DURATION", duration)
-        mDatabase?.update(tableName, values, "SONG_ID = ?", arrayOf(songID.toString()))
+        mDatabase?.update(tableName, values, "SONG_ID = ?", arrayOf(songID))
         close(null)
     }
 
@@ -166,7 +168,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         val infoList: MutableList<MusicFileBean> = ArrayList()
         while (cursor.moveToNext()) {
             val info = MusicFileBean()
-            info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
+            info.songID = cursor.getString(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
             info.artist = cursor.getString(cursor.getColumnIndex("ARTIST"))
             info.isDbContain = cursor.getInt(cursor.getColumnIndex("IS_DB_CONTAIN"))
@@ -180,7 +182,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         return infoList
     }
 
-    override fun query(songID: Int?): MusicFileBean? {
+    override fun query(songID: String?): MusicFileBean? {
         if (songID == null) {
             return null
         }
@@ -189,7 +191,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             throw android.database.SQLException("SQLiteDatabase is null")
         }
         val sql = "SELECT * FROM $tableName WHERE SONG_ID = ?"
-        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID.toString()))
+        val cursor = mDatabase?.rawQuery(sql, arrayOf(songID))
             ?: throw SQLException("Cursor is null")
         if (cursor.count <= 0) {
             close(cursor)
@@ -197,7 +199,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         }
         val info = MusicFileBean()
         while (cursor.moveToNext()) {
-            info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
+            info.songID = cursor.getString(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
             info.artist = cursor.getString(cursor.getColumnIndex("ARTIST"))
             info.isDbContain = cursor.getInt(cursor.getColumnIndex("IS_DB_CONTAIN"))
@@ -215,7 +217,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         queryMsg: String?,
         page: Int?,
         total: Int?
-    ): MutableList<MusicFileBean>? {
+    ): MutableList<MusicFileBean> {
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -240,7 +242,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         val infoList: MutableList<MusicFileBean> = ArrayList()
         while (cursor.moveToNext()) {
             val info = MusicFileBean()
-            info.songID = cursor.getInt(cursor.getColumnIndex("SONG_ID"))
+            info.songID = cursor.getString(cursor.getColumnIndex("SONG_ID"))
             info.name = cursor.getString(cursor.getColumnIndex("NAME"))
             info.artist = cursor.getString(cursor.getColumnIndex("ARTIST"))
             info.isDbContain = cursor.getInt(cursor.getColumnIndex("IS_DB_CONTAIN"))
@@ -254,12 +256,12 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         return infoList
     }
 
-    override fun delete(songID: Int?) {
+    override fun delete(songID: String?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
         }
-        mDatabase?.delete(tableName, "SONG_ID = ?", arrayOf(songID.toString()))
+        mDatabase?.delete(tableName, "SONG_ID = ?", arrayOf(songID))
         close(null)
     }
 

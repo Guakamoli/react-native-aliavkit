@@ -2,6 +2,7 @@ package com.rncamerakit.editor
 
 import android.text.TextUtils
 import com.aliyun.svideo.common.utils.FileUtils
+import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
@@ -41,8 +42,8 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun getMusicList(name: String, songID: String, page: Int, pageSize: Int, promise: Promise) {
-        if (!TextUtils.isEmpty(songID) && songID.toIntOrNull() != null) {
-            val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
+        if (!TextUtils.isEmpty(songID)) {
+            val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
             if (musicInfo != null) {
                 val list: MutableList<MusicFileBean> = ArrayList()
                 list.add(musicInfo)
@@ -50,15 +51,26 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
                 return
             }
         }
-        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
-        promise.resolve(GsonBuilder().create().toJson(list))
+
+        val md5Value = SPUtils.getInstance().getString(DownloadUtils.spKey)
+        if (TextUtils.isEmpty(md5Value)) {
+            DownloadUtils.getMusicJsonInfo {
+                val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
+                promise.resolve(GsonBuilder().create().toJson(list))
+            }
+        } else {
+            val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
+            promise.resolve(GsonBuilder().create().toJson(list))
+        }
     }
 
     @ReactMethod
-    fun playMusic(songID: String, promise: Promise) {
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
+    fun playMusic(songID: String?, promise: Promise) {
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
-            musicInfo.localPath?.let { MediaPlayerManage.instance.start(it, null) }
+            musicInfo.localPath?.let {
+                MediaPlayerManage.instance.start(it, null)
+            }
             promise.resolve(GsonBuilder().create().toJson(musicInfo))
         }
         reactContext.runOnUiQueueThread {
@@ -68,6 +80,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
                         override fun completed(task: BaseDownloadTask) {
                             super.completed(task)
                             val musicBean: MusicFileBean? = MusicFileInfoDao.instance.query(musicInfo.songID)
+                            MediaPlayerManage.instance.start(task.targetFilePath, null)
                             promise.resolve(GsonBuilder().create().toJson(musicBean))
                         }
                     }
@@ -79,7 +92,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun stopMusic(songID: String, promise: Promise) {
         MediaPlayerManage.instance.stop()
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID.toIntOrNull())
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
         promise.resolve(GsonBuilder().create().toJson(musicInfo))
     }
 

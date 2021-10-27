@@ -6,7 +6,7 @@ class MusicFileBaseInfo {
 
 class MusicFileBean {
 
-    var songID = 0
+    var songID: String? = null
 
     /**
      * 文件名

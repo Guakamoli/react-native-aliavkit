@@ -16,7 +16,7 @@ import {
 
 
 import Carousel from 'react-native-snap-carousel';
-import AVService from './AVService.ios'
+import AVService from './AVService'
 
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');

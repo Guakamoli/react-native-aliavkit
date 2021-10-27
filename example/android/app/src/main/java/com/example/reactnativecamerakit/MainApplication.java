@@ -18,6 +18,7 @@ import com.horcrux.svg.SvgPackage;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
+import com.rncamerakit.db.MusicFileInfoDao;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -58,8 +59,14 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
         LogUtils.getConfig().setLogSwitch(true);
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager()); // Remove this line if you don't want Flipper enabled
-        DownloaderManager.getInstance().init(this);
 
+        initKitCamera();
+    }
+
+
+    private void initKitCamera(){
+        DownloaderManager.getInstance().init(this);
+        MusicFileInfoDao.instance.init(this);
         //下载管理
         FileDownloader.setupOnApplicationOnCreate(this);
     }
