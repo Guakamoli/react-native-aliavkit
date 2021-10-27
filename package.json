@@ -6,7 +6,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "A high performance, fully featured, rock solid camera library for React Native applications",
   "nativePackage": true,
   "react-native": "src/index",
@@ -61,6 +61,23 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "@react-native-community/cameraroll": "Guakamoli/react-native-cameraroll#feat/request-photo-access",
+    "@react-navigation/native": "*",
+    "@react-navigation/native-stack": "*",
+    "@react-navigation/stack": "*",
+    "lodash": "*",
+    "react-native-easy-toast": "*",
+    "react-native-gesture-handler": "*",
+    "react-native-image-filter-kit": "*",
+    "react-native-progress": "*",
+    "react-native-safe-area-context": "*",
+    "react-native-screens": "*",
+    "react-native-snap-carousel": "*",
+    "react-native-super-grid": "*",
+    "react-native-svg": "*",
+    "react-native-reanimated": "*",
+    "react-native-trimmer": "Guakamoli/react-native-trimmer#kameoappCamera",
+    "react-native-video": "*"
   }
 }
