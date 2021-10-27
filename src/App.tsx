@@ -3,7 +3,7 @@ import { View, Text, Button, Image, TouchableOpacity, Pressable } from 'react-na
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CameraScreen from './CameraScreen';
-import PostUpload from './PostUpload';
+import PostUpload from './PostScreen';
 import PostEditor from './PostEditor';
 // export { useNavigation, useIsFocused } from '@react-navigation/native';
 //
@@ -77,7 +77,7 @@ function Story(props) {
       filterImage={require('../images/filter.png')}
       musicRevampImage={require('../images/musicRevamp.png')}
       videomusicIcon={require('../images/videomusicIcon.png')}
-      musicSearch={require('../images/musicSearch.png')}
+
       giveUpImage={require('../images/giveUp.png')}
       noVolumeImage={require('../images/noVolume.png')}
       tailorImage={require('../images/tailor.png')}
@@ -85,6 +85,7 @@ function Story(props) {
       musicDynamicGif={require('../images/musicDynamic.gif')}
       musicIconPng={require('../images/musicIcon.png')}
       musicIcongray={require('../images/musicIcongray.png')}
+      musicSearch={require('../images/musicSearch.png')}
       showCapturedImageCount
       cameraModule={true}
     />
