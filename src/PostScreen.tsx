@@ -161,22 +161,21 @@ const PostContent = (props) => {
             scale={cropScale}
             areaOverlay={<View></View>}
             setCropperParams={async (cropperParams) => {
-              // console.info('cropperParams', cropperParams);
               // 这里 offset 和 size 就是最终需要的xy 和size
-              // const result = await ImageCropper.crop({
-              //   ...cropperParams,
-              //   imageUri: imageItem?.uri,
-              //   cropSize: {
-              //     width,
-              //     height: width,
-              //   },
-              //   cropAreaSize: {
-              //     width,
-              //     height: width,
-              //   },
-              // });
-              // cropData = result;
-              // console.info(result);
+              const result = await ImageCropper.crop({
+                ...cropperParams,
+                imageUri: imageItem?.uri,
+                cropSize: {
+                  width,
+                  height: width,
+                },
+                cropAreaSize: {
+                  width,
+                  height: width,
+                },
+              });
+              cropData = result;
+              console.info(result);
             }}
           />
         </View>

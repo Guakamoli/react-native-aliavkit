@@ -190,7 +190,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
         }
 
         scale = scale < scaleProps ? scaleProps : scale;
-        console.info(scale, 'hahahahahahha', fittedSize.height, areaHeight);
         this.setState(
           (prevState) => ({
             ...prevState,

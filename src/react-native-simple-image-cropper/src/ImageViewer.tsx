@@ -136,10 +136,12 @@ class ImageViewer extends Component<IProps> {
     const horizontalMax = divide(divide(sub(multiply(viewerImageWidth, this.scale), viewerAreaWidth), 2), this.scale);
 
     const verticalMax = divide(divide(sub(multiply(viewerImageHeight, this.scale), viewerAreaHeight), 2), this.scale);
-
+    // const horizontalMax = new Value(20);
+    // const verticalMax = new Value(20);
     const scaledWidth = multiply(viewerImageWidth, this.scale);
     const scaledHeight = multiply(viewerImageHeight, this.scale);
-
+    this.scaledWidth = scaledWidth;
+    this.scaledHeight = scaledHeight;
     // 网格专用
     this.gridX = new Value(0);
     this.gridY = new Value(0);
@@ -199,16 +201,27 @@ class ImageViewer extends Component<IProps> {
           state: State;
         }) =>
           block([
-            cond(eq(state, State.ACTIVE), [
-              set(this.translateX, add(divide(translationX, this.scale), offsetX)),
-              set(this.translateY, add(divide(translationY, this.scale), offsetY)),
+            cond(
+              and(
+                eq(state, State.ACTIVE),
+                eq(state, State.ACTIVE),
+                lessThan(translationX, 100),
 
-              set(maxX, horizontalMax),
-              set(negMaxX, multiply(horizontalMax, new Value(-1))),
-              set(this.gridOpacity, 1),
-              set(maxY, verticalMax),
-              set(negMaxY, multiply(verticalMax, new Value(-1))),
-            ]),
+                greaterThan(translationX, -100),
+                lessThan(translationY, 100),
+                greaterThan(translationY, -100),
+              ),
+              [
+                set(this.translateX, add(divide(translationX, this.scale), offsetX)),
+                set(this.translateY, add(divide(translationY, this.scale), offsetY)),
+
+                set(maxX, horizontalMax),
+                set(negMaxX, multiply(horizontalMax, new Value(-1))),
+                set(this.gridOpacity, 1),
+                set(maxY, verticalMax),
+                set(negMaxY, multiply(verticalMax, new Value(-1))),
+              ],
+            ),
 
             cond(
               and(
@@ -288,13 +301,7 @@ class ImageViewer extends Component<IProps> {
       {
         nativeEvent: ({ scale, state }: { scale: number; state: State }) =>
           block([
-            cond(eq(state, State.ACTIVE), [
-              set(this.scale, multiply(offsetZ, scale)),
-              cond(greaterThan(scale, new Value(1)), [
-                set(this.gridY, multiply(multiply(sub(scale, new Value(1)), viewerImageHeight), new Value(0.5))),
-                set(this.gridX, multiply(multiply(sub(scale, new Value(1)), viewerImageWidth), new Value(0.5))),
-              ]),
-            ]),
+            cond(eq(state, State.ACTIVE), [set(this.scale, multiply(offsetZ, scale))]),
 
             cond(eq(state, State.END), [
               set(offsetZ, this.scale),
@@ -355,11 +362,10 @@ class ImageViewer extends Component<IProps> {
       videoFile,
       minScale,
     } = this.props;
-
     const imageSrc = {
       uri: image,
     };
-
+    const showCover = false;
     const containerStyles = [
       styles.panGestureInner,
       {
@@ -377,7 +383,7 @@ class ImageViewer extends Component<IProps> {
       styles.image,
       {
         position: 'absolute' as 'absolute',
-        opacity: 1,
+        opacity: this.gridOpacity,
         width: imageWidth,
         height: imageHeight,
         zIndex: 99,
@@ -453,59 +459,92 @@ class ImageViewer extends Component<IProps> {
                     ) : (
                       <Animated.Image style={imageStyles} source={imageSrc} />
                     )}
+                    {showCover ? (
+                      <Animated.View style={overlayContainerStyle}>
+                        <Animated.View style={{ height: '100%', width: '100%' }}>
+                          <Animated.View
+                            style={[
+                              {
+                                left: areaWidth / 3,
+                                width: 1,
+                                height: '100%',
+                                backgroundColor: 'rgba(255,255,255,0.5)',
+                                position: 'absolute',
+                                transform: [
+                                  {
+                                    translateX: multiply(this.translateX, -1),
+                                  },
+                                ],
+                              },
+                              styles.shadow,
+                            ]}
+                          ></Animated.View>
+                          <Animated.View
+                            style={[
+                              {
+                                left: (areaWidth / 3) * 2,
+                                width: 1,
+                                height: '100%',
+                                backgroundColor: 'rgba(255,255,255,0.5)',
+                                position: 'absolute',
 
-                    <Animated.View style={overlayContainerStyle}>
-                      <View style={{ height: '100%', width: '100%' }}>
-                        <Animated.View
-                          style={[
-                            {
-                              left: areaWidth / 3,
-                              width: StyleSheet.hairlineWidth,
-                              height: '100%',
-                              backgroundColor: 'rgba(255,255,255,0.5)',
-                              position: 'absolute',
-                            },
-                            styles.shadow,
-                          ]}
-                        ></Animated.View>
-                        <Animated.View
-                          style={[
-                            {
-                              left: (areaWidth / 3) * 2,
-                              width: StyleSheet.hairlineWidth,
-                              height: '100%',
-                              backgroundColor: 'rgba(255,255,255,0.5)',
-                              position: 'absolute',
-                            },
-                            styles.shadow,
-                          ]}
-                        ></Animated.View>
-                        <Animated.View
-                          style={[
-                            {
-                              top: areaWidth / 3,
-                              width: '100%',
-                              height: StyleSheet.hairlineWidth,
-                              backgroundColor: 'rgba(255,255,255,0.5)',
-                              position: 'absolute',
-                            },
-                            styles.shadow,
-                          ]}
-                        ></Animated.View>
-                        <Animated.View
-                          style={[
-                            {
-                              top: (areaWidth / 3) * 2,
-                              width: '100%',
-                              height: StyleSheet.hairlineWidth,
-                              backgroundColor: 'rgba(255,255,255,0.5)',
-                              position: 'absolute',
-                            },
-                            styles.shadow,
-                          ]}
-                        ></Animated.View>
-                      </View>
-                    </Animated.View>
+                                transform: [
+                                  {
+                                    translateX: add(multiply(this.translateX, -1), 0),
+                                  },
+                                  {
+                                    scale: divide(1, this.scale),
+                                    translateX: add(
+                                      multiply(this.translateX, -1),
+                                      divide((imageWidth - areaWidth) / 2, this.scale),
+                                    ),
+                                  },
+                                ],
+                              },
+                              styles.shadow,
+                            ]}
+                          ></Animated.View>
+                          <Animated.View
+                            style={[
+                              {
+                                top: areaWidth / 3,
+                                width: '100%',
+                                height: 1,
+                                backgroundColor: 'rgba(255,255,255,0.5)',
+                                position: 'absolute',
+                                transform: [
+                                  {
+                                    translateY: add(divide(multiply(this.translateY, -1), 1), 0),
+                                  },
+                                ],
+                              },
+                              styles.shadow,
+                            ]}
+                          ></Animated.View>
+                          <Animated.View
+                            style={[
+                              {
+                                top: (areaWidth / 3) * 2,
+                                width: '100%',
+                                height: 1,
+                                backgroundColor: 'rgba(255,255,255,0.5)',
+                                position: 'absolute',
+                                transform: [
+                                  {
+                                    scale: divide(1, this.scale),
+                                    translateY: add(
+                                      divide(multiply(this.translateY, -1), 1),
+                                      divide((imageHeight - areaWidth) / 2, this.scale),
+                                    ),
+                                  },
+                                ],
+                              },
+                              styles.shadow,
+                            ]}
+                          ></Animated.View>
+                        </Animated.View>
+                      </Animated.View>
+                    ) : null}
                   </Animated.View>
                 </PinchGestureHandler>
               </Animated.View>
