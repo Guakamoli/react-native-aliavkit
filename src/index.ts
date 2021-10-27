@@ -2,6 +2,9 @@ import { NativeModules } from 'react-native';
 
 import Camera from './Camera';
 import CameraScreen, { CameraType } from './CameraScreen';
+import PostUpload from './PostScreen';
+
+import PostEditor from './PostEditor';
 
 const { CameraKit } = NativeModules;
 
@@ -15,4 +18,4 @@ export const Orientation = {
 
 export default CameraKit;
 
-export { Camera, CameraScreen, CameraType };
+export { Camera, CameraScreen, CameraType, PostUpload, PostEditor };

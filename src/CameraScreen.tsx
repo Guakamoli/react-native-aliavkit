@@ -89,6 +89,7 @@ export type Props = {
 
   musicDynamicGif: any;
   musicIconPng: any;
+  // goPostUpload  !!!
 };
 
 type State = {
@@ -302,7 +303,7 @@ export default class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       console.log(Platform.OS === 'android');
-      if(this.camera){
+      if (this.camera) {
         this.camera.release();
       }
     }
@@ -675,7 +676,7 @@ export default class CameraScreen extends Component<Props, State> {
                   // console.log('------onPressOut video saved to an ', videoPath);
                   // this.setState({ });
                   this.setState({
-                    fileType: 'video', 
+                    fileType: 'video',
                     videoPath,
                     startShoot: false,
                     ShootSuccess: true,
@@ -794,6 +795,7 @@ export default class CameraScreen extends Component<Props, State> {
           // captureImages: _.concat(this.state.captureImages, image?.uri),?
           captureImages: _.concat(this.state.captureImages, sandData),
         });
+        console.info('hhh', sandData);
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
       }
     }
@@ -993,7 +995,7 @@ const styles = StyleSheet.create({
   },
   leftIconBox: {
     position: 'absolute',
-    top: 300,
+    top: height * 0.35,
     left: 20,
     zIndex: 99,
   },
@@ -1004,7 +1006,7 @@ const styles = StyleSheet.create({
   },
   closeBox: {
     position: 'absolute',
-    top: 50,
+    top: height * 0.05,
     left: 20,
     zIndex: 99,
   },

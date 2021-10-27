@@ -93,7 +93,7 @@ let subscription = null;
 let trimVideoData = null;
 let coverData = [];
 // const navigation = useNavigation();
-export default class CameraScreen extends Component<Props, State> {
+export default class PostUpload extends Component<Props, State> {
   camera: any;
   myRef: any;
   editor: any;
@@ -103,28 +103,34 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     console.log('----', props);
     const Navigation = this.props.navigation;
-    props.navigation.setOptions({
-      headerTitle: '新作品',
-      // headerRight: () => <Button title='play' onPress={() =>  }  />,
+    // 1231
+    props.refs.current = {
+      empty: () => {
+        this.postEditor()
+      }
+    }
+    // props.navigation.setOptions({
+    //   headerTitle: '新作品',
+    //   // headerRight: () => <Button title='play' onPress={() =>  }  />,
 
-      headerRight: () => <Button title='play' onPress={() => this.postEditor()} />,
-      //
+    //   headerRight: () => <Button title='play' onPress={() => this.postEditor()} />,
+    //   //
 
-      //   headerTitle: 'Camera',
-      //   headerRight: () => {
-      //     return(
-      //       <TouchableOpacity onPress={() => navigation.navigate('PostEditorBox')} > <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text> </TouchableOpacity>
-      //     )
-      //   },
-      //   headerLeft: () =>  <Image
-      //   style={{
-      //     width: 28,
-      //     height: 28,
-      //   }}
-      //   source={{uri:require('../images/close.png')}}
-      //   resizeMode="contain"
-      // />,
-    });
+    //   //   headerTitle: 'Camera',
+    //   //   headerRight: () => {
+    //   //     return(
+    //   //       <TouchableOpacity onPress={() => navigation.navigate('PostEditorBox')} > <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text> </TouchableOpacity>
+    //   //     )
+    //   //   },
+    //   //   headerLeft: () =>  <Image
+    //   //   style={{
+    //   //     width: 28,
+    //   //     height: 28,
+    //   //   }}
+    //   //   source={{uri:require('../images/close.png')}}
+    //   //   resizeMode="contain"
+    //   // />,
+    // });
     this.state = {
       CameraRollList: [],
       fileSelectType: '',
@@ -236,7 +242,8 @@ export default class CameraScreen extends Component<Props, State> {
       // this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
       // this.sendUploadFile(trimVideoData)
       this.myRef.current.close();
-      this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
+      this.sendUploadFile({ trimVideoData, fileType: fileSelectType })
+      // this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
     }
   };
   // getFilters  = async() => {
@@ -262,6 +269,12 @@ export default class CameraScreen extends Component<Props, State> {
 
         let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
         let videoTime = this.state.videoTime;
+        this.sendUploadFile({
+          trimVideoData,
+          videoduration: videoTime,
+          trimmerRight: trimmerRightHandlePosition,
+          fileType: this.state.fileSelectType,
+        })
         this.props.navigation.push('PostEditorBox', {
           trimVideoData,
           videoduration: videoTime,
@@ -344,6 +357,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState = () => false;
   }
   sendUploadFile(data) {
+    console.info('11111', this.props.getUploadFile)
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
     }
@@ -508,14 +522,14 @@ export default class CameraScreen extends Component<Props, State> {
           paddingHorizontal: 12,
         }}
       >
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => { }}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
           </View>
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* 多选按钮 */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => {
               if (startmMltiple && multipleData.length) {
                 // 取最后一张
@@ -531,7 +545,7 @@ export default class CameraScreen extends Component<Props, State> {
               source={startmMltiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
               resizeMode='contain'
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <Image style={styles.multipleBtnImage} source={this.props.postCameraImage} resizeMode='contain' />
         </View>
       </View>

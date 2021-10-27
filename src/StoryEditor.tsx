@@ -79,6 +79,8 @@ export default class StoryEditor extends Component<Props, State> {
   myRef: any
   editor: any
   constructor(props) {
+    console.info('story 编辑页面props', props);
+
     super(props);
     this.myRef = React.createRef();
     this.state = {
@@ -121,7 +123,7 @@ export default class StoryEditor extends Component<Props, State> {
       // 
       let type = outputPath.split('.')
       uploadFile.push({
-        Type: `${fileType}/${type[type.length - 1]}`,
+        Type: `video/${type[type.length - 1]}`,
         path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
         size: 0,
         Name: outputPath
@@ -152,10 +154,10 @@ export default class StoryEditor extends Component<Props, State> {
 
   }
   componentWillUnmount() {
-    if( Platform.OS === 'android'){
+    if (Platform.OS === 'android') {
       // console.log(Platform.OS === 'android');
       //  this.camera.release();
-    }else{
+    } else {
       RNEditViewManager.stop()
     }
     // 结束编辑页面
@@ -248,6 +250,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
+    console.info('拍摄内容渲染', this.props.videoPath, 'imagePath', this.props.imagePath);
 
     const VideoEditors = () => {
       return (
