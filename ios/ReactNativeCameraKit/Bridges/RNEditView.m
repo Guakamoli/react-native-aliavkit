@@ -70,6 +70,9 @@ AliyunCropDelegate
 @property (nonatomic, copy) NSDictionary *musicInfo;
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
+@property (nonatomic, strong) NSNumber *editWidth;
+@property (nonatomic, strong) NSNumber *editHeight;
+
 @end
 
 @implementation RNEditView
@@ -183,8 +186,8 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
-        frame.size.width = [UIScreen mainScreen].bounds.size.width;
-        frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
+        frame.size.width = _editWidth.floatValue > 0.0 ? _editWidth.floatValue : [UIScreen mainScreen].bounds.size.width;
+        frame.size.height = _editHeight.floatValue > 0.0 ? _editHeight.floatValue * factor : [UIScreen mainScreen].bounds.size.width * factor;
         _preview = [[UIView alloc] initWithFrame:frame];
         _preview.backgroundColor = [UIColor lightGrayColor];
     }
@@ -584,6 +587,7 @@ AliyunCropDelegate
     if (_saveToPhotoLibrary) {
         if (self.imagePath) {
             __weak typeof(self) weakSelf = self;
+            
 //            [self _generateImageFromVideoPath:outputPath
 //                                  itemPerTime:1000
 //                                    startTime:0
