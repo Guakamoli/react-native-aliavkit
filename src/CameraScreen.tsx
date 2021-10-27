@@ -157,12 +157,14 @@ const TestComponent = () => {
   );
 };
 const ProgressCircleWrapper = (props) => {
-  const { flag, recordeSuccess } = props;
+  const { flag, recordeSuccess, setFlag } = props;
   let [progress, setProgress] = useState(0);
   let [timer, setTimer] = useState(null);
   useInterval(() => {
     const newprogress = (progress += 1 / 140);
     if (newprogress >= 1) {
+      setTimer(null)
+      setFlag(null)
       recordeSuccess();
       setProgress(0);
     } else {
@@ -170,6 +172,7 @@ const ProgressCircleWrapper = (props) => {
     }
   }, timer);
   useEffect(() => {
+    console.info(flag, 'flag')
     if (flag) {
       setTimer(60);
     } else {
@@ -204,7 +207,7 @@ export default class CameraScreen extends Component<Props, State> {
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
-
+  startTime: string;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -226,7 +229,7 @@ export default class CameraScreen extends Component<Props, State> {
         image: _.get(this.props, 'flashImages.off'),
       },
     ];
-
+    this.startTime = '';
     this.state = {
       // 照片存储
       captureImages: [],
@@ -512,7 +515,14 @@ export default class CameraScreen extends Component<Props, State> {
 
                 <ProgressCircleWrapper
                   flag={this.state.flag}
+                  setFlag={(flag) => {
+                    this.setState({
+                      flag
+                    })
+                  }}
                   recordeSuccess={async (data) => {
+                    console.log(1231);
+
                     const videoPath = await this.camera.stopRecording();
                     console.log('-------- video saved to ', videoPath);
                     this.setState({
@@ -657,6 +667,10 @@ export default class CameraScreen extends Component<Props, State> {
                   },
                 ).start();
                 const success = await this.camera.startRecording();
+                // 获取开始时间
+                this.startTime = Date.parse(new Date()).toString().substr(0, 10);;
+                console.log('111111111this.startTime', this.startTime);
+
                 this.setState({ fileType: 'video', startShoot: success });
                 console.log('success', success);
                 if (success) {
@@ -670,7 +684,22 @@ export default class CameraScreen extends Component<Props, State> {
 
               onPressOut={async () => {
                 console.log('onPressOut');
+                this.setState({
+                  flag: null,
+                });
+                // 结束时间 小于两秒重置
+                let endTime = Date.parse(new Date()).toString().substr(0, 10);
+                if (Number(endTime) - Number(this.startTime) < 2) {
+                  this.myRef.current.show('时间小于2秒，请继续拍摄', 2000);
+                  this.setState({
 
+
+                    startShoot: false,
+                    ShootSuccess: false,
+                    fadeInOpacity: new Animated.Value(60),
+                  });
+
+                }
                 if (this.state.startShoot) {
                   const videoPath = await this.camera.stopRecording();
                   // console.log('------onPressOut video saved to an ', videoPath);
@@ -681,7 +710,6 @@ export default class CameraScreen extends Component<Props, State> {
                     startShoot: false,
                     ShootSuccess: true,
                     fadeInOpacity: new Animated.Value(60),
-                    flag: null,
                   });
                 }
               }}
@@ -757,7 +785,7 @@ export default class CameraScreen extends Component<Props, State> {
         </Carousel>
 
         {/* 临时方案  安卓 拍摄不会触发 */}
-      </View>
+      </View >
     );
   }
 
@@ -889,6 +917,11 @@ export default class CameraScreen extends Component<Props, State> {
                 volumeImage={this.props.volumeImage}
                 videoPath={this.state.videoPath}
                 fileType={this.state.fileType}
+                videomusicIcon={this.props.videomusicIcon}
+                musicDynamicGif={this.props.musicDynamicGif}
+                musicIconPng={this.props.musicIconPng}
+                musicIcongray={this.props.musicIcongray}
+                musicSearch={this.props.musicSearch}
                 imagePath={this.state.imageCaptured}
               // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
               />
