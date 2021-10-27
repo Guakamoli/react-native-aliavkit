@@ -12,7 +12,10 @@ interface IProps {
   cropAreaHeight?: number;
   containerColor?: string;
   areaColor?: string;
+  videoFile?: string;
+
   areaOverlay?: ReactNode;
+  scale?: number;
 
   setCropperParams: (params: ICropperParams) => void;
 }
@@ -93,7 +96,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       },
     };
     return cropData;
-    return new Promise((resolve, reject) => ImageEditor.cropImage(imageUri, cropData).then(resolve).catch(reject));
+    // return new Promise((resolve, reject) => ImageEditor.cropImage(imageUri, cropData).then(resolve).catch(reject));
   };
 
   static defaultProps = defaultProps;
@@ -133,8 +136,11 @@ class ImageCropper extends PureComponent<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps) {
-    const { imageUri } = this.props;
+    const { imageUri, scale } = this.props;
     if (imageUri && prevProps.imageUri !== imageUri) {
+      this.init();
+    }
+    if (scale && prevProps.scale !== scale) {
       this.init();
     }
   }
@@ -145,7 +151,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
     Image.getSize(
       imageUri,
       (width, height) => {
-        const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
+        const { setCropperParams, cropAreaWidth, cropAreaHeight, scale: scaleProps } = this.props;
 
         const areaWidth = cropAreaWidth!;
         const areaHeight = cropAreaHeight!;
@@ -153,13 +159,15 @@ class ImageCropper extends PureComponent<IProps, IState> {
         const srcSize = { width, height };
         const fittedSize = { width: 0, height: 0 };
         let scale = 1;
-        let wInit = w * 0.9;
+        let wInit = w * 1;
+        console.info(wInit, scaleProps, 'scaleProps', width, height);
         if (width > height) {
           const ratio = wInit / height;
           fittedSize.width = width * ratio;
           fittedSize.height = wInit;
         } else if (width < height) {
           const ratio = wInit / width;
+          console.info('ratio', ratio);
           fittedSize.width = wInit;
           fittedSize.height = height * ratio;
         } else if (width === height) {
@@ -172,14 +180,16 @@ class ImageCropper extends PureComponent<IProps, IState> {
             if (fittedSize.height < areaHeight) {
               scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
             } else {
-              // scale = Math.ceil((areaWidth / fittedSize.width) * 10) / 10;
+              console.info('运下山');
+              // 视觉窗口宽除以 图片宽
+              scale = Math.ceil((wInit / fittedSize.width) * 10) / 10;
             }
           } else {
             scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
           }
         }
 
-        // scale = scale < 1 ? 1 : scale;
+        scale = scale < scaleProps ? scaleProps : scale;
         console.info(scale, 'hahahahahahha', fittedSize.height, areaHeight);
         this.setState(
           (prevState) => ({
@@ -218,7 +228,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
       }),
       () => {
         const { srcSize, fittedSize } = this.state;
-        console.info('触发了吗');
         setCropperParams({
           positionX,
           positionY,
@@ -232,14 +241,13 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
   render() {
     const { loading, fittedSize, minScale } = this.state;
-    const { imageUri, cropAreaWidth, cropAreaHeight, containerColor, areaColor, areaOverlay } = this.props;
+    const { imageUri, cropAreaWidth, cropAreaHeight, containerColor, areaColor, areaOverlay, videoFile } = this.props;
 
     const areaWidth = cropAreaWidth!;
     const areaHeight = cropAreaHeight!;
 
     const imageWidth = fittedSize.width;
     const imageHeight = fittedSize.height;
-
     return (
       <GestureHandlerRootView>
         {!loading ? (
@@ -248,6 +256,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             areaWidth={areaWidth}
             areaHeight={areaHeight}
             imageWidth={imageWidth}
+            videoFile={videoFile}
             imageHeight={imageHeight}
             minScale={minScale}
             onMove={this.handleMove}

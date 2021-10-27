@@ -4,6 +4,7 @@ import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from
 import Animated, { Easing } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
+import Video from 'react-native-video';
 
 interface IProps {
   image: string;
@@ -14,6 +15,8 @@ interface IProps {
   minScale: number;
   onMove: ({ positionX, positionY, scale }: IImageViewerData) => void;
   containerColor?: string;
+  videoFile?: string;
+
   imageBackdropColor?: string;
   overlay?: ReactNode;
 }
@@ -39,6 +42,7 @@ const {
   multiply,
   divide,
   call,
+  Extrapolate,
 } = Animated;
 
 const styles = StyleSheet.create({
@@ -55,6 +59,17 @@ const styles = StyleSheet.create({
   },
 
   image: {},
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
+  },
 });
 
 class ImageViewer extends Component<IProps> {
@@ -65,7 +80,12 @@ class ImageViewer extends Component<IProps> {
   translateX: Animated.Value<number>;
 
   translateY: Animated.Value<number>;
+  gridX: Animated.Value<number>;
 
+  gridY: Animated.Value<number>;
+  gridOpacity: Animated.Value<number>;
+  gridWidth: Animated.Value<number>;
+  gridHeight: Animated.Value<number>;
   scale: Animated.Value<number>;
 
   onTapGestureEvent: (...args: any[]) => void;
@@ -110,7 +130,9 @@ class ImageViewer extends Component<IProps> {
 
     const maxY = new Value(0);
     const negMaxY = new Value(0);
-
+    this.state = {
+      showOverlay: false,
+    };
     const horizontalMax = divide(divide(sub(multiply(viewerImageWidth, this.scale), viewerAreaWidth), 2), this.scale);
 
     const verticalMax = divide(divide(sub(multiply(viewerImageHeight, this.scale), viewerAreaHeight), 2), this.scale);
@@ -118,6 +140,12 @@ class ImageViewer extends Component<IProps> {
     const scaledWidth = multiply(viewerImageWidth, this.scale);
     const scaledHeight = multiply(viewerImageHeight, this.scale);
 
+    // 网格专用
+    this.gridX = new Value(0);
+    this.gridY = new Value(0);
+    this.gridOpacity = new Value(0);
+    this.gridWidth = new Value(imageWidth);
+    this.gridHeight = new Value(imageHeight);
     this.onTapGestureEvent = event([
       {
         nativeEvent: ({ state }: { state: State }) =>
@@ -126,7 +154,7 @@ class ImageViewer extends Component<IProps> {
               set(offsetZ, new Value(minScale)),
               set(offsetX, new Value(0)),
               set(offsetY, new Value(0)),
-
+              // set(this.gridOpacity, new Value(0)),
               set(
                 this.scale,
                 timing({
@@ -154,6 +182,7 @@ class ImageViewer extends Component<IProps> {
                 }),
               ),
             ]),
+            // cond(eq(state, State.BEGAN), [set(this.gridOpacity, new Value(1))]),
           ]),
       },
     ]);
@@ -176,7 +205,7 @@ class ImageViewer extends Component<IProps> {
 
               set(maxX, horizontalMax),
               set(negMaxX, multiply(horizontalMax, new Value(-1))),
-
+              set(this.gridOpacity, 1),
               set(maxY, verticalMax),
               set(negMaxY, multiply(verticalMax, new Value(-1))),
             ]),
@@ -249,6 +278,8 @@ class ImageViewer extends Component<IProps> {
               set(offsetX, this.translateX),
               set(offsetY, this.translateY),
             ]),
+            cond(eq(state, State.BEGAN), [set(this.gridOpacity, new Value(1))]),
+            cond(eq(state, State.END), [set(this.gridOpacity, new Value(0))]),
           ]),
       },
     ]);
@@ -257,7 +288,13 @@ class ImageViewer extends Component<IProps> {
       {
         nativeEvent: ({ scale, state }: { scale: number; state: State }) =>
           block([
-            cond(eq(state, State.ACTIVE), set(this.scale, multiply(offsetZ, scale))),
+            cond(eq(state, State.ACTIVE), [
+              set(this.scale, multiply(offsetZ, scale)),
+              cond(greaterThan(scale, new Value(1)), [
+                set(this.gridY, multiply(multiply(sub(scale, new Value(1)), viewerImageHeight), new Value(0.5))),
+                set(this.gridX, multiply(multiply(sub(scale, new Value(1)), viewerImageWidth), new Value(0.5))),
+              ]),
+            ]),
 
             cond(eq(state, State.END), [
               set(offsetZ, this.scale),
@@ -302,7 +339,6 @@ class ImageViewer extends Component<IProps> {
     const positionX = args[0];
     const positionY = args[1];
     const scale = args[2];
-    console.info(args, 'argsargs');
     onMove({ positionX, positionY, scale });
   };
 
@@ -316,6 +352,8 @@ class ImageViewer extends Component<IProps> {
       containerColor,
       imageBackdropColor,
       overlay,
+      videoFile,
+      minScale,
     } = this.props;
 
     const imageSrc = {
@@ -339,20 +377,21 @@ class ImageViewer extends Component<IProps> {
       styles.image,
       {
         position: 'absolute' as 'absolute',
-
-        width: areaWidth,
-        height: areaWidth,
-        // transform: [
-        //   {
-        //     scale: this.scale,
-        //   },
-        //   {
-        //     translateX: this.translateX,
-        //   },
-        //   {
-        //     translateY: this.translateY,
-        //   },
-        // ],
+        opacity: 1,
+        width: imageWidth,
+        height: imageHeight,
+        zIndex: 99,
+        transform: [
+          {
+            scale: this.scale,
+          },
+          {
+            translateX: this.translateX,
+          },
+          {
+            translateY: this.translateY,
+          },
+        ],
       },
     ];
 
@@ -400,8 +439,73 @@ class ImageViewer extends Component<IProps> {
                   onHandlerStateChange={this.onPinchGestureEvent}
                 >
                   <Animated.View style={imageWrapperStyles} collapsable={false}>
-                    <Animated.Image style={imageStyles} source={imageSrc} />
-                    {overlay && <Animated.View style={overlayContainerStyle}>{overlay}</Animated.View>}
+                    {videoFile ? (
+                      <Animated.View style={imageStyles}>
+                        <Video
+                          repeat={true}
+                          source={{ uri: videoFile }}
+                          style={{
+                            width: imageWidth,
+                            height: imageHeight,
+                          }}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.Image style={imageStyles} source={imageSrc} />
+                    )}
+
+                    <Animated.View style={overlayContainerStyle}>
+                      <View style={{ height: '100%', width: '100%' }}>
+                        <Animated.View
+                          style={[
+                            {
+                              left: areaWidth / 3,
+                              width: StyleSheet.hairlineWidth,
+                              height: '100%',
+                              backgroundColor: 'rgba(255,255,255,0.5)',
+                              position: 'absolute',
+                            },
+                            styles.shadow,
+                          ]}
+                        ></Animated.View>
+                        <Animated.View
+                          style={[
+                            {
+                              left: (areaWidth / 3) * 2,
+                              width: StyleSheet.hairlineWidth,
+                              height: '100%',
+                              backgroundColor: 'rgba(255,255,255,0.5)',
+                              position: 'absolute',
+                            },
+                            styles.shadow,
+                          ]}
+                        ></Animated.View>
+                        <Animated.View
+                          style={[
+                            {
+                              top: areaWidth / 3,
+                              width: '100%',
+                              height: StyleSheet.hairlineWidth,
+                              backgroundColor: 'rgba(255,255,255,0.5)',
+                              position: 'absolute',
+                            },
+                            styles.shadow,
+                          ]}
+                        ></Animated.View>
+                        <Animated.View
+                          style={[
+                            {
+                              top: (areaWidth / 3) * 2,
+                              width: '100%',
+                              height: StyleSheet.hairlineWidth,
+                              backgroundColor: 'rgba(255,255,255,0.5)',
+                              position: 'absolute',
+                            },
+                            styles.shadow,
+                          ]}
+                        ></Animated.View>
+                      </View>
+                    </Animated.View>
                   </Animated.View>
                 </PinchGestureHandler>
               </Animated.View>

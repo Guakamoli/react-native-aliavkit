@@ -93,18 +93,21 @@ const scrubInterval = 50;
 let subscription = null;
 let trimVideoData = null;
 let coverData = [];
+let cropData = {};
 // const navigation = useNavigation();
 const PostContent = (props) => {
-  const [cropWidth, setCropWidth] = useState(width * 1);
+  const [cropScale, setCropScale] = useState(0.9);
   const { multipleData, CameraRollList, fileSelectType, videoFile } = props;
   const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
   const toggleCropWidth = () => {
-    if (cropWidth < width) {
-      setCropWidth(width);
+    console.info(cropScale, 'cropScale');
+    if (cropScale < 1) {
+      setCropScale(1);
     } else {
-      setCropWidth(width * 0.9);
+      setCropScale(0.9);
     }
   };
+  if (!imageItem && !videoFile) return null;
   return (
     <View
       style={{
@@ -147,92 +150,36 @@ const PostContent = (props) => {
           width: '100%',
         }}
       >
-        {fileSelectType === 'image' ? (
-          <View style={{ backgroundColor: 'red' }}>
-            <ImageCropper
-              imageUri={imageItem?.uri}
-              cropAreaWidth={width}
-              cropAreaHeight={width}
-              containerColor='black'
-              areaColor='black'
-              areaOverlay={
-                <View style={{ height: '100%', width: '100%' }}>
-                  <View
-                    style={[
-                      {
-                        left: '33.33%',
-                        width: 1,
-                        height: '100%',
-                        backgroundColor: 'rgba(255,255,255,0.4)',
-                        position: 'absolute',
-                      },
-                      styles.shadow,
-                    ]}
-                  ></View>
-                  <View
-                    style={[
-                      {
-                        left: '66.33%',
-                        width: 1,
-                        height: '100%',
-                        backgroundColor: 'rgba(255,255,255,0.4)',
-                        position: 'absolute',
-                      },
-                      styles.shadow,
-                    ]}
-                  ></View>
-                  <View
-                    style={[
-                      {
-                        top: '33.33%',
-                        width: '100%',
-                        height: 1,
-                        backgroundColor: 'rgba(255,255,255,0.4)',
-                        position: 'absolute',
-                      },
-                      styles.shadow,
-                    ]}
-                  ></View>
-                  <View
-                    style={[
-                      {
-                        top: '66.33%',
-                        width: '100%',
-                        height: 1,
-                        backgroundColor: 'rgba(255,255,255,0.4)',
-                        position: 'absolute',
-                      },
-                      styles.shadow,
-                    ]}
-                  ></View>
-                </View>
-              }
-              setCropperParams={async (cropperParams) => {
-                const result = await ImageCropper.crop({
-                  ...cropperParams,
-                  imageUri: imageItem?.uri,
-                  cropSize: {
-                    width,
-                    height: width,
-                  },
-                  cropAreaSize: {
-                    width,
-                    height: width,
-                  },
-                });
-                console.info(result);
-              }}
-            />
-          </View>
-        ) : (
-          <Video
-            source={{ uri: videoFile }}
-            style={{
-              width: width,
-              height: height - 160,
+        <View style={{ backgroundColor: 'red' }}>
+          <ImageCropper
+            imageUri={imageItem?.uri}
+            videoFile={videoFile}
+            cropAreaWidth={width}
+            cropAreaHeight={width}
+            containerColor='black'
+            areaColor='black'
+            scale={cropScale}
+            areaOverlay={<View></View>}
+            setCropperParams={async (cropperParams) => {
+              // console.info('cropperParams', cropperParams);
+              // 这里 offset 和 size 就是最终需要的xy 和size
+              // const result = await ImageCropper.crop({
+              //   ...cropperParams,
+              //   imageUri: imageItem?.uri,
+              //   cropSize: {
+              //     width,
+              //     height: width,
+              //   },
+              //   cropAreaSize: {
+              //     width,
+              //     height: width,
+              //   },
+              // });
+              // cropData = result;
+              // console.info(result);
             }}
           />
-        )}
+        </View>
       </View>
     </View>
   );
@@ -247,34 +194,28 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     console.log('----', props);
     const Navigation = this.props.navigation;
-    // 1231
-    // props.refs.current = {
-    //   empty: () => {
-    //     this.postEditor()
-    //   }
-    // }
-    // props.navigation.setOptions({
-    //   headerTitle: '新作品',
-    //   // headerRight: () => <Button title='play' onPress={() =>  }  />,
+    props.navigation.setOptions({
+      headerTitle: '新作品',
+      // headerRight: () => <Button title='play' onPress={() =>  }  />,
 
-    //   headerRight: () => <Button title='play' onPress={() => this.postEditor()} />,
-    //   //
+      headerRight: () => <Button title='继续' onPress={() => this.postEditor()} />,
+      //
 
-    //   //   headerTitle: 'Camera',
-    //   //   headerRight: () => {
-    //   //     return(
-    //   //       <TouchableOpacity onPress={() => navigation.navigate('PostEditorBox')} > <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text> </TouchableOpacity>
-    //   //     )
-    //   //   },
-    //   //   headerLeft: () =>  <Image
-    //   //   style={{
-    //   //     width: 28,
-    //   //     height: 28,
-    //   //   }}
-    //   //   source={{uri:require('../images/close.png')}}
-    //   //   resizeMode="contain"
-    //   // />,
-    // });
+      //   headerTitle: 'Camera',
+      //   headerRight: () => {
+      //     return(
+      //       <TouchableOpacity onPress={() => navigation.navigate('PostEditorBox')} > <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text> </TouchableOpacity>
+      //     )
+      //   },
+      //   headerLeft: () =>  <Image
+      //   style={{
+      //     width: 28,
+      //     height: 28,
+      //   }}
+      //   source={{uri:require('../images/close.png')}}
+      //   resizeMode="contain"
+      // />,
+    });
     this.state = {
       CameraRollList: [],
       fileSelectType: '',
@@ -316,78 +257,44 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   postEditor = async () => {
-    console.log(2342);
     const { fileEditor, multipleData, fileSelectType, cropOffsetX, cropOffsetY, multipleSandBoxData } = this.state;
+    console.log(cropOffsetX, cropOffsetY, multipleData, 'hahahah');
 
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
-    // console.log(fileEditor);
-    // console.log('this.state.multipleSandBoxData[0],',this.state.multipleSandBoxData[0],);
-    // console.log('multipleData[0].image.uri',multipleData[0].image.uri);
+    try {
+      console.info(multipleData, cropData);
+      trimVideoData = await AVService.crop({
+        source: `${multipleData[0].image.uri}`,
+        cropOffsetX: cropData.offset.x,
+        cropOffsetY: cropData.offset.y,
+        cropWidth: cropData.size.width,
+        cropHeight: cropData.size.height,
+      });
+      // trimVideoData = await AVService.crop({
+      //   source: `${multipleData[0].image.uri}`,
+      //   cropOffsetX,
+      //   cropOffsetY,
+      //   cropWidth: multipleData[0].image.width,
+      //   cropHeight: multipleData[0].image.width,
+      // });
+      // await AVService.crop({});
+      this.myRef.current.show('请稍后', DURATION.FOREVER);
 
-    // 编辑完成  导出数据  剪辑
-    // if(fileEditor){
-    //   console.log('----编辑完成  导出数据  剪辑');
+      console.log('trimVideoData', trimVideoData, 'fileSelectType', fileSelectType);
 
-    //     const result = await RNEditViewManager.trimVideo({
-    //     videoPath: this.state.multipleSandBoxData[0],
-    //     startTime: 2.0,
-    //     endTime: 3.0,
-    //   });
-    //   console.log('-----result',result);
+      // 进入修改
+      if (fileSelectType === 'image') {
+        console.log('开始裁剪');
 
-    //   //  发送选择的数据
-    // let uplaodFile = []
-    // console.log('this.state.multipleData', this.state.multipleData);
-    // let uploadFile = [result];
-    // //
-    //   // let type = outputPath.split('.')
-    //   // uploadFile.push({
-    //   //   Type : `${fileType}/${type[type.length - 1]}`,
-    //   //   path :   fileType == 'video' ?  `file://${encodeURI(outputPath)}` : outputPath,
-    //   //   size : 0,
-    //   //   Name:outputPath
-    //   // })
+        this.myRef.current.close();
+        this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
 
-    // }
-
-    // 裁剪
-    // trimVideoData = await AVService.crop({ source:`${multipleData[0].image.uri}` , cropOffsetX:100, cropOffsetY:100, cropWidth:800, cropHeight:800 });
-    console.log('裁剪数据', multipleData);
-
-    trimVideoData = await AVService.crop({
-      source: `${multipleData[0].image.uri}`,
-      cropOffsetX,
-      cropOffsetY,
-      cropWidth: multipleData[0].image.width,
-      cropHeight: multipleData[0].image.width,
-    });
-    // await AVService.crop({});
-    this.myRef.current.show('请稍后', DURATION.FOREVER);
-
-    console.log('trimVideoData', trimVideoData, 'fileSelectType', fileSelectType);
-
-    // 进入修改
-    if (fileSelectType === 'image') {
-      console.log('开始裁剪');
-      // trimVideoData = await AVService.crop({ source: `${multipleData[0].image.uri}`, cropOffsetX, cropOffsetY, cropWidth: multipleData[0].image.width, cropHeight: multipleData[0].image.width, });
-      // let a = multipleData.map(async (item, index) => {
-      //   console.log('开始裁剪1');
-      //   console.log('12313', item);
-
-      //   return
-      //   console.log(index, '------', trimVideoData);
-
-      // })
-
-      // console.log(a);
-
-      // this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
-      // this.sendUploadFile(trimVideoData)
-      this.myRef.current.close();
-      this.sendUploadFile({ trimVideoData, fileType: fileSelectType })
-      this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
+        this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
+      }
+    } catch (e) {
+      console.info(e, '错误');
     }
   };
   // getFilters  = async() => {
@@ -418,7 +325,7 @@ export default class CameraScreen extends Component<Props, State> {
           videoduration: videoTime,
           trimmerRight: trimmerRightHandlePosition,
           fileType: this.state.fileSelectType,
-        })
+        });
         this.props.navigation.push('PostEditorBox', {
           trimVideoData,
           videoduration: videoTime,
@@ -484,6 +391,7 @@ export default class CameraScreen extends Component<Props, State> {
 
         this.setState({
           CameraRollList: photos,
+          videoFile: '',
         });
       },
       function (err) {
@@ -501,7 +409,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState = () => false;
   }
   sendUploadFile(data) {
-    console.info('11111', this.props.getUploadFile)
+    console.info('11111', this.props.getUploadFile);
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
     }
@@ -554,97 +462,7 @@ export default class CameraScreen extends Component<Props, State> {
       </View>
     );
   }
-  postContent() {
-    const { multipleData, CameraRollList, fileSelectType, videoFile } = this.state;
-    // 计算移动距离  通过宽
-    const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
 
-    return (
-      <View
-        style={{
-          padding: 0,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#ececec',
-          position: 'relative',
-          height: width,
-          width: '100%',
-        }}
-      >
-        {/* 左侧尺寸按钮 */}
-        <TouchableOpacity
-          style={{
-            width: 31,
-            height: 31,
-            marginRight: 10,
-            position: 'absolute',
-            left: 15,
-            bottom: 20,
-            zIndex: 99,
-          }}
-          onPress={() => {
-            this.setState({ scrollViewWidth: !this.state.scrollViewWidth });
-          }}
-        >
-          <Image
-            style={[
-              {
-                width: 31,
-                height: 31,
-              },
-            ]}
-            source={this.props.changeSizeImage}
-          />
-        </TouchableOpacity>
-
-        <View
-          style={{
-            backgroundColor: '#ececec',
-            width: '100%',
-          }}
-        >
-          {fileSelectType === 'image' ? (
-            <View style={{ backgroundColor: 'red' }}>
-              <ImageCropper
-                imageUri={imageItem?.uri}
-                cropAreaWidth={width}
-                cropAreaHeight={width}
-                containerColor='black'
-                areaColor='black'
-                setCropperParams={() => {}}
-              />
-            </View>
-          ) : (
-            // <Image
-            //   style={[
-            //     {
-            //       width: this.state.scrollViewWidth ? width : width - 90,
-            //       height: height,
-            //       // width: this.state.scrollViewWidth ? width : 320
-            //     },
-            //   ]}
-            //   // 安卓展示不出来 权限问题？？？？
-            //   // source={{ uri: item.image.uri }}
-            //   source={{
-            //     uri:
-            //       multipleData.length > 0
-            //         ? multipleData[multipleData.length - 1]?.image?.uri
-            //         : CameraRollList[0]?.image?.uri,
-            //   }}
-            //   resizeMode={'cover'}
-            // />
-            <Video
-              source={{ uri: videoFile }}
-              style={{
-                width: width,
-                height: height - 160,
-              }}
-            />
-          )}
-        </View>
-      </View>
-    );
-  }
   postFileUploadHead() {
     const { startmMltiple, multipleData } = this.state;
 
@@ -659,7 +477,7 @@ export default class CameraScreen extends Component<Props, State> {
           paddingHorizontal: 12,
         }}
       >
-        <TouchableOpacity onPress={() => { }}>
+        <TouchableOpacity onPress={() => {}}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
           </View>
@@ -760,6 +578,7 @@ export default class CameraScreen extends Component<Props, State> {
                             Math.ceil(item.image.playableDuration) < 300
                               ? Math.ceil(item.image.playableDuration) * 1000
                               : 300 * 1000,
+
                           videoTime: Math.ceil(item.image.playableDuration) * 1000,
                         });
                       }
@@ -778,6 +597,7 @@ export default class CameraScreen extends Component<Props, State> {
                       this.setState({
                         fileSelectType: fileType,
                         multipleData: [item],
+                        videoFile: '',
                       });
                     }
                     if (startmMltiple) {
@@ -808,6 +628,7 @@ export default class CameraScreen extends Component<Props, State> {
                       }
                       this.setState({
                         multipleData: datalist,
+                        videoFile: '',
                       });
                     }
                   }}
