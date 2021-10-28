@@ -102,7 +102,9 @@ class ImageViewer extends Component<IProps> {
   constructor(props: IProps) {
     super(props);
 
-    const { areaWidth, areaHeight, imageWidth, imageHeight, minScale } = props;
+    let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale } = props;
+    minScale = propsScale;
+
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
     this.translateX = new Value(0);
@@ -219,15 +221,17 @@ class ImageViewer extends Component<IProps> {
               set(negMaxX, multiply(horizontalMax, new Value(-1))),
               set(maxY, verticalMax),
               set(negMaxY, multiply(verticalMax, new Value(-1))),
+
               cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
             ]),
 
             cond(
               and(
                 eq(state, State.END),
-                greaterOrEq(scaledWidth, viewerAreaWidth),
+                greaterOrEq(scaledWidth, multiply(viewerAreaWidth, this.props.propsScale)),
                 greaterOrEq(this.scale, new Value(minScale)),
               ),
+
               cond(
                 and(lessThan(this.translateX, negMaxX), greaterOrEq(this.scale, new Value(minScale))),
                 [

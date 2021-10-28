@@ -101,7 +101,6 @@ const PostContent = (props) => {
   const { multipleData, CameraRollList, fileSelectType, videoFile } = props;
   const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
   const toggleCropWidth = () => {
-    console.info(cropDataRow, 'cropDataRow', cropScale);
     if (!cropDataRow.scale || cropDataRow.scale < 1 || cropScale === 0.9) {
       setCropScale(1);
     } else {
