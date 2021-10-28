@@ -263,7 +263,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             imageWidth={imageWidth}
             videoFile={videoFile}
             imageHeight={imageHeight}
-            minScale={0.9}
+            minScale={scale}
             onMove={this.handleMove}
             containerColor={containerColor}
             imageBackdropColor={areaColor}
