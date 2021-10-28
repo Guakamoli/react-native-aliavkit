@@ -40,22 +40,22 @@ const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
 const cropWidth = width - 30 * 2;
 const PostEditor = (props) => {
+  console.log('PostEditorPostEditorPostEditorPostEditor', props);
 
-
-  // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
     route: {
-      params: { trimVideoData = '', fileType = '' },
+      params: { trimVideoData = '', fileType = '', },
     },
     navigation,
     uploadFile,
     volumeImage,
-    noVolumeImage
+    noVolumeImage,
+
   } = props;
   const [multipleSandBoxData, setmultipleSandBoxData] = useState([]);
   const [filterList, setfilterList] = useState([])
   const [filterName, setfilterName] = useState(null);
-  const [videoMute, setvideoMute] = useState(true);
+  const [videoMute, setvideoMute] = useState(false);
   const [coverList, setcoverList] = useState([]);
   const [coverImage, setcoverImage] = useState('');
   const [selectBottomModel, setselectBottomModel] = useState('滤镜');
@@ -81,7 +81,7 @@ const PostEditor = (props) => {
           <Image
             style={{ width: 30, height: 21 }}
             source={
-              videoMute ? volumeImage : noVolumeImage
+              !videoMute ? volumeImage : noVolumeImage
             }
           />
         </TouchableOpacity>
@@ -168,9 +168,10 @@ const PostEditor = (props) => {
   }, [props]);
   useEffect(() => {
     return () => {
-      console.log('销毁了');
+      console.log('销毁了',);
       AVService.removeThumbnaiImages();
       RNEditViewManager.stop();
+      props.route.params.palyVide()
     };
   }, []);
   const getcoverData = async () => {

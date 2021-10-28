@@ -101,7 +101,6 @@ class ImageViewer extends Component<IProps> {
 
   constructor(props: IProps) {
     super(props);
-
     let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale } = props;
     minScale = propsScale;
 
@@ -377,6 +376,7 @@ class ImageViewer extends Component<IProps> {
       overlay,
       videoFile,
       minScale,
+      videoPaused
     } = this.props;
     const imageSrc = {
       uri: image,
@@ -467,6 +467,7 @@ class ImageViewer extends Component<IProps> {
                     {videoFile ? (
                       <Animated.View style={imageStyles}>
                         <Video
+                          paused={videoPaused}
                           repeat={true}
                           source={{ uri: videoFile }}
                           style={{

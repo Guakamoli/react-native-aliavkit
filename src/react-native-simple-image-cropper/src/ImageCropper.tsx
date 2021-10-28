@@ -208,7 +208,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
           },
         );
       },
-      () => {},
+      () => { },
     );
   };
 
@@ -246,6 +246,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       areaOverlay,
       videoFile,
       scale,
+      videoPaused,
     } = this.props;
 
     const areaWidth = cropAreaWidth!;
@@ -269,6 +270,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
             propsScale={scale}
+            videoPaused={videoPaused}
           />
         ) : null}
       </GestureHandlerRootView>
