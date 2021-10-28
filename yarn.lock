@@ -1170,7 +1170,7 @@
   resolved "https://registry.yarnpkg.com/@react-native-community/image-editor/-/image-editor-2.3.0.tgz#8ac6c3691fd2c762d2abeb84c01a3b201bac3b1e"
   integrity sha512-+UJY8WkTkfSkjoU5blQnEI7tTg11jJLoM+YojjiQpEopUaRlYQU4SZ9Zd6F6wWfvc9bjvIeMY6FlKuESK/q4fQ==
 
-"@react-navigation/core@^6.0.1":
+"@react-navigation/core@^6.1.0":
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/@react-navigation/core/-/core-6.1.0.tgz#95fbf54d78ad0ed976cb73219f0c0199775a1d26"
   integrity sha512-LyZqD/ZCXSK9+ES8KiH+0tU+7aL84jUw1N9OxZfEuns/OcnSXKC3sOO+9NQ9XRowB1wLUfJhmqZ8G8rUlg33fQ==
@@ -1194,12 +1194,12 @@
     "@react-navigation/elements" "^1.2.1"
     warn-once "^0.1.0"
 
-"@react-navigation/native@6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-6.0.2.tgz#6bdb3cfafb6a9cfb603c1555dd61faafca35b7c2"
-  integrity sha512-HDqEwgvQ4Cu16vz8jQ55lfyNK9CGbECI1wM9cPOcUa+gkOQEDZ/95VFfFjGGflXZs3ybPvGXlMC4ZAyh1CcO6w==
+"@react-navigation/native@^6.0.6":
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@react-navigation/native/-/native-6.0.6.tgz#0f2577358d73d7b21ff5b2455f0a2d51b1ad2837"
+  integrity sha512-XzL7YPsaRRQgdCQSXbA8PJWLN2I4lhUUvSFoKQPNO4DS6y8eqZI1V8COPYlJg8+tsetGV5J8jt+jVjWL7h6ZrQ==
   dependencies:
-    "@react-navigation/core" "^6.0.1"
+    "@react-navigation/core" "^6.1.0"
     escape-string-regexp "^4.0.0"
     nanoid "^3.1.23"
 
@@ -6522,18 +6522,6 @@ react-native-reanimated@1.9.0:
   integrity sha512-Aj+spgIHRiVv7ezGADxnSH1EoKrQRD2+XaSiGY0MiB/pvRNNrZPSJ+3NVpvLwWf9lZMOP7dwqqyJIzoZgBDt8w==
   dependencies:
     fbjs "^1.0.0"
-
-react-native-safe-area-context@^3.3.2:
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-3.3.2.tgz#9549a2ce580f2374edb05e49d661258d1b8bcaed"
-  integrity sha512-yOwiiPJ1rk+/nfK13eafbpW6sKW0jOnsRem2C1LPJjM3tfTof6hlvV5eWHATye3XOpu2cJ7N+HdkUvUDGwFD2Q==
-
-react-native-screens@^3.3.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-3.8.0.tgz#4ec84c55a7b4a4aa9405c812978ca2ba5c0242a4"
-  integrity sha512-lHrnB/elAoMJKv8O12U6BLgeup4lB6ZKJHEOVuG/D72nv/OE9wUusbou6YCB5tp3YbaSpHflPnkFmHA/vCejpw==
-  dependencies:
-    warn-once "^0.1.0"
 
 react-native-simple-image-cropper@^3.2.1:
   version "3.2.1"
