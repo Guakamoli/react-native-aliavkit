@@ -81,7 +81,7 @@ AliyunCropDelegate
 {
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 2.0f;
+        _mediaConfig.minDuration = 0.5f;
         _mediaConfig.maxDuration = 15.f;
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
@@ -162,7 +162,7 @@ AliyunCropDelegate
 {
 
     self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-    NSLog(@"---- VideotaskPath: %@", self.taskPath);
+//    NSLog(@"---- VideotaskPath: %@", self.taskPath);
     AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
@@ -173,11 +173,11 @@ AliyunCropDelegate
     param.codecType = AliyunVideoCodecHardware;
     
     [importer setVideoParam:param];
-    NSLog(@"----- _videoPath:  %@",videoPath);
+//    NSLog(@"----- _videoPath:  %@",videoPath);
     AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-    NSLog(@"----------clip.duration:%f",clip.duration);
+//    NSLog(@"----------clip.duration:%f",clip.duration);
     self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 }
 
@@ -197,31 +197,24 @@ AliyunCropDelegate
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-    if (_isPresented && !self.superview) { //出现了，要消失
-        NSLog(@"---- 🪝出现了，要消失");
-//        [_editor stopEdit];
+    if (_isPresented && !self.superview) {
+        NSLog(@"---- 🪝appeared, going disappear");
+        [_editor stopEdit];
     }
 }
 
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    if (!_isPresented && self.window) { //准备出现
-        NSLog(@"---- 🪝准备出现");
+    if (!_isPresented && self.window) {
+        NSLog(@"---- 🪝ready to appear");
         if (self.videoPath) {
-            NSString *path = [[NSUserDefaults standardUserDefaults] valueForKey:@"path"];
-            if (!path) {
-                [[NSUserDefaults standardUserDefaults] setValue:self.videoPath forKey:@"path"];
-                path = self.videoPath;
+            if (![[NSFileManager defaultManager] fileExistsAtPath:self.videoPath]) {
+                NSLog(@"-------- 🔥 videoPath doesn't exist");
+                return;
             }
-            AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:path];
-            if ([parser getVideoDuration] == 0.0 && path) {
-                [[NSUserDefaults standardUserDefaults] setValue:self.videoPath forKey:@"path"];
-                path = self.videoPath;
-            }
-            NSLog(@"---------:%@  ==== duration %f",self.videoPath,[parser getVideoDuration]);
             [self initBaseData];
-            [self setVideoTaskPathWithVideopath:path];
+            [self setVideoTaskPathWithVideopath:self.videoPath];
             [self addSubview:self.preview];
             [self initSDKAbout];
             
@@ -230,15 +223,19 @@ AliyunCropDelegate
                 [[self.editor getPlayer] play];
             }
             else if (num == ALIVC_COMMON_INVALID_STATE) {
-                NSLog(@"-----状态不正确");
+                NSLog(@"-----INVALID_STATE");
             }
             else if (num == ALIVC_COMMON_INVALID_PARAM) {
-                NSLog(@"-----参数不正确");
+                NSLog(@"-----INVALID_PARAM");
             }
             _isPresented = YES;
             return;
         }
         if (self.imagePath) {
+            if (![[NSFileManager defaultManager] fileExistsAtPath:self.imagePath]) {
+                NSLog(@"-------- 🔥 imagePath doesn't exist");
+                return;
+            }
             [self initBaseData];
             [self setPhotoTaskPathWithPhotoPath:self.imagePath];
             [self addSubview:self.preview];
@@ -249,10 +246,10 @@ AliyunCropDelegate
                 [[self.editor getPlayer] play];
             }
             else if (num == ALIVC_COMMON_INVALID_STATE) {
-                NSLog(@"-----状态不正确");
+                NSLog(@"-----INVALID_STATE");
             }
             else if (num == ALIVC_COMMON_INVALID_PARAM) {
-                NSLog(@"-----参数不正确");
+                NSLog(@"-----INVALID_PARAM");
             }
             _isPresented = YES;
         }

@@ -112,7 +112,7 @@ static AliCameraAction *_instance = nil;
 {
     if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 2.0f;
+        _mediaConfig.minDuration = 0.5f;
         _mediaConfig.maxDuration = 15.f;
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
@@ -246,7 +246,7 @@ static AliCameraAction *_instance = nil;
     NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
     _videoSavePath = videoSavePath;
     
-    self.recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
+    self.recorder.outputPath = videoSavePath;
     self.mediaConfig.outputPath = self.recorder.outputPath;
     self.recorder.taskPath = taskPath;
     

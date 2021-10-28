@@ -113,8 +113,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-    if (_isPresented && !self.superview) { //出现了，要消失
-        NSLog(@"----： 📷 出现了，要消失");
+    if (_isPresented && !self.superview) {
+        NSLog(@"----： 📷 appeared, going disappear");
         if (self.cameraAction.isRecording) {
             [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
                 
@@ -128,14 +128,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super didMoveToWindow];
     if (self.window && _isPresented) {
-        NSLog(@"--- 📷回来了");
+        NSLog(@"--- 📷 coming back ");
         if (self.cameraAction) {
             [self.cameraAction startFrontPreview];
         }
         return;
     }
-    if (!_isPresented && self.window) { //准备出现
-        NSLog(@"----： 📷 准备出现");
+    if (!_isPresented && self.window) {
+        NSLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
             [self.cameraAction startFrontPreview];
         }
