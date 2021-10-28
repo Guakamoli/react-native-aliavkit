@@ -216,12 +216,12 @@ class ImageViewer extends Component<IProps> {
             cond(
               and(
                 eq(state, State.ACTIVE),
-                eq(state, State.ACTIVE),
-                // lessThan(translationX, 100),
+                // eq(state, State.ACTIVE),
+                lessThan(translationX, 100),
 
-                // greaterThan(translationX, -100),
-                // lessThan(translationY, 100),
-                // greaterThan(translationY, -100),
+                greaterThan(translationX, -100),
+                lessThan(translationY, 100),
+                greaterThan(translationY, -100),
               ),
               [
                 set(this.translateX, add(divide(translationX, this.scale), offsetX)),
@@ -232,6 +232,9 @@ class ImageViewer extends Component<IProps> {
                 cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
                 set(maxY, verticalMax),
                 set(negMaxY, multiply(verticalMax, new Value(-1))),
+                call([], () => {
+                  console.info('gaile');
+                }),
               ],
             ),
 

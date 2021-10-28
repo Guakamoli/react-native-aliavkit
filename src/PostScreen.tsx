@@ -94,6 +94,7 @@ let subscription = null;
 let trimVideoData = null;
 let coverData = [];
 let cropData = {};
+let cropDataRow = {};
 // const navigation = useNavigation();
 const PostContent = (props) => {
   const [cropScale, setCropScale] = useState(0.9);
@@ -160,22 +161,8 @@ const PostContent = (props) => {
             areaColor='black'
             scale={cropScale}
             areaOverlay={<View></View>}
-            setCropperParams={async (cropperParams) => {
-              // 这里 offset 和 size 就是最终需要的xy 和size
-              const result = await ImageCropper.crop({
-                ...cropperParams,
-                imageUri: imageItem?.uri,
-                cropSize: {
-                  width,
-                  height: width,
-                },
-                cropAreaSize: {
-                  width,
-                  height: width,
-                },
-              });
-              cropData = result;
-              console.info(result);
+            setCropperParams={(cropperParams) => {
+              cropDataRow = cropperParams;
             }}
           />
         </View>
@@ -215,6 +202,7 @@ export default class CameraScreen extends Component<Props, State> {
       //   resizeMode="contain"
       // />,
     });
+    this.cropData = {};
     this.state = {
       CameraRollList: [],
       fileSelectType: '',
@@ -256,11 +244,34 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   postEditor = async () => {
-    const { fileEditor, multipleData, fileSelectType, cropOffsetX, cropOffsetY, multipleSandBoxData } = this.state;
+    const {
+      fileEditor,
+      multipleData,
+      fileSelectType,
+      cropOffsetX,
+      cropOffsetY,
+      multipleSandBoxData,
+      CameraRollList,
+    } = this.state;
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
     try {
+      const imageItem =
+        multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
+      const result = await ImageCropper.crop({
+        ...cropDataRow,
+        imageUri: imageItem?.uri,
+        cropSize: {
+          width: width,
+          height: width,
+        },
+        cropAreaSize: {
+          width: width,
+          height: width,
+        },
+      });
+      cropData = result;
       console.info(multipleData, cropData);
       trimVideoData = await AVService.crop({
         source: `${multipleData[0].image.uri}`,
