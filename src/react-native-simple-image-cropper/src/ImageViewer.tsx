@@ -105,7 +105,6 @@ class ImageViewer extends Component<IProps> {
     const { areaWidth, areaHeight, imageWidth, imageHeight, minScale } = props;
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
-    console.info(areaWidth, areaHeight, imageWidth, imageHeight, minScale);
     this.translateX = new Value(0);
     this.translateY = new Value(0);
     this.scale = new Value(minScale);
@@ -139,12 +138,6 @@ class ImageViewer extends Component<IProps> {
     const horizontalMax = divide(divide(sub(multiply(viewerImageWidth, this.scale), viewerAreaWidth), 2), this.scale);
 
     const verticalMax = divide(divide(sub(multiply(viewerImageHeight, this.scale), viewerAreaHeight), 2), this.scale);
-    // const horizontalMax = new Value(20);
-    // const verticalMax = new Value(20);
-    set(maxX, horizontalMax);
-    set(negMaxX, multiply(horizontalMax, new Value(-1)));
-    set(maxY, verticalMax);
-    set(negMaxY, multiply(verticalMax, new Value(-1)));
     const scaledWidth = multiply(viewerImageWidth, this.scale);
     const scaledHeight = multiply(viewerImageHeight, this.scale);
     this.scaledWidth = scaledWidth;
@@ -347,14 +340,19 @@ class ImageViewer extends Component<IProps> {
       },
     ]);
   }
+  componentDidUpdate(prevProps: IProps) {
+    const { propsScale } = this.props;
 
+    if (propsScale && prevProps.propsScale !== propsScale) {
+      this.scale.setValue(propsScale);
+    }
+  }
   handleMove = (args: readonly number[]): void => {
     const { onMove } = this.props;
 
     const positionX = args[0];
     const positionY = args[1];
     const scale = args[2];
-    console.info(positionX, 'haha', args[3], args[4]);
     onMove({ positionX, positionY, scale });
   };
 

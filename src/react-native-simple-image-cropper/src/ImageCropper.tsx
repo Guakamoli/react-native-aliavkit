@@ -160,14 +160,12 @@ class ImageCropper extends PureComponent<IProps, IState> {
         const fittedSize = { width: 0, height: 0 };
         let scale = 1;
         let wInit = w * 1;
-        console.info(wInit, scaleProps, 'scaleProps', width, height);
         if (width > height) {
           const ratio = wInit / height;
           fittedSize.width = width * ratio;
           fittedSize.height = wInit;
         } else if (width < height) {
           const ratio = wInit / width;
-          console.info('ratio', ratio);
           fittedSize.width = wInit;
           fittedSize.height = height * ratio;
         } else if (width === height) {
@@ -180,7 +178,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
             if (fittedSize.height < areaHeight) {
               scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
             } else {
-              console.info('运下山');
               // 视觉窗口宽除以 图片宽
               scale = Math.ceil((wInit / fittedSize.width) * 10) / 10;
             }
@@ -190,7 +187,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
         }
 
         scale = scale < scaleProps ? scaleProps : scale;
-        console.info('fittedSize', fittedSize);
         this.setState(
           (prevState) => ({
             ...prevState,
@@ -241,7 +237,16 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
   render() {
     const { loading, fittedSize, minScale } = this.state;
-    const { imageUri, cropAreaWidth, cropAreaHeight, containerColor, areaColor, areaOverlay, videoFile } = this.props;
+    const {
+      imageUri,
+      cropAreaWidth,
+      cropAreaHeight,
+      containerColor,
+      areaColor,
+      areaOverlay,
+      videoFile,
+      scale,
+    } = this.props;
 
     const areaWidth = cropAreaWidth!;
     const areaHeight = cropAreaHeight!;
@@ -258,12 +263,12 @@ class ImageCropper extends PureComponent<IProps, IState> {
             imageWidth={imageWidth}
             videoFile={videoFile}
             imageHeight={imageHeight}
-            minScale={minScale}
+            minScale={0.9}
             onMove={this.handleMove}
             containerColor={containerColor}
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
-            crop={this.crop}
+            propsScale={scale}
           />
         ) : null}
       </GestureHandlerRootView>
