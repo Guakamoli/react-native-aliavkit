@@ -24,7 +24,7 @@ function HomeScreen({ navigation, route }) {
       <View style={styles.container}>
 
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('storyPost')}>
-          <Text style={styles.buttonText}>storyPost</Text>
+          <Text style={styles.buttonText}>storyUpload</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('postUpload')}>
@@ -85,8 +85,8 @@ function Story(props) {
       videomusicIcon={require('../images/videomusicIcon.png')}
 
       giveUpImage={require('../images/giveUp.png')}
-      noVolumeImage={require('../images/noVolume.png')}
       tailorImage={require('../images/tailor.png')}
+      noVolumeImage={require('../images/noVolume.png')}
       volumeImage={require('../images/volume.png')}
       musicDynamicGif={require('../images/musicDynamic.gif')}
       musicIconPng={require('../images/musicIcon.png')}
@@ -101,16 +101,9 @@ function Story(props) {
 }
 
 function Post(props) {
-  const postRef = null;
-  console.info(props, 'ahshash');
+
+  // console.info(props, 'ahshash');
   const { server, user, item, navigation } = props;
-  // navigation.setOptions({
-  //       headerRight: () => <Button title='继续' onPress={() => {
-  //         // _ref.current.empty()
-  //         // 获取发布功能
-  //         postRef.current.empty()
-  //       }} />,
-  //     })
   return (
     <PostUpload
       // refs={postRef}
@@ -119,8 +112,10 @@ function Post(props) {
       goback={() => {
         console.log(12313);
       }}
-      goPostEditor={() => {
-        props.navigation.push('postUpload')
+      goPostEditor={(data) => {
+        console.log("postUploadpostUploadpostUpload", data);
+        props.navigation.push('PostEditorBox', { ...data })
+
       }}
 
       // 拿到上传数据
@@ -184,16 +179,35 @@ function PostEditorBox(props) {
   // console.log(1111,props);
 
   return (
-    <PostEditor
-      {...props}
-      getUploadFile={(data) => {
-        console.log('uploadfile------s', data);
-      }}
-      volume={require('../images/volume.png')}
-      noVolume={require('../images/noVolume.png')}
-    />
+    <>
+      <PostEditor
+        {...props}
+        actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
+        // 退出操作
+        // goback={
+        //   () => {
+
+        //     navigation.goBack(-1)
+        //   }
+
+        // }
+        goPostUpload={() => {
+          // navigation.push('')
+        }}
+        // 拿到上传数据
+        getUploadFile={(data) => {
+          console.log('PostEditor-----getUploadFile', data);
+        }}
+        noVolumeImage={require('../images/noVolume.png')}
+        volumeImage={require('../images/volume.png')}
+        noResultPng={require('../images/noResult.png')}
+
+        cameraModule={true}
+      />
+    </>
   );
 }
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {

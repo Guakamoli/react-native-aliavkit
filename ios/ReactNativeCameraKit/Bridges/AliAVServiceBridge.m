@@ -402,7 +402,7 @@ static NSString * ThumnailDirectory() {
 - (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
 {
     NSString *videoPath = [options valueForKey:@"videoPath"];
-    if (!videoPath || ![videoPath isEqualToString:@""]) {
+    if (!videoPath || [videoPath isEqualToString:@""]) {
         return;
     }
     AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:videoPath];

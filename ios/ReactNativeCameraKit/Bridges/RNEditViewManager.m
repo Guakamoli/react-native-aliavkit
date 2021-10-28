@@ -76,20 +76,6 @@ RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
     [self.editView trimVideoFromTime:startTime toTime:endTime];
 }
 
-RCT_EXPORT_METHOD(generateImages:(NSDictionary *)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-{
-    [self.editView generateImages:options handler:^(NSArray *path) {
-        resolve(path);
-    }];
-}
-
-RCT_EXPORT_METHOD(removeThumbnaiImages:(NSDictionary*)options)
-{
-    [self.editView removeImages];
-}
-
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();

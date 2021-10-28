@@ -12,7 +12,7 @@ import {
   FlatList,
   NativeModules,
   NativeEventEmitter,
-  Button,
+  StatusBar,
 } from 'react-native';
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -181,25 +181,27 @@ export default class CameraScreen extends Component<Props, State> {
     const Navigation = this.props.navigation;
     props.navigation.setOptions({
       headerTitle: '新作品',
-      // headerRight: () => <Button title='play' onPress={() =>  }  />,
 
-      headerRight: () => <Button title='继续' onPress={() => this.postEditor()} />,
-      //
-
-      //   headerTitle: 'Camera',
-      //   headerRight: () => {
-      //     return(
-      //       <TouchableOpacity onPress={() => navigation.navigate('PostEditorBox')} > <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text> </TouchableOpacity>
-      //     )
-      //   },
-      //   headerLeft: () =>  <Image
-      //   style={{
-      //     width: 28,
-      //     height: 28,
-      //   }}
-      //   source={{uri:require('../images/close.png')}}
-      //   resizeMode="contain"
-      // />,
+      // statusBarColor: 'transparent',
+      headerStyle: {
+        backgroundColor: '#000',
+      },
+      headerTintColor: 'rgba(255,255,255,1)',
+      headerTitleStyle: {
+        color: '#fff',
+        fontSize: 17,
+        fontWeight: '500',
+        lineHeight: 22,
+      },
+      headerRight: () => {
+        return (
+          <TouchableOpacity onPress={() => {
+            this.postEditor()
+          }} >
+            <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
+          </TouchableOpacity>
+        )
+      },
     });
     this.cropData = {};
     this.state = {
@@ -279,13 +281,19 @@ export default class CameraScreen extends Component<Props, State> {
         cropWidth: cropData.size.width,
         cropHeight: cropData.size.height,
       });
+      this.myRef.current.show('上传中', 3000);
+
+      console.log('trimVideoData', trimVideoData, 'fileSelectType', fileSelectType);
 
       this.myRef.current.show('请稍后', DURATION.FOREVER);
       // 进入修改
       if (fileSelectType === 'image') {
-        this.myRef.current.close();
+        console.log('开始裁剪');
+
+        // this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
-        this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
+        this.props.goPostEditor({ trimVideoData, fileType: fileSelectType })
+        // this.props.navigation.push('PostEditorBox', );
       }
     } catch (e) {
       console.info(e, '错误');
@@ -305,27 +313,17 @@ export default class CameraScreen extends Component<Props, State> {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     subscription = managerEmitter.addListener('cropProgress', (reminder) => {
       console.log(reminder);
-      // console.log( this.state.fileSelectType);
 
       if (reminder.progress == 1 && this.state.fileSelectType === 'video') {
-        // console.log('---data',trimVideoData);
-        // this.state.trimmerRightHandlePosition
-        this.myRef.current.close();
 
         let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
         let videoTime = this.state.videoTime;
-        this.sendUploadFile({
+        this.props.goPostEditor({
           trimVideoData,
           videoduration: videoTime,
           trimmerRight: trimmerRightHandlePosition,
           fileType: this.state.fileSelectType,
-        });
-        this.props.navigation.push('PostEditorBox', {
-          trimVideoData,
-          videoduration: videoTime,
-          trimmerRight: trimmerRightHandlePosition,
-          fileType: this.state.fileSelectType,
-        });
+        })
 
         // this.props.getUploadFile();
         // this.setState({fileEditor:true,multipleSandBoxData:[trimVideoData]})
@@ -368,15 +366,6 @@ export default class CameraScreen extends Component<Props, State> {
         console.log('andor', data);
 
         var photos = [];
-        // edges.map( async(item)=>{
-
-        //   let localUri = await CameraRoll.requestPhotoAccess(item.node.image.uri.slice(5));
-        //   item.node.image.uri = localUri ;
-        //   // console.log(localUri);
-
-        //   photos.push(item.node);
-        //   console.log('ios',photos);
-        // })
         for (var i in edges) {
           // ios文件
           photos.push(edges[i].node);
@@ -403,7 +392,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState = () => false;
   }
   sendUploadFile(data) {
-    console.info('11111', this.props.getUploadFile);
+    // console.info('11111', this.props.getUploadFile);
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
     }
@@ -423,11 +412,7 @@ export default class CameraScreen extends Component<Props, State> {
       >
         <TouchableOpacity
           onPress={async () => {
-            // await RNEditViewManager.stop()
-            // await AVService.removeThumbnaiImages()
-            // console.log('stopandf removeThumbnaiImages ');
-            // coverData = []
-            // 取消按钮
+
 
             this.props.goback();
           }}
@@ -471,7 +456,7 @@ export default class CameraScreen extends Component<Props, State> {
           paddingHorizontal: 12,
         }}
       >
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => { }}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
           </View>
@@ -484,9 +469,9 @@ export default class CameraScreen extends Component<Props, State> {
                 // 取最后一张
                 this.setState({ multipleData: [multipleData[multipleData.length - 1]] });
               }
-              // this.setState({ startmMltiple: !startmMltiple, })
+              this.setState({ startmMltiple: !startmMltiple, })
               // 暂时单张图㲏上传
-              this.setState({ startmMltiple: false });
+              // this.setState({ startmMltiple: false });
             }}
           >
             <Image
@@ -541,6 +526,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         {this.postFileUploadHead()}
+        <StatusBar barStyle={'light-content'} />
         <View
           style={[
             { height: 291, backgroundColor: '#000' },
@@ -736,371 +722,12 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-  // postEditorViewData(){
-  //   const {multipleData,multipleSandBoxData}  = this.state
-  //   // console.log('1231',multipleData);
-  //   // console.log('data.length',multipleData[0].length);
-  //   // const onlyOne = multipleSandBoxData.length === 1
 
-  //   // if(onlyOne){
-  //     console.log('11111111111postEditorViewData',multipleSandBoxData);
-  //     if(!this.state.fileEditor){
-  //       console.log('销毁postEditorViewData');
-
-  //       return null
-
-  //     }
-  //    return (
-  //     <View style={[{height:width,width:width, }]}>
-  //       <VideoEditor
-  //       ref={(edit) => (this.editor = edit)}
-  //       style={{height:111,width:411,}}
-  //       filterName={this.state.filterName}
-  //       // videoPath={"/var/mobile/Containers/Data/Application/9DBC4AB0-799C-4BD4-ADF1-E1F8339AF173/Documents/com.guakamoli.engine/composition/4AAF423D-3D69-4020-A695-37A855D5E460.mp4"}
-  //       // imagePath={multipleSandBoxData[0]}
-  //       videoPath={multipleSandBoxData[0]}
-  //       saveToPhotoLibrary={false}
-  //       startExportVideo={false}
-  //       // videoMute={this.state.videoMute}
-  //       // onExportVideo={this.onExportVideo}
-  //     />
-
-  //     </View>
-  //    )
-  // }
-  // 多图 展示
-  // return(
-  //   <View style={{height:375,paddingHorizontal:0}}>
-
-  //   <Carousel
-  //   data={multipleSandBoxData}
-  //   // containerCustomStyle={{backgroundColor:'green',}}
-  //   itemWidth={320}
-  //   sliderWidth={width}
-  //   enableSnap={this.state.aa}
-  //   onBeforeSnapToItem={(slideIndex = 0) => {
-  //     console.log('slideIndex',slideIndex,'multipleSandBoxData.length',multipleSandBoxData.length-1);
-
-  //     if(slideIndex === multipleSandBoxData.length -1){
-  //       console.log('aa:false');
-  //     this.setState({aa:false})
-  //     }else{
-  //       console.log('aa:true');
-  //       this.setState({aa:true})
-  //     }
-  //   }}
-  //   ListFooterComponent={()=>{
-  //     if(onlyOne) null
-  //     return (
-  //       <View style={{width:83,height:319,flexDirection:'row',alignItems:'center',marginTop:40}}>
-
-  //       <TouchableOpacity  style={{}} onPress={()=>{
-  //         this.setState({fileEditor:false,startmMltiple:true})
-  //       }}>
-  //          <Image
-  //        style={[{
-  //          width: 83,
-  //          height: 83,
-  //          marginHorizontal:34
-  //        }]}
-  //        source={this.props.addPhotoBtnPng}
-  //      />
-  //       </TouchableOpacity>
-  //       </View>
-  //     )
-  //   }}
-  //   renderItem={({index,item})=>{
-  //     console.log('123',item);
-  //     // const finall = (index == multipleSandBoxData.length -1 && multipleSandBoxData.length > 1)
-
-  //     return (
-  //       <>
-  //       {/* <View style={{flexDirection:'row',alignItems:'center'}}> */}
-  //       <View style={[{height:319,width:319,marginTop:40},
-  //         // ,finall && {width:214}
-
-  //         ]}>
-  //         {/* <Image   source ={{uri:item}} style={{width:'100%',height:'100%'}} / > */}
-
-  //         <VideoEditor
-  //     ref={(edit) => (this.editor = edit)}
-  //     style={{width:'100%',height:'100%' }}
-  //     filterName={this.state.filterName}
-  //     // videoPath={item.image.uri}
-  //     imagePath={item}
-  //     saveToPhotoLibrary={false}
-  //     // startExportVideo={this.state.startExportVideo}
-  //     // videoMute={this.state.mute}
-  //     // onExportVideo={this.onExportVideo}
-  //   />
-  //         </View>
-  //        {/* {finall &&
-
-  //        } */}
-  //        {/* </View> */}
-  //       </>
-  //     )
-  //   }}
-  //   />
-
-  // </View>
-  // )
-  // }
-  // 滤镜组件
-  // filterEditorFilter(){
-  //   return (
-  //     <View style={{marginTop:101,paddingHorizontal:17}}>
-  //        <FlatList
-  //         data={this.state.filterList}
-  //         initialNumToRender={4}
-  //         horizontal={true}
-  //         renderItem={({ index, item })=>{
-  //           return(
-  //             <View  style={{height:130}}>
-
-  //           <TouchableOpacity onPress={() => {
-  //                     this.setState({ filterName:item.filterName})
-  //                   }}>
-  //             <Image style={{width:100,height:100,backgroundColor:'green',marginRight:4}}   source={{uri:item.iconPath}} />
-  //             </TouchableOpacity>
-  //               </View>
-  //           )
-  //         }}
-  //       />
-  //     </View>
-  //   )
-  // }
-
-  // 裁剪
-  //   postTrimer(){
-  //     const {
-  //       trimmerLeftHandlePosition,
-  //       trimmerRightHandlePosition,
-  //       scrubberPosition,
-  //       videoTime
-  //     } = this.state;
-
-  //       console.log();
-  //       let  scrubberInterval = null
-  //     // return null
-  //     const  playScrubber = () => {
-  //     // this.setState({ playing: true });
-
-  //     scrubberInterval = setInterval(() => {
-  //       this.setState({ scrubberPosition: this.state.scrubberPosition + 1 })
-  //     }, 1000)
-  //   }
-
-  //   const  pauseScrubber = () => {
-  //     clearInterval(scrubberInterval)
-
-  //     this.setState({ scrubberPosition: this.state.trimmerLeftHandlePosition });
-  //   }
-  // //   const onStopPlay = async () => {
-  // //     audioRecorderPlayer.stopPlayer();
-  // //     audioRecorderPlayer.removePlayBackListener();
-  // //     setPlayType(0);
-  // // };
-
-  //   //  await RNEditViewManager.pause()
-
-  //     //  await RNEditViewManager.replay()
-  //     //  await
-  //     //  await RNEditViewManager.resume()
-  //   const  onHandleChange = async  ( { leftPosition, rightPosition }) => {
-  //     console.log('12222',leftPosition, rightPosition );
-
-  //     if (leftPosition < 0) {
-  //       leftPosition = 0;
-  //   }
-  //   if (rightPosition < 2000) {
-  //       rightPosition = 2000;
-  //   }
-
-  //     // console.log('-----222',result);
-  //     // RNEditViewManager.seekToTime(1.23)
-  //     if(leftPosition <= 100 ){
-
-  //       RNEditViewManager.seekToTime(leftPosition / 1000)
-  //     }
-  //    setTimeout(() => {
-  //     RNEditViewManager.play()
-  //    }, 1000);
-  //     this.setState({
-  //       trimmerRightHandlePosition: rightPosition,
-  //       trimmerLeftHandlePosition: leftPosition
-  //     })
-  //   }
-
-  //   const onScrubbingComplete = (newValue) => {
-  //     this.setState({  scrubberPosition: newValue })
-  //   }
-  //   // 播放视频
-
-  //   // const { ,trimmerLeftHandlePosition,trimmerRightHandlePosition} = this.state
-  //     return (
-  //       <>
-  //       <View style={{position:'absolute',bottom:200}}>
-  //       <TouchableOpacity onPress={async()=>{
-  //           // await RNEditViewManager.play()
-  //       // playScrubber()
-  //       }}>
-  //         <Text style={{fontSize:20,color:"red"}}>播放</Text>
-  //         </TouchableOpacity>
-  //         <TouchableOpacity onPress={async()=>{
-  //            await RNEditViewManager.pause()
-  //           //  pauseScrubber()
-  //            }}>
-  //         <Text style={{fontSize:20,color:"red",marginTop:20}}>暂停</Text>
-  //         </TouchableOpacity>
-  //         </View>
-  //     <View style={{marginTop:160,paddingHorizontal:20}}>
-
-  //     <Trimmer
-  //             // style={styles.trimViewContainer}
-  //             // 修改回调
-  //             onHandleChange={onHandleChange}
-  //             // 总时间
-  //             totalDuration={videoTime}
-  //             // totalDuration={50000}
-  //             // 渲染等级  以60000 为1 级别
-  //             initialZoomValue={1}
-  //             // 裁剪最大
-  //             maxTrimDuration={trimmerRightHandlePosition}
-
-  //             trimmerLeftHandlePosition={trimmerLeftHandlePosition}
-  //             trimmerRightHandlePosition={trimmerRightHandlePosition}
-
-  //             scrubberPosition={trimmerLeftHandlePosition}
-  //           //   minimumTrimDuration={minimumTrimDuration}
-  //               // maxTrimDuration={60000}
-  //             // 滑块覆盖层颜色
-  //             // tintColor={'#651FFF'}
-  //             // 刻度颜色
-  //             // markerColor={'#651FFF'}
-  //             // 底部内容条颜色
-  //             // trackBackgroundColor={'#fff'}
-  //             // 底部内容条边框颜色
-  //             // trackBorderColor={'#fff'}
-  //             // scrubberColor={'#fff'}
-  //             // maxTrimDuration={1000}
-  //             // 播放完成
-  //             onScrubbingComplete={()=>{console.log(123)} }
-  //             tintColor="#333"
-  //           markerColor="#5a3d5c"
-  //           trackBackgroundColor="#382039"
-  //           trackBorderColor="#5a3d5c"
-  //           scrubberColor="#b7e778"
-  //           onScrubberPressIn={()=>{console.log('onScrubberPressIn')}}
-  //           onRightHandlePressIn={()=>{    RNEditViewManager.pause()}}
-  //           onLeftHandlePressIn={()=>{    RNEditViewManager.pause()}}
-  //         />
-  //     </View>
-  //     </>
-  //     )
-  //   }
-  // 封面
-  // postCover(){
-  //   const {coverList,videoTime} = this.state;
-  //   // console.log('-----coverList',coverList);
-  //   console.log('---this.state.videoPath',this.state.multipleSandBoxData);
-  //   console.log('this.state.videoTime---',this.state.videoTime);
-
-  //   const  getcoverData = async() =>{
-  //     coverData = await RNEditViewManager.generateImages({
-  //         videoPath:this.state.multipleSandBoxData[0],
-  //         duration: videoTime > 7 ? 7 : videoTime,
-  //         startTime: 0,
-  //         itemPerTime: 1000,
-  //       });
-  //       // console.log('=====coverList:',coverList);
-
-  //       console.log('------',coverData);
-  //       this.setState({coverList:coverData})
-  //   }
-  //   if( coverData && coverData.length < 1){
-  //     getcoverData()
-  //   }
-  //   return(
-  //     <View style={{marginTop:93,paddingHorizontal:17}}>
-  //     <FlatList
-  //         data={coverList}
-  //         initialNumToRender={7}
-  //         horizontal={true}
-  //         renderItem={({ index, item })=>{
-  //           return(
-  //             <View  style={{height:130}}>
-  //               {/* 封面选择 */}
-  //             <TouchableOpacity  onPress={()=>{
-  //               this.setState({coverImage:item})
-  //             }}>
-  //               <Image source={{ uri: item }} style={{width:65,height:74,backgroundColor:'green',marginRight:2}}  />
-  //             </TouchableOpacity>
-  //             </View>
-  //           )
-  //         }}
-  //       />
-  //       </View>
-  //   )
-  // }
-  // // 切换底部功能
-  // switchProps(){
-  //   const switchProps =['滤镜','修剪','封面'];
-  //   const {selectBottomModel} = this.state;
-  //   return(
-  //     <View style={{height:60, width:width,flexDirection:"row",justifyContent:'space-evenly',alignItems:'flex-start',position:"absolute",bottom:0}}>
-  //       {switchProps.map((item,index) => {
-  //             return (
-  //               <TouchableOpacity key={index} onPress={() => {
-  //                 this.setState({ selectBottomModel: item })
-  //               }}
-  //               >
-  //                 <Text style={[styles.postSwitchProps,selectBottomModel === item && {color:"#fff"} ]}>{item}</Text>
-  //               </TouchableOpacity>
-  //             )
-  //           })}
-
-  //     </View>
-  //   )
-  // }
-
-  // photoEditorContent(){
-
-  //   return (
-
-  //   )
-  // }
   render() {
     const { fileEditor } = this.state;
     const { selectBottomModel, fileSelectType } = this.state;
     return (
       <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: 'black' }}>
-        {/* <Trimmer /> */}
-        {/* post */}
-
-        {/* {this.postHead()} */}
-        {/* {  this.postEditorViewData()  }
-                {fileEditor ? 
-                <>
-                <View style={{flex:1,backgroundColor:'#000',position:'relative'}}>
-              {
-                 selectBottomModel  === '滤镜' && this.filterEditorFilter()
-               }
-               {
-                 selectBottomModel  === '修剪' && this.postTrimer()
-               }
-               {
-                 selectBottomModel  === '封面' && this.postCover()
-               }
-               
-               {
-                 fileSelectType  != 'image' && this.switchProps()
-               }
-           
-   
-             </View> */}
-        {/* </> */}
-        {/* : */}
         <>
           <PostContent
             {...this.props}
@@ -1111,7 +738,6 @@ export default class CameraScreen extends Component<Props, State> {
           />
           {this.postFileUpload()}
         </>
-        {/* } */}
       </ScrollView>
     );
   }

@@ -745,9 +745,9 @@ export default class CameraScreen extends Component<Props, State> {
                   height: circleSize,
                   borderColor: '#fff',
                 }}
-              > 
-              </View>
-              */}
+              >
+              </View> */}
+
               <Image
                 source={this.props.captureButtonImage}
                 style={{ width: circleSize, height: circleSize, zIndex: 1 }}
@@ -912,6 +912,8 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   render() {
+    // console.log('videoPath={}:', this.state.videoPath, 'imageCaptured', this.state.imageCaptured);
+
     return (
       <>
         <Toast
@@ -927,6 +929,7 @@ export default class CameraScreen extends Component<Props, State> {
           <>
             {/* story */}
             {this.state.ShootSuccess ? (
+
               <StoryEditor
                 rephotograph={() => {
                   this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
