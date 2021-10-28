@@ -191,7 +191,11 @@ class ImageViewer extends Component<IProps> {
               set(this.gridOpacity, new Value(1)),
               set(gridHide, new Value(1)),
             ]),
+            cond(and(eq(state, State.END), eq(gridHide, new Value(1))), [
+              set(gridHide, new Value(0)),
 
+              set(this.gridOpacity, new Value(0)),
+            ]),
             cond(and(eq(state, State.FAILED), eq(gridHide, new Value(1))), [
               set(gridHide, new Value(0)),
 
@@ -340,6 +344,7 @@ class ImageViewer extends Component<IProps> {
                 }),
               ),
             ]),
+            cond(and(eq(state, State.END)), [set(gridHide, new Value(0)), set(this.gridOpacity, new Value(0))]),
           ]),
       },
     ]);
