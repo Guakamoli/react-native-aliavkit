@@ -1,7 +1,7 @@
 import React, { Component, ReactNode, RefObject } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
-import Animated, { Easing } from 'react-native-reanimated';
+import Animated, { Easing, lessOrEq } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 import Video from 'react-native-video';
@@ -105,7 +105,7 @@ class ImageViewer extends Component<IProps> {
     const { areaWidth, areaHeight, imageWidth, imageHeight, minScale } = props;
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
-
+    console.info(areaWidth, areaHeight, imageWidth, imageHeight, minScale);
     this.translateX = new Value(0);
     this.translateY = new Value(0);
     this.scale = new Value(minScale);
@@ -129,7 +129,8 @@ class ImageViewer extends Component<IProps> {
 
     const maxX = new Value(0);
     const negMaxX = new Value(0);
-
+    this.negMaxX = negMaxX;
+    this.maxX = maxX;
     const maxY = new Value(0);
     const negMaxY = new Value(0);
     this.state = {
@@ -140,6 +141,10 @@ class ImageViewer extends Component<IProps> {
     const verticalMax = divide(divide(sub(multiply(viewerImageHeight, this.scale), viewerAreaHeight), 2), this.scale);
     // const horizontalMax = new Value(20);
     // const verticalMax = new Value(20);
+    set(maxX, horizontalMax);
+    set(negMaxX, multiply(horizontalMax, new Value(-1)));
+    set(maxY, verticalMax);
+    set(negMaxY, multiply(verticalMax, new Value(-1)));
     const scaledWidth = multiply(viewerImageWidth, this.scale);
     const scaledHeight = multiply(viewerImageHeight, this.scale);
     this.scaledWidth = scaledWidth;
@@ -213,30 +218,20 @@ class ImageViewer extends Component<IProps> {
           state: State;
         }) =>
           block([
-            cond(
-              and(
-                eq(state, State.ACTIVE),
-                // eq(state, State.ACTIVE),
-                lessThan(translationX, 100),
+            cond(eq(state, State.ACTIVE), [
+              set(this.translateX, add(divide(translationX, this.scale), offsetX)),
+              set(this.translateY, add(divide(translationY, this.scale), offsetY)),
 
-                greaterThan(translationX, -100),
-                lessThan(translationY, 100),
-                greaterThan(translationY, -100),
-              ),
-              [
-                set(this.translateX, add(divide(translationX, this.scale), offsetX)),
-                set(this.translateY, add(divide(translationY, this.scale), offsetY)),
+              set(maxX, horizontalMax),
+              set(negMaxX, multiply(horizontalMax, new Value(-1))),
+              set(maxY, verticalMax),
+              set(negMaxY, multiply(verticalMax, new Value(-1))),
+              cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
 
-                set(maxX, horizontalMax),
-                set(negMaxX, multiply(horizontalMax, new Value(-1))),
-                cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
-                set(maxY, verticalMax),
-                set(negMaxY, multiply(verticalMax, new Value(-1))),
-                call([], () => {
-                  console.info('gaile');
-                }),
-              ],
-            ),
+              call([], () => {
+                console.info('gaile');
+              }),
+            ]),
 
             cond(
               and(
@@ -255,6 +250,9 @@ class ImageViewer extends Component<IProps> {
                       ...timingDefaultParams,
                     }),
                   ),
+                  call([], () => {
+                    console.info('gaile111');
+                  }),
                 ],
                 cond(and(greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
                   set(
@@ -265,6 +263,9 @@ class ImageViewer extends Component<IProps> {
                       ...timingDefaultParams,
                     }),
                   ),
+                  call([], () => {
+                    console.info('gail222e');
+                  }),
                 ]),
               ),
             ),
@@ -314,7 +315,12 @@ class ImageViewer extends Component<IProps> {
       {
         nativeEvent: ({ scale, state }: { scale: number; state: State }) =>
           block([
-            cond(eq(state, State.ACTIVE), [set(this.scale, multiply(offsetZ, scale))]),
+            cond(and(eq(state, State.ACTIVE), greaterThan(scale, new Value(0.6)), lessOrEq(scale, new Value(2))), [
+              set(this.scale, multiply(offsetZ, scale)),
+              call([], () => {
+                console.info(111);
+              }),
+            ]),
 
             cond(eq(state, State.END), [
               set(offsetZ, this.scale),
@@ -361,7 +367,7 @@ class ImageViewer extends Component<IProps> {
     const positionX = args[0];
     const positionY = args[1];
     const scale = args[2];
-    console.info(positionX, positionY, scale, 'scale', this.props.crop);
+    console.info(positionX, 'haha', args[3], args[4]);
     onMove({ positionX, positionY, scale });
   };
 
@@ -403,6 +409,7 @@ class ImageViewer extends Component<IProps> {
         width: imageWidth,
         height: imageHeight,
         zIndex: 99,
+        overflow: 'hidden',
         transform: [
           {
             scale: this.scale,
@@ -441,7 +448,9 @@ class ImageViewer extends Component<IProps> {
     return (
       <>
         <Animated.Code>
-          {() => block([call([this.translateX, this.translateY, this.scale], this.handleMove)])}
+          {() =>
+            block([call([this.translateX, this.translateY, this.scale, this.negMaxX, this.maxX], this.handleMove)])
+          }
         </Animated.Code>
         <PanGestureHandler
           ref={this.dragRef}
@@ -482,7 +491,7 @@ class ImageViewer extends Component<IProps> {
                             style={[
                               {
                                 left: areaWidth / 3,
-                                width: 1,
+                                width: StyleSheet.hairlineWidth,
                                 height: '100%',
                                 backgroundColor: 'rgba(255,255,255,0.5)',
                                 position: 'absolute',
@@ -514,7 +523,7 @@ class ImageViewer extends Component<IProps> {
                             style={[
                               {
                                 left: (areaWidth / 3) * 2,
-                                width: 1,
+                                width: StyleSheet.hairlineWidth,
                                 height: '100%',
                                 backgroundColor: 'rgba(255,255,255,0.5)',
                                 position: 'absolute',
@@ -548,7 +557,7 @@ class ImageViewer extends Component<IProps> {
                               {
                                 top: areaWidth / 3 + (imageHeight - areaWidth) / 2,
                                 width: '100%',
-                                height: 1,
+                                height: StyleSheet.hairlineWidth,
                                 backgroundColor: 'rgba(255,255,255,0.5)',
                                 position: 'absolute',
                                 transform: [
@@ -580,7 +589,7 @@ class ImageViewer extends Component<IProps> {
                               {
                                 top: (areaWidth / 3) * 2 + (imageHeight - areaWidth) / 2,
                                 width: '100%',
-                                height: 1,
+                                height: StyleSheet.hairlineWidth,
                                 backgroundColor: 'rgba(255,255,255,0.5)',
                                 position: 'absolute',
                                 transform: [
