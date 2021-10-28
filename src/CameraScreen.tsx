@@ -272,7 +272,8 @@ export default class CameraScreen extends Component<Props, State> {
 
       //
       pasterList: [],
-      facePasterInfo: {},
+      //  插最前面 
+      facePasterInfo: { eid: 0 },
       filterName: '原片',
 
       // 音乐打开
@@ -313,7 +314,7 @@ export default class CameraScreen extends Component<Props, State> {
     console.log('销毁');
     this.setState = () => false;
   }
-  componentWillUpdate(props, state) {
+  componentDidUpdate(props, state) {
     // 离开story
     // if(!state.storyShow && Platform.OS === 'android'){
     //   console.log(Platform.OS === 'android');
@@ -347,8 +348,7 @@ export default class CameraScreen extends Component<Props, State> {
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
               <TouchableOpacity
                 onPress={() => {
-                  // this.props.navigation.navigate('PostEditorBox')
-                  console.log(this.props.navigation.push('PostUpload'));
+                  this.props.goPost()
                 }}
               >
                 <Text style={styles.videoTitle}>作品</Text>
@@ -386,7 +386,7 @@ export default class CameraScreen extends Component<Props, State> {
           {/* 音乐 */}
           <TouchableOpacity
             onPress={() => {
-              this.setState({ musicOpen: !this.state.musicOpen });
+              this.setState({ musicOpen: false });
             }}
           >
             <Image style={styles.musicIcon} source={this.props.musicImage} resizeMode='contain' />
@@ -397,7 +397,7 @@ export default class CameraScreen extends Component<Props, State> {
               this.setState({ showBeautify: !this.state.showBeautify });
             }}
           >
-            <Image style={styles.beautifyIcon} source={this.props.beautifyImage} resizeMode='contain' />
+            <Image style={styles.beautifyIcon} source={this.state.showBeautify ? this.props.selectBeautify : this.props.beautifyImage} resizeMode='contain' />
           </TouchableOpacity>
         </View>
       </>
@@ -490,7 +490,7 @@ export default class CameraScreen extends Component<Props, State> {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
     const getPasterData = async () => {
       const pasters = await this.camera.getPasterInfos();
-      // console.log('--------pasters',pasters)
+      pasters.unshift({ eid: 0 })
       this.setState({
         pasterList: pasters,
         facePasterInfo: pasters[0],
@@ -589,9 +589,21 @@ export default class CameraScreen extends Component<Props, State> {
   }
   switchProp() {
     const { pasterList } = this.state;
+    // console.log('this.state.currentIndex,', this.state.currentIndex);
 
     return (
       <View>
+        {this.state.facePasterInfo.eid != 0 &&
+          <TouchableOpacity style={{ position: 'absolute', bottom: 100, left: (width - 32) / 2 }} onPress={() => {
+            this.FlatListRef?.snapToItem?.(0);
+            this.setState({ facePasterInfo: { eid: 0 } })
+          }} >
+            <Image
+              source={this.props.giveUpImage}
+              style={{ width: 32, height: 32, zIndex: 1, }}
+            />
+          </TouchableOpacity>
+        }
         <Carousel
           ref={(flatList) => {
             this.FlatListRef = flatList;
@@ -618,8 +630,7 @@ export default class CameraScreen extends Component<Props, State> {
           // justifyContent='center'
           useScrollView={true}
           firstItem={this.state.currentIndex}
-          onBeforeSnapToItem={(slideIndex = 0) => {
-            console.log('asdasdasd', slideIndex);
+          onSnapToItem={(slideIndex = 0) => {
             this.setState({
               currentIndex: slideIndex,
               facePasterInfo: pasterList[slideIndex],
@@ -631,7 +642,7 @@ export default class CameraScreen extends Component<Props, State> {
               this.FlatListRef?.snapToItem?.(index);
             };
             return (
-              <TouchableOpacity delayLongPress={1000} onPress={toItem}>
+              <TouchableOpacity delayLongPress={500} onPress={toItem} style={item.eid == 0 && { opacity: 0 }}>
                 <View style={{ position: 'relative' }}>
                   <View style={[styles.propStyle, img]}>
                     <Image style={img} source={{ uri: item.icon }} />
@@ -639,7 +650,8 @@ export default class CameraScreen extends Component<Props, State> {
                 </View>
               </TouchableOpacity>
             );
-          }}
+          }
+          }
         >
           <Animated.View
             style={[
@@ -724,6 +736,18 @@ export default class CameraScreen extends Component<Props, State> {
               }}
             >
               {/* <View style={styles.captureButtonImage}> */}
+              {/* 圆环图片 */}
+              {/* <View
+                style={{
+                  borderRadius: circleSize,
+                  borderWidth: 4,
+                  width: circleSize,
+                  height: circleSize,
+                  borderColor: '#fff',
+                }}
+              > 
+              </View>
+              */}
               <Image
                 source={this.props.captureButtonImage}
                 style={{ width: circleSize, height: circleSize, zIndex: 1 }}
@@ -740,6 +764,7 @@ export default class CameraScreen extends Component<Props, State> {
                 {pasterList.map((i, index) => {
                   return (
                     <View
+                      key={index}
                       style={{
                         alignItems: 'center',
                         width: itemWidth,
@@ -768,6 +793,7 @@ export default class CameraScreen extends Component<Props, State> {
                               },
                             ],
                           },
+                          i.eid == 0 && { backgroundColor: "#fff" }
                         ]}
                       >
                         <Image
@@ -782,7 +808,7 @@ export default class CameraScreen extends Component<Props, State> {
               {/* </View> */}
             </TouchableOpacity>
           </Animated.View>
-        </Carousel>
+        </Carousel >
 
         {/* 临时方案  安卓 拍摄不会触发 */}
       </View >
@@ -831,7 +857,7 @@ export default class CameraScreen extends Component<Props, State> {
   // 美颜 滤镜 box
   renderbeautifyBox() {
     return (
-      <View style={{ height: 189, backgroundColor: '#000', width: width, zIndex: 99, position: 'absolute', bottom: 0 }}>
+      <View style={{ height: 189, backgroundColor: '#000', width: width, zIndex: 99 }}>
         <View style={styles.beautifyBoxHead}>
           {/* <Text style={styles.beautifyTitle}>{this.state.showFilterLens ? `滤镜` : `美颜`}</Text> */}
           <Text style={styles.beautifyTitle}>{`美颜`}</Text>
@@ -923,6 +949,7 @@ export default class CameraScreen extends Component<Props, State> {
                 musicIcongray={this.props.musicIcongray}
                 musicSearch={this.props.musicSearch}
                 imagePath={this.state.imageCaptured}
+                noResultPng={this.props.noResultPng}
               // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
               />
             ) : (
@@ -1003,6 +1030,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#7E7E7E',
     lineHeight: 18,
+    fontWeight: '500'
+
   },
   snapshotTitle: {
     fontSize: 13,

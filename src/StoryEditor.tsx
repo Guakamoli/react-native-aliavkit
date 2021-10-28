@@ -142,9 +142,7 @@ export default class StoryEditor extends Component<Props, State> {
         this.setState({ filterList: filterList })
       } else {
         const infos = await RNEditViewManager.getFilterIcons({});
-        console.log('getFilters', infos);
         infos.unshift({ filterName: null, iconPath: '', title: "无效果" })
-        console.log('getFilters', infos);
         this.setState({ filterList: infos })
       }
     }
@@ -191,7 +189,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 编辑头部按钮
   renderUpdateTop() {
-    // console.log(this.props.fileType, 'this.props.fileType');
+    // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
 
     const imglist = [
       // 'filter': 
@@ -227,6 +225,9 @@ export default class StoryEditor extends Component<Props, State> {
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
           {
             imglist.map((item, index) => {
+              if (this.props.fileType != 'video' && index == 1) {
+                return null
+              }
               return (
                 <TouchableOpacity onPress={item.onPress} key={index}>
                   <Image
@@ -250,8 +251,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    console.info('拍摄内容渲染', this.props.videoPath, 'imagePath', this.props.imagePath);
-
+    // console.info('拍摄内容渲染', this.props.videoPath, 'imagePath', this.props.imagePath);
     const VideoEditors = () => {
       return (
         <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
@@ -319,7 +319,7 @@ export default class StoryEditor extends Component<Props, State> {
                         <Image style={[styles.beautifySelect,
                         this.state.filterName == item.filterName && styles.beautifySelecin
                         ]}
-                          source={{ uri: item.iconPath }}
+                          source={item.filterName === null ? this.props.noResultPng : { uri: item.iconPath }}
                         />
                         <Text style={[styles.filterLensSelectTitle,
                         this.state.filterName == item.filterName && { color: '#836BFF' }
