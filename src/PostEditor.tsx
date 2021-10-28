@@ -262,7 +262,6 @@ const PostEditor = (props) => {
             onExportVideo(event);
           }}
           onPlayProgress={({ nativeEvent }) => {
-            console.info(nativeEvent, 'nativeEvent');
             if (nativeEvent.playProgress === 0) {
               Animated.timing(
                 // 随时间变化而执行动画
@@ -430,7 +429,6 @@ const PostEditor = (props) => {
   // 裁剪
   const postTrimer = () => {
     const onHandleChange = async ({ leftPosition, rightPosition }) => {
-      console.info('Bianhas');
       if (leftPosition < 0) {
         leftPosition = 0;
       }
