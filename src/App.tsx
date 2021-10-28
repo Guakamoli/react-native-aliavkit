@@ -97,8 +97,9 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name='Home' component={Story} />
         <Stack.Screen name='PostUpload' component={Post} />
+
+        <Stack.Screen name='Home' component={Story} />
         <Stack.Screen name='PostEditorBox' component={PostEditorBox} />
       </Stack.Navigator>
     </NavigationContainer>
