@@ -190,6 +190,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
         }
 
         scale = scale < scaleProps ? scaleProps : scale;
+        console.info('fittedSize', fittedSize);
         this.setState(
           (prevState) => ({
             ...prevState,
@@ -262,6 +263,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             containerColor={containerColor}
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
+            crop={this.crop}
           />
         ) : null}
       </GestureHandlerRootView>

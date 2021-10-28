@@ -40,6 +40,8 @@ const {
   lessThan,
   add,
   sub,
+  min,
+  max,
   multiply,
   divide,
   call,
@@ -64,12 +66,12 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.9,
+    shadowRadius: 2,
 
-    elevation: 5,
+    elevation: 24,
   },
 });
 
@@ -101,7 +103,6 @@ class ImageViewer extends Component<IProps> {
     super(props);
 
     const { areaWidth, areaHeight, imageWidth, imageHeight, minScale } = props;
-
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
 
@@ -216,11 +217,11 @@ class ImageViewer extends Component<IProps> {
               and(
                 eq(state, State.ACTIVE),
                 eq(state, State.ACTIVE),
-                lessThan(translationX, 100),
+                // lessThan(translationX, 100),
 
-                greaterThan(translationX, -100),
-                lessThan(translationY, 100),
-                greaterThan(translationY, -100),
+                // greaterThan(translationX, -100),
+                // lessThan(translationY, 100),
+                // greaterThan(translationY, -100),
               ),
               [
                 set(this.translateX, add(divide(translationX, this.scale), offsetX)),
@@ -324,6 +325,7 @@ class ImageViewer extends Component<IProps> {
 
             cond(and(eq(state, State.END), greaterThan(this.scale, new Value(maxScale))), [
               set(offsetZ, new Value(maxScale)),
+
               set(
                 this.scale,
                 timing({
@@ -335,6 +337,7 @@ class ImageViewer extends Component<IProps> {
             ]),
             cond(and(eq(state, State.END), lessThan(this.scale, new Value(minScale))), [
               set(offsetZ, new Value(minScale)),
+
               set(
                 this.scale,
                 timing({
@@ -355,6 +358,7 @@ class ImageViewer extends Component<IProps> {
     const positionX = args[0];
     const positionY = args[1];
     const scale = args[2];
+    console.info(positionX, positionY, scale, 'scale', this.props.crop);
     onMove({ positionX, positionY, scale });
   };
 
@@ -481,7 +485,22 @@ class ImageViewer extends Component<IProps> {
                                 position: 'absolute',
                                 transform: [
                                   {
-                                    translateX: multiply(this.translateX, -1),
+                                    translateX: add(
+                                      multiply(this.translateX, -1),
+                                      divide(
+                                        multiply(
+                                          max(sub(this.scale, 1), 0),
+                                          multiply(
+                                            (areaWidth / 3) * 2 + (imageWidth - areaWidth) / 2 - imageWidth / 2,
+                                            1,
+                                          ),
+                                        ),
+                                        this.scale,
+                                      ),
+                                    ),
+                                  },
+                                  {
+                                    scaleX: divide(1, this.scale),
                                   },
                                 ],
                               },
@@ -499,7 +518,22 @@ class ImageViewer extends Component<IProps> {
 
                                 transform: [
                                   {
-                                    translateX: add(multiply(this.translateX, -1), 0),
+                                    translateX: add(
+                                      multiply(this.translateX, -1),
+                                      divide(
+                                        multiply(
+                                          max(sub(this.scale, 1), 0),
+                                          multiply(
+                                            (areaWidth / 3) * 2 + (imageWidth - areaWidth) / 2 - imageWidth / 2,
+                                            -1,
+                                          ),
+                                        ),
+                                        this.scale,
+                                      ),
+                                    ),
+                                  },
+                                  {
+                                    scaleX: divide(1, this.scale),
                                   },
                                 ],
                               },
@@ -509,7 +543,7 @@ class ImageViewer extends Component<IProps> {
                           <Animated.View
                             style={[
                               {
-                                top: areaWidth / 3,
+                                top: areaWidth / 3 + (imageHeight - areaWidth) / 2,
                                 width: '100%',
                                 height: 1,
                                 backgroundColor: 'rgba(255,255,255,0.5)',
@@ -517,9 +551,21 @@ class ImageViewer extends Component<IProps> {
                                 transform: [
                                   {
                                     translateY: add(
-                                      divide(multiply(this.translateY, -1), 1),
-                                      divide((imageHeight - areaWidth) / 2, 1),
+                                      multiply(this.translateY, -1),
+                                      divide(
+                                        multiply(
+                                          max(sub(this.scale, 1), 0),
+                                          multiply(
+                                            (areaWidth / 3) * 2 + (imageHeight - areaWidth) / 2 - imageHeight / 2,
+                                            1,
+                                          ),
+                                        ),
+                                        this.scale,
+                                      ),
                                     ),
+                                  },
+                                  {
+                                    scaleY: divide(1, this.scale),
                                   },
                                 ],
                               },
@@ -529,7 +575,7 @@ class ImageViewer extends Component<IProps> {
                           <Animated.View
                             style={[
                               {
-                                top: (areaWidth / 3) * 2,
+                                top: (areaWidth / 3) * 2 + (imageHeight - areaWidth) / 2,
                                 width: '100%',
                                 height: 1,
                                 backgroundColor: 'rgba(255,255,255,0.5)',
@@ -537,9 +583,21 @@ class ImageViewer extends Component<IProps> {
                                 transform: [
                                   {
                                     translateY: add(
-                                      divide(multiply(this.translateY, -1), 1),
-                                      divide((imageHeight - areaWidth) / 2, 1),
+                                      multiply(this.translateY, -1),
+                                      divide(
+                                        multiply(
+                                          max(sub(this.scale, 1), 0),
+                                          multiply(
+                                            (areaWidth / 3) * 2 + (imageHeight - areaWidth) / 2 - imageHeight / 2,
+                                            -1,
+                                          ),
+                                        ),
+                                        this.scale,
+                                      ),
                                     ),
+                                  },
+                                  {
+                                    scaleY: divide(1, this.scale),
                                   },
                                 ],
                               },
