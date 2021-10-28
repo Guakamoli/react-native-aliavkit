@@ -257,8 +257,6 @@ export default class CameraScreen extends Component<Props, State> {
 
   postEditor = async () => {
     const { fileEditor, multipleData, fileSelectType, cropOffsetX, cropOffsetY, multipleSandBoxData } = this.state;
-    console.log(cropOffsetX, cropOffsetY, multipleData, 'hahahah');
-
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
@@ -271,25 +269,12 @@ export default class CameraScreen extends Component<Props, State> {
         cropWidth: cropData.size.width,
         cropHeight: cropData.size.height,
       });
-      // trimVideoData = await AVService.crop({
-      //   source: `${multipleData[0].image.uri}`,
-      //   cropOffsetX,
-      //   cropOffsetY,
-      //   cropWidth: multipleData[0].image.width,
-      //   cropHeight: multipleData[0].image.width,
-      // });
-      // await AVService.crop({});
+
       this.myRef.current.show('请稍后', DURATION.FOREVER);
-
-      console.log('trimVideoData', trimVideoData, 'fileSelectType', fileSelectType);
-
       // 进入修改
       if (fileSelectType === 'image') {
-        console.log('开始裁剪');
-
         this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
-
         this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
       }
     } catch (e) {

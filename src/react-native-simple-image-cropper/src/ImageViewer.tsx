@@ -34,6 +34,7 @@ const {
   cond,
   eq,
   and,
+  neq,
   greaterThan,
   greaterOrEq,
   lessThan,
@@ -142,6 +143,8 @@ class ImageViewer extends Component<IProps> {
     const scaledHeight = multiply(viewerImageHeight, this.scale);
     this.scaledWidth = scaledWidth;
     this.scaledHeight = scaledHeight;
+    const gridHide = new Value(0);
+
     // 网格专用
     this.gridX = new Value(0);
     this.gridY = new Value(0);
@@ -156,7 +159,6 @@ class ImageViewer extends Component<IProps> {
               set(offsetZ, new Value(minScale)),
               set(offsetX, new Value(0)),
               set(offsetY, new Value(0)),
-              // set(this.gridOpacity, new Value(0)),
               set(
                 this.scale,
                 timing({
@@ -184,7 +186,16 @@ class ImageViewer extends Component<IProps> {
                 }),
               ),
             ]),
-            // cond(eq(state, State.BEGAN), [set(this.gridOpacity, new Value(1))]),
+            cond(and(eq(state, State.BEGAN), neq(this.gridOpacity, new Value(100))), [
+              set(this.gridOpacity, new Value(1)),
+              set(gridHide, new Value(1)),
+            ]),
+
+            cond(and(eq(state, State.FAILED), eq(gridHide, new Value(1))), [
+              set(gridHide, new Value(0)),
+
+              set(this.gridOpacity, new Value(0)),
+            ]),
           ]),
       },
     ]);
@@ -217,7 +228,7 @@ class ImageViewer extends Component<IProps> {
 
                 set(maxX, horizontalMax),
                 set(negMaxX, multiply(horizontalMax, new Value(-1))),
-                set(this.gridOpacity, 1),
+                cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
                 set(maxY, verticalMax),
                 set(negMaxY, multiply(verticalMax, new Value(-1))),
               ],
@@ -291,8 +302,6 @@ class ImageViewer extends Component<IProps> {
               set(offsetX, this.translateX),
               set(offsetY, this.translateY),
             ]),
-            cond(eq(state, State.BEGAN), [set(this.gridOpacity, new Value(1))]),
-            cond(eq(state, State.END), [set(this.gridOpacity, new Value(0))]),
           ]),
       },
     ]);
@@ -365,7 +374,7 @@ class ImageViewer extends Component<IProps> {
     const imageSrc = {
       uri: image,
     };
-    const showCover = false;
+    const showCover = true;
     const containerStyles = [
       styles.panGestureInner,
       {
@@ -492,13 +501,6 @@ class ImageViewer extends Component<IProps> {
                                   {
                                     translateX: add(multiply(this.translateX, -1), 0),
                                   },
-                                  {
-                                    scale: divide(1, this.scale),
-                                    translateX: add(
-                                      multiply(this.translateX, -1),
-                                      divide((imageWidth - areaWidth) / 2, this.scale),
-                                    ),
-                                  },
                                 ],
                               },
                               styles.shadow,
@@ -514,7 +516,10 @@ class ImageViewer extends Component<IProps> {
                                 position: 'absolute',
                                 transform: [
                                   {
-                                    translateY: add(divide(multiply(this.translateY, -1), 1), 0),
+                                    translateY: add(
+                                      divide(multiply(this.translateY, -1), 1),
+                                      divide((imageHeight - areaWidth) / 2, 1),
+                                    ),
                                   },
                                 ],
                               },
@@ -531,10 +536,9 @@ class ImageViewer extends Component<IProps> {
                                 position: 'absolute',
                                 transform: [
                                   {
-                                    scale: divide(1, this.scale),
                                     translateY: add(
                                       divide(multiply(this.translateY, -1), 1),
-                                      divide((imageHeight - areaWidth) / 2, this.scale),
+                                      divide((imageHeight - areaWidth) / 2, 1),
                                     ),
                                   },
                                 ],
