@@ -227,10 +227,6 @@ class ImageViewer extends Component<IProps> {
               set(maxY, verticalMax),
               set(negMaxY, multiply(verticalMax, new Value(-1))),
               cond(eq(this.gridOpacity, new Value(0)), [set(this.gridOpacity, new Value(1))]),
-
-              call([], () => {
-                console.info('gaile');
-              }),
             ]),
 
             cond(
@@ -246,13 +242,10 @@ class ImageViewer extends Component<IProps> {
                     this.translateX,
                     timing({
                       from: this.translateX,
-                      to: negMaxX,
+                      to: 0,
                       ...timingDefaultParams,
                     }),
                   ),
-                  call([], () => {
-                    console.info('gaile111');
-                  }),
                 ],
                 cond(and(greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
                   set(
@@ -263,9 +256,6 @@ class ImageViewer extends Component<IProps> {
                       ...timingDefaultParams,
                     }),
                   ),
-                  call([], () => {
-                    console.info('gail222e');
-                  }),
                 ]),
               ),
             ),
@@ -317,9 +307,6 @@ class ImageViewer extends Component<IProps> {
           block([
             cond(and(eq(state, State.ACTIVE), greaterThan(scale, new Value(0.6)), lessOrEq(scale, new Value(2))), [
               set(this.scale, multiply(offsetZ, scale)),
-              call([], () => {
-                console.info(111);
-              }),
             ]),
 
             cond(eq(state, State.END), [
