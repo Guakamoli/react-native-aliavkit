@@ -183,7 +183,7 @@ const PostEditor = (props) => {
     });
     // console.log('=====coverList:',coverList);
 
-    console.log('------', coverData);
+    console.log('------封面图', coverData);
     setcoverList(coverData);
     // this.setState({coverList:coverData})
     setcoverImage(coverData[0]);

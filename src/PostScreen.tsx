@@ -94,14 +94,14 @@ let subscription = null;
 let trimVideoData = null;
 let coverData = [];
 let cropData = {};
+let cropDataRow = {};
 // const navigation = useNavigation();
 const PostContent = (props) => {
   const [cropScale, setCropScale] = useState(0.9);
   const { multipleData, CameraRollList, fileSelectType, videoFile } = props;
   const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
   const toggleCropWidth = () => {
-    console.info(cropScale, 'cropScale');
-    if (cropScale < 1) {
+    if (!cropDataRow.scale || cropDataRow.scale < 1 || cropScale === 0.9) {
       setCropScale(1);
     } else {
       setCropScale(0.9);
@@ -160,22 +160,8 @@ const PostContent = (props) => {
             areaColor='black'
             scale={cropScale}
             areaOverlay={<View></View>}
-            setCropperParams={async (cropperParams) => {
-              // 这里 offset 和 size 就是最终需要的xy 和size
-              const result = await ImageCropper.crop({
-                ...cropperParams,
-                imageUri: imageItem?.uri,
-                cropSize: {
-                  width,
-                  height: width,
-                },
-                cropAreaSize: {
-                  width,
-                  height: width,
-                },
-              });
-              cropData = result;
-              console.info(result);
+            setCropperParams={(cropperParams) => {
+              cropDataRow = cropperParams;
             }}
           />
         </View>
@@ -215,6 +201,7 @@ export default class CameraScreen extends Component<Props, State> {
       //   resizeMode="contain"
       // />,
     });
+    this.cropData = {};
     this.state = {
       CameraRollList: [],
       fileSelectType: '',
@@ -256,13 +243,34 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   postEditor = async () => {
-    const { fileEditor, multipleData, fileSelectType, cropOffsetX, cropOffsetY, multipleSandBoxData } = this.state;
-    console.log(cropOffsetX, cropOffsetY, multipleData, 'hahahah');
-
+    const {
+      fileEditor,
+      multipleData,
+      fileSelectType,
+      cropOffsetX,
+      cropOffsetY,
+      multipleSandBoxData,
+      CameraRollList,
+    } = this.state;
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
     try {
+      const imageItem =
+        multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
+      const result = await ImageCropper.crop({
+        ...cropDataRow,
+        imageUri: imageItem?.uri,
+        cropSize: {
+          width: width,
+          height: width,
+        },
+        cropAreaSize: {
+          width: width,
+          height: width,
+        },
+      });
+      cropData = result;
       console.info(multipleData, cropData);
       trimVideoData = await AVService.crop({
         source: `${multipleData[0].image.uri}`,
@@ -271,25 +279,12 @@ export default class CameraScreen extends Component<Props, State> {
         cropWidth: cropData.size.width,
         cropHeight: cropData.size.height,
       });
-      // trimVideoData = await AVService.crop({
-      //   source: `${multipleData[0].image.uri}`,
-      //   cropOffsetX,
-      //   cropOffsetY,
-      //   cropWidth: multipleData[0].image.width,
-      //   cropHeight: multipleData[0].image.width,
-      // });
-      // await AVService.crop({});
+
       this.myRef.current.show('请稍后', DURATION.FOREVER);
-
-      console.log('trimVideoData', trimVideoData, 'fileSelectType', fileSelectType);
-
       // 进入修改
       if (fileSelectType === 'image') {
-        console.log('开始裁剪');
-
         this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
-
         this.props.navigation.push('PostEditorBox', { trimVideoData, fileType: fileSelectType });
       }
     } catch (e) {
@@ -565,6 +560,8 @@ export default class CameraScreen extends Component<Props, State> {
                 <TouchableOpacity
                   onPress={async () => {
                     //  第一次
+                    cropDataRow = {};
+
                     if (multipleData.length <= 1) {
                       // 获取第一次选择类型
                       let fileType = type.split('/')[0];
