@@ -75,7 +75,7 @@ const PostEditor = (props) => {
             setvideoMute(!videoMute);
           }}
         >
-          <Image style={{ width: 30, height: 21 }} source={videoMute ? volumeImage : noVolumeImage} />
+          <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
         </TouchableOpacity>
       );
     },
