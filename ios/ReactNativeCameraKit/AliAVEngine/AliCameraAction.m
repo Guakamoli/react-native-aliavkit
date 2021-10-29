@@ -260,7 +260,7 @@ static AliCameraAction *_instance = nil;
     NSString *videoSavePath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
     _videoSavePath = videoSavePath;
     
-    self.recorder.outputPath = self.mediaConfig.outputPath ? self.mediaConfig.outputPath : videoSavePath;
+    self.recorder.outputPath = videoSavePath;
     self.mediaConfig.outputPath = self.recorder.outputPath;
     self.recorder.taskPath = taskPath;
     

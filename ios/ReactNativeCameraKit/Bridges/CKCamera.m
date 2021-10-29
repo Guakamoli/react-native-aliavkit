@@ -130,14 +130,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (self.window && _isPresented) {
         NSLog(@"--- 📷 coming back ");
         if (self.cameraAction) {
-            [self.cameraAction startFrontPreview];
+            [self.cameraAction startPreview];
         }
         return;
     }
     if (!_isPresented && self.window) {
         NSLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
-            [self.cameraAction startFrontPreview];
+            [self.cameraAction startPreview];
         }
         _isPresented = YES;
     }
