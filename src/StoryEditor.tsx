@@ -113,12 +113,11 @@ export default class StoryEditor extends Component<Props, State> {
 
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
-    console.log('1231', event);
+    // console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
       let outputPath = event.outputPath;
-      this.setState({ startExportVideo: false, outputPath: event.outputPath });
-      // console.log('视频导出成功, path = ', event.outputPath);
+      this.setState({ startExportVideo: false });
       let uploadFile = [];
       // 
       let type = outputPath.split('.')
@@ -251,7 +250,6 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    // console.info('拍摄内容渲染', this.props.videoPath, 'imagePath', this.props.imagePath);
     const VideoEditors = () => {
       return (
         <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>

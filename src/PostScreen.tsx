@@ -13,14 +13,13 @@ import {
   NativeModules,
   NativeEventEmitter,
   StatusBar,
+  Modal
 } from 'react-native';
-import _ from 'lodash';
+import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
-import Video from 'react-native-video';
-import Carousel from 'react-native-snap-carousel';
-import VideoEditor from './VideoEditor';
+
 import AVService from './AVService.ios';
 import ImageCropper from './react-native-simple-image-cropper/src';
 
@@ -31,17 +30,12 @@ const photosItem = width / 4;
 
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
-  ratioOverlay?: string;
-  closeImage: any;
-  goback: any;
 
   multipleBtnImage: any;
   postCameraImage: any;
   startMultipleBtnImage: any;
   changeSizeImage: any;
-  addPhotoBtnPng: any;
-  postMutePng: any;
-  postNoMutePng: any;
+
   getUploadFile: (any) => void;
   navigation: any;
 
@@ -57,13 +51,13 @@ type State = {
   scrollViewWidth: boolean;
   photoAlbum: any;
   photoAlbumselect: any;
-  // pasterList: any
+
   videoFile: any;
-  // facePasterInfo: any
+
   fileEditor: Boolean;
 
   // 2
-  trimmerLeftHandlePosition: any;
+
   trimmerRightHandlePosition: any;
   scrubberPosition: any;
 
@@ -75,7 +69,7 @@ type State = {
   videoPaused: boolean;
 };
 
-const scrubInterval = 50;
+
 let subscription = null;
 let trimVideoData = null;
 
@@ -197,21 +191,14 @@ export default class CameraScreen extends Component<Props, State> {
 
       startmMltiple: false,
       photoAlbum: [],
-
       photoAlbumselect: {},
       videoFile: '',
       scrollViewWidth: true,
-      //
-      // pasterList: [],
-      // facePasterInfo: {},
 
-      // 修改页面
       fileEditor: false,
-      // 滤镜
-      // selectBottomModel:'滤镜',
 
-      //22
-      trimmerLeftHandlePosition: 0,
+
+
       trimmerRightHandlePosition: 1000,
       videoTime: 60000,
       scrubberPosition: 0,
@@ -220,12 +207,13 @@ export default class CameraScreen extends Component<Props, State> {
       cropOffsetX: 0,
       cropOffsetY: 0,
       videoPaused: false,
+      siwtchlibrary: false,
     };
   }
 
   postEditor = async () => {
     const {
-      fileEditor,
+
       multipleData,
       fileSelectType,
       cropOffsetX,
@@ -287,7 +275,7 @@ export default class CameraScreen extends Component<Props, State> {
 
       if (reminder.progress == 1 && this.state.fileSelectType === 'video') {
         this.setState({ videoPaused: true });
-        console.log('视频暂停拉');
+
         let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
         let videoTime = this.state.videoTime;
         this.props.goPostEditor({
@@ -305,46 +293,42 @@ export default class CameraScreen extends Component<Props, State> {
     });
 
     //获取照片
-    var getPhotos = CameraRoll.getPhotos({
+    let getPhotos = CameraRoll.getPhotos({
       first: 100,
       assetType: 'All',
       //todo  安卓调试隐藏
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
       // groupTypes: 'Library'
     });
-    var getAlbums = CameraRoll.getAlbums({
-      assetType: 'All',
-    });
-    console.log(233);
-    getAlbums.then((data) => {
-      // 获取相册封面
-      data.map(async (item) => {
-        const cover = await CameraRoll.getPhotos({ first: 1, assetType: 'Photos', groupName: `${item.title}` });
-        // 通过相册 名称获取
-        data.map((item2) => {
-          if (item2.title == cover.edges[0].node.group_name) {
-            item2.cover = cover.edges[0].node.image.uri;
-          }
-        });
-      });
-      // 相册数据
-      this.setState({ photoAlbum: data, photoAlbumselect: data[0] });
-    });
+    // var getAlbums = CameraRoll.getAlbums({
+    //   assetType: 'All',
+    // });
+    // let getAlbums = CameraRoll.getAllLibraryPhotos({
+    //   include: ['playableDuration', 'filename', 'fileSize', 'imageSize']
+    // });
+
+    // getAlbums.then((data) => {
+    //   console.log('获取相册封面', data);
+    //   let photoAlbumData = []
+    //   // 获取相册
+    //   data.map(async (item) => {
+    //     const cover = await CameraRoll.getPhotos({ first: 1, assetType: 'All', groupName: `${item.title}` });
+    //     console.log('获取相册封面', item);
+    //     photoAlbumData.push({ title: item.title, count: item.count, coverImage: cover.edges[0].node })
+    //   });
+
+    //   // 相册数据
+    //   this.setState({ photoAlbum: photoAlbumData });
+    // });
 
     getPhotos.then(
       async (data) => {
-        console.log(123);
-
         var edges = data.edges;
-        console.log('andor', data);
-
         var photos = [];
         for (var i in edges) {
           // ios文件
           photos.push(edges[i].node);
         }
-        // console.log('-------',photos);
-
         this.setState({
           CameraRollList: photos,
           videoFile: '',
@@ -357,7 +341,6 @@ export default class CameraScreen extends Component<Props, State> {
 
   }
   componentWillUnmount() {
-    // subscription.remove();
     console.log('销毁');
     // 结束编辑页面
     RNEditViewManager.stop();
@@ -384,6 +367,7 @@ export default class CameraScreen extends Component<Props, State> {
           paddingHorizontal: 12,
         }}
       >
+        {/* <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: true }) }}> */}
         <TouchableOpacity onPress={() => { }}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
@@ -652,6 +636,45 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: 'black' }}>
         <>
+          {/* 相册内容切换 */}
+          {/* <Modal
+            animationType="slide"
+            transparent={false}
+            visible={this.state.siwtchlibrary}
+            style={styles.modal}
+          >
+            <View style={{ flex: 1, backgroundColor: '#000', paddingTop: 20 }}>
+              <View style={{ width: width, height: height * 0.1, backgroundColor: '#000', flexDirection: "row", alignItems: 'flex-end', justifyContent: 'center', position: 'relative', paddingBottom: 20, }} >
+                <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: false }) }} style={{ position: 'absolute', left: 0, bottom: 20, left: 10, }}>
+                  <Text style={{ color: '#fff', fontSize: 16, }} >取消</Text>
+                </TouchableOpacity>
+                <Text style={{ color: '#fff', fontSize: 16 }} >选择相册</Text>
+              </View>
+              <FlatList
+                data={this.state.photoAlbum}
+                // data={[{ a: 1 }, { a: 2 }, { a: 3 }]}
+                renderItem={({ item, index }) => {
+                  console.log('12313', item);
+
+                  return (
+                    <TouchableOpacity onPress={() => { this.setState({ photoAlbumselect: item }) }}>
+                      <View style={{ width: width, height: 100, marginBottom: 10, flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+                        <Image source={{ uri: item.coverImage.image.uri }} style={{ width: 93, height: 93, backgroundColor: 'red' }} />
+                        <View style={{ marginLeft: 10, justifyContent: 'space-around' }}>
+                          <Text style={{ color: '#fff', fontSize: 16, marginBottom: 10 }}>{item.title}</Text>
+                          <Text style={{ color: '#fff', fontSize: 12 }}>{item.count}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  )
+                }}
+              >
+
+              </FlatList>
+
+            </View>
+          </Modal> */}
+
           <PostContent
             {...this.props}
             videoPaused={this.state.videoPaused}
@@ -662,7 +685,7 @@ export default class CameraScreen extends Component<Props, State> {
           />
           {this.postFileUpload()}
         </>
-      </ScrollView>
+      </ScrollView >
     );
   }
 }

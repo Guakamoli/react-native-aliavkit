@@ -1020,7 +1020,7 @@
 
 "@react-native-community/cameraroll@Guakamoli/react-native-cameraroll#feat/request-photo-access":
   version "4.0.4-patch.1"
-  resolved "https://codeload.github.com/Guakamoli/react-native-cameraroll/tar.gz/4b1078a55b6bf73111b49d7efc718a6464786f27"
+  resolved "https://codeload.github.com/Guakamoli/react-native-cameraroll/tar.gz/c3f17ed4a8b64081176567287c6edfd20a47f8a3"
 
 "@react-native-community/cli-debugger-ui@^4.9.0":
   version "4.9.0"
