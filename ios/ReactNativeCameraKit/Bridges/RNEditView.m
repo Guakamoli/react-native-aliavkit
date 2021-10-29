@@ -583,17 +583,7 @@ AliyunCropDelegate
     __block NSString *path = outputPath;
     if (_saveToPhotoLibrary) {
         if (self.imagePath) {
-            __weak typeof(self) weakSelf = self;
-            
-//            [self _generateImageFromVideoPath:outputPath
-//                                  itemPerTime:1000
-//                                    startTime:0
-//                                     duration:3.0
-//                          generatorOutputSize:CGSizeMake(1080, 1920)
-//                                     complete:^(NSArray * imagePaths) {
-//                path = imagePaths.firstObject;
-//                [weakSelf saveResourceType:PHAssetResourceTypePhoto withPath:path];
-//            }];
+            [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
         } else if(self.videoPath) {
             [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
         }

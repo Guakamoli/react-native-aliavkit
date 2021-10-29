@@ -16,7 +16,6 @@
 #import <AliyunVideoSDKPro/AliyunCrop.h>
 #import <AliyunVideoSDKPro/AliyunImageCrop.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
-#import "AliAssetImageGenerator.h"
 #import <AliyunVideoSDKPro/AliyunNativeParser.h>
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
@@ -27,7 +26,6 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 }
 
 @property (nonatomic, strong) AliyunCrop *cutPanel;
-@property (nonatomic, strong) AliAssetImageGenerator *generator;
 
 @end
 
@@ -213,7 +211,8 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             // cut mode
             weakSelf.cutPanel.cropMode = 1;
             weakSelf.cutPanel.rect = cropRect;
-            weakSelf.cutPanel.bitrate = 15*1000*1000;   // 15Mbps
+            weakSelf.cutPanel.videoQuality = AliyunVideoQualityMedium;
+//            weakSelf.cutPanel.bitrate = 10*1000*1000;   // 15Mbps
             weakSelf.cutPanel.encodeMode = 1;           // Force hardware encoding
             weakSelf.cutPanel.shouldOptimize = NO;
             
@@ -275,7 +274,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
 
 - (void)cropTaskOnProgress:(float)progress
 {
-    NSLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
+//    NSLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
     if (_hasListeners) {
         [self sendEventWithName:@"cropProgress" body:@{@"progress":@(progress)}];
     }
@@ -350,53 +349,8 @@ RCT_EXPORT_METHOD(removeThumbnaiImages:(NSDictionary*)options
     resolve(@(isRemoved));
 }
 
-  - (AliAssetImageGenerator *)generator {
-    if (!_generator) {
-        _generator = [AliAssetImageGenerator new];
-    }
-    return _generator;
-}
-
 static NSString * ThumnailDirectory() {
     return [NSString stringWithFormat:@"%@/Documents/thumbNail", NSHomeDirectory()];
-}
-
-- (void)getImagesFromVideoPath:(NSString *)videoPath
-                   itemPerTime:(NSInteger)itemPerTime
-                     startTime:(CGFloat)startTime
-                      duration:(CGFloat)duration
-           generatorOutputSize:(CGSize)outputSize
-                      complete:(void (^)(NSArray *))complete
-{
-    [self.generator addVideoWithPath:videoPath
-                           startTime:startTime
-                            duration:duration
-                        animDuration:0];
-    CGFloat videoDuration = self.generator.duration;
-    CGFloat singleTime = itemPerTime / 1000.0;// 一个图片的时间
-    NSMutableArray *timeValues = [[NSMutableArray alloc] init];
-    int idx = 0;
-    while (idx * singleTime < videoDuration) {
-        double time = idx * singleTime;
-        [timeValues addObject:@(time)];
-        idx++;
-    }
-//    NSLog(@"-------: %d -- %lu",idx, (unsigned long)[timeValues count]);
-    self.generator.imageCount = [timeValues count];
-    self.generator.outputSize = outputSize;
-    self.generator.timePerImage = singleTime;
-    
-    __weak typeof(self) weakSelf = self;
-    [self removeImages];
-    [self.generator generateWithCompleteHandler:^(UIImage *image) {
-        if (image) {
-            [weakSelf saveImgToSandBox:image];
-        }
-    }];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.generator cancel];
-        complete([self getResourcePaths]);
-    });
 }
 
 - (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
@@ -423,7 +377,7 @@ static NSString * ThumnailDirectory() {
 //    CGFloat duration = [parser getVideoDuration];
 //    CGFloat startTime = 0.0;
 //    NSInteger itemPerTime = 1000; //ms
-    [self getImagesFromVideoPath:videoPath
+    [self thumbnailFromVideoPath:videoPath
                      itemPerTime:itemPerTime
                        startTime:startTime
                         duration:duration
@@ -431,7 +385,55 @@ static NSString * ThumnailDirectory() {
                         complete:complete];
 }
 
-- (NSString *)saveImgToSandBox:(UIImage *)image
+- (void)thumbnailFromVideoPath:(NSString *)videoPath
+                   itemPerTime:(NSInteger)itemPerTime
+                     startTime:(CGFloat)beginTime
+                      duration:(CGFloat)duration
+           generatorOutputSize:(CGSize)outputSize
+                      complete:(void (^)(NSArray *))complete
+{
+    [self removeImages];
+    CMTime startTime = beginTime == 0 ? kCMTimeZero : CMTimeMakeWithSeconds(beginTime, 1000);
+    NSMutableArray *array = [NSMutableArray array];
+    CMTime addTime = CMTimeMakeWithSeconds(itemPerTime/1000.0, 1000);
+    
+    CMTime endTime = CMTimeMakeWithSeconds(duration, 1000);
+    
+    while (CMTIME_COMPARE_INLINE(startTime, <=, endTime)) {
+        [array addObject:[NSValue valueWithCMTime:startTime]];
+        startTime = CMTimeAdd(startTime, addTime);
+    }
+    
+    // 第一帧取第0.1s   规避有些视频并不是从第0s开始的
+    array[0] = [NSValue valueWithCMTime:CMTimeMakeWithSeconds(0.1, 1000)];
+    
+    NSURL *url = [[NSURL alloc] initFileURLWithPath:videoPath];
+    AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:url options:nil];
+    AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:urlAsset];
+    imageGenerator.appliesPreferredTrackTransform = YES;
+    imageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
+    imageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
+    imageGenerator.maximumSize = outputSize;
+    __block int index = 0;
+    NSMutableArray *pathArr = [@[] mutableCopy];
+    [imageGenerator generateCGImagesAsynchronouslyForTimes:array completionHandler:^(CMTime requestedTime, CGImageRef  _Nullable image, CMTime actualTime, AVAssetImageGeneratorResult result, NSError * _Nullable error) {
+        
+        if (result == AVAssetImageGeneratorSucceeded) {
+            UIImage *img = [[UIImage alloc] initWithCGImage:image];
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NSString *path = [self saveImgToSandBox:img withIndex:++index];
+                if (path) {
+                    [pathArr addObject:path];
+                }
+                if (pathArr.count == array.count) {
+                    complete(pathArr);
+                }
+            });
+        }
+    }];
+}
+
+- (NSString *)saveImgToSandBox:(UIImage *)image withIndex:(int)index
 {
     NSString *fileDirectoryPath = ThumnailDirectory();
     NSFileManager *fm = [NSFileManager defaultManager];
@@ -441,13 +443,14 @@ static NSString * ThumnailDirectory() {
         [fm createDirectoryAtPath:fileDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    static int i = 0;
     NSData *imgData = UIImagePNGRepresentation(image);
-    NSString *imageName = [NSString stringWithFormat:@"%03d.png", ++i];
+    NSString *imageName = [NSString stringWithFormat:@"%03d.png", index];
     NSString *imgPath = [fileDirectoryPath stringByAppendingPathComponent:imageName];
     BOOL suc = [imgData writeToFile:imgPath atomically:YES];
-//    NSLog(@"-------writeToFile :%@", suc == 1 ? @"YES" : @"NO");
-    return imgPath;
+    if (suc) {
+        return imgPath;
+    }
+    return nil;
 }
 
 - (BOOL)removeImages
@@ -456,26 +459,8 @@ static NSString * ThumnailDirectory() {
     return isRemoved;
 }
 
-- (NSArray *)getResourcePaths
-{
-    NSMutableArray *arr = [NSMutableArray array];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSString *folderPath = ThumnailDirectory();
-    NSDirectoryEnumerator *dirEnumerator = [fm enumeratorAtPath:folderPath];
-    
-    NSArray *orderedList = [dirEnumerator.allObjects sortedArrayUsingComparator:^NSComparisonResult(NSString *  _Nonnull obj1, NSString *  _Nonnull obj2) {
-        return [obj1 compare:obj2];
-    }];
-    
-    BOOL isDir = NO, isExist = NO;
-    for (NSString *fileName in orderedList) {
-        NSString *filePath = [NSString stringWithFormat:@"%@/%@", folderPath, fileName];
-        isExist = [fm fileExistsAtPath:filePath isDirectory:&isDir];
-        if (!isDir && isExist) {
-            [arr addObject:filePath];
-        }
-    }
-    return arr;
++ (BOOL)requiresMainQueueSetup {
+    return YES;
 }
 
 @end

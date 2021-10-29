@@ -207,6 +207,7 @@ const PostEditor = (props) => {
     console.log('获取封面', multipleSandBoxData);
     if (multipleSandBoxData.length > 0) {
       getcoverData();
+      console.log('----: getcoverData')
     }
   }, [multipleSandBoxData]);
 
