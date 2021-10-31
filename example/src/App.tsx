@@ -109,9 +109,19 @@ function Post(props) {
       // refs={postRef}
       {...props}
       //  退出操作
-      goback={() => {
-        console.log(12313);
-      }}
+      goback={
+        () => {
+          // 回退操作
+          console.info('1111', props.navigation)
+          props.navigation.replace('Home')
+        }
+      }
+      goStory={
+
+        () => {
+          props.navigation.replace('storyPost')
+        }
+      }
       goPostEditor={(data) => {
         console.log("postUploadpostUploadpostUpload", data);
         props.navigation.push('PostEditorBox', { ...data })
@@ -126,53 +136,11 @@ function Post(props) {
       startMultipleBtnImage={require('../images/startMultipleBtn.png')}
       postCameraImage={require('../images/postCamera.png')}
       changeSizeImage={require('../images/changeSize.png')}
+      closePng={require('../images/close.png')}
     />
   );
 }
 
-// const FeedsPost = (props) => {
-//   const postRef = useRef()
-//   const { server, user, item, navigation } = props;
-//   console.info('111111', navigation)
-//   navigation.setOptions({
-//     headerRight: () => <Button title='继续' onPress={() => {
-//       // _ref.current.empty()
-//       // 获取发布功能
-//       postRef.current.empty()
-//     }} />,
-//   })
-
-
-//   return (
-
-//     <PostUpload
-//       // onRef={this.onRef}
-//       goback={
-//         () => {
-
-//           navigation.goBack(-1)
-//         }
-
-//       }
-//       refs={postRef}
-//       // 拿到上传数据
-//       getUploadFile={(data) => {
-//         console.info('getUploadFile-----------', data);
-//         navigation.push('FeedsPostEditor', { ...data })
-//       }}
-//       multipleBtnImage={multipleBtnPng}
-//       startMultipleBtnImage={startMultipleBtnPng}
-//       postCameraImage={postCameraPng}
-//       changeSizeImage={changeSizePng}
-//       // addPhotoBtnPng={require('../images/addPhotoBtn.png')}
-//       // postMutePng={require('../images/postEditorMute.png')}
-//       // closePng={require('../images/close.png')}
-//       // postNoMutePng={require('../images/postEditorNoMute.png')}
-//       // captureButtonImage={require('../images/cameraButton.png')}
-//       cameraModule={true}
-//     />
-//   );
-// }
 
 
 function PostEditorBox(props) {

@@ -8,7 +8,6 @@ import {
   Image,
   Dimensions,
   Platform,
-  SafeAreaView,
   Animated,
   FlatList,
   Easing,
@@ -17,14 +16,11 @@ import { useInterval } from 'ahooks';
 
 import _ from 'lodash';
 import Camera from './Camera';
-import VideoEditor from './VideoEditor';
 import Carousel, { getInputRangeFromIndexes } from './react-native-snap-carousel/src';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
-import PostUpload from './PostUpload';
 import StoryEditor from './StoryEditor';
-import EventBus from './EventBus';
 import StoryMusic from './StoryMusic';
 import AVService from './AVService.ios';
 
@@ -49,19 +45,18 @@ export enum CameraType {
 
 export type Props = {
   ratioOverlay?: string;
-  ratioOverlayColor?: string;
+
   allowCaptureRetake: boolean;
   cameraRatioOverlay: any;
   showCapturedImageCount?: boolean;
   captureButtonImage: any;
   cameraFlipImage: any;
-  hideControls: any;
+
   showFrame: any;
   scanBarcode: any;
   laserColor: any;
   frameColor: any;
-  torchOnImage: any;
-  torchOffImage: any;
+
   closeImage: any;
   musicImage: any;
   beautifyImage: any;
@@ -74,18 +69,10 @@ export type Props = {
   tailorImage: any;
   volumeImage: any;
   onReadCode: (any) => void;
-  onBottomButtonPressed: (any) => void;
+
   getUploadFile: (any) => void;
   goback: any;
   cameraModule: boolean;
-
-  multipleBtnImage: any;
-  postCameraImage: any;
-  startMultipleBtnImage: any;
-  changeSizeImage: any;
-  addPhotoBtnPng: any;
-  postMutePng: any;
-  postNoMutePng: any;
 
   musicDynamicGif: any;
   musicIconPng: any;
@@ -116,16 +103,12 @@ type State = {
   mute: boolean;
   showFilterLens: boolean;
   filterLensSelect: number;
-  timer: any;
+
   fadeInOpacity: any;
 
   // 视频路径
   videoPath: any;
-  // 区分story/post
-  storyShow: boolean;
 
-  photoAlbum: any;
-  photoAlbumselect: any;
 
   pasterList: any;
   facePasterInfo: any;
@@ -258,17 +241,12 @@ export default class CameraScreen extends Component<Props, State> {
       showFilterLens: false,
       filterLensSelect: 0,
 
-      timer: null,
-
       fadeInOpacity: new Animated.Value(60),
 
       // 视频 照片地址
       videoPath: null,
       fileType: 'video',
-      //
-      storyShow: false,
-      photoAlbum: [],
-      photoAlbumselect: {},
+
 
       //
       pasterList: [],
@@ -283,14 +261,6 @@ export default class CameraScreen extends Component<Props, State> {
 
   componentDidMount() {
 
-    var getAlbums = CameraRoll.getAlbums({
-      assetType: 'All',
-    });
-    getAlbums.then((data) => {
-      // 相册数据
-      this.setState({ photoAlbum: [], photoAlbumselect: {} });
-    });
-    // this.aa()
 
     let ratios = [];
     if (this.props.cameraRatioOverlay) {
@@ -300,7 +270,6 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
-      storyShow: cameraModule,
     });
   }
 
@@ -328,44 +297,38 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 底部 切换模块
   renderswitchModule() {
-    const { captureImages, videoPath, musicOpen } = this.state;
-    if (musicOpen) {
-      return (
-        <SafeAreaView style={styles.BottomBox}>
-          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-            <TouchableOpacity onPress={() => this.setState({ storyShow: true })}>
-              <Text style={styles.snapshotMuse}>配乐</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      );
-    }
     return (
-      <SafeAreaView style={styles.BottomBox}>
+      <View style={styles.BottomBox}>
         <>
           {/*  作品快拍 切换*/}
           {this.state.startShoot || this.state.ShootSuccess ? null : (
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-              <TouchableOpacity
-                onPress={() => {
-                  this.props.goPost()
-                }}
-              >
-                <Text style={styles.videoTitle}>作品</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.setState({ storyShow: true })}>
-                <Text style={styles.snapshotTitle}>快拍</Text>
-              </TouchableOpacity>
+              <View style={{ position: 'relative' }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    this.props.goPost()
+                  }}
+                >
+                  <Text style={styles.videoTitle}>作品</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.setState({})}>
+                  <Text style={styles.snapshotTitle}>快拍</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
           {/* 相机翻转 */}
-          {this.state.ShootSuccess ? null : (
-            <TouchableOpacity style={styles.switchScreen} onPress={() => this.onSwitchCameraPressed()}>
-              <Image style={{ width: 26, height: 23 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-            </TouchableOpacity>
-          )}
+
+          <TouchableOpacity style={{
+            position: 'absolute',
+            right: 16,
+            top: 30,
+          }} onPress={() => this.onSwitchCameraPressed()}>
+            <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
+          </TouchableOpacity>
+
         </>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -410,6 +373,8 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
+    console.log('---this.props.allowCaptureRetake', this.props.allowCaptureRetake);
+
     const shoot = () => {
       return (
         <Camera
@@ -419,7 +384,7 @@ export default class CameraScreen extends Component<Props, State> {
           flashMode={this.state.flashData.mode}
           torchMode={this.state.torchMode ? 'on' : 'off'}
           ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
-          saveToCameraRoll={!this.props.allowCaptureRetake}
+          saveToCameraRoll={false}
           showFrame={this.props.showFrame}
           scanBarcode={this.props.scanBarcode}
           laserColor={this.props.laserColor}
@@ -463,27 +428,6 @@ export default class CameraScreen extends Component<Props, State> {
       flag: Math.random(),
     });
     return;
-    // let progress = 0;
-    // this.setState({ progress: 0 });
-    // const stopRecording = async () => {
-    //   const videoPath = await this.camera.stopRecording();
-    //   console.log('video saved to ', videoPath);
-    //   this.setState({ videoPath });
-    // };
-    // this.setState({
-    //   timer: setInterval(() => {
-    //     progress += 1 / 140;
-    //     console.log('进度条');
-
-    //     if (progress > 1) {
-    //       progress = 1;
-    //       this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
-    //       stopRecording();
-    //       clearInterval(this.state.timer);
-    //     }
-    //     this.setState({ progress });
-    //   }, 100),
-    // });
   }
   //  拍摄按钮
   renderCaptureButton() {
@@ -834,7 +778,8 @@ export default class CameraScreen extends Component<Props, State> {
     let sandData = '';
     //
     if (Platform.OS !== 'android') {
-      sandData = await AVService.saveToSandBox({ path: image?.uri });
+      // sandData = await AVService.saveToSandBox({ path: image?.uri });
+      sandData = image?.uri;
     } else {
       sandData = image;
     }
@@ -895,10 +840,7 @@ export default class CameraScreen extends Component<Props, State> {
         <View style={{ position: 'relative' }}>
           {/* 拍摄按钮 */}
           {
-            !this.props.hideControls &&
-            // <View style={[styles.bottomButtons]}>
             this.renderCaptureButton()
-            // </View>
           }
         </View>
         <View style={{ height: 100, backgroundColor: '#000' }}>{this.renderswitchModule()}</View>
@@ -925,47 +867,42 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         {/* {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null} */}
-        {this.state.storyShow ? (
-          <>
-            {/* story */}
-            {this.state.ShootSuccess ? (
 
-              <StoryEditor
-                rephotograph={() => {
-                  this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
-                }}
-                getUploadFile={(data) => {
-                  this.sendUploadFile(data);
-                }}
-                AaImage={this.props.AaImage}
-                filterImage={this.props.filterImage}
-                musicRevampImage={this.props.musicRevampImage}
-                giveUpImage={this.props.giveUpImage}
-                noVolumeImage={this.props.noVolumeImage}
-                tailorImage={this.props.tailorImage}
-                volumeImage={this.props.volumeImage}
-                videoPath={this.state.videoPath}
-                fileType={this.state.fileType}
-                videomusicIcon={this.props.videomusicIcon}
-                musicDynamicGif={this.props.musicDynamicGif}
-                musicIconPng={this.props.musicIconPng}
-                musicIcongray={this.props.musicIcongray}
-                musicSearch={this.props.musicSearch}
-                imagePath={this.state.imageCaptured}
-                noResultPng={this.props.noResultPng}
-              // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
-              />
-            ) : (
-              <>
-                {Platform.OS === 'android' && this.renderCamera()}
-                {Platform.OS !== 'android' && this.renderCamera()}
-                {Platform.OS === 'android' && <View style={styles.gap} />}
-                {this.renderBottom()}
-              </>
-            )}
-          </>
+        {/* story */}
+        {this.state.ShootSuccess ? (
+
+          <StoryEditor
+            rephotograph={() => {
+              this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+            }}
+            getUploadFile={(data) => {
+              this.sendUploadFile(data);
+            }}
+            AaImage={this.props.AaImage}
+            filterImage={this.props.filterImage}
+            musicRevampImage={this.props.musicRevampImage}
+            giveUpImage={this.props.giveUpImage}
+            noVolumeImage={this.props.noVolumeImage}
+            tailorImage={this.props.tailorImage}
+            volumeImage={this.props.volumeImage}
+            videoPath={this.state.videoPath}
+            fileType={this.state.fileType}
+            videomusicIcon={this.props.videomusicIcon}
+            musicDynamicGif={this.props.musicDynamicGif}
+            musicIconPng={this.props.musicIconPng}
+            musicIcongray={this.props.musicIcongray}
+            musicSearch={this.props.musicSearch}
+            imagePath={this.state.imageCaptured}
+            noResultPng={this.props.noResultPng}
+          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+          />
         ) : (
-          <>{/* post */}</>
+          <>
+            {Platform.OS === 'android' && this.renderCamera()}
+            {Platform.OS !== 'android' && this.renderCamera()}
+            {Platform.OS === 'android' && <View style={styles.gap} />}
+            {this.renderBottom()}
+          </>
         )}
       </>
     );
@@ -1033,15 +970,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#7E7E7E',
     lineHeight: 18,
-    fontWeight: '500'
-
+    fontWeight: '500',
+    position: 'absolute',
+    right: 60,
   },
   snapshotTitle: {
     fontSize: 13,
     lineHeight: 18,
     color: '#FFFFFF',
-    marginHorizontal: 30,
-    marginRight: 80,
   },
   snapshotMuse: {
     fontSize: 13,
@@ -1050,9 +986,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   switchScreen: {
-    position: 'absolute',
-    right: 20,
-    top: 25,
+
   },
   musicIcon: {
     width: 28,
