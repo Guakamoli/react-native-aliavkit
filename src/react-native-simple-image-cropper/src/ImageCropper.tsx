@@ -16,6 +16,7 @@ interface IProps {
 
   areaOverlay?: ReactNode;
   scale?: number;
+  srcSize: ISizeData;
 
   setCropperParams: (params: ICropperParams) => void;
 }
@@ -147,69 +148,69 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
   init = () => {
     const { imageUri } = this.props;
+    const callback = (width, height) => {
+      const { setCropperParams, cropAreaWidth, cropAreaHeight, scale: scaleProps } = this.props;
 
-    Image.getSize(
-      imageUri,
-      (width, height) => {
-        const { setCropperParams, cropAreaWidth, cropAreaHeight, scale: scaleProps } = this.props;
+      const areaWidth = cropAreaWidth!;
+      const areaHeight = cropAreaHeight!;
 
-        const areaWidth = cropAreaWidth!;
-        const areaHeight = cropAreaHeight!;
+      const srcSize = { width, height };
+      const fittedSize = { width: 0, height: 0 };
+      let scale = 1;
+      let wInit = w * 1;
+      if (width > height) {
+        const ratio = wInit / height;
+        fittedSize.width = width * ratio;
+        fittedSize.height = wInit;
+      } else if (width < height) {
+        const ratio = wInit / width;
+        fittedSize.width = wInit;
+        fittedSize.height = height * ratio;
+      } else if (width === height) {
+        fittedSize.width = wInit;
+        fittedSize.height = wInit;
+      }
 
-        const srcSize = { width, height };
-        const fittedSize = { width: 0, height: 0 };
-        let scale = 1;
-        let wInit = w * 1;
-        if (width > height) {
-          const ratio = wInit / height;
-          fittedSize.width = width * ratio;
-          fittedSize.height = wInit;
-        } else if (width < height) {
-          const ratio = wInit / width;
-          fittedSize.width = wInit;
-          fittedSize.height = height * ratio;
-        } else if (width === height) {
-          fittedSize.width = wInit;
-          fittedSize.height = wInit;
-        }
-
-        if (areaWidth < areaHeight || areaWidth === areaHeight) {
-          if (width < height) {
-            if (fittedSize.height < areaHeight) {
-              scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
-            } else {
-              // 视觉窗口宽除以 图片宽
-              scale = Math.ceil((wInit / fittedSize.width) * 10) / 10;
-            }
-          } else {
+      if (areaWidth < areaHeight || areaWidth === areaHeight) {
+        if (width < height) {
+          if (fittedSize.height < areaHeight) {
             scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
+          } else {
+            // 视觉窗口宽除以 图片宽
+            scale = Math.ceil((wInit / fittedSize.width) * 10) / 10;
           }
+        } else {
+          scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
         }
+      }
 
-        scale = scale < scaleProps ? scaleProps : scale;
-        this.setState(
-          (prevState) => ({
-            ...prevState,
+      scale = scale < scaleProps ? scaleProps : scale;
+      this.setState(
+        (prevState) => ({
+          ...prevState,
+          srcSize,
+          fittedSize,
+          minScale: scale,
+          loading: false,
+        }),
+        () => {
+          const { positionX, positionY } = this.state;
+
+          setCropperParams({
+            positionX,
+            positionY,
+            scale,
             srcSize,
             fittedSize,
-            minScale: scale,
-            loading: false,
-          }),
-          () => {
-            const { positionX, positionY } = this.state;
-
-            setCropperParams({
-              positionX,
-              positionY,
-              scale,
-              srcSize,
-              fittedSize,
-            });
-          },
-        );
-      },
-      () => { },
-    );
+          });
+        },
+      );
+    };
+    if (!this.props.srcSize.height) {
+      Image.getSize(imageUri, callback, () => {});
+    } else {
+      callback(this.props.srcSize.width, this.props.srcSize.height);
+    }
   };
 
   handleMove = ({ positionX, positionY, scale }: IImageViewerData) => {

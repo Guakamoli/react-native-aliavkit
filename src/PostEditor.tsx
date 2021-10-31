@@ -22,12 +22,7 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService.ios';
-import {
-  Grayscale,
-  Temperature,
-  Sepia,
-
-} from 'react-native-image-filter-kit'
+import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -60,9 +55,14 @@ const PostEditor = (props) => {
   const [scrubberPosition, setscrubberPosition] = useState(0);
   const [exportVideo, setexportVideo] = useState(false);
   const scrollAniRef = useRef(new Animated.Value(10)).current;
-  const [imgfilterName, setImgFilterName] = useState('')
+  const aniRef = useRef(null);
+
+  const [imgfilterName, setImgFilterName] = useState('');
   const stopRef = useRef(false);
-  const [photoFile, setPhotoFile] = useState('')
+  const startRef = useRef(false);
+  const lockRef = useRef(false);
+
+  const [photoFile, setPhotoFile] = useState('');
   navigation.setOptions({
     headerTitle: (props) => {
       if (fileType == 'image') {
@@ -92,10 +92,9 @@ const PostEditor = (props) => {
       return (
         <Pressable
           onPress={async () => {
-
             if (fileType === 'image') {
               console.log('导出图片');
-              let uploadFile = []
+              let uploadFile = [];
               uploadFile.push({
                 Type: `image/png`,
                 path: photoFile,
@@ -191,7 +190,7 @@ const PostEditor = (props) => {
     console.log('获取封面', multipleSandBoxData);
     if (multipleSandBoxData.length > 0) {
       getcoverData();
-      console.log('----: getcoverData')
+      console.log('----: getcoverData');
     }
   }, [multipleSandBoxData]);
 
@@ -209,7 +208,6 @@ const PostEditor = (props) => {
         coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
       });
       props.getUploadFile(uploadFile);
-
     }
   };
 
@@ -231,8 +229,10 @@ const PostEditor = (props) => {
             onExportVideo(event);
           }}
           onPlayProgress={({ nativeEvent }) => {
-            if (nativeEvent.playProgress === 0) {
-              Animated.timing(
+            if (nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition && !startRef.current && !lockRef.current) {
+              startRef.current = true;
+
+              aniRef.current = Animated.timing(
                 // 随时间变化而执行动画
                 scrollAniRef, // 动画中的变量值
                 {
@@ -240,16 +240,18 @@ const PostEditor = (props) => {
                   duration: delta, // 让动画持续一段时间
                   useNativeDriver: true,
                 },
-              ).start();
+              );
+              aniRef.current.start();
             }
             if (fileType === 'video') {
-
-
               if (
                 nativeEvent.playProgress === undefined ||
-                (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current)
+                (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current && !lockRef.current)
               ) {
                 stopRef.current = true;
+                startRef.current = false;
+
+                aniRef.current.stop();
                 RNEditViewManager.pause();
 
                 RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
@@ -261,7 +263,6 @@ const PostEditor = (props) => {
                 }, 500);
                 return;
               }
-
             }
           }}
           onExportVideo={(event) => {
@@ -399,16 +400,18 @@ const PostEditor = (props) => {
       }
       scrollAniRef.setValue(0);
       RNEditViewManager.seekToTime(leftPosition / 1000);
+      console.info('松开了');
       setTimeout(() => {
+        lockRef.current = false;
         RNEditViewManager.play();
         stopRef.current = false;
+        startRef.current = false;
       }, 500);
       console.info(leftPosition, rightPosition, 'leftPosition, rightPosition ');
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
     };
-
 
     return (
       <>
@@ -435,13 +438,22 @@ const PostEditor = (props) => {
             }}
             onRightHandlePressIn={() => {
               stopRef.current = true;
+              startRef.current = false;
+              lockRef.current = true;
+              aniRef.current.stop();
+
               scrollAniRef.setValue(0);
 
               RNEditViewManager.pause();
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {
+              aniRef.current.stop();
+              lockRef.current = true;
+
               stopRef.current = true;
+              startRef.current = false;
+
               scrollAniRef.setValue(0);
 
               RNEditViewManager.pause();
@@ -466,8 +478,6 @@ const PostEditor = (props) => {
   };
   // 封面
   const postCover = () => {
-
-
     return (
       <View style={{ marginTop: 93, paddingHorizontal: 17 }}>
         <FlatList
@@ -480,7 +490,6 @@ const PostEditor = (props) => {
                 {/* 封面选择 */}
                 <TouchableOpacity
                   onPress={() => {
-
                     setcoverImage(item);
                   }}
                 >
@@ -529,7 +538,6 @@ const PostEditor = (props) => {
   };
   // 图片滤镜
   const result = () => {
-
     const Extractor = (imgFilter) => {
       switch (imgFilter) {
         case 'Sepia': {
@@ -537,14 +545,14 @@ const PostEditor = (props) => {
             <Sepia
               image={
                 <Image
-                  style={{ width: width, height: width, }}
+                  style={{ width: width, height: width }}
                   source={{ uri: multipleSandBoxData[0] }}
                   resizeMode={'contain'}
                 />
               }
               amount={2}
             />
-          )
+          );
         }
         case 'Temperature': {
           return (
@@ -552,13 +560,13 @@ const PostEditor = (props) => {
               amount={0.5}
               image={
                 <Image
-                  style={{ width: width, height: width, }}
+                  style={{ width: width, height: width }}
                   source={{ uri: multipleSandBoxData[0] }}
                   resizeMode={'contain'}
                 />
               }
             />
-          )
+          );
         }
         case 'Sepia2': {
           return (
@@ -566,53 +574,51 @@ const PostEditor = (props) => {
               amount={0.4}
               image={
                 <Image
-                  style={{ width: width, height: width, }}
+                  style={{ width: width, height: width }}
                   source={{ uri: multipleSandBoxData[0] }}
                   resizeMode={'contain'}
                 />
               }
             />
-          )
+          );
         }
         default: {
           return (
             <Image
-              style={{ width: width, height: width, }}
+              style={{ width: width, height: width }}
               source={{ uri: multipleSandBoxData[0] }}
               resizeMode={'contain'}
             />
-          )
+          );
         }
       }
-    }
+    };
 
     return (
       <>
         <Grayscale
           amount={0}
           onExtractImage={({ nativeEvent }) => {
-
-            setPhotoFile(nativeEvent.uri)
-          }
-          }
+            setPhotoFile(nativeEvent.uri);
+          }}
           extractImageEnabled={true}
-          image={
-            Extractor(imgfilterName)
-          }
-        >
-        </Grayscale>
+          image={Extractor(imgfilterName)}
+        ></Grayscale>
         <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => {
-            setImgFilterName('');
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('');
+            }}
+          >
             <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
               <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
             </View>
-
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            setImgFilterName('Sepia');
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Sepia');
+            }}
+          >
             <Sepia
               image={
                 <Image
@@ -625,9 +631,11 @@ const PostEditor = (props) => {
               amount={2}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            setImgFilterName('Temperature');
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Temperature');
+            }}
+          >
             <Temperature
               amount={0.5}
               image={
@@ -640,9 +648,11 @@ const PostEditor = (props) => {
               }
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            setImgFilterName('Sepia2');
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Sepia2');
+            }}
+          >
             <Sepia
               amount={0.4}
               image={
