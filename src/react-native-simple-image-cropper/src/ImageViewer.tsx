@@ -305,7 +305,7 @@ class ImageViewer extends Component<IProps> {
       {
         nativeEvent: ({ scale, state }: { scale: number; state: State }) =>
           block([
-            cond(and(eq(state, State.ACTIVE), greaterThan(scale, new Value(0.6)), lessOrEq(scale, new Value(2))), [
+            cond(and(eq(state, State.ACTIVE), greaterThan(scale, new Value(0.6))), [
               set(this.scale, multiply(offsetZ, scale)),
             ]),
 
@@ -376,7 +376,7 @@ class ImageViewer extends Component<IProps> {
       overlay,
       videoFile,
       minScale,
-      videoPaused
+      videoPaused,
     } = this.props;
     const imageSrc = {
       uri: image,
@@ -485,7 +485,7 @@ class ImageViewer extends Component<IProps> {
                           <Animated.View
                             style={[
                               {
-                                left: areaWidth / 3,
+                                left: areaWidth / 3 + Math.abs(imageWidth - areaWidth) / 2,
                                 width: StyleSheet.hairlineWidth,
                                 height: '100%',
                                 backgroundColor: 'rgba(255,255,255,0.5)',
@@ -517,7 +517,7 @@ class ImageViewer extends Component<IProps> {
                           <Animated.View
                             style={[
                               {
-                                left: (areaWidth / 3) * 2,
+                                left: (areaWidth / 3) * 2 + Math.abs(imageWidth - areaWidth) / 2,
                                 width: StyleSheet.hairlineWidth,
                                 height: '100%',
                                 backgroundColor: 'rgba(255,255,255,0.5)',
