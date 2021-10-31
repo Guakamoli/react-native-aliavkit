@@ -13,13 +13,14 @@ import {
   NativeModules,
   NativeEventEmitter,
   StatusBar,
-  Modal
+  Modal,
+  Pressable,
+
 } from 'react-native';
 import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
-
 import AVService from './AVService.ios';
 import ImageCropper from './react-native-simple-image-cropper/src';
 
@@ -150,6 +151,7 @@ const PostContent = (props) => {
     </View>
   );
 };
+let firstJump = false;
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
@@ -172,6 +174,19 @@ export default class CameraScreen extends Component<Props, State> {
         fontSize: 17,
         fontWeight: '500',
         lineHeight: 22,
+      },
+      headerLeft: () => {
+        return (
+          <TouchableOpacity
+            style={{ marginLeft: 10 }}
+            onPress={() => {
+              console.info('123')
+              props.goback()
+            }}
+          >
+            <Image style={{ width: 30, height: 30 }} source={props.closePng} />
+          </TouchableOpacity>
+        )
       },
       headerRight: () => {
         return (
@@ -208,6 +223,7 @@ export default class CameraScreen extends Component<Props, State> {
       cropOffsetY: 0,
       videoPaused: false,
       siwtchlibrary: false,
+
     };
   }
 
@@ -248,19 +264,17 @@ export default class CameraScreen extends Component<Props, State> {
         cropWidth: cropData.size.width,
         cropHeight: cropData.size.height,
       });
-      this.myRef.current.show('上传中', 3000);
-
+      this.myRef.current.show('上传中', DURATION.FOREVER);
       // 进入修改
       if (fileSelectType === 'image') {
         console.log('开始裁剪');
 
-        // this.myRef.current.close();
+        this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
         this.setState({ videoPaused: true })
         console.log('视频暂停拉');
 
         this.props.goPostEditor({ trimVideoData, fileType: fileSelectType, palyVide: () => { this.setState({ videoPaused: false }) } })
-        // this.props.navigation.push('PostEditorBox', );
       }
     } catch (e) {
       console.info(e, '错误');
@@ -273,18 +287,24 @@ export default class CameraScreen extends Component<Props, State> {
     subscription = managerEmitter.addListener('cropProgress', (reminder) => {
       console.log(reminder);
 
-      if (reminder.progress == 1 && this.state.fileSelectType === 'video') {
-        this.setState({ videoPaused: true });
+      if (reminder.progress == 1 && this.state.fileSelectType === 'video' && !this.state.videoPaused) {
+
+        this.setState({ videoPaused: true, });
+
 
         let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
         let videoTime = this.state.videoTime;
+        firstJump = true;
+        console.log('跳转了啊');
+        this.myRef.current.close();
+
         this.props.goPostEditor({
           trimVideoData,
           videoduration: videoTime,
           trimmerRight: trimmerRightHandlePosition,
           fileType: this.state.fileSelectType,
           palyVide: () => {
-            this.setState({ videoPaused: false })
+            this.setState({ videoPaused: false, });
           }
         })
 
@@ -329,8 +349,18 @@ export default class CameraScreen extends Component<Props, State> {
           // ios文件
           photos.push(edges[i].node);
         }
+        console.log(photos[0]);
+        let firstData = photos[0]
         this.setState({
           CameraRollList: photos,
+          multipleData: [firstData],
+          fileSelectType: firstData?.type,
+          trimmerRightHandlePosition:
+            Math.ceil(firstData.image.playableDuration) < 300
+              ? Math.ceil(firstData.image.playableDuration) * 1000
+              : 300 * 1000,
+
+          videoTime: Math.ceil(firstData.image.playableDuration) * 1000,
           videoFile: '',
         });
       },
@@ -375,7 +405,7 @@ export default class CameraScreen extends Component<Props, State> {
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* 多选按钮 */}
-          {/* <TouchableOpacity
+          <TouchableOpacity
             onPress={() => {
               if (startmMltiple && multipleData.length) {
                 // 取最后一张
@@ -391,7 +421,7 @@ export default class CameraScreen extends Component<Props, State> {
               source={startmMltiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
               resizeMode='contain'
             />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
           <Image style={styles.multipleBtnImage} source={this.props.postCameraImage} resizeMode='contain' />
         </View>
       </View>
@@ -441,7 +471,7 @@ export default class CameraScreen extends Component<Props, State> {
         <StatusBar barStyle={'light-content'} />
         <View
           style={[
-            { height: 291, backgroundColor: '#000' },
+            { height: height * 0.4, backgroundColor: '#000' },
             Platform.OS === 'android' ? { paddingBottom: 10 } : { paddingBottom: 35 },
           ]}
         >
@@ -476,12 +506,6 @@ export default class CameraScreen extends Component<Props, State> {
                           videoTime: Math.ceil(item.image.playableDuration) * 1000,
                         });
                       }
-                      // let list = []
-                      // datalist.map(async(item)=>{
-
-                      //  let sandData =  await AVService.saveToSandBox({path:`${item.image.uri}`})
-                      // list.push(sandData)
-                      // console.log('123131',sandData);
 
                       console.log('----playableDuration', Math.ceil(item.image.playableDuration));
                       this.setState({
@@ -490,39 +514,40 @@ export default class CameraScreen extends Component<Props, State> {
                         videoFile: '',
                       });
                     }
-                    if (startmMltiple) {
-                      // 图片大于10 || 视频 大于 1
-                      if (fileSelectType == 'image') {
-                        if (multipleData.length == 10) {
-                          this.myRef.current.show('最多十张图片', 2000);
-                          return;
-                        }
-                      }
-                      if (fileSelectType == 'video') {
-                        if ((multipleData.length = 1)) {
-                          this.myRef.current.show('最多选择一个视频', 2000);
-                          return;
-                        }
-                      }
-                      let datalist = multipleData;
-                      // 已经选择了
-                      if (datalist.includes(item)) {
-                        // 循环找到选中的 去掉
-                        datalist.map((datalistitem, index) => {
-                          if (datalistitem.image.uri == image.uri) {
-                            datalist.splice(index, 1);
-                          }
-                        });
-                      } else {
-                        datalist.push(item);
-                      }
-                      this.setState({
-                        multipleData: datalist,
-                        videoFile: '',
-                      });
-                    }
+                    // 暂时屏蔽
+                    // if (startmMltiple) {
+                    //   // 图片大于10 || 视频 大于 1
+                    //   if (fileSelectType == 'image') {
+                    //     if (multipleData.length == 1) {
+                    //       this.myRef.current.show('最多十张图片', 2000);
+                    //       return;
+                    //     }
+                    //   }
+                    //   if (fileSelectType == 'video') {
+                    //     if ((multipleData.length = 1)) {
+                    //       this.myRef.current.show('最多选择一个视频', 2000);
+                    //       return;
+                    //     }
+                    //   }
+                    //   let datalist = multipleData;
+                    //   // 已经选择了
+                    //   if (datalist.includes(item)) {
+                    //     // 循环找到选中的 去掉
+                    //     datalist.map((datalistitem, index) => {
+                    //       if (datalistitem.image.uri == image.uri) {
+                    //         datalist.splice(index, 1);
+                    //       }
+                    //     });
+                    //   } else {
+                    //     datalist.push(item);
+                    //   }
+                    //   this.setState({
+                    //     multipleData: datalist,
+                    //     videoFile: '',
+                    //   });
+                    // }
                   }}
-                  disabled={!(type.indexOf(fileSelectType) !== -1) && startmMltiple}
+                  // disabled={!(type.indexOf(fileSelectType) !== -1) && startmMltiple}
                   activeOpacity={0.9}
                 >
                   <View
@@ -560,20 +585,13 @@ export default class CameraScreen extends Component<Props, State> {
                                 alignItems: 'center',
                               }}
                             >
-                              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '400' }}>
+                              {/* 暂时屏蔽 */}
+                              {/* <Text style={{ color: '#fff', fontSize: 13, fontWeight: '400' }}>
                                 {multipleData.indexOf(item) !== -1 ? multipleData.indexOf(item) + 1 : 1}
-                              </Text>
+                              </Text> */}
                             </View>
                           ) : null}
                         </View>
-                        {/* < Image source={this.props.captureButtonImage} style={[{ width: 20, height: 20, position: 'absolute', right: 5, top: 5, zIndex: 98 }]} />
-                          {
-                            multipleData.includes(item) ? <View style={[
-                              { },
-                            ]}>
-                             
-                            </View> : null
-                          } */}
                       </>
                     ) : null}
                     <Image
@@ -583,11 +601,11 @@ export default class CameraScreen extends Component<Props, State> {
                           width: photosItem,
                           height: photosItem,
                         },
-                        !(type.indexOf(fileSelectType) !== -1) && startmMltiple ? { opacity: 0.4 } : {},
+                        // 暂时屏蔽
+                        // !(type.indexOf(fileSelectType) !== -1) && startmMltiple ? { opacity: 0.4 } : {},
                       ]}
                       // 安卓展示不出来 权限问题？？？？
                       source={{ uri: item.image.uri }}
-                      // source={require('../example/images/11.png')}
                       resizeMode='cover'
                     />
                     <View
@@ -603,6 +621,7 @@ export default class CameraScreen extends Component<Props, State> {
                           : { opacity: 0 },
                       ]}
                     ></View>
+                    {/* 时长 */}
                     {image.playableDuration ? (
                       <Text
                         style={{
@@ -625,6 +644,13 @@ export default class CameraScreen extends Component<Props, State> {
               );
             }}
           />
+
+        </View>
+        <View style={{ backgroundColor: 'rgba(0, 0,0,1)', borderRadius: 22, zIndex: 1, width: 120, height: 43, position: 'absolute', right: width * 0.3, bottom: 40, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: 'white', fontSize: 14, marginRight: 10 }}> 作品</Text>
+          <TouchableOpacity onPress={() => { this.props.goStory() }}>
+            <Text style={{ color: 'white', fontSize: 14 }}> 快拍</Text>
+          </TouchableOpacity>
         </View>
       </>
     );
@@ -633,11 +659,17 @@ export default class CameraScreen extends Component<Props, State> {
 
   render() {
 
+    // videoPaused={this.state.videoPaused}
+    // multipleData={this.state.multipleData}
+    // CameraRollList={this.state.CameraRollList}
+    // fileSelectType={this.state.fileSelectType}
+    // videoFile={this.state.videoFile}
+    console.log('this.state.multipleData', this.state.multipleData);
+
     return (
-      <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: 'black' }}>
-        <>
-          {/* 相册内容切换 */}
-          {/* <Modal
+      <>
+        {/* 相册内容切换 暂时屏蔽 */}
+        {/* <Modal
             animationType="slide"
             transparent={false}
             visible={this.state.siwtchlibrary}
@@ -675,17 +707,17 @@ export default class CameraScreen extends Component<Props, State> {
             </View>
           </Modal> */}
 
-          <PostContent
-            {...this.props}
-            videoPaused={this.state.videoPaused}
-            multipleData={this.state.multipleData}
-            CameraRollList={this.state.CameraRollList}
-            fileSelectType={this.state.fileSelectType}
-            videoFile={this.state.videoFile}
-          />
-          {this.postFileUpload()}
-        </>
-      </ScrollView >
+        <PostContent
+          {...this.props}
+          videoPaused={this.state.videoPaused}
+          multipleData={this.state.multipleData}
+          CameraRollList={this.state.CameraRollList}
+          fileSelectType={this.state.fileSelectType}
+          videoFile={this.state.videoFile}
+        />
+        {this.postFileUpload()}
+      </>
+
     );
   }
 }

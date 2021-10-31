@@ -220,7 +220,7 @@ const PostEditor = (props) => {
       <View style={{}}>
         <VideoEditor
           editWidth={width}
-          editHeight={300}
+          editHeight={height * 0.3}
           ref={(edit) => (editor = edit)}
           filterName={filterName}
           videoPath={multipleSandBoxData[0]}
@@ -352,7 +352,7 @@ const PostEditor = (props) => {
   // 滤镜组件
   const filterEditorFilter = () => {
     return (
-      <View style={{ bottom: 140, position: 'absolute' }}>
+      <View style={{ bottom: height * 0.15, position: 'absolute' }}>
         <FlatList
           data={filterList}
           initialNumToRender={4}
@@ -503,7 +503,7 @@ const PostEditor = (props) => {
     return (
       <View
         style={{
-          height: 60,
+          height: height * 0.08,
           width: width,
           flexDirection: 'row',
           justifyContent: 'space-evenly',
@@ -527,7 +527,7 @@ const PostEditor = (props) => {
       </View>
     );
   };
-
+  // 图片滤镜
   const result = () => {
 
     const Extractor = (imgFilter) => {
@@ -605,12 +605,10 @@ const PostEditor = (props) => {
           <TouchableOpacity onPress={() => {
             setImgFilterName('');
           }}>
-            <Image
-              style={{ width: 100, height: 100, marginRight: 5 }}
-              // source={require('./parrot.png')}
-              source={{ uri: multipleSandBoxData[0] }}
-              resizeMode={'contain'}
-            />
+            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
+              <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+            </View>
+
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
             setImgFilterName('Sepia');

@@ -39,26 +39,18 @@ const StoryMusic = (props) => {
     return () => {
       console.log('音乐销毁',);
       console.log('音乐销毁', songData, checkedData);
-      if (!checkedData) {
-        console.log('12313');
 
-
-        pauseMusic(songData[0])
-      }
-      pauseMusic(checkedData)
     }
 
   }, [])
 
-  useEffect(() => {
-    palyMusic(checkedData)
 
-  }, [checkedData])
   useEffect(() => {
     if (songData.length > 0) {
       console.log('初始化', songData[0]);
       palyMusic(songData[0])
       setCheckedData(songData[0])
+
     }
   }, [songData])
 
@@ -79,11 +71,13 @@ const StoryMusic = (props) => {
   const palyMusic = async (song) => {
     console.log('播放音乐', song);
     // = await AVService.playMusic(song.songID);
-
+    if (!song) {
+      return;
+    }
 
     const songa = await AVService.playMusic(song.songID)
     console.log('---- 返回值: ', songa);
-    getmusicInfo(song)
+    // getmusicInfo(song)
   }
   const pauseMusic = async (song) => {
     console.log('暂停音乐', song);
@@ -113,12 +107,9 @@ const StoryMusic = (props) => {
         onBeforeSnapToItem={async (slideIndex = 0) => {
           // 当前选中的
           console.log('slideIndex', slideIndex);
-          // console.log(currentIndex);
 
-          await pauseMusic(checkedData)
-          // palyMusic(songData[slideIndex])
           setCheckedData(songData[slideIndex]);
-          console.log('1231', checkedData);
+          palyMusic(songData[slideIndex])
 
         }}
 
@@ -126,18 +117,28 @@ const StoryMusic = (props) => {
           // console.log(checkedData);
 
           return (
-            <View style={[{ width: 298, height: 85, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 15, marginVertical: 16, padding: 14 }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
-                <Image source={musicIconPng} style={{ width: 18, height: 18 }} />
-                {/* 播放展示gif */}
-                {checkedData?.songID == item?.songID && <Image source={musicDynamicGif} style={{ width: 30, height: 18 }} />}
+            <TouchableOpacity onPress={() => {
+              if (checkedData.songID == item.songID) {
+                pauseMusic(item)
+                setCheckedData({});
+              } else {
+                setCheckedData(item);
+                palyMusic(item)
+              }
+            }} >
+              <View style={[{ width: 298, height: 85, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 15, marginVertical: 16, padding: 14 }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
+                  <Image source={musicIconPng} style={{ width: 18, height: 18 }} />
+                  {/* 播放展示gif */}
+                  {checkedData?.songID == item?.songID && <Image source={musicDynamicGif} style={{ width: 30, height: 18 }} />}
+                </View>
+                <View>
+                  <Text>
+                    {item?.name}
+                  </Text>
+                </View>
               </View>
-              <View>
-                <Text>
-                  {item?.name}
-                </Text>
-              </View>
-            </View>
+            </TouchableOpacity>
           )
         }}
       />
@@ -152,7 +153,10 @@ const StoryMusic = (props) => {
             <Text style={styles.findMusicCancel} >取消</Text>
           </TouchableOpacity>
           <Text style={styles.findMusicHeadTitle}>背景音乐</Text>
-          <TouchableOpacity onPress={() => { pauseMusic(checkedData), setMmusicChoice(false) }}>
+          <TouchableOpacity onPress={() => {
+            // pauseMusic(checkedData), 
+            setMmusicChoice(false)
+          }}>
             <Text style={[{ fontSize: 16, fontWeight: '500', color: 'rgba(255, 255, 255, 0.4)' }, checkedData && { color: "#fff" }]} > 完成</Text>
           </TouchableOpacity>
         </View>
@@ -178,13 +182,14 @@ const StoryMusic = (props) => {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity onPress={async () => {
-                // await pauseMusic(checkedData)
-                // 
                 console.log('点击', checkedData);
-                setCheckedData(item)
-
-                // const song = await AVService.playMusic(this.state.musics[2].songID);
-                // console.log(item);
+                if (checkedData.songID == item.songID) {
+                  pauseMusic(item)
+                  setCheckedData({});
+                } else {
+                  setCheckedData(item);
+                  palyMusic(item)
+                }
 
 
               }}>

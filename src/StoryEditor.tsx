@@ -189,10 +189,10 @@ export default class StoryEditor extends Component<Props, State> {
   // 编辑头部按钮
   renderUpdateTop() {
     // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
-
+    const { showFilterLens, musicOpen } = this.state;
     const imglist = [
       // 'filter': 
-      { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !this.state.showFilterLens }) } },
+      { 'img': this.props.filterImage, 'onPress': () => { this.setState({ showFilterLens: !showFilterLens }) } },
       // 'volume':
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
@@ -200,13 +200,16 @@ export default class StoryEditor extends Component<Props, State> {
         'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
           if (this.props.fileType == 'video') {
 
-            this.setState({ musicOpen: !this.state.musicOpen })
+            this.setState({ musicOpen: !musicOpen })
           }
         },
       },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
     ]
+    if (musicOpen || showFilterLens) {
+      return null
+    }
     return (
       <>
         {/* 放弃 */}
@@ -273,7 +276,7 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={[styles.cameraContainer]}>
         <TouchableOpacity style={[Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end', }, {}]}
           onPress={() => {
-            this.setState({ showFilterLens: false, })
+            this.setState({ showFilterLens: false, musicOpen: false });
             // !this.state.showFilterLens 
           }}
           activeOpacity={1}
@@ -283,7 +286,7 @@ export default class StoryEditor extends Component<Props, State> {
           {this.renderUpdateTop()}
         </TouchableOpacity>
 
-      </View>
+      </View >
     );
   }
 
@@ -345,7 +348,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ height: 125, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
+        <View style={{ height: height * 0.15, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -468,7 +471,7 @@ const styles = StyleSheet.create(
     },
     uploadBox: {
       width: 130,
-      height: 40,
+      height: 30,
       borderRadius: 22,
       backgroundColor: "#fff",
       justifyContent: 'center',
