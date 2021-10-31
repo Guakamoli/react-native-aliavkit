@@ -15,7 +15,6 @@ import {
   StatusBar,
   Modal,
   Pressable,
-
 } from 'react-native';
 import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -31,7 +30,6 @@ const photosItem = width / 4;
 
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
-
   multipleBtnImage: any;
   postCameraImage: any;
   startMultipleBtnImage: any;
@@ -69,7 +67,6 @@ type State = {
   cropOffsetY: any;
   videoPaused: boolean;
 };
-
 
 let subscription = null;
 let trimVideoData = null;
@@ -180,22 +177,24 @@ export default class CameraScreen extends Component<Props, State> {
           <TouchableOpacity
             style={{ marginLeft: 10 }}
             onPress={() => {
-              console.info('123')
-              props.goback()
+              console.info('123');
+              props.goback();
             }}
           >
             <Image style={{ width: 30, height: 30 }} source={props.closePng} />
           </TouchableOpacity>
-        )
+        );
       },
       headerRight: () => {
         return (
-          <TouchableOpacity onPress={() => {
-            this.postEditor()
-          }} >
-            <Text style={{ fontSize: 15, fontWeight: '400', color: "#fff", lineHeight: 21 }}>继续</Text>
+          <TouchableOpacity
+            onPress={() => {
+              this.postEditor();
+            }}
+          >
+            <Text style={{ fontSize: 15, fontWeight: '400', color: '#fff', lineHeight: 21 }}>继续</Text>
           </TouchableOpacity>
-        )
+        );
       },
     });
     this.cropData = {};
@@ -212,8 +211,6 @@ export default class CameraScreen extends Component<Props, State> {
 
       fileEditor: false,
 
-
-
       trimmerRightHandlePosition: 1000,
       videoTime: 60000,
       scrubberPosition: 0,
@@ -223,13 +220,11 @@ export default class CameraScreen extends Component<Props, State> {
       cropOffsetY: 0,
       videoPaused: false,
       siwtchlibrary: false,
-
     };
   }
 
   postEditor = async () => {
     const {
-
       multipleData,
       fileSelectType,
       cropOffsetX,
@@ -271,10 +266,16 @@ export default class CameraScreen extends Component<Props, State> {
 
         this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
-        this.setState({ videoPaused: true })
+        this.setState({ videoPaused: true });
         console.log('视频暂停拉');
 
-        this.props.goPostEditor({ trimVideoData, fileType: fileSelectType, palyVide: () => { this.setState({ videoPaused: false }) } })
+        this.props.goPostEditor({
+          trimVideoData,
+          fileType: fileSelectType,
+          palyVide: () => {
+            this.setState({ videoPaused: false });
+          },
+        });
       }
     } catch (e) {
       console.info(e, '错误');
@@ -288,9 +289,7 @@ export default class CameraScreen extends Component<Props, State> {
       console.log(reminder);
 
       if (reminder.progress == 1 && this.state.fileSelectType === 'video' && !this.state.videoPaused) {
-
-        this.setState({ videoPaused: true, });
-
+        this.setState({ videoPaused: true });
 
         let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
         let videoTime = this.state.videoTime;
@@ -304,10 +303,9 @@ export default class CameraScreen extends Component<Props, State> {
           trimmerRight: trimmerRightHandlePosition,
           fileType: this.state.fileSelectType,
           palyVide: () => {
-            this.setState({ videoPaused: false, });
-          }
-        })
-
+            this.setState({ videoPaused: false });
+          },
+        });
       }
       //
     });
@@ -350,7 +348,7 @@ export default class CameraScreen extends Component<Props, State> {
           photos.push(edges[i].node);
         }
         console.log(photos[0]);
-        let firstData = photos[0]
+        let firstData = photos[0];
         this.setState({
           CameraRollList: photos,
           multipleData: [firstData],
@@ -368,7 +366,6 @@ export default class CameraScreen extends Component<Props, State> {
         // alert( '获取照片失败！' );
       },
     );
-
   }
   componentWillUnmount() {
     console.log('销毁');
@@ -381,7 +378,6 @@ export default class CameraScreen extends Component<Props, State> {
       this.props.getUploadFile(data);
     }
   }
-
 
   postFileUploadHead() {
     const { startmMltiple, multipleData } = this.state;
@@ -398,7 +394,7 @@ export default class CameraScreen extends Component<Props, State> {
         }}
       >
         {/* <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: true }) }}> */}
-        <TouchableOpacity onPress={() => { }}>
+        <TouchableOpacity onPress={() => {}}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
           </View>
@@ -411,7 +407,7 @@ export default class CameraScreen extends Component<Props, State> {
                 // 取最后一张
                 this.setState({ multipleData: [multipleData[multipleData.length - 1]] });
               }
-              this.setState({ startmMltiple: !startmMltiple, })
+              this.setState({ startmMltiple: !startmMltiple });
               // 暂时单张图㲏上传
               // this.setState({ startmMltiple: false });
             }}
@@ -644,11 +640,28 @@ export default class CameraScreen extends Component<Props, State> {
               );
             }}
           />
-
         </View>
-        <View style={{ backgroundColor: 'rgba(0, 0,0,1)', borderRadius: 22, zIndex: 1, width: 120, height: 43, position: 'absolute', right: width * 0.3, bottom: 40, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{
+            backgroundColor: 'rgba(0, 0,0,1)',
+            borderRadius: 22,
+            zIndex: 1,
+            width: 120,
+            height: 43,
+            position: 'absolute',
+            right: width * 0.3,
+            bottom: 40,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           <Text style={{ color: 'white', fontSize: 14, marginRight: 10 }}> 作品</Text>
-          <TouchableOpacity onPress={() => { this.props.goStory() }}>
+          <TouchableOpacity
+            onPress={() => {
+              this.props.goStory();
+            }}
+          >
             <Text style={{ color: 'white', fontSize: 14 }}> 快拍</Text>
           </TouchableOpacity>
         </View>
@@ -656,9 +669,7 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 
-
   render() {
-
     // videoPaused={this.state.videoPaused}
     // multipleData={this.state.multipleData}
     // CameraRollList={this.state.CameraRollList}
@@ -717,7 +728,6 @@ export default class CameraScreen extends Component<Props, State> {
         />
         {this.postFileUpload()}
       </>
-
     );
   }
 }
