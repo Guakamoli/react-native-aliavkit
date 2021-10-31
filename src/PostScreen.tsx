@@ -85,6 +85,9 @@ const PostContent = (props) => {
       setCropScale(0.9);
     }
   };
+  if (videoFile) {
+    console.info(imageItem, 'imageItem');
+  }
   if (!imageItem && !videoFile) return null;
   return (
     <View
@@ -133,6 +136,10 @@ const PostContent = (props) => {
             imageUri={imageItem?.uri}
             videoFile={videoFile}
             videoPaused={props.videoPaused}
+            srcSize={{
+              width: imageItem.width,
+              height: imageItem.height,
+            }}
             cropAreaWidth={width}
             cropAreaHeight={width}
             containerColor='black'
