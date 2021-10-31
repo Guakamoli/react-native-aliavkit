@@ -55,9 +55,12 @@ const PostEditor = (props) => {
   const [scrubberPosition, setscrubberPosition] = useState(0);
   const [exportVideo, setexportVideo] = useState(false);
   const scrollAniRef = useRef(new Animated.Value(10)).current;
+  const aniRef = useRef(null);
+
   const [imgfilterName, setImgFilterName] = useState('');
   const stopRef = useRef(false);
   const startRef = useRef(false);
+  const lockRef = useRef(false);
 
   const [photoFile, setPhotoFile] = useState('');
   navigation.setOptions({
@@ -226,11 +229,10 @@ const PostEditor = (props) => {
             onExportVideo(event);
           }}
           onPlayProgress={({ nativeEvent }) => {
-            console.info(nativeEvent.playProgress, trimmerLeftHandlePosition, 'trimmerRightHandlePosition');
-            if (nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition && !startRef.current) {
+            if (nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition && !startRef.current && !lockRef.current) {
               startRef.current = true;
 
-              Animated.timing(
+              aniRef.current = Animated.timing(
                 // 随时间变化而执行动画
                 scrollAniRef, // 动画中的变量值
                 {
@@ -238,16 +240,18 @@ const PostEditor = (props) => {
                   duration: delta, // 让动画持续一段时间
                   useNativeDriver: true,
                 },
-              ).start();
+              );
+              aniRef.current.start();
             }
             if (fileType === 'video') {
               if (
                 nativeEvent.playProgress === undefined ||
-                (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current)
+                (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current && !lockRef.current)
               ) {
                 stopRef.current = true;
                 startRef.current = false;
 
+                aniRef.current.stop();
                 RNEditViewManager.pause();
 
                 RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
@@ -396,7 +400,9 @@ const PostEditor = (props) => {
       }
       scrollAniRef.setValue(0);
       RNEditViewManager.seekToTime(leftPosition / 1000);
+      console.info('松开了');
       setTimeout(() => {
+        lockRef.current = false;
         RNEditViewManager.play();
         stopRef.current = false;
         startRef.current = false;
@@ -433,12 +439,18 @@ const PostEditor = (props) => {
             onRightHandlePressIn={() => {
               stopRef.current = true;
               startRef.current = false;
+              lockRef.current = true;
+              aniRef.current.stop();
+
               scrollAniRef.setValue(0);
 
               RNEditViewManager.pause();
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {
+              aniRef.current.stop();
+              lockRef.current = true;
+
               stopRef.current = true;
               startRef.current = false;
 
