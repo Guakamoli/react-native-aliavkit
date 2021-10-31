@@ -222,7 +222,7 @@ const PostEditor = (props) => {
           ref={(edit) => (editor = edit)}
           filterName={filterName}
           videoPath={multipleSandBoxData[0]}
-          saveToPhotoLibrary={true}
+          saveToPhotoLibrary={false}
           startExportVideo={exportVideo}
           videoMute={videoMute}
           onExportVideo={(event) => {

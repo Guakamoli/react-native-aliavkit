@@ -434,6 +434,10 @@ export default class CameraScreen extends Component<Props, State> {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
     const getPasterData = async () => {
       const pasters = await this.camera.getPasterInfos();
+      // http  -> https
+      pasters.map(item => {
+        item.icon = item.icon.replace('http://', 'https://')
+      })
       pasters.unshift({ eid: 0 })
       this.setState({
         pasterList: pasters,
@@ -681,21 +685,18 @@ export default class CameraScreen extends Component<Props, State> {
             >
               {/* <View style={styles.captureButtonImage}> */}
               {/* 圆环图片 */}
-              {/* <View
+              <View
                 style={{
                   borderRadius: circleSize,
                   borderWidth: 4,
                   width: circleSize,
                   height: circleSize,
                   borderColor: '#fff',
+                  zIndex: 1
                 }}
               >
-              </View> */}
+              </View>
 
-              <Image
-                source={this.props.captureButtonImage}
-                style={{ width: circleSize, height: circleSize, zIndex: 1 }}
-              />
               <Animated.View
                 style={{
                   position: 'absolute',

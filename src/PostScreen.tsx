@@ -266,12 +266,11 @@ export default class CameraScreen extends Component<Props, State> {
         cropWidth: cropData.size.width,
         cropHeight: cropData.size.height,
       });
-      this.myRef.current.show('上传中', DURATION.FOREVER);
+      this.myRef.current.show('上传中', 3000);
       // 进入修改
       if (fileSelectType === 'image') {
         console.log('开始裁剪');
 
-        this.myRef.current.close();
         this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
         this.setState({ videoPaused: true });
         console.log('视频暂停拉');
@@ -302,7 +301,6 @@ export default class CameraScreen extends Component<Props, State> {
         let videoTime = this.state.videoTime;
         firstJump = true;
         console.log('跳转了啊');
-        this.myRef.current.close();
 
         this.props.goPostEditor({
           trimVideoData,
