@@ -685,7 +685,7 @@ export default class CameraScreen extends Component<Props, State> {
             >
               {/* <View style={styles.captureButtonImage}> */}
               {/* 圆环图片 */}
-              <View
+              {/* <View
                 style={{
                   borderRadius: circleSize,
                   borderWidth: 4,
@@ -695,8 +695,11 @@ export default class CameraScreen extends Component<Props, State> {
                   zIndex: 1
                 }}
               >
-              </View>
-
+              </View> */}
+              <Image
+                source={this.props.captureButtonImage}
+                style={{ width: circleSize, height: circleSize, zIndex: 1 }}
+              />
               <Animated.View
                 style={{
                   position: 'absolute',
