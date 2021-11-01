@@ -255,6 +255,8 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
+      console.log('hhh', CameraHeight * 0.95 - 100, '33', CameraHeight);
+
       return (
         <View style={{ width: width, height: CameraHeight * 0.95 - 120, }}>
           <VideoEditor
