@@ -11,6 +11,35 @@
 #import <queen/Queen.h>
 #import "AliyunPathManager.h"
 
+#if TARGET_OS_SIMULATOR
+// Polyfill on simulator
+
+#include <opencv2/opencv.hpp>
+
+extern "C" {
+void aai_release_face_shape_beauty_context() {}
+void aai_enable_face_shape_beauty_type() {}
+void aai_update_face_shape_beauty_params() {}
+void aai_face_shape_beauty_run() {}
+void aai_create_face_shape_beauty_context() {}
+}
+
+namespace cv {
+void Mat::deallocate() {}
+void Mat::create(int, int const*, int) {}
+void Mat::copySize(cv::Mat const&) {}
+void flip(cv::_InputArray const&, cv::_OutputArray const&, int) {}
+void error(int, cv::String const&, char const*, char const*, int) {}
+void String::deallocate() {}
+char* String::allocate(size_t){ return nullptr;}
+void resize(cv::_InputArray const&, cv::_OutputArray const&, cv::Size_<int>, double, double, int) {}
+void rotate(cv::_InputArray const&, cv::_OutputArray const&, int) {}
+void cvtColor(cv::_InputArray const&, cv::_OutputArray const&, int, int) {}
+void fastFree(void*) {}
+}
+
+#endif
+
 @interface BeautyEngineManager()
 
 @property (nonatomic, assign) CGSize size;
@@ -50,12 +79,14 @@ static BeautyEngineManager *_instance = nil;
 
 - (void)clear
 {
+#if !TARGET_OS_SIMULATOR
     [self.lock lock];
     _instance.hasInit = NO;
     [self.processPixelThread cancel];
     [self performSelector:@selector(clearBeautyEngine) onThread:self.processPixelThread withObject:nil waitUntilDone:YES];
     _newPixelBuffer = NULL;
     [self.lock unlock];
+#endif
 }
 
 - (CVPixelBufferRef)customRenderWithBuffer:(CMSampleBufferRef)sampleBuffer
@@ -73,6 +104,9 @@ static BeautyEngineManager *_instance = nil;
                               thinMandible:(CGFloat)thinMandibleValue
                                   cutCheek:(CGFloat)cutCheekValue
 {
+#if TARGET_OS_SIMULATOR
+    return CMSampleBufferGetImageBuffer(sampleBuffer);
+#else
     [self.lock lock];
     
     if(!self.hasInit) {
@@ -120,6 +154,7 @@ static BeautyEngineManager *_instance = nil;
     
     [self.lock unlock];
     return _newPixelBuffer;
+#endif
 }
 
 #pragma mark - 美颜参数

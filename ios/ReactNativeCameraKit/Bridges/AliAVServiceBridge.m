@@ -305,20 +305,35 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
     if (![path containsString:@"ph://"]) {
         reject(@"",@"no ph:// scheme",nil);
     }
-    [self _saveImageToSandBox:path complete:^(NSString *path) {
-        resolve(path);
-    }];
+    [self _saveImageToSandBox:path resolve:resolve reject:reject];
 }
 
-- (void)_saveImageToSandBox:(NSString *)path complete:(void(^)(NSString *path))complete
+- (void)_saveImageToSandBox:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
     NSString *_assetId = [path stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
     PHAsset *asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     if (asset.mediaType == PHAssetMediaTypeVideo) {
         [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:asset completion:^(AVAsset *avAsset, NSDictionary *info) {
-            AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
-            NSString *sourcePath = [urlAsset.URL path];
-            complete(sourcePath);
+
+            NSString *tmpVideoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@".mp4"];
+            AVAssetExportSession *exportSession = [[AVAssetExportSession alloc]initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
+            exportSession.outputURL = [NSURL URLWithString:tmpVideoPath];
+            exportSession.outputFileType = AVFileTypeMPEG4; // mp4
+            [exportSession exportAsynchronouslyWithCompletionHandler:^{
+                switch (exportSession.status) {
+                    case AVAssetExportSessionStatusFailed: // export failed
+                        reject(@"",@"AVAssetExportSessionStatusFailed",nil);
+                        break;
+                    case AVAssetExportSessionStatusCompleted: // finish
+                    {
+                        resolve(tmpVideoPath);
+                    }
+                        break;
+                    default:
+                        break;
+                }
+            }];
+            
         }];
     } else if (asset.mediaType == PHAssetResourceTypePhoto) {
         NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
@@ -326,7 +341,11 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
                                                               maxSize:CGSizeMake(1080, 1920)
                                                            outputPath:tmpPhotoPath
                                                            completion:^(NSError *error, UIImage * _Nullable result) {
-            complete(tmpPhotoPath);
+            if (error) {
+                reject(@"",error.localizedDescription,error);
+            }else {
+                resolve(tmpPhotoPath);
+            }
         }];
     }
 }
