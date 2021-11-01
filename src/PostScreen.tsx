@@ -399,7 +399,7 @@ export default class CameraScreen extends Component<Props, State> {
         }}
       >
         {/* <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: true }) }}> */}
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => { }}>
           <View>
             <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
           </View>
@@ -648,7 +648,7 @@ export default class CameraScreen extends Component<Props, State> {
         </View>
         <View
           style={{
-            backgroundColor: 'rgba(0, 0,0,1)',
+            backgroundColor: '#222222',
             borderRadius: 22,
             zIndex: 1,
             width: 120,
@@ -675,13 +675,6 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   render() {
-    // videoPaused={this.state.videoPaused}
-    // multipleData={this.state.multipleData}
-    // CameraRollList={this.state.CameraRollList}
-    // fileSelectType={this.state.fileSelectType}
-    // videoFile={this.state.videoFile}
-    console.log('this.state.multipleData', this.state.multipleData);
-
     return (
       <>
         {/* 相册内容切换 暂时屏蔽 */}
