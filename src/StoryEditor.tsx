@@ -325,7 +325,7 @@ export default class StoryEditor extends Component<Props, State> {
                           source={item.filterName === null ? this.props.noResultPng : { uri: item.iconPath }}
                         />
                         <Text style={[styles.filterLensSelectTitle,
-                        this.state.filterName == item.filterName && { color: '#836BFF' }
+                        this.state.filterName == item.filterName && { color: '#fff' }
                         ]}>{item.filterName ? item.filterName : item.title}</Text>
                       </View>
                     </TouchableOpacity>
@@ -476,7 +476,7 @@ const styles = StyleSheet.create(
     },
     uploadBox: {
       width: 130,
-      height: 30,
+      height: 40,
       borderRadius: 22,
       backgroundColor: "#fff",
       justifyContent: 'center',

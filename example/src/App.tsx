@@ -61,6 +61,8 @@ function Story(props) {
       // 退出操作
       goback={() => {
         console.log(12313);
+        props.navigation.navigate('Home')
+
       }}
       // 拿到上传数据
       getUploadFile={(data) => {
