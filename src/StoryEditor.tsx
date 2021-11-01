@@ -99,6 +99,7 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
+      setMusic: false,
       musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
@@ -255,10 +256,10 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       return (
-        <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
+        <View style={{ width: width, height: CameraHeight * 0.95 - 120, }}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
-            style={{ height: CameraHeight, justifyContent: 'flex-end' }}
+            // editHeight={CameraHeight * 0.95 - 100}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
@@ -267,20 +268,19 @@ export default class StoryEditor extends Component<Props, State> {
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
+            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
           />
         </View>
       )
     }
     return (
       <View style={[styles.cameraContainer]}>
-        <TouchableOpacity style={[Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end', }, {}]}
+        <View style={{ width: width, height: CameraHeight * 0.05, backgroundColor: '#000' }}></View>
+        <TouchableOpacity style={[{}]}
           onPress={() => {
             this.setState({ showFilterLens: false, musicOpen: false });
-            // !this.state.showFilterLens 
           }}
           activeOpacity={1}
-          disabled={this.state.showBeautify}
         >
           {VideoEditors()}
           {this.renderUpdateTop()}
@@ -348,7 +348,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ height: height * 0.15, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
+        <View style={{ height: 120, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -357,7 +357,6 @@ export default class StoryEditor extends Component<Props, State> {
 
 
   render() {
-    // console.log('getmusicInfo-----', this.state.musicInfo);
     return (
       <>
         <Toast
@@ -374,26 +373,30 @@ export default class StoryEditor extends Component<Props, State> {
         {Platform.OS !== 'android' && this.renderCamera()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
 
-        <View style={{ position: 'absolute', bottom: 0, width: width }}>
+        {/* <View style={{ position: 'absolute', bottom: 0, width: width }}> */}
 
-          {this.state.musicOpen
-            ?
-            <StoryMusic
-              musicDynamicGif={this.props.musicDynamicGif}
-              musicIconPng={this.props.musicIconPng}
-              musicSearch={this.props.musicSearch}
-              musicIcongray={this.props.musicIcongray}
-              getmusicInfo={(data) => {
+        {this.state.musicOpen
+          ?
+          <StoryMusic
+            musicDynamicGif={this.props.musicDynamicGif}
+            musicIconPng={this.props.musicIconPng}
+            musicSearch={this.props.musicSearch}
+            musicIcongray={this.props.musicIcongray}
+            getmusicInfo={(data) => {
+              this.setState({ musicInfo: data })
+            }}
+            setMusic={(data) => {
+              this.setState({ setMusic: data })
+            }}
+
+          />
+
+          :
+          this.renderBottom()}
 
 
-                this.setState({ musicInfo: data })
-              }} />
-            :
-            this.renderBottom()}
 
-
-
-        </View>
+        {/* </View> */}
 
       </>
     );

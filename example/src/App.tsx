@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Button, } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -52,7 +52,9 @@ function VideoEditor({ navigation }) {
 
 
 function Story(props) {
-
+  props.navigation.setOptions({
+    header: () => { return null }
+  })
   return (
     <CameraScreen
       {...props}
@@ -95,6 +97,7 @@ function Story(props) {
       selectBeautify={require('../images/selectBeautify.png')}
       noResultPng={require('../images/noResult.png')}
       showCapturedImageCount
+      zoomMode="on"
       cameraModule={true}
     />
   );

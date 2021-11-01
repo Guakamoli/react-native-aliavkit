@@ -460,6 +460,7 @@ AliyunCropDelegate
     if ([[NSFileManager defaultManager] fileExistsAtPath:music.path]) {
         NSLog(@"----- music.path: %@",music.path);
     }
+    NSLog(@"----- music.name: %@",music.name);
     AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
     effectMusic.startTime = music.startTime * 0.001;
     effectMusic.duration = music.duration;
