@@ -23,6 +23,7 @@
 #import "AlivcRecordFocusView.h"
 #import "AliyunPasterInfo.h"
 #import "AliyunDownloadManager.h"
+#import <AVFoundation/AVFoundation.h>
 
 #define IS_IPHONEX (([[UIScreen mainScreen] bounds].size.height<812)?NO:YES)
 #define NoStatusBarSafeTop (IS_IPHONEX ? 44 : 0)
@@ -56,6 +57,11 @@ static AliCameraAction *_instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _instance = [[AliCameraAction alloc] init];
+        if (@available(iOS 13.0, *)) {
+            [[AVAudioSession sharedInstance] setAllowHapticsAndSystemSoundsDuringRecording:YES error:nil];
+        } else {
+            // Fallback on earlier versions
+        }
     });
     return _instance;
 }
