@@ -206,8 +206,8 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             weakSelf.cutPanel.startTime = 0;
             CGFloat endTime = [avAsset avAssetVideoTrackDuration];
             weakSelf.cutPanel.endTime = endTime;
-            weakSelf.cutPanel.fps = 30;
-            weakSelf.cutPanel.gop = 30;
+//            weakSelf.cutPanel.fps = 30;
+//            weakSelf.cutPanel.gop = 30;
             // cut mode
             weakSelf.cutPanel.cropMode = 1;
             weakSelf.cutPanel.rect = cropRect;
