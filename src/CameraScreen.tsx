@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component, useRef, useEffect, useState } from 'react';
+import React, { Component, useRef, useEffect, useState, } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
   Animated,
   FlatList,
   Easing,
+  StatusBar
 } from 'react-native';
 import { useInterval } from 'ahooks';
 
@@ -143,6 +144,7 @@ const ProgressCircleWrapper = (props) => {
   const { flag, recordeSuccess, setFlag } = props;
   let [progress, setProgress] = useState(0);
   let [timer, setTimer] = useState(null);
+
   useInterval(() => {
     const newprogress = (progress += 1 / 140);
     if (newprogress >= 1) {
@@ -377,23 +379,26 @@ export default class CameraScreen extends Component<Props, State> {
 
     const shoot = () => {
       return (
-        <Camera
-          ref={(cam) => (this.camera = cam)}
-          style={{ height: CameraHeight }}
-          cameraType={this.state.cameraType}
-          flashMode={this.state.flashData.mode}
-          torchMode={this.state.torchMode ? 'on' : 'off'}
-          ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
-          saveToCameraRoll={false}
-          showFrame={this.props.showFrame}
-          scanBarcode={this.props.scanBarcode}
-          laserColor={this.props.laserColor}
-          frameColor={this.props.frameColor}
-          onReadCode={this.props.onReadCode}
-          normalBeautyLevel={this.state.normalBeautyLevel * 10}
-          onRecordingProgress={this._onRecordingDuration}
-          facePasterInfo={this.state.facePasterInfo}
-        />
+        <View style={{ width: width, height: height * 0.95 - 100, }}>
+          <Camera
+            ref={(cam) => (this.camera = cam)}
+            style={{ height: '100%' }}
+            cameraType={this.state.cameraType}
+            flashMode={this.state.flashData.mode}
+            torchMode={this.state.torchMode ? 'on' : 'off'}
+            ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
+            saveToCameraRoll={false}
+            showFrame={this.props.showFrame}
+            scanBarcode={this.props.scanBarcode}
+            laserColor={this.props.laserColor}
+            frameColor={this.props.frameColor}
+            onReadCode={this.props.onReadCode}
+            normalBeautyLevel={this.state.normalBeautyLevel * 10}
+            onRecordingProgress={this._onRecordingDuration}
+            facePasterInfo={this.state.facePasterInfo}
+            zoomMode={this.props.zoomMode}
+          />
+        </View>
       );
     };
 
@@ -402,20 +407,23 @@ export default class CameraScreen extends Component<Props, State> {
         {this.isCaptureRetakeMode() ? (
           <Image style={{ flex: 1, justifyContent: 'flex-end' }} source={{ uri: this.state.imageCaptured }} />
         ) : (
-          <TouchableOpacity
-            style={[
-              Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end' },
-              { position: 'relative', borderRadius: 20 },
-            ]}
-            onPress={() => {
-              this.setState({ showFilterLens: false, showBeautify: false });
-            }}
-            activeOpacity={1}
-            disabled={!this.state.showBeautify}
-          >
-            {this.renderLeftButtons()}
-            {shoot()}
-          </TouchableOpacity>
+          <>
+            <View style={{ width: width, height: height * 0.05, backgroundColor: '#000' }}></View>
+            <TouchableOpacity
+              style={[
+                Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end' },
+                { position: 'relative', borderRadius: 20 },
+              ]}
+              onPress={() => {
+                this.setState({ showFilterLens: false, showBeautify: false });
+              }}
+              activeOpacity={1}
+              disabled={!this.state.showBeautify}
+            >
+              {this.renderLeftButtons()}
+              {shoot()}
+            </TouchableOpacity>
+          </>
         )}
       </View>
     );
@@ -871,6 +879,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         {/* {Platform.OS !== 'android' ? <View style={{ height: 44, backgroundColor: "#000" }}></View> : null} */}
+        <StatusBar barStyle={'light-content'} />
 
         {/* story */}
         {this.state.ShootSuccess ? (

@@ -31,15 +31,15 @@ const StoryMusic = (props) => {
   const [musicSearchValue, setMusicSearchValue] = useState('');
   const [songData, setSongData] = useState([]);
 
-
   useEffect(() => {
     console.log(23);
 
     getSong({})
+    props.setMusic(false)
     return () => {
       console.log('音乐销毁',);
       console.log('音乐销毁', songData, checkedData);
-
+      props.setMusic(true)
     }
 
   }, [])
@@ -77,7 +77,7 @@ const StoryMusic = (props) => {
 
     const songa = await AVService.playMusic(song.songID)
     console.log('---- 返回值: ', songa);
-    // getmusicInfo(song)
+    getmusicInfo(song)
   }
   const pauseMusic = async (song) => {
     console.log('暂停音乐', song);
@@ -228,7 +228,8 @@ const StoryMusic = (props) => {
         !musicChoice &&
 
         <View style={{
-          height: 100, backgroundColor: "#000",
+          height: 120,
+          backgroundColor: "#000",
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: "center",

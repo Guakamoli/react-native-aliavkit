@@ -199,7 +199,7 @@ export default class CameraScreen extends Component<Props, State> {
               this.postEditor();
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: '400', color: '#fff', lineHeight: 21 }}>继续</Text>
+            <Text style={{ fontSize: 15, fontWeight: '400', color: '#fff', lineHeight: 21, marginRight: 12 }}>继续</Text>
           </TouchableOpacity>
         );
       },
@@ -654,7 +654,7 @@ export default class CameraScreen extends Component<Props, State> {
             width: 120,
             height: 43,
             position: 'absolute',
-            right: width * 0.3,
+            right: width * 0.1,
             bottom: 40,
             flexDirection: 'row',
             justifyContent: 'center',
