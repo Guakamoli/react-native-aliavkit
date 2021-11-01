@@ -160,7 +160,10 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
 
 - (NSArray<NSString *> *)supportedEvents
 {
-    return @[@"cropProgress"];
+    return @[
+        @"cropProgress",
+        @"icloudDownloadProgress"
+    ];
 }
 
 RCT_EXPORT_METHOD(crop:(NSDictionary *)options
@@ -308,43 +311,100 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
     [self _saveImageToSandBox:path resolve:resolve reject:reject];
 }
 
-- (void)_saveImageToSandBox:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+- (void)_saveImageToSandBox:(NSString *)sourcePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-    NSString *_assetId = [path stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+    NSString *_assetId = [sourcePath stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
     PHAsset *asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     if (asset.mediaType == PHAssetMediaTypeVideo) {
-        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:asset completion:^(AVAsset *avAsset, NSDictionary *info) {
-
-            NSString *tmpVideoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@".mp4"];
-            AVAssetExportSession *exportSession = [[AVAssetExportSession alloc]initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
-            exportSession.outputURL = [NSURL URLWithString:tmpVideoPath];
+        NSString *compositionRootDir = [AliyunPathManager compositionRootDir];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:compositionRootDir]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:compositionRootDir withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSString *outputVideoPath = [[compositionRootDir stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"mp4"];
+        // Option
+        PHVideoRequestOptions *videoRequestOptions = [[PHVideoRequestOptions alloc] init];
+        videoRequestOptions.version = PHVideoRequestOptionsVersionOriginal;
+        videoRequestOptions.deliveryMode = PHVideoRequestOptionsDeliveryModeAutomatic;
+        [videoRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+            NSLog(@"---- download icloud video progress: %lf",progress);
+            if (self->_hasListeners) {
+                [self sendEventWithName:@"icloudDownloadProgress" body:@{@"progress":@(progress)}];
+            }
+        }];
+        videoRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
+        
+        PHImageManager *manager = [PHImageManager defaultManager];
+        [manager requestExportSessionForVideo:asset
+                                      options:videoRequestOptions
+                                 exportPreset:AVAssetExportPresetHighestQuality
+                                resultHandler:^(AVAssetExportSession * _Nullable exportSession, NSDictionary * _Nullable info) {
+            
+            exportSession.outputURL = [NSURL fileURLWithPath:outputVideoPath];
+            exportSession.shouldOptimizeForNetworkUse = NO;
             exportSession.outputFileType = AVFileTypeMPEG4; // mp4
             [exportSession exportAsynchronouslyWithCompletionHandler:^{
-                switch (exportSession.status) {
-                    case AVAssetExportSessionStatusFailed: // export failed
-                        reject(@"",@"AVAssetExportSessionStatusFailed",nil);
-                        break;
-                    case AVAssetExportSessionStatusCompleted: // finish
+                switch ([exportSession status]) {
+                    case AVAssetExportSessionStatusFailed:
                     {
-                        resolve(tmpVideoPath);
+                        reject(@"",@"AVAssetExportSessionStatusFailed",nil);
+                    }
+                        break;
+                    case AVAssetExportSessionStatusCompleted:
+                    {
+                        resolve(outputVideoPath);
                     }
                         break;
                     default:
                         break;
                 }
             }];
-            
         }];
+        
     } else if (asset.mediaType == PHAssetResourceTypePhoto) {
-        NSString *tmpPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
-        [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:asset
-                                                              maxSize:CGSizeMake(1080, 1920)
-                                                           outputPath:tmpPhotoPath
-                                                           completion:^(NSError *error, UIImage * _Nullable result) {
-            if (error) {
-                reject(@"",error.localizedDescription,error);
+        CGSize maxSize = CGSizeMake(1080, 1920);
+        NSString *outputPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
+        PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
+        imageRequestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+        imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        imageRequestOptions.synchronous = YES;
+        imageRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
+        [imageRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+            NSLog(@"----🖼 download icloud image progress: %lf",progress);
+            if (self->_hasListeners) {
+                [self sendEventWithName:@"icloudDownloadProgress" body:@{@"progress":@(progress)}];
+            }
+        }];
+        
+        CGFloat factor = MAX(maxSize.width,maxSize.height)/MAX(asset.pixelWidth, asset.pixelHeight);
+        if (factor > 1) {
+            factor = 1.0f;
+        }
+        // 最终分辨率必须为偶数
+        CGFloat outputWidth = rint(asset.pixelWidth * factor / 2 ) * 2;
+        CGFloat outputHeight = rint(asset.pixelHeight * factor / 2) * 2;
+        
+        [[PHImageManager defaultManager] requestImageForAsset:asset
+                                                   targetSize:CGSizeMake(outputWidth, outputHeight)
+                                                  contentMode:PHImageContentModeDefault
+                                                      options:imageRequestOptions
+                                                resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            if (!result) {
+                reject(@"",@"request image failure",[NSError errorWithDomain:@"com.aliyun.photo" code:101 userInfo:nil]);
             }else {
-                resolve(tmpPhotoPath);
+                if (result.imageOrientation != UIImageOrientationUp) {
+                    UIGraphicsBeginImageContextWithOptions(result.size, NO, result.scale);
+                    [result drawInRect:(CGRect){0, 0, result.size}];
+                    UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                    result = normalizedImage;
+                }
+                NSData *imageData = UIImageJPEGRepresentation(result, 1);
+                BOOL writeSuccess = [imageData writeToFile:outputPhotoPath atomically:YES];
+                if (writeSuccess) {
+                    resolve(outputPhotoPath);
+                } else {
+                    reject(@"",@"image write fail",nil);
+                }
             }
         }];
     }
