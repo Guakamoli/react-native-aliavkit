@@ -162,7 +162,8 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
 {
     return @[
         @"cropProgress",
-        @"icloudDownloadProgress"
+        @"icloudImageDownloadProgress",
+        @"icloudVideoDownloadProgress"
     ];
 }
 
@@ -328,7 +329,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         [videoRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
             NSLog(@"---- download icloud video progress: %lf",progress);
             if (self->_hasListeners) {
-                [self sendEventWithName:@"icloudDownloadProgress" body:@{@"progress":@(progress)}];
+                [self sendEventWithName:@"icloudVideoDownloadProgress" body:@{@"progress":@(progress)}];
             }
         }];
         videoRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
@@ -371,7 +372,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         [imageRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
             NSLog(@"----🖼 download icloud image progress: %lf",progress);
             if (self->_hasListeners) {
-                [self sendEventWithName:@"icloudDownloadProgress" body:@{@"progress":@(progress)}];
+                [self sendEventWithName:@"icloudImageDownloadProgress" body:@{@"progress":@(progress)}];
             }
         }];
         
