@@ -789,8 +789,10 @@ export default class Carousel extends Component {
 
             if (this._activeItem !== nextActiveItem) {
                 this._activeItem = nextActiveItem;
+                if (this.props.haptics) {
+                    this.props.haptics.impactAsync(this.props.haptics.ImpactFeedbackStyle.Heavy);
+                }
             }
-            console.info("你看", itemReached, this._canFireBeforeCallback, nextActiveItem, this._itemToSnapTo)
             if (itemReached) {
                 if (this._canFireBeforeCallback) {
                     this._onBeforeSnap(this._getDataIndex(nextActiveItem));
