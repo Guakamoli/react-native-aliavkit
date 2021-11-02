@@ -33,6 +33,21 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
 RCT_EXPORT_MODULE();
 
+RCT_EXPORT_METHOD(enableHapticIfExist)
+{
+  if (@available(iOS 10.0, *)) {
+      if (@available(iOS 13.0, *)) {
+          if (![[AVAudioSession sharedInstance] allowHapticsAndSystemSoundsDuringRecording]) {
+              NSError *error = nil;
+              [[AVAudioSession sharedInstance] setAllowHapticsAndSystemSoundsDuringRecording:YES error:&error];
+              if (error) {
+                NSLog(@"------ %@",error.localizedDescription);
+              }
+          }
+      }
+  }
+}
+
 RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

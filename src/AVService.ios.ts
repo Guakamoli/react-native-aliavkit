@@ -10,7 +10,7 @@ type MusicRequestType = {
 }
 
 export default class AVService {
-  static async getFacePasterInfos({ }) {
+  static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }
 
@@ -52,5 +52,9 @@ export default class AVService {
 
   static async removeThumbnaiImages() {
     return await AliAVServiceBridge.removeThumbnaiImages({});
+  }
+
+  static enableHapticIfExist() {
+    AliAVServiceBridge.enableHapticIfExist();
   }
 }
