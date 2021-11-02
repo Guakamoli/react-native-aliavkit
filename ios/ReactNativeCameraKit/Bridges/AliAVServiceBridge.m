@@ -367,7 +367,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
         imageRequestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
         imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-        imageRequestOptions.synchronous = YES;
+        imageRequestOptions.synchronous = NO;
         imageRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
         [imageRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
             NSLog(@"----🖼 download icloud image progress: %lf",progress);
