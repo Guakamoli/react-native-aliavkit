@@ -17,6 +17,8 @@
 #import <AliyunVideoSDKPro/AliyunImageCrop.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
 #import <AliyunVideoSDKPro/AliyunNativeParser.h>
+#import "ShortCut.h"
+#import "RNAVDeviceHelper.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -41,11 +43,28 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
               NSError *error = nil;
               [[AVAudioSession sharedInstance] setAllowHapticsAndSystemSoundsDuringRecording:YES error:&error];
               if (error) {
-                NSLog(@"------ %@",error.localizedDescription);
+                AVDLog(@"%@",error.localizedDescription);
               }
           }
       }
   }
+}
+
+RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    NSArray *names = @[@"柔柔",@"优雅",@"红润",@"阳光",@"海蓝",@"炽黄",@"浓烈",@"闪耀",@"朝阳",@"经典",@"粉桃",@"雪梨",@"鲜果",@"麦茶",@"灰白",@"波普",@"光圈",@"海盐",@"黑白",@"胶片",@"焦黄",@"蓝调",@"迷糊",@"思念",@"素描",@"鱼眼",@"马赛克",@"模糊"];
+    NSMutableArray *infos = [NSMutableArray array];
+    for (NSString *name in names) {
+        NSString *iconPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"Filter/%@/icon.png",name]];
+        [infos addObject:@{@"iconPath":iconPath,@"filterName":name}];
+    }
+    if (infos.count) {
+        resolve(infos);
+    } else {
+        reject(@"",@"filter resource doesn't exist",nil);
+    }
 }
 
 RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
@@ -55,6 +74,7 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
     NSString *sourcePath = [options valueForKey:@"sourcePath"];
     if (!sourcePath || [sourcePath isEqualToString:@""]) {
         reject(@"404", @"sourcePath is null", nil);
+        return;
     }
     NSURL *pathURL = nil;
     if ([sourcePath containsString:@"file://"]) {
@@ -65,6 +85,7 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
     NSString *typeStr = [options valueForKey:@"resourceType"];
     if (!typeStr || [typeStr isEqualToString:@""]) {
         reject(@"404", @"no specyfic resource type", nil);
+        return;
     }
     if ([typeStr isEqualToString:@"photo"]) {
         [self requestAuthorization:^(BOOL authorized){
@@ -78,10 +99,10 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
             } completionHandler:^(BOOL success, NSError * _Nullable error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (success) {
-                        NSLog(@"save success");
+                        AVDLog(@"save success");
                         resolve(@(success));
                     } else {
-                        NSLog(@"save failure:%@", error);
+                        AVDLog(@"save failure:%@", error);
                         reject(@"save fail", @"save fail", error);
                     }
                 });
@@ -96,7 +117,7 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
             } completionHandler:^(BOOL success, NSError * _Nullable error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (success) {
-                        NSLog(@"save success");
+                        AVDLog(@"save success");
                         resolve(@(success));
                     } else {
                         reject(@"save fail", @"save fail", error);
@@ -189,6 +210,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     NSString *source = [options valueForKey:@"source"];
     if (!source || ![source containsString:@"ph://"]) {
         reject(@"",@"source scheme no ph://",nil);
+        return;
     }
     CGFloat cropOffsetX = [[options valueForKey:@"cropOffsetX"] floatValue];
     CGFloat cropOffsetY = [[options valueForKey:@"cropOffsetY"] floatValue];
@@ -198,10 +220,12 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     if (cropWidth == 0.0 ) {
         reject(@"",@"Invalid cropWidth",nil);
+        return;
     }
     
     if ( cropHeight == 0.0 ) {
         reject(@"",@"Invalid cropHeight",nil);
+        return;
     }
 
     
@@ -225,25 +249,33 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             weakSelf.cutPanel.startTime = 0;
             CGFloat endTime = [avAsset avAssetVideoTrackDuration];
             weakSelf.cutPanel.endTime = endTime;
-//            weakSelf.cutPanel.fps = 30;
-//            weakSelf.cutPanel.gop = 30;
+
             // cut mode
             weakSelf.cutPanel.cropMode = 1;
             weakSelf.cutPanel.rect = cropRect;
-            weakSelf.cutPanel.videoQuality = AliyunVideoQualityMedium;
-//            weakSelf.cutPanel.bitrate = 10*1000*1000;   // 15Mbps
+            if ([RNAVDeviceHelper isBelowIphone_11]) {
+                weakSelf.cutPanel.videoQuality = AliyunVideoQualityMedium;
+            }
+            else {
+                weakSelf.cutPanel.fps = 30;
+                weakSelf.cutPanel.gop = 30;
+                weakSelf.cutPanel.bitrate = 10*1000*1000;   // 15Mbps
+            }
             weakSelf.cutPanel.encodeMode = 1;           // Force hardware encoding
             weakSelf.cutPanel.shouldOptimize = NO;
             
             int res =[weakSelf.cutPanel startCrop];
             if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_VIDEO){
                 reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+                return;
             }
             else if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_AUDIO){
                 reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+                return;
             }
             else if (res <0 && res != -314){
                 reject(@"",@"",nil);
+                return;
             }
             else if (res == 0) {
                 resolve(outputPath);
@@ -287,13 +319,13 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
 #pragma mark - AliyunCropDelegate
 - (void)cropOnError:(int)error
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    AVDLog(@"--- %s",__PRETTY_FUNCTION__);
     [self.cutPanel cancel];
 }
 
 - (void)cropTaskOnProgress:(float)progress
 {
-//    NSLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
+//    AVDLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
     if (_hasListeners) {
         [self sendEventWithName:@"cropProgress" body:@{@"progress":@(progress)}];
     }
@@ -301,7 +333,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
 
 - (void)cropTaskOnComplete
 {
-    NSLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
+    AVDLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
     if (_hasListeners) {
         [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
     }
@@ -310,7 +342,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
 
 - (void)cropTaskOnCancel
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
+    AVDLog(@"--- %s",__PRETTY_FUNCTION__);
 }
 
 RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
@@ -320,9 +352,11 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
     NSString *path = [options valueForKey:@"path"];
     if (!path) {
         reject(@"",@"no path param",nil);
+        return;
     }
     if (![path containsString:@"ph://"]) {
         reject(@"",@"no ph:// scheme",nil);
+        return;
     }
     [self _saveImageToSandBox:path resolve:resolve reject:reject];
 }
@@ -342,7 +376,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         videoRequestOptions.version = PHVideoRequestOptionsVersionOriginal;
         videoRequestOptions.deliveryMode = PHVideoRequestOptionsDeliveryModeAutomatic;
         [videoRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
-            NSLog(@"---- download icloud video progress: %lf",progress);
+            AVDLog(@"download icloud video progress: %lf",progress);
             if (self->_hasListeners) {
                 [self sendEventWithName:@"icloudVideoDownloadProgress" body:@{@"progress":@(progress)}];
             }
@@ -385,7 +419,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         imageRequestOptions.synchronous = NO;
         imageRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
         [imageRequestOptions setProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
-            NSLog(@"----🖼 download icloud image progress: %lf",progress);
+            AVDLog(@"🖼 download icloud image progress: %lf",progress);
             if (self->_hasListeners) {
                 [self sendEventWithName:@"icloudImageDownloadProgress" body:@{@"progress":@(progress)}];
             }

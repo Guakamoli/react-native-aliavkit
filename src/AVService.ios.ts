@@ -10,6 +10,11 @@ type MusicRequestType = {
 }
 
 export default class AVService {
+  static async getFilterIcons() {
+    return await AliAVServiceBridge.getFilterIcons({});
+  }
+
+
   static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }

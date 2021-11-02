@@ -13,7 +13,6 @@
 #import <AliyunVideoSDKPro/AVAsset+AliyunSDKInfo.h>
 #import "AliyunPathManager.h"
 #import <React/RCTBridge.h>
-#import <AFNetworking/AFNetworking.h>
 #import "RNStorageManager.h"
 
 static NSString * const kOssBasePath =  @"https://static.paiyaapp.com/music";

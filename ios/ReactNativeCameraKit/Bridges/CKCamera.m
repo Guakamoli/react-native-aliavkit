@@ -12,14 +12,12 @@
 #endif
 
 #import "CKCamera.h"
-#import "CKCameraOverlayView.h"
-#import "CKMockPreview.h"
-
 #import "AliCameraAction.h"
 #import "CKCameraManager.h"
 #import "AliyunPasterInfo.h"
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
+#import "ShortCut.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -71,26 +69,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
-@property (nonatomic, strong) CKMockPreview *mockPreview;
-@property (nonatomic, strong) CKCameraOverlayView *cameraOverlayView;
-
-
 @property (nonatomic) BOOL resetFocusWhenMotionDetected;
-
 @property (nonatomic) BOOL saveToCameraRoll;
 @property (nonatomic) BOOL saveToCameraRollWithPhUrl;
 
 // camera options
 @property (nonatomic) AVCaptureDevicePosition cameraType;
 @property (nonatomic) AVCaptureFlashMode flashMode;
-@property (nonatomic) AVCaptureTorchMode torchMode;
 @property (nonatomic) CKCameraFocusMode focusMode;
 @property (nonatomic) CKCameraZoomMode zoomMode;
 @property (nonatomic, strong) NSString* ratioOverlay;
 @property (nonatomic, strong) UIColor *ratioOverlayColor;
-@property (nonatomic, strong) RCTDirectEventBlock onOrientationChange;
-
-//@property (nonatomic) BOOL isAddedOberver;
 
 @property (nonatomic, strong) AliCameraAction *cameraAction;
 
@@ -104,23 +93,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @implementation CKCamera
 
 #pragma mark - initializtion
-
-- (void)dealloc
-{
-    
-}
-
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
     if (_isPresented && !self.superview) {
-        NSLog(@"----： 📷 appeared, going disappear");
+        AVDLog(@"----： 📷 appeared, going disappear");
         if (self.cameraAction.isRecording) {
             [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
                 
             }];
         }
-//        [self.cameraAction stopPreview];
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
 }
 
@@ -128,16 +111,18 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super didMoveToWindow];
     if (self.window && _isPresented) {
-        NSLog(@"--- 📷 coming back ");
+        AVDLog(@"--- 📷 coming back ");
         if (self.cameraAction) {
             [self.cameraAction startPreview];
         }
         return;
     }
     if (!_isPresented && self.window) {
-        NSLog(@"----： 📷 ready to appear");
+        AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
+            [self addSubview:self.cameraAction.cameraPreview];
             [self.cameraAction startPreview];
+            [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
     }
@@ -162,9 +147,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    [self addSubview:self.cameraAction.cameraPreview];
+    
 }
 
+#pragma mark - Setter
 - (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
 {
     if (normalBeautyLevel != _normalBeautyLevel) {
@@ -184,9 +170,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)changeCamera:(AVCaptureDevicePosition)preferredPosition
 {
 #if TARGET_IPHONE_SIMULATOR
-    dispatch_async( dispatch_get_main_queue(), ^{
-        [self.mockPreview randomize];
-    });
     return;
 #endif
     
@@ -198,17 +181,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _flashMode = flashMode;
         if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
             [self.cameraAction switchFlashMode:flashMode];
-        }
-    }
-}
-
--(void)setTorchMode:(AVCaptureTorchMode)torchMode {
-    _torchMode = torchMode;
-    if (self.videoDeviceInput && [self.videoDeviceInput.device isTorchModeSupported:torchMode] && self.videoDeviceInput.device.hasTorch) {
-        NSError* err = nil;
-        if ( [self.videoDeviceInput.device lockForConfiguration:&err] ) {
-            [self.videoDeviceInput.device setTorchMode:torchMode];
-            [self.videoDeviceInput.device unlockForConfiguration];
         }
     }
 }
@@ -259,20 +231,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super reactSetFrame:frame];
 }
 
--(void)setRatioOverlay:(NSString *)ratioOverlay {
-    _ratioOverlay = ratioOverlay;
-    [self.cameraOverlayView setRatio:self.ratioOverlay];
-}
-
--(void)setOverlayRatioView
-{
-    if (self.ratioOverlay) {
-        [self.cameraOverlayView removeFromSuperview];
-        self.cameraOverlayView = [[CKCameraOverlayView alloc] initWithFrame:self.bounds ratioString:self.ratioOverlay overlayColor:self.ratioOverlayColor];
-        [self addSubview:self.cameraOverlayView];
-    }
-}
-
 #pragma mark - actions
 
 - (void)applyFacePaster:(NSDictionary *)options
@@ -307,9 +265,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
               success:(VideoStopBlock)onSuccess
               onError:(void (^)(NSString *))onError
 {
-//    NSString *path = [self.cameraAction stopRecordVideo];
-//    onSuccess(path);
-    
     [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
         if (videoSavePath) {
             onSuccess(videoSavePath);
@@ -325,7 +280,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
 #if TARGET_IPHONE_SIMULATOR
 
-    
+    return;
 #endif
     
     [self.cameraAction takePhotos:^(NSData *imageData) {
@@ -345,7 +300,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
    BOOL success = [imageData writeToFile:coverPath atomically:YES];
     
     if (success) {
-        NSLog(@"----- coverPath: %@",coverPath);
+        AVDLog(@"----- coverPath: %@",coverPath);
     }
 }
 
@@ -384,7 +339,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 [[PHAssetCreationRequest creationRequestForAsset] addResourceWithType:PHAssetResourceTypePhoto data:imageData options:nil];
             } completionHandler:^(BOOL success, NSError *error) {
                 if (!success) {
-                    NSLog(@"Could not save to camera roll");
+                    AVDLog(@"Could not save to camera roll");
                     onError(@"Photo library asset creation failed");
                     return;
                 }
@@ -463,7 +418,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     NSError *error = nil;
     [data writeToURL:temporaryFileURL options:NSDataWritingAtomic error:&error];
     if (error) {
-        NSLog(@"Error occured while writing image data to a temporary file: %@", error);
+        AVDLog(@"Error occured while writing image data to a temporary file: %@", error);
     }
     return temporaryFileURL;
 }

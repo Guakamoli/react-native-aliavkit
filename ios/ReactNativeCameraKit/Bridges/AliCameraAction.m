@@ -23,12 +23,8 @@
 #import "AlivcRecordFocusView.h"
 #import "AliyunPasterInfo.h"
 #import "AliyunDownloadManager.h"
-#import <AVFoundation/AVFoundation.h>
-
-#define IS_IPHONEX (([[UIScreen mainScreen] bounds].size.height<812)?NO:YES)
-#define NoStatusBarSafeTop (IS_IPHONEX ? 44 : 0)
-#define ScreenWidth  [UIScreen mainScreen].bounds.size.width
-#define ScreenHeight  [UIScreen mainScreen].bounds.size.height
+#import "ShortCut.h"
+#import "RNAVDeviceHelper.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -57,11 +53,6 @@ static AliCameraAction *_instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _instance = [[AliCameraAction alloc] init];
-        if (@available(iOS 13.0, *)) {
-            [[AVAudioSession sharedInstance] setAllowHapticsAndSystemSoundsDuringRecording:YES error:nil];
-        } else {
-            // Fallback on earlier versions
-        }
     });
     return _instance;
 }
@@ -79,7 +70,6 @@ static AliCameraAction *_instance = nil;
 {
     self.normalBeautyLevel = 30;
     self.isRecording = NO;
-    [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
 }
 
 - (UIView *)cameraPreview
@@ -97,12 +87,16 @@ static AliCameraAction *_instance = nil;
         _recorder.useFaceDetect = YES;
         _recorder.faceDetectCount = 2;
         _recorder.faceDectectSync = NO;
-        _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
-        _recorder.encodeMode = (self.mediaConfig.encodeMode == AliyunEncodeModeSoftFFmpeg) ? 0 : 1;
+        _recorder.encodeMode = 1;
         _recorder.GOP = self.mediaConfig.gop;
-        _recorder.videoQuality = (AliyunVideoQuality)self.mediaConfig.videoQuality;
-        _recorder.bitrate = 15*1000*1000; // 15Mbps
-        _recorder.encodeMode = 1; // Force hardware encoding
+        if ([RNAVDeviceHelper isBelowIphone_11]) {
+            _recorder.videoQuality = AliyunVideoQualityMedium;
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
+        } else {
+            //iphone 11
+            _recorder.bitrate = 15*1000*1000; // 15Mbps
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
+        }
         _recorder.recordFps = self.mediaConfig.fps;
         
         _recorder.beautifyStatus = YES;
@@ -124,8 +118,8 @@ static AliCameraAction *_instance = nil;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-        _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
-        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+        _mediaConfig.videoQuality =  AliyunMediaQualityVeryHight;
+        _mediaConfig.outputSize =  CGSizeMake(1080, 1920);
     }
     return _mediaConfig;
 }
@@ -164,7 +158,6 @@ static AliCameraAction *_instance = nil;
         [self.recorder stopPreview];
     }
 }
-
 
 - (void)appDidBecomeActive:(id)sender
 {
@@ -346,13 +339,13 @@ static AliCameraAction *_instance = nil;
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
-//            NSLog(@"------download progress: %lf",pgs);
+//            AVDLog(@"------download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;
         task.completionHandler = ^(NSString *path, NSError *err) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (err) {
-                    NSLog(@"---- download paster error:%@",err.localizedDescription);
+                    AVDLog(@"---- download paster error:%@",err.localizedDescription);
                 }else{
                     [weakSelf addPasterInfo:pasterInfo path:path];
                 }
@@ -366,7 +359,7 @@ static AliCameraAction *_instance = nil;
 - (void)addPasterInfo:(AliyunPasterInfo *)info path:(NSString *)path
 {
     if(self.recorder.isRecording){
-        NSLog(@"----- ⚠️ recorder is recording, cant't add ⚠️");
+        AVDLog(@"⚠️ recorder is recording, cant't add ⚠️");
         return;
     }
     
@@ -385,17 +378,32 @@ static AliCameraAction *_instance = nil;
 {
     if (_previousEffectPaster) {
         [self.recorder deletePaster:_previousEffectPaster];
-        NSLog(@"----- delete previous paster：%@\n",_previousEffectPaster.path);
+        AVDLog(@"delete previous paster：%@\n",_previousEffectPaster.path);
         
         _previousEffectPaster = nil;
     }
 }
 
 #pragma mark - AliyunIRecorderDelegate
+
+// 设备权限
+- (void)recorderDeviceAuthorization:(AliyunIRecorderDeviceAuthor)status
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (status == AliyunIRecorderDeviceAuthorAudioDenied) {
+            AVDLog("AliyunIRecorderDeviceAuthorAudioDenied");
+        } else if (status == AliyunIRecorderDeviceAuthorVideoDenied) {
+            AVDLog("AliyunIRecorderDeviceAuthorVideoDenied");
+        }
+        //当权限有问题的时候，不会走startPreview，所以这里需要更新下UI
+        
+    });
+}
+
 /// record progress
 - (void)recorderVideoDuration:(CGFloat)duration
 {
-    //    NSLog(@"----- recording：%f",duration);
+    //    AVDLog(@"----- recording：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
@@ -404,14 +412,14 @@ static AliCameraAction *_instance = nil;
 /// recording stopped
 - (void)recorderDidStopRecording
 {
-    NSLog(@"---- recording stopped ");
+    AVDLog(@"recording stopped ");
     [self _recorderFinishRecording];
 }
 
 /// multi-part video finish record
 - (void)recorderDidFinishRecording
 {
-    NSLog(@"----✅ finish all record ✅");
+    AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
     _complete(_videoSavePath);
 }
@@ -426,20 +434,20 @@ static AliCameraAction *_instance = nil;
 ///while recording time up to limit
 - (void)recorderDidStopWithMaxDuration
 {
-    NSLog(@" recording time up to limit");
+    AVDLog(@" recording time up to limit");
     [self _recorderFinishRecording];
     
 }
 
 - (void)recorderDidStartPreview
 {
-    NSLog(@"--------recorderDidStartPreview");
+    AVDLog(@"recorderDidStartPreview");
 }
 
 /// recorder error
 - (void)recoderError:(NSError *)error
 {
-    NSLog(@"recoderError%@",error);
+    AVDLog(@"recoderError%@",error);
 }
 
 - (void)destroyRender
@@ -492,9 +500,5 @@ static AliCameraAction *_instance = nil;
     return finalFrame;
 }
 
-- (void)dealloc
-{
-    [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-}
 
 @end

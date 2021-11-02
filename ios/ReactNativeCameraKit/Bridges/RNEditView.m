@@ -31,6 +31,8 @@
 #import "AliyunPhotoLibraryManager.h"
 #import "AliyunMusicPickModel.h"
 #import "RNMusicInfo.h"
+#import "ShortCut.h"
+#import "RNAVDeviceHelper.h"
 
 typedef void(^TransCode_blk_t)(CGFloat);
 
@@ -87,8 +89,8 @@ AliyunCropDelegate
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-        _mediaConfig.videoQuality = AliyunMediaQualityVeryHight;
-//        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+        _mediaConfig.videoQuality = AliyunMediaQualityHight;
+        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
     }
     return _mediaConfig;
 }
@@ -120,7 +122,7 @@ AliyunCropDelegate
     // 校验视频分辨率，如果首段视频是横屏录制，则outputSize的width和height互换
     self.inputOutputSize = self.mediaConfig.outputSize;
     self.outputSize = [self.mediaConfig fixedSize];
-    NSLog(@"-----: %@", NSStringFromCGSize(self.outputSize));
+//    AVDLog(@"%@", NSStringFromCGSize(self.outputSize));
     self.mediaConfig.outputSize = self.outputSize;
     
     //防size异常奔溃处理
@@ -149,7 +151,7 @@ AliyunCropDelegate
     param.codecType = AliyunVideoCodecHardware;
     [importor setVideoParam:param];
     
-    NSLog(@"---- PhototaskPath: %@", taskPath);
+//    AVDLog(@"PhototaskPath: %@", taskPath);
     // generate config
     [importor generateProjectConfigure];
     // output path
@@ -160,24 +162,27 @@ AliyunCropDelegate
 /// 单视频接入编辑页面，生成一个新的taskPath
 - (void)setVideoTaskPathWithVideopath:(NSString *)videoPath
 {
-
     self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
-//    NSLog(@"---- VideotaskPath: %@", self.taskPath);
+//    AVDLog(@"VideotaskPath: %@", self.taskPath);
     AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
-    param.bitrate = 10*1000*1000; // 10Mbps
+    if ([RNAVDeviceHelper isBelowIphone_11]) {
+        param.videoQuality = AliyunVideoQualityMedium;
+    } else {
+        param.bitrate = 10*1000*1000; // 10Mbps
+    }
     param.scaleMode = AliyunScaleModeFill;
     // 编码模式
     param.codecType = AliyunVideoCodecHardware;
     
     [importer setVideoParam:param];
-//    NSLog(@"----- _videoPath:  %@",videoPath);
+//    AVDLog(@"_videoPath:  %@",videoPath);
     AliyunClip *clip = [[AliyunClip alloc] initWithVideoPath:videoPath animDuration:0];
     [importer addMediaClip:clip];
     [importer generateProjectConfigure];
-//    NSLog(@"----------clip.duration:%f",clip.duration);
+//    AVDLog(@"clip.duration:%f",clip.duration);
     self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 }
 
@@ -198,7 +203,7 @@ AliyunCropDelegate
 {
     [super didMoveToSuperview];
     if (_isPresented && !self.superview) {
-        NSLog(@"---- 🪝appeared, going disappear");
+        AVDLog(@"🪝appeared, going disappear");
         [_editor stopEdit];
     }
 }
@@ -207,60 +212,70 @@ AliyunCropDelegate
 {
     [super didMoveToWindow];
     if (!_isPresented && self.window) {
-        NSLog(@"---- 🪝ready to appear");
+        AVDLog(@"🪝ready to appear");
         if (self.videoPath) {
-            if (![[NSFileManager defaultManager] fileExistsAtPath:self.videoPath]) {
-                NSLog(@"-------- 🔥 videoPath doesn't exist");
-                return;
-            }
-            [self initBaseData];
-            [self setVideoTaskPathWithVideopath:self.videoPath];
-            [self addSubview:self.preview];
-            [self initSDKAbout];
-            
-            int num = [self.editor startEdit];
-            if (num == ALIVC_COMMON_RETURN_SUCCESS) {
-                [[self.editor getPlayer] play];
-            }
-            else if (num == ALIVC_COMMON_INVALID_STATE) {
-                NSLog(@"-----INVALID_STATE");
-            }
-            else if (num == ALIVC_COMMON_INVALID_PARAM) {
-                NSLog(@"-----INVALID_PARAM");
-            }
-            _isPresented = YES;
+            [self _initVideoEditor];
             return;
         }
         if (self.imagePath) {
-            if (![[NSFileManager defaultManager] fileExistsAtPath:self.imagePath]) {
-                NSLog(@"-------- 🔥 imagePath doesn't exist");
-                return;
-            }
-            [self initBaseData];
-            [self setPhotoTaskPathWithPhotoPath:self.imagePath];
-            [self addSubview:self.preview];
-            [self initSDKAbout];
-            
-            int num = [self.editor startEdit];
-            if (num == ALIVC_COMMON_RETURN_SUCCESS) {
-                [[self.editor getPlayer] play];
-            }
-            else if (num == ALIVC_COMMON_INVALID_STATE) {
-                NSLog(@"-----INVALID_STATE");
-            }
-            else if (num == ALIVC_COMMON_INVALID_PARAM) {
-                NSLog(@"-----INVALID_PARAM");
-            }
-            _isPresented = YES;
+            [self _initImageEditor];
         }
     }
+}
+
+- (void)_initVideoEditor
+{
+    if (![[NSFileManager defaultManager] fileExistsAtPath:self.videoPath]) {
+        AVDLog(@"🔥 videoPath doesn't exist");
+        return;
+    }
+    [self initBaseData];
+    [self setVideoTaskPathWithVideopath:self.videoPath];
+    [self addSubview:self.preview];
+    [self initSDKAbout];
+    
+    int num = [self.editor startEdit];
+    if (num == ALIVC_COMMON_RETURN_SUCCESS) {
+        [[self.editor getPlayer] play];
+    }
+    else if (num == ALIVC_COMMON_INVALID_STATE) {
+        AVDLog(@"INVALID_STATE");
+    }
+    else if (num == ALIVC_COMMON_INVALID_PARAM) {
+        AVDLog(@"INVALID_PARAM");
+    }
+    _isPresented = YES;
+}
+
+- (void)_initImageEditor
+{
+    if (![[NSFileManager defaultManager] fileExistsAtPath:self.imagePath]) {
+        AVDLog(@"🔥 imagePath doesn't exist");
+        return;
+    }
+    [self initBaseData];
+    [self setPhotoTaskPathWithPhotoPath:self.imagePath];
+    [self addSubview:self.preview];
+    [self initSDKAbout];
+    
+    int num = [self.editor startEdit];
+    if (num == ALIVC_COMMON_RETURN_SUCCESS) {
+        [[self.editor getPlayer] play];
+    }
+    else if (num == ALIVC_COMMON_INVALID_STATE) {
+        AVDLog(@"INVALID_STATE");
+    }
+    else if (num == ALIVC_COMMON_INVALID_PARAM) {
+        AVDLog(@"INVALID_PARAM");
+    }
+    _isPresented = YES;
 }
 
 /// 初始化sdk相关
 - (void)initSDKAbout
 {
     if ([[NSFileManager defaultManager] fileExistsAtPath:self.taskPath]) {
-        NSLog(@"--- %s",__PRETTY_FUNCTION__);
+        AVDLog(@"%s",__PRETTY_FUNCTION__);
     }
     // editor
     self.editor = [[AliyunEditor alloc] initWithPath:self.taskPath preview:self.preview];
@@ -286,7 +301,7 @@ AliyunCropDelegate
     self.pasterManager.delegate = (id)self;
 }
 
-
+#pragma mark - Setter
 
 - (void)setImagePath:(NSString *)imagePath
 {
@@ -296,7 +311,7 @@ AliyunCropDelegate
             if ([imagePath containsString:@"file://"]) { //in case path contains scheme
                 _imagePath = [NSURL URLWithString:imagePath].path;
             }
-            NSLog(@"------imagePath：%@",_imagePath);
+            AVDLog(@"imagePath：%@",_imagePath);
         }
 //        else {
             //**For test only**
@@ -316,8 +331,7 @@ AliyunCropDelegate
             if ([videoPath containsString:@"file://"]) { //in case path contains scheme
                 _videoPath = [NSURL URLWithString:videoPath].path;
             }
-            NSLog(@"------videoPath：%@",_videoPath);
-
+            AVDLog(@"videoPath：%@",_videoPath);
         }
     }
     else {
@@ -329,11 +343,6 @@ AliyunCropDelegate
     }
 }
 
-- (void)initEditorSDK
-{
-    
-}
-
 - (void)prepareForExport
 {
     [self.player stop];
@@ -341,7 +350,7 @@ AliyunCropDelegate
     
     int result = [self.publishManager exportWithTaskPath:self.taskPath outputPath:self.mediaConfig.outputPath];
     if (result != 0) {
-        NSLog(@"合成失败");
+        AVDLog(@"合成失败");
     }
 }
 
@@ -405,7 +414,7 @@ AliyunCropDelegate
         model.duration = [parser getAudioDuration];
         float outputVolume = [[AVAudioSession sharedInstance] outputVolume];
         model.volume = outputVolume;
-        NSLog(@"outputVolume: %lf", outputVolume);
+        AVDLog(@"outputVolume: %lf", outputVolume);
         
         if (model.path && model.duration > 0.0) {
             if ([format isEqualToString:@"mp3"] ) {
@@ -435,21 +444,31 @@ AliyunCropDelegate
     model.path = outputPath;
     int num = [_musicCrop startCrop];
     if (num == 0) {
-        NSLog(@"---- startCrop: %d",num);
+        AVDLog(@"startCrop: %d",num);
         self.transCode_blk = complete;
     }
 }
 
+#pragma mark - aliyun crop
+- (void)cropOnError:(int)error
+{
+    
+}
+
 - (void)cropTaskOnProgress:(float)progress
 {
-    NSLog(@"--- %s : %f", __PRETTY_FUNCTION__, progress);
+    AVDLog(@"%f", progress);
     self.transCode_blk(progress);
 }
 
 - (void)cropTaskOnComplete
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
     self.transCode_blk(1.0);
+}
+
+- (void)cropTaskOnCancel
+{
+    
 }
 
 /// 合成应用ACC格式的音乐，非此格式需要转码
@@ -458,7 +477,7 @@ AliyunCropDelegate
 {
     [self.editor removeMusics];
     if ([[NSFileManager defaultManager] fileExistsAtPath:music.path]) {
-        NSLog(@"----- music.path: %@",music.path);
+        AVDLog(@"music.path: %@",music.path);
     }
     AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
     effectMusic.startTime = music.startTime * 0.001;
@@ -466,7 +485,7 @@ AliyunCropDelegate
     effectMusic.audioMixWeight = (int)roundf(music.volume*100);
     int code = [self.editor applyMusic:effectMusic];
     if (code == ALIVC_COMMON_RETURN_SUCCESS) {
-        NSLog(@"----- composeAACFormatMusic success");
+        AVDLog(@"composeAACFormatMusic success");
     }
     
     [self resume];
@@ -498,9 +517,9 @@ AliyunCropDelegate
             } completionHandler:^(BOOL success, NSError * _Nullable error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (success) {
-                        NSLog(@"保存%@成功!", type == PHAssetResourceTypeVideo ? @"视频" : @"图片");
+                        AVDLog(@"保存%@成功!", type == PHAssetResourceTypeVideo ? @"视频" : @"图片");
                     } else {
-                        NSLog(@"保存%@失败:%@", type == PHAssetResourceTypeVideo ? @"视频" : @"图片", error);
+                        AVDLog(@"保存%@失败:%@", type == PHAssetResourceTypeVideo ? @"视频" : @"图片", error);
                     }
                 });
             }];
@@ -517,9 +536,9 @@ AliyunCropDelegate
         } completionHandler:^(BOOL success, NSError * _Nullable error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (success) {
-                    NSLog(@"保存视频成功!");
+                    AVDLog(@"保存视频成功!");
                 } else {
-                    NSLog(@"保存视频失败:%@", error);
+                    AVDLog(@"保存视频失败:%@", error);
                 }
             });
         }];
@@ -530,7 +549,6 @@ AliyunCropDelegate
 ///播放结束
 - (void)playerDidEnd
 {
-    NSLog(@"--- %s",__PRETTY_FUNCTION__);
     if (_onPlayProgress) {
         _onPlayProgress(@{@"playEnd":@(YES)});
     }
@@ -566,7 +584,7 @@ AliyunCropDelegate
 
 - (void)playError:(int)errorCode
 {
-    NSLog(@"--- %s:  %d",__PRETTY_FUNCTION__,errorCode);
+    AVDLog(@"%d",errorCode);
 }
 
 #pragma mark - AliyunIRenderCallback
@@ -610,6 +628,11 @@ AliyunCropDelegate
     
 }
 
+- (void)exporterDidStart
+{
+    
+}
+
 #pragma mark - AliyunEditZoneViewDelegate
 - (void)currentTouchPoint:(CGPoint)point
 {
@@ -640,16 +663,16 @@ AliyunCropDelegate
 - (void)play
 {
     if (self.player.isPlaying) {
-        NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用play");
+        AVDLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用play");
     } else {
         int returnValue = [self.player play];
-        NSLog(@"短视频编辑播放器测试:调用了play接口");
+        AVDLog(@"短视频编辑播放器测试:调用了play接口");
         if (returnValue == 0) {
-            NSLog(@"短视频编辑播放器测试:play返回0成功");
+            AVDLog(@"短视频编辑播放器测试:play返回0成功");
         } else {
             switch (returnValue) {
                 case ALIVC_COMMON_INVALID_STATE: //-4
-                    NSLog(@"------播放失败： 状态错误");
+                    AVDLog(@"------播放失败： 状态错误");
                     break;
                 default:
                     break;
@@ -663,16 +686,16 @@ AliyunCropDelegate
 - (void)resume
 {
     if (self.player.isPlaying) {
-        NSLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用resume");
+        AVDLog(@"短视频编辑播放器测试:当前播放器正在播放状态,不调用resume");
     } else {
         int returnValue = [self.player resume];
-        NSLog(@"短视频编辑播放器测试:调用了resume接口");
+        AVDLog(@"短视频编辑播放器测试:调用了resume接口");
         if (returnValue == 0) {
             //            [self forceFinishLastEditPasterView];
-            NSLog(@"短视频编辑播放器测试:resume返回0成功");
+            AVDLog(@"短视频编辑播放器测试:resume返回0成功");
         } else {
             [self.player play];
-            NSLog(@"短视频编辑播放器测试:！！！！继续播放错误,错误码:%d",returnValue);
+            AVDLog(@"短视频编辑播放器测试:！！！！继续播放错误,错误码:%d",returnValue);
         }
     }
     [self updateUIAndDataWhenPlayStatusChanged];
@@ -690,14 +713,14 @@ AliyunCropDelegate
 {
     if (self.player.isPlaying) {
         int returnValue = [self.player pause];
-        NSLog(@"短视频编辑播放器测试:调用了pause接口");
+        AVDLog(@"短视频编辑播放器测试:调用了pause接口");
         if (returnValue == 0) {
-            NSLog(@"短视频编辑播放器测试:pause返回0成功");
+            AVDLog(@"短视频编辑播放器测试:pause返回0成功");
         } else {
-            NSLog(@"短视频编辑播放器测试:！！！！暂停错误,错误码:%d", returnValue);
+            AVDLog(@"短视频编辑播放器测试:！！！！暂停错误,错误码:%d", returnValue);
         }
     } else {
-        NSLog(@"短视频编辑播放器测试:当前播放器不是播放状态,不调用pause");
+        AVDLog(@"短视频编辑播放器测试:当前播放器不是播放状态,不调用pause");
     }
     [self updateUIAndDataWhenPlayStatusChanged];
 }
