@@ -46,7 +46,7 @@ const Camera = React.forwardRef((props, ref) => {
   // const nativeRef = React.useRef();
   return (
     <NativeCamera
-      style={{ minWidth: 100, minHeight: 100 }}
+      style={{ minWidth: 100, minHeight: 500 }}
       ref={ref}
       {...transformedProps}
       onRecordingProgress={(event) => props.onRecordingProgress(event.nativeEvent)}

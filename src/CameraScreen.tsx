@@ -37,12 +37,15 @@ const captureIcon2 = (width - 20) / 2;
 const CameraHeight = height - 100;
 
 // import AVService from './AVService.ios.ts';
+const stateAttrsUpdate= [
+  'pasterList', 'facePasterInfo', 'showBeautify', 
+'normalBeautyLevel', 'cameraType', 'ShootSuccess',
+ 'startShoot', 'flag']
 
 export enum CameraType {
   Front = 'front',
   Back = 'back',
 }
-
 export type Props = {
   ratioOverlay?: string;
 
@@ -154,7 +157,6 @@ const ProgressCircleWrapper = (props) => {
     }
   }, timer);
   useEffect(() => {
-    console.info(flag, 'flag');
     if (flag) {
       setTimer(60);
     } else {
@@ -189,6 +191,7 @@ export default class CameraScreen extends Component<Props, State> {
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
+  startTime: string;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -210,6 +213,7 @@ export default class CameraScreen extends Component<Props, State> {
         image: _.get(this.props, 'flashImages.off'),
       },
     ];
+    this.startTime = '';
     this.state = {
       // 照片存储
       captureImages: [],
@@ -260,21 +264,25 @@ export default class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
+    this.getPasterInfos()
     const { cameraModule } = this.props;
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
     });
+    setTimeout(() => {
+      AVService.enableHapticIfExist()
+      
+    }, 2000);
+
   }
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      console.log(Platform.OS === 'android');
       if (this.camera) {
         this.camera.release();
       }
     }
-    console.log('销毁');
     this.setState = () => false;
   }
   componentDidUpdate(props, state) {
@@ -285,6 +293,14 @@ export default class CameraScreen extends Component<Props, State> {
     // }
   }
   // ？？？？
+  shouldComponentUpdate (nextProps, nextState) {
+    const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
+		if (stateUpdated) {
+			return true;
+		}
+
+    return false
+  }
   isCaptureRetakeMode() {
     return !!(this.props.allowCaptureRetake && !_.isUndefined(this.state.imageCaptured));
   }
@@ -295,7 +311,7 @@ export default class CameraScreen extends Component<Props, State> {
       <View style={styles.BottomBox}>
         <>
           {/*  作品快拍 切换*/}
-          {this.state.startShoot || this.state.ShootSuccess ? null : (
+          {/* {this.state.startShoot || this.state.ShootSuccess ? null : (
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
               <View style={{ position: 'relative' }}>
                 <TouchableOpacity
@@ -310,14 +326,14 @@ export default class CameraScreen extends Component<Props, State> {
                 </TouchableOpacity>
               </View>
             </View>
-          )}
+          )} */}
           {/* 相机翻转 */}
 
           <TouchableOpacity
             style={{
               position: 'absolute',
               right: 16,
-              top: 30,
+              top:60,
             }}
             onPress={() => this.onSwitchCameraPressed()}
           >
@@ -373,9 +389,9 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    console.log('---this.props.allowCaptureRetake', this.props.allowCaptureRetake);
-
+    
     const shoot = () => {
+
       return (
         <Camera
           ref={(cam) => (this.camera = cam)}
@@ -393,7 +409,6 @@ export default class CameraScreen extends Component<Props, State> {
           normalBeautyLevel={this.state.normalBeautyLevel * 10}
           onRecordingProgress={this._onRecordingDuration}
           facePasterInfo={this.state.facePasterInfo}
-          zoomMode={this.props.zoomMode}
         />
       );
     };
@@ -430,28 +445,21 @@ export default class CameraScreen extends Component<Props, State> {
     return;
   }
   //  拍摄按钮
+  getPasterInfos = async ()=> {
+    const pasters = await AVService.getFacePasterInfos({});
+    // http  -> https
+    pasters.map((item) => {
+      item.icon = item.icon.replace('http://', 'https://');
+    });
+    pasters.unshift({ eid: 0 });
+    this.setState({
+      pasterList: pasters,
+      facePasterInfo: pasters[0],
+    });
+  }
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
-    const getPasterData = async () => {
-      const pasters = await this.camera.getPasterInfos();
-      // http  -> https 
-      pasters.forEach((item, index) => {
-        if (index == 0) {
-          return
-        }
-        item.icon = item.icon.replace('http://', 'https://');
-        item.url = item.url.replace('http://', 'https://');
-      })
-      pasters.unshift({ eid: 0 });
-      this.setState({
-        pasterList: pasters,
-        facePasterInfo: pasters[0],
-      });
-    };
-    if (pasterList.length < 1) {
-      getPasterData();
-      return null;
-    }
+
     return (
       this.props.captureButtonImage && (
         // !this.isCaptureRetakeMode() && (
@@ -473,10 +481,8 @@ export default class CameraScreen extends Component<Props, State> {
                     });
                   }}
                   recordeSuccess={async (data) => {
-                    console.log(1231);
 
                     const videoPath = await this.camera.stopRecording();
-                    console.log('-------- video saved to ', videoPath);
                     this.setState({
                       videoPath,
                       flag: null,
@@ -539,6 +545,9 @@ export default class CameraScreen extends Component<Props, State> {
       ],
     };
   }
+  impactAsync = ()=>{
+      this.props.haptics?.selectionAsync?.()
+  }
   switchProp() {
     const { pasterList } = this.state;
     // console.log('this.state.currentIndex,', this.state.currentIndex);
@@ -561,7 +570,7 @@ export default class CameraScreen extends Component<Props, State> {
             this.FlatListRef = flatList;
           }}
           snapToInterval={itemWidth}
-          haptics={this.props.haptics}
+          impactAsync={this.impactAsync}
           //  ref={this.FlatListRef}
           // scrollToIndex={()=>{animated: true, viewPosition: 0, index: 0} }
           // this._flatList.scrollToOffset({animated: true, viewPosition: 0, index: 0}); //跳转到顶部
@@ -632,9 +641,8 @@ export default class CameraScreen extends Component<Props, State> {
                 ).start();
                 const success = await this.camera.startRecording();
                 // 获取开始时间
-
+                this.startTime = Date.parse(new Date()).toString().substr(0, 10);
                 this.setState({ fileType: 'video', startShoot: success });
-                console.log('success', success);
                 if (success) {
                   // 调用进度条 开始拍摄
                   this.animate();
@@ -645,11 +653,19 @@ export default class CameraScreen extends Component<Props, State> {
               // 长按结束
 
               onPressOut={async () => {
-                console.log('onPressOut');
                 this.setState({
                   flag: null,
                 });
-
+                // 结束时间 小于两秒重置
+                let endTime = Date.parse(new Date()).toString().substr(0, 10);
+                if (Number(endTime) - Number(this.startTime) < 2) {
+                  this.myRef.current.show('时间小于2秒，请继续拍摄', 2000);
+                  this.setState({
+                    startShoot: false,
+                    ShootSuccess: false,
+                    fadeInOpacity: new Animated.Value(60),
+                  });
+                }
                 if (this.state.startShoot) {
                   const videoPath = await this.camera.stopRecording();
                   this.setState({
@@ -765,7 +781,6 @@ export default class CameraScreen extends Component<Props, State> {
   // 拍照功能  改变文件类型
   async onCaptureImagePressed() {
     const image = await this.camera.capture();
-    console.log('capture image path ', image);
     //  ios
     let sandData = '';
     //
@@ -786,7 +801,6 @@ export default class CameraScreen extends Component<Props, State> {
           // captureImages: _.concat(this.state.captureImages, image?.uri),?
           captureImages: _.concat(this.state.captureImages, sandData),
         });
-        console.info('hhh', sandData);
         this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
       }
     }
@@ -824,16 +838,17 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 底部渲染
   renderBottom() {
-    if (this.state.showBeautify || this.state.showFilterLens) {
-      return <View style={{ position: 'relative' }}>{this.renderbeautifyBox()}</View>;
-    }
+  
     return (
       <>
-        <View style={{ position: 'relative' }}>
-          {/* 拍摄按钮 */}
+      
+        <View style={{ position: 'relative', height: 140 }}>
+          {this.state.showBeautify || this.state.showFilterLens? (
+        <View style={{ position: 'absolute', width:" 100%" ,zIndex:1}}>{this.renderbeautifyBox()}</View>
+          ): null}
           {this.renderCaptureButton()}
         </View>
-        <View style={{ height: 100, backgroundColor: '#000' }}>{this.renderswitchModule()}</View>
+        <View style={{ height: 100, backgroundColor: 'black', }}>{this.renderswitchModule()}</View>
       </>
     );
   }
@@ -844,8 +859,6 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   render() {
-    // console.log('videoPath={}:', this.state.videoPath, 'imageCaptured', this.state.imageCaptured);
-
     return (
       <>
         <Toast
@@ -883,7 +896,7 @@ export default class CameraScreen extends Component<Props, State> {
             musicSearch={this.props.musicSearch}
             imagePath={this.state.imageCaptured}
             noResultPng={this.props.noResultPng}
-          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+            // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
           <>
@@ -915,6 +928,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   BottomBox: {
+  
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -925,7 +939,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     ...Platform.select({
       android: {
-        position: 'absolute',
+        // position: 'absolute',
         top: 0,
         left: 0,
         width,
@@ -1038,7 +1052,7 @@ const styles = StyleSheet.create({
   },
   beautifySelecin: {
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: '#836BFF',
   },
   progress: {
     margin: 10,
@@ -1116,7 +1130,7 @@ const styles = StyleSheet.create({
   },
 
   propStyle: {
-    backgroundColor: '#000',
+    backgroundColor: '#334',
     opacity: 0.8,
   },
 });

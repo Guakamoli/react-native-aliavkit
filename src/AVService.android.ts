@@ -54,5 +54,7 @@ export default class AVService {
     }
     return await RNEditorKitModule.getMusicList(name, "测试", page, pageSize);
   }
-
+  static enableHapticIfExist() {
+    // AliAVServiceBridge.enableHapticIfExist();
+  }
 }
