@@ -36,10 +36,11 @@ const StoryMusic = (props) => {
     console.log(23);
 
     getSong({})
+    props.setMusic(false)
     return () => {
       console.log('音乐销毁',);
       console.log('音乐销毁', songData, checkedData);
-
+      props.setMusic(true)
     }
 
   }, [])
@@ -53,7 +54,10 @@ const StoryMusic = (props) => {
 
     }
   }, [songData])
-
+  useEffect((
+  ) => {
+    getmusicInfo(checkedData)
+  }, [checkedData])
   const onLengthHandle = useCallback(
 
     e => {
@@ -77,7 +81,7 @@ const StoryMusic = (props) => {
 
     const songa = await AVService.playMusic(song.songID)
     console.log('---- 返回值: ', songa);
-    // getmusicInfo(song)
+
   }
   const pauseMusic = async (song) => {
     console.log('暂停音乐', song);
@@ -102,7 +106,7 @@ const StoryMusic = (props) => {
         itemWidth={298}
         sliderWidth={width}
         initialNumToRender={4}
-        firstItem={songData.indexOf(checkedData)}
+        // firstItem={checkedData ? songData.indexOf(checkedData) :}
         activeAnimationType={'timing'}
         onBeforeSnapToItem={async (slideIndex = 0) => {
           // 当前选中的

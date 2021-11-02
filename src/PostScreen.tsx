@@ -661,13 +661,13 @@ export default class CameraScreen extends Component<Props, State> {
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: 'white', fontSize: 14, marginRight: 10 }}> 作品</Text>
+          <Text style={{ color: '#fff', fontSize: 14, marginRight: 10 }}> 作品</Text>
           <TouchableOpacity
             onPress={() => {
               this.props.goStory();
             }}
           >
-            <Text style={{ color: 'white', fontSize: 14 }}> 快拍</Text>
+            <Text style={{ color: '#8d8d8c', fontSize: 13 }}> 快拍</Text>
           </TouchableOpacity>
         </View>
       </>

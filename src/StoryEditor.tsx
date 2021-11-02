@@ -99,6 +99,7 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
+      setMusic: false,
       musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
@@ -267,7 +268,7 @@ export default class StoryEditor extends Component<Props, State> {
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
+            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
           />
         </View>
       )
@@ -384,10 +385,12 @@ export default class StoryEditor extends Component<Props, State> {
               musicSearch={this.props.musicSearch}
               musicIcongray={this.props.musicIcongray}
               getmusicInfo={(data) => {
-
-
                 this.setState({ musicInfo: data })
-              }} />
+              }}
+              setMusic={(data) => {
+                this.setState({ setMusic: data })
+              }}
+            />
             :
             this.renderBottom()}
 
