@@ -38,7 +38,7 @@ const PostHead = React.memo((props)=> {
   return (
     <View
       style={{
-        // height: 44,
+        height: 44,
         backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -105,24 +105,35 @@ const PostEditor = (props) => {
   const [photoFile, setPhotoFile] = useState('');
 
   const continueEdit = async () => {
+    const cropData = props.params.cropDataResult
+
     if (fileType === 'image') {
       console.log('导出图片');
+      const path = await AVService.crop({
+        source: photoFile,
+        cropOffsetX: cropData.offset.x,
+        cropOffsetY: cropData.offset.y,
+        cropWidth: cropData.size.width,
+        cropHeight: cropData.size.height,
+      });
       let uploadFile = [];
       uploadFile.push({
         Type: `image/png`,
-        path: photoFile,
+        path: path,
         size: 0,
-        Name: photoFile,
-        coverImage: photoFile,
+        Name: path,
+        coverImage: path,
       });
       props.getUploadFile(uploadFile);
     } else {
       // 裁剪视频
+      console.info("开始裁减时间")
       RNEditViewManager.trimVideo({
         videoPath: multipleSandBoxData[0],
         startTime: trimmerLeftHandlePosition / 1000,
         endTime: trimmerRightHandlePosition / 1000,
       });
+
       // 导出视频
       if (exportVideo) {
         return;
@@ -147,7 +158,7 @@ const PostEditor = (props) => {
     const {
        params 
     } = props;
-    console.info(params?.trimVideoData, '开始改变')
+    console.info(params, '传递过来的数据')
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
@@ -193,9 +204,24 @@ const PostEditor = (props) => {
     }
   }, [multipleSandBoxData]);
 
-  const onExportVideo = (event) => {
+  const onExportVideo = async(event) => {
+    try{
+
+  
     if (event.exportProgress === 1) {
+      const cropData = props.params.cropDataResult
       let outputPath = event.outputPath;
+      console.info("开始画面裁减", outputPath)
+
+      outputPath = await AVService.crop({
+        source: `file://${outputPath}`,
+        cropOffsetX: cropData.offset.x,
+        cropOffsetY: cropData.offset.y,
+        cropWidth: cropData.size.width,
+        cropHeight: cropData.size.height,
+      });
+      console.info("画面裁减结束", outputPath)
+
       let uploadFile = [];
       //
       let type = outputPath.split('.');
@@ -208,18 +234,34 @@ const PostEditor = (props) => {
       });
       props.getUploadFile(uploadFile);
     }
+  } catch (e) {
+    console.info(e)
+  }
   };
 
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
-
+    const top =props.params.cropDataRow.positionY
+    const width =props.params.cropDataRow.fittedSize.width
+    const height =props.params.cropDataRow.fittedSize.height
     return (
-      <View style={{transform:[
-        {scale:1}
-      ]}}>
+      <View style={{
+        // alignItems: 'center',
+        justifyContent: 'center',
+        width: width,
+        height: height,
+        overflow:"hidden"
+      }}>
+          <View style={{
+       
+            transform:[{
+              translateY: top
+            }]
+          }}
+          >
         <VideoEditor
           editWidth={width}
-          editHeight={height * 0.3}
+          editHeight={height}
           ref={(edit) => (editor = edit)}
           filterName={filterName}
           videoPath={multipleSandBoxData[0]}
@@ -270,6 +312,7 @@ const PostEditor = (props) => {
             onExportVideo(event);
           }}
         />
+        </View>
       </View>
     );
     // }
@@ -539,17 +582,33 @@ const PostEditor = (props) => {
   };
   // 图片滤镜
   const result = () => {
+    const left=  props.params.cropDataRow.positionX
+    const top =props.params.cropDataRow.positionY
+    const scale = props.params.cropDataRow.scale
+   
     const Extractor = (imgFilter) => {
+      const width =props.params.cropDataRow.fittedSize.width
+      const height =props.params.cropDataRow.fittedSize.height
+      const ImageComponent =   <Image
+      style={{ width: width, height: height ,transform:[
+        {
+          scale:scale
+        },
+           {translateX:left},
+  
+            {translateY:top},
+            
+          ]
+         }}
+      source={{ uri: multipleSandBoxData[0] }}
+    />
       switch (imgFilter) {
         case 'Sepia': {
           return (
             <Sepia
               image={
-                <Image
-                  style={{ width: width, height: width }}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+            
+                ImageComponent
               }
               amount={2}
             />
@@ -560,11 +619,7 @@ const PostEditor = (props) => {
             <Temperature
               amount={0.5}
               image={
-                <Image
-                  style={{ width: width, height: width }}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+                ImageComponent
               }
             />
           );
@@ -574,30 +629,28 @@ const PostEditor = (props) => {
             <Sepia
               amount={0.4}
               image={
-                <Image
-                  style={{ width: width, height: width }}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+                ImageComponent
               }
             />
           );
         }
         default: {
-          return (
-            <Image
-              style={{ width: width, height: width }}
-              source={{ uri: multipleSandBoxData[0] }}
-              resizeMode={'contain'}
-            />
-          );
+          return ImageComponent
+          
         }
       }
     };
 
     return (
       <>
-      
+        <View style={{width: width, height:width, overflow:"hidden"}}>
+          
+        <View style={{
+          overflow: 'hidden',
+          alignItems: 'center',
+          justifyContent: 'center',
+        
+          }}>
         <Grayscale
           amount={0}
           onExtractImage={({ nativeEvent }) => {
@@ -606,6 +659,8 @@ const PostEditor = (props) => {
           extractImageEnabled={true}
           image={Extractor(imgfilterName)}
         ></Grayscale>
+        </View>
+        </View>
         <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
           <TouchableOpacity
             onPress={() => {
@@ -675,7 +730,10 @@ const PostEditor = (props) => {
     return (
       <View style={{ backgroundColor: 'black' ,position: 'relative',height:"100%"}}>
         <PostHead {...props} continueEdit={continueEdit}/>
+  
       {result()}
+    
+
       </View>)
   }
   return (

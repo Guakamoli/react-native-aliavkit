@@ -81,7 +81,7 @@ const PostHead = React.memo((props)=> {
   return (
     <View
       style={{
-        // height: 44,
+        height: 44,
         backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -229,7 +229,6 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   }
   postEditor = async () => {
-    console.info("点我")
     const {
       multipleData,
       fileSelectType,
@@ -253,13 +252,28 @@ export default class CameraScreen extends Component<Props, State> {
         if (trimVideoData) {
           let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition ?? 0;
           let videoTime = this.state.videoTime ?? 0;
-  
+          const result = await ImageCropper.crop({
+            ...cropDataRow,
+            imageUri: imageItem?.uri,
+            cropSize: {
+              width: width,
+              height: width,
+            },
+            cropAreaSize: {
+              width: width,
+              height: width,
+            },
+          });
           this.setState({
             postEditorParams:{
               trimVideoData,
               videoduration: videoTime,
               trimmerRight: trimmerRightHandlePosition,
               fileType: this.state.fileSelectType,
+              cropDataRow:cropDataRow,
+              cropDataResult:result,
+              source: multipleData[0].image.uri,
+
             },
             videoPaused: true,
             page: "eidt"
@@ -269,19 +283,8 @@ export default class CameraScreen extends Component<Props, State> {
   
         }
         return
-      const result = await ImageCropper.crop({
-        ...cropDataRow,
-        imageUri: imageItem?.uri,
-        cropSize: {
-          width: width,
-          height: width,
-        },
-        cropAreaSize: {
-          width: width,
-          height: width,
-        },
-      });
-      cropData = result;
+   
+      // cropData = result;
       console.info(multipleData, cropData);
       trimVideoData = await AVService.crop({
         source: `${multipleData[0].image.uri}`,
@@ -388,7 +391,6 @@ export default class CameraScreen extends Component<Props, State> {
       }
       //
     });
-    this.getPhotos()
   }
   shouldComponentUpdate (nextProps, nextState){
     if (nextState.CameraRollList !==this.state.CameraRollList) {
@@ -405,6 +407,18 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (nextState.page !==this.state.page) {
       return true
+    }
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
+      if (this.props.type === 'post') {
+        this.getPhotos()
+      }
+      return false
+    }
+    if (nextProps.type !== this.props.type&& nextProps.type === 'post') {
+      if (this.props.isDrawerOpen) {
+        this.getPhotos()
+      }
+      return false
     }
     return false
   }

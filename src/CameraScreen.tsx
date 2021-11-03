@@ -312,7 +312,6 @@ export default class CameraScreen extends Component<Props, State> {
       }, 2000);
       return false
     }
-    console.info(nextProps.isDrawerOpen ,  this.props.isDrawerOpen, this.props.type)
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       setTimeout(()=>{
         this.setState({

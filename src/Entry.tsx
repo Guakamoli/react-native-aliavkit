@@ -55,6 +55,8 @@ const Entry = (props) => {
             props.navigation.navigate('FeedsPostEditor', { ...data })
 
           }}
+          type={type}
+
           setType={setType}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
