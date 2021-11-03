@@ -190,7 +190,6 @@ export default class Carousel extends Component {
             if (!this._mounted) {
                 return;
             }
-            console.info("kaishi")
             this._snapToItem(_firstItem, false, false, true, false);
             this._hackActiveSlideAnimation(_firstItem, 'start', true);
 
@@ -242,6 +241,7 @@ export default class Carousel extends Component {
 
         if (interpolators.length !== itemsLength || hasNewSliderWidth ||
             hasNewSliderHeight || hasNewItemWidth || hasNewItemHeight) {
+
             this._activeItem = nextActiveItem;
             this._previousItemsLength = itemsLength;
 
@@ -258,6 +258,7 @@ export default class Carousel extends Component {
                 this._snapToItem(nextActiveItem, false, false, false, false);
             }
         } else if (nextFirstItem !== this._previousFirstItem && nextFirstItem !== this._activeItem) {
+
             this._activeItem = nextFirstItem;
             this._previousFirstItem = nextFirstItem;
             this._snapToItem(nextFirstItem, false, true, false, false);
@@ -783,11 +784,11 @@ export default class Carousel extends Component {
         if (this._activeItem !== nextActiveItem && this._shouldUseCustomAnimation()) {
             this._playCustomSlideAnimation(this._activeItem, nextActiveItem);
         }
-
         if (enableMomentum) {
             clearTimeout(this._snapNoMomentumTimeout);
 
             if (this._activeItem !== nextActiveItem) {
+
                 this._activeItem = nextActiveItem;
                 this.props.impactAsync?.()
 
@@ -918,7 +919,7 @@ export default class Carousel extends Component {
 
         if (this._carouselRef) {
             this._onScrollEnd && this._onScrollEnd(false);
-            this._onScroll(event)
+            // this._onScroll(event)
         }
 
         if (onMomentumScrollEnd) {
@@ -1382,7 +1383,6 @@ export default class Carousel extends Component {
             ...this.props,
             ...this._getComponentStaticProps()
         };
-
         const ScrollViewComponent = typeof useScrollView === 'function' ? useScrollView : AnimatedScrollView
         return this._needsScrollView() ? (
             <ScrollViewComponent {...props}>

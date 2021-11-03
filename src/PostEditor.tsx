@@ -8,7 +8,6 @@ import {
   Dimensions,
   FlatList,
   NativeModules,
-  StatusBar,
   Pressable,
   Animated,
   ScrollView,
@@ -31,12 +30,53 @@ const captureIcon = (width - 98) / 2;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
 const cropWidth = width - 30 * 2;
+
+const PostHead = React.memo((props)=> {
+  const [videoMute, setvideoMute] = useState(false);
+
+  const {closePng, volumeImage, noVolumeImage, goback, continueEdit} = props
+  return (
+    <View
+      style={{
+        // height: 44,
+        backgroundColor: '#000',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingBottom: 9,
+        paddingHorizontal: 12,
+      }}
+    >
+      <Pressable
+        onPress={async () => {
+          console.info(goback, 'goback')
+         goback();
+        }}
+      >
+        <Image style={styles.closeIcon} source={require("../images/backArrow.png")} resizeMode='contain' />
+      </Pressable>
+      <TouchableOpacity
+          onPress={() => {
+            setvideoMute(!videoMute);
+          }}
+        >
+          <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
+        </TouchableOpacity>
+
+      <Pressable
+        onPress={continueEdit}
+      >
+        <Text style={styles.continueText}>继续</Text>
+      </Pressable>
+    </View>
+  );
+})
 const PostEditor = (props) => {
   // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
-    route: {
-      params: { trimVideoData = '', fileType = '' },
-    },
+    
+    params: { trimVideoData = '', fileType = '' },
+
     navigation,
     uploadFile,
     volumeImage,
@@ -63,75 +103,33 @@ const PostEditor = (props) => {
   const lockRef = useRef(false);
 
   const [photoFile, setPhotoFile] = useState('');
-  navigation.setOptions({
-    headerTitle: (props) => {
-      if (fileType == 'image') {
-        return null;
-      }
-      return (
-        <TouchableOpacity
-          onPress={() => {
-            setvideoMute(!videoMute);
-          }}
-        >
-          <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
-        </TouchableOpacity>
-      );
-    },
-    headerStyle: {
-      backgroundColor: '#000',
-    },
-    headerTintColor: 'rgba(255,255,255,1)',
-    headerTitleStyle: {
-      color: '#fff',
-      fontSize: 17,
-      fontWeight: '500',
-      lineHeight: 22,
-    },
-    headerRight: () => {
-      return (
-        <Pressable
-          onPress={async () => {
-            if (fileType === 'image') {
-              console.log('导出图片');
-              let uploadFile = [];
-              uploadFile.push({
-                Type: `image/png`,
-                path: photoFile,
-                size: 0,
-                Name: photoFile,
-                coverImage: photoFile,
-              });
-              props.getUploadFile(uploadFile);
-            } else {
-              // 裁剪视频
-              RNEditViewManager.trimVideo({
-                videoPath: multipleSandBoxData[0],
-                startTime: trimmerLeftHandlePosition / 1000,
-                endTime: trimmerRightHandlePosition / 1000,
-              });
-              // 导出视频
-              if (exportVideo) {
-                return;
-              }
-              setexportVideo(true);
-            }
-          }}
-          style={{
-            width: 30,
-            height: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-            // borderRadius: 100,
-            // backgroundColor: `rgba(0, 0, 0, 0.19)`,
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>继续</Text>
-        </Pressable>
-      );
-    },
-  });
 
+  const continueEdit = async () => {
+    if (fileType === 'image') {
+      console.log('导出图片');
+      let uploadFile = [];
+      uploadFile.push({
+        Type: `image/png`,
+        path: photoFile,
+        size: 0,
+        Name: photoFile,
+        coverImage: photoFile,
+      });
+      props.getUploadFile(uploadFile);
+    } else {
+      // 裁剪视频
+      RNEditViewManager.trimVideo({
+        videoPath: multipleSandBoxData[0],
+        startTime: trimmerLeftHandlePosition / 1000,
+        endTime: trimmerRightHandlePosition / 1000,
+      });
+      // 导出视频
+      if (exportVideo) {
+        return;
+      }
+      setexportVideo(true);
+    }
+  }
   let coverData = [];
   let editor = null;
   let scrubberInterval = null;
@@ -147,18 +145,19 @@ const PostEditor = (props) => {
   useEffect(() => {
     getFilters();
     const {
-      route: { params },
+       params 
     } = props;
+    console.info(params?.trimVideoData, '开始改变')
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
-  }, [props]);
+  }, [props.params]);
   useEffect(() => {
     return () => {
       console.log('销毁了');
       AVService.removeThumbnaiImages();
       RNEditViewManager.stop();
-      props.route.params.palyVide();
+      props.params?.playVideo?.();
     };
   }, []);
   const getcoverData = async () => {
@@ -187,10 +186,10 @@ const PostEditor = (props) => {
     setcoverImage(coverData[0]);
   };
   useEffect(() => {
-    console.log('获取封面', multipleSandBoxData);
+    console.info('获取封面', multipleSandBoxData);
     if (multipleSandBoxData.length > 0) {
       getcoverData();
-      console.log('----: getcoverData');
+      console.info('----: getcoverData');
     }
   }, [multipleSandBoxData]);
 
@@ -215,7 +214,9 @@ const PostEditor = (props) => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
 
     return (
-      <View style={{}}>
+      <View style={{transform:[
+        {scale:1}
+      ]}}>
         <VideoEditor
           editWidth={width}
           editHeight={height * 0.3}
@@ -596,6 +597,7 @@ const PostEditor = (props) => {
 
     return (
       <>
+      
         <Grayscale
           amount={0}
           onExtractImage={({ nativeEvent }) => {
@@ -670,12 +672,15 @@ const PostEditor = (props) => {
     );
   };
   if (fileType == 'image') {
-    return <View style={{ flex: 1, backgroundColor: '#000' }}>{result()}</View>;
+    return (
+      <View style={{ backgroundColor: 'black' ,position: 'relative',height:"100%"}}>
+        <PostHead {...props} continueEdit={continueEdit}/>
+      {result()}
+      </View>)
   }
-
   return (
-    <View style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
-      <StatusBar barStyle={'light-content'} />
+    <View style={{  backgroundColor: 'black', position: 'relative',height:"100%"}}>
+      <PostHead {...props} continueEdit={continueEdit}/>
       {postEditorViewData()}
 
       {selectBottomModel === '滤镜' && filterEditorFilter()}
@@ -689,11 +694,27 @@ const PostEditor = (props) => {
 };
 
 const styles = StyleSheet.create({
+  closeIcon: {
+    width:12,
+    height: 20,
+  },
   postSwitchProps: {
     fontSize: 16,
     color: '#8E8E8E',
     fontWeight: '500',
   },
+  continueText: {
+    fontSize: 15, 
+    fontWeight: '400',
+    color: '#fff', 
+    lineHeight: 21 
+  },
+  textCenter: {
+    fontSize: 17, 
+    fontWeight: '500',
+    color: '#fff', 
+    lineHeight: 24 
+  }
 });
 
 export default PostEditor;

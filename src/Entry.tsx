@@ -37,7 +37,7 @@ const Entry = (props) => {
   return (
 
     <>
-      <View style={{ display: type === 'post' ? "flex" : "none" }}>
+      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? "flex" : "none" }}>
         <PostUpload
           // onRef={this.onRef}
           {...props}
@@ -55,6 +55,7 @@ const Entry = (props) => {
             props.navigation.navigate('FeedsPostEditor', { ...data })
 
           }}
+          setType={setType}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
           postCameraImage={postCameraPng}
@@ -63,13 +64,14 @@ const Entry = (props) => {
           cameraModule={true}
         />
       </View>
-      <View style={[type !== 'post' ? {} : { display: "none" }, { height: "100%", flex: 1 }]}>
+      <View style={[type === 'story' ? {} : { display: "none" }, { height: "100%", flex: 1 }]}>
 
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
+          {...props}
           goback={goBack}
-
+          type={type}
           goPost={() => {
             navigation.replace('FeedsPost')
           }}
@@ -104,6 +106,7 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
+          {display: types.findIndex(i=>i.type === type) > -1 ?"flex": "none"},
           {
             transform: [
               { translateX: transX }
@@ -111,6 +114,7 @@ const Entry = (props) => {
           }
         ]}
       >
+        
         {types.map((i) => {
           return (<TouchableOpacity key={i.type}
             onPress={() => {

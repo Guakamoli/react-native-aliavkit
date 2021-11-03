@@ -23,7 +23,7 @@ import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
 import AVService from './AVService.ios';
 import ImageCropper from './react-native-simple-image-cropper/src';
-
+import PostEditor from "./PostEditor"
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 
@@ -201,6 +201,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.appState = ''
     this.cropData = {};
     this.state = {
+      postEditorParams: null,
       CameraRollList: [],
       fileSelectType: '',
       multipleData: [],
@@ -216,7 +217,7 @@ export default class CameraScreen extends Component<Props, State> {
       trimmerRightHandlePosition: 1000,
       videoTime: 60000,
       scrubberPosition: 0,
-
+      page: "main",
       cropOffset: [],
       cropOffsetX: 0,
       cropOffsetY: 0,
@@ -224,8 +225,11 @@ export default class CameraScreen extends Component<Props, State> {
       siwtchlibrary: false,
     };
   }
-
+  playVideo= () => {
+    this.setState({ videoPaused: false });
+  }
   postEditor = async () => {
+    console.info("点我")
     const {
       multipleData,
       fileSelectType,
@@ -238,8 +242,33 @@ export default class CameraScreen extends Component<Props, State> {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
     try {
+      
       const imageItem =
         multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
+        const trimVideoData = await AVService.saveToSandBox({
+          path: multipleData[0].image.uri
+        })
+        console.info("kaishi", trimVideoData)
+        // this.setState({ videoPaused: true });
+        if (trimVideoData) {
+          let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition ?? 0;
+          let videoTime = this.state.videoTime ?? 0;
+  
+          this.setState({
+            postEditorParams:{
+              trimVideoData,
+              videoduration: videoTime,
+              trimmerRight: trimmerRightHandlePosition,
+              fileType: this.state.fileSelectType,
+            },
+            videoPaused: true,
+            page: "eidt"
+         
+          });
+          this.props.setType("edit")
+  
+        }
+        return
       const result = await ImageCropper.crop({
         ...cropDataRow,
         imageUri: imageItem?.uri,
@@ -273,7 +302,7 @@ export default class CameraScreen extends Component<Props, State> {
         this.props.goPostEditor({
           trimVideoData,
           fileType: fileSelectType,
-          palyVide: () => {
+          playVideo: () => {
             this.setState({ videoPaused: false });
           },
         });
@@ -352,7 +381,7 @@ export default class CameraScreen extends Component<Props, State> {
           videoduration: videoTime,
           trimmerRight: trimmerRightHandlePosition,
           fileType: this.state.fileSelectType,
-          palyVide: () => {
+          playVideo: () => {
             this.setState({ videoPaused: false });
           },
         });
@@ -369,6 +398,12 @@ export default class CameraScreen extends Component<Props, State> {
       return true
     }
     if (nextState.startmMltiple !==this.state.startmMltiple) {
+      return true
+    }
+    if (nextState.postEditorParams !==this.state.postEditorParams) {
+      return true
+    }
+    if (nextState.page !==this.state.page) {
       return true
     }
     return false
@@ -545,7 +580,7 @@ export default class CameraScreen extends Component<Props, State> {
                             display: startmMltiple? "flex":"none"
                           }}
                         >
-                          {/* {multipleData.includes(item) ? (
+                          {multipleData.includes(item) ? (
                             <View
                               style={{
                                 width: 18,
@@ -559,7 +594,7 @@ export default class CameraScreen extends Component<Props, State> {
                             >
                        
                             </View>
-                          ) : null} */}
+                          ) : null}
                         </View>
                       </>
                     <Image
@@ -616,7 +651,7 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   render() {
-    console.info("渲染了")
+    console.info("渲染了", this.state.page, this.state.postEditorParams)
     return (
       <>
         {/* 相册内容切换 暂时屏蔽 */}
@@ -657,16 +692,33 @@ export default class CameraScreen extends Component<Props, State> {
 
             </View>
           </Modal> */}
-        <PostHead key={'PostHead'} {...this.props}/>
-        <PostContent
-          {...this.props}
-          videoPaused={this.state.videoPaused}
-          multipleData={this.state.multipleData}
-          CameraRollList={this.state.CameraRollList}
-          fileSelectType={this.state.fileSelectType}
-          videoFile={this.state.videoFile}
-        />
-        {this.postFileUpload()}
+       
+     <View style={{display: this.state.page === 'main'? "flex": "none"}}>
+     <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor}/>
+
+     <PostContent
+     {...this.props}
+     videoPaused={this.state.videoPaused}
+     multipleData={this.state.multipleData}
+     CameraRollList={this.state.CameraRollList}
+     fileSelectType={this.state.fileSelectType}
+     videoFile={this.state.videoFile}
+   />
+   {this.postFileUpload()}
+   </View>
+     
+          {this.state.postEditorParams? (
+            <PostEditor {...this.props} params={this.state.postEditorParams} playVideo={this.playVideo} goback={
+              ()=> {
+                this.props.setType("post")
+
+                this.setState({page:"main",postEditorParams:null})
+              }
+            }/>
+          ): null}
+          
+
+    
       </>
     );
   }

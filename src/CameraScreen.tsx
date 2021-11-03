@@ -12,7 +12,8 @@ import {
   FlatList,
   Easing,
 } from 'react-native';
-import { useInterval } from 'ahooks';
+import { useInterval, useThrottleFn } from 'ahooks';
+import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 
 import _ from 'lodash';
 import Camera from './Camera';
@@ -40,7 +41,7 @@ const CameraHeight = height - 100;
 const stateAttrsUpdate= [
   'pasterList', 'facePasterInfo', 'showBeautify', 
 'normalBeautyLevel', 'cameraType', 'ShootSuccess',
- 'startShoot', 'flag']
+ 'startShoot', 'flag', 'showCamera']
 
 export enum CameraType {
   Front = 'front',
@@ -226,7 +227,7 @@ export default class CameraScreen extends Component<Props, State> {
       imageCaptured: null,
       captured: false,
       cameraType: CameraType.Front,
-
+      showCamera: false,
       currentIndex: 0,
 
       showBeautify: false,
@@ -298,7 +299,34 @@ export default class CameraScreen extends Component<Props, State> {
 		if (stateUpdated) {
 			return true;
 		}
-
+    console.info(nextProps.type , this.props.type)
+    if (nextProps.type !== this.props.type) {
+      setTimeout(()=>{
+        this.setState({
+          showCamera: nextProps.type ==='story'? true: false
+        })
+      }, 0)
+      setTimeout(() => {
+        AVService.enableHapticIfExist()
+        
+      }, 2000);
+      return false
+    }
+    console.info(nextProps.isDrawerOpen ,  this.props.isDrawerOpen, this.props.type)
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      setTimeout(()=>{
+        this.setState({
+          showCamera: nextProps.isDrawerOpen && this.props.type ==='story'? true: false
+        },()=>{
+          setTimeout(() => {
+            AVService.enableHapticIfExist()
+            
+          }, 2000);
+        })
+      }, 0)
+ 
+      return false
+    }
     return false
   }
   isCaptureRetakeMode() {
@@ -351,7 +379,10 @@ export default class CameraScreen extends Component<Props, State> {
         {/* 取消 */}
         <TouchableOpacity
           onPress={() => {
+            
             this.props.goback();
+          
+          
           }}
           style={styles.closeBox}
         >
@@ -389,8 +420,8 @@ export default class CameraScreen extends Component<Props, State> {
 
   // 拍摄内容渲染
   renderCamera() {
-    
     const shoot = () => {
+      if (!this.state.showCamera  ) return null
 
       return (
         <Camera
@@ -546,7 +577,9 @@ export default class CameraScreen extends Component<Props, State> {
     };
   }
   impactAsync = ()=>{
+
       this.props.haptics?.selectionAsync?.()
+ 
   }
   switchProp() {
     const { pasterList } = this.state;
@@ -569,6 +602,7 @@ export default class CameraScreen extends Component<Props, State> {
           ref={(flatList) => {
             this.FlatListRef = flatList;
           }}
+          lockScrollWhileSnapping={true}
           snapToInterval={itemWidth}
           impactAsync={this.impactAsync}
           //  ref={this.FlatListRef}
@@ -581,7 +615,7 @@ export default class CameraScreen extends Component<Props, State> {
           enableSnap={true}
           data={pasterList}
           decelerationRate={'normal'}
-          swipeThreshold={20}
+          swipeThreshold={1}
           itemWidth={itemWidth}
           inactiveSlideOpacity={1}
           scrollPos={this.scrollPos}
@@ -614,6 +648,7 @@ export default class CameraScreen extends Component<Props, State> {
             );
           }}
         >
+   
           <Animated.View
             style={[
               styles.captureButtonImage,
@@ -761,7 +796,6 @@ export default class CameraScreen extends Component<Props, State> {
             </TouchableOpacity>
           </Animated.View>
         </Carousel>
-
         {/* 临时方案  安卓 拍摄不会触发 */}
       </View>
     );
