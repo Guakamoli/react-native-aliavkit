@@ -203,13 +203,74 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
     ];
 }
 
+- (void)cropVideo:(NSString *)sourcePath
+             rect:(CGRect)cropRect
+          resolve:(RCTPromiseResolveBlock)resolve
+           reject:(RCTPromiseRejectBlock)reject
+{
+    if (![sourcePath hasPrefix:@"file://"]) {
+        reject(@"",@"path not valid",nil);
+        return;
+    }
+    
+    AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:[NSURL fileURLWithPath:sourcePath] options:nil];
+    if (!urlAsset) {
+        reject(@"",@"Asset init failed",nil);
+        return;
+    }
+    if ([[urlAsset tracksWithMediaType:AVMediaTypeVideo] count] != 0) {
+        NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+        self.cutPanel = [[AliyunCrop alloc] initWithDelegate:(id<AliyunCropDelegate>)self];
+        self.cutPanel.inputPath = sourcePath;
+        self.cutPanel.outputSize = cropRect.size;
+        self.cutPanel.outputPath = outputPath;
+        self.cutPanel.startTime = 0;
+        CGFloat endTime = [urlAsset avAssetVideoTrackDuration];
+        self.cutPanel.endTime = endTime;
+
+        // cut mode
+        self.cutPanel.cropMode = 1;
+        self.cutPanel.rect = cropRect;
+        if ([RNAVDeviceHelper isBelowIphone_11]) {
+            self.cutPanel.videoQuality = AliyunVideoQualityMedium;
+        }
+        else {
+            self.cutPanel.fps = 30;
+            self.cutPanel.gop = 30;
+            self.cutPanel.bitrate = 10*1000*1000;   // 15Mbps
+        }
+        self.cutPanel.encodeMode = 1;           // Force hardware encoding
+        self.cutPanel.shouldOptimize = NO;
+        
+        int res =[self.cutPanel startCrop];
+        if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_VIDEO){
+            reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+            return;
+        }
+        else if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_AUDIO){
+            reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+            return;
+        }
+        else if (res <0 && res != -314){
+            reject(@"",@"",nil);
+            return;
+        }
+        else if (res == 0) {
+            resolve(outputPath);
+        }
+    }
+    else {
+
+    }
+}
+
 RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
     NSString *source = [options valueForKey:@"source"];
-    if (!source || ![source containsString:@"ph://"]) {
-        reject(@"",@"source scheme no ph://",nil);
+    if (!source || [source isEqualToString:@""]) {
+        reject(@"",@"source must contain a path value",nil);
         return;
     }
     CGFloat cropOffsetX = [[options valueForKey:@"cropOffsetX"] floatValue];
@@ -227,12 +288,19 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         reject(@"",@"Invalid cropHeight",nil);
         return;
     }
-
-    
-    NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
-    PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     
     CGRect cropRect = CGRectMake(cropOffsetX, cropOffsetY, cropWidth, cropHeight);
+    
+    if ([source hasPrefix:@"file://"]) {
+        [self cropVideo:source rect:cropRect resolve:resolve reject:reject];
+        return;
+    }
+    
+    if (![source hasPrefix:@"ph://"]) {
+        return;
+    }
+    NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+    PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     
     __weak typeof(self) weakSelf = self;
     if (phAsset.mediaType == PHAssetMediaTypeVideo) {
