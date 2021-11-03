@@ -36,8 +36,8 @@ PODS:
   - FMDB/standard (2.7.5)
   - glog (0.3.5)
   - JSONModel (1.8.0)
-  - QuCore-ThirdParty (4.3.0)
-  - Queen (1.3.1-official-pro)
+  - QuCore-ThirdParty (4.3.1)
+  - Queen (1.4.0-official-pro)
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
     - DoubleConversion
@@ -316,7 +316,7 @@ PODS:
     - AliyunVideoSDKPro (= 3.24.0)
     - FMDB
     - JSONModel
-    - Queen (= 1.3.1-official-pro)
+    - Queen (= 1.4.0-official-pro)
     - React-Core
     - SSZipArchive
     - VODUpload (= 1.6.1)
@@ -487,8 +487,8 @@ SPEC CHECKSUMS:
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
-  QuCore-ThirdParty: 41f690f29346438eb58a0f6c994fd33ab9c59dd4
-  Queen: be44c3caca2cc04045f294735260202217dc149b
+  QuCore-ThirdParty: 837fa2cff865c468fd16b5b72ef092350a7073a9
+  Queen: 8305859c116f4c7220f93eb6f6999432454f18d5
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: 6d3e854f0e7260a648badd0d44fc364bc9da9728
   RCTTypeSafety: c1f31d19349c6b53085766359caac425926fafaa
@@ -517,7 +517,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: c3dcf8c484b5b31013c2976513d25d57e7fa05c0
+  ReactNativeAliAVKit: 0e1712f68ea5da62ca35d3e0ce1960f4b6f4505e
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
@@ -529,4 +529,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 8492da84a8994507f6b1b22029bbe978aa0140c9
 
-COCOAPODS: 1.11.0
+COCOAPODS: 1.11.2
