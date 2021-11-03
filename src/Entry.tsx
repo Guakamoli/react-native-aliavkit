@@ -1,19 +1,25 @@
 /* eslint-disable */
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
-import CameraScreen from "./CameraScreen"
-import PostUpload from "./PostScreen"
+import CameraScreen from './CameraScreen';
+import PostUpload from './PostScreen';
 const { width, height } = Dimensions.get('window');
 const Entry = (props) => {
-  const {
-    multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng
-  } = props
+  const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {
     cameraFlipPng,
-    captureButtonPng, closePng, musicPng, beautifyPng, beautyAdjustPng, AaPng, filterPng, musicRevampPng,
+    captureButtonPng,
+    closePng,
+    musicPng,
+    beautifyPng,
+    beautyAdjustPng,
+    AaPng,
+    filterPng,
+    musicRevampPng,
     giveUpPng,
     noVolumePng,
-    tailorPng, volumePng,
+    tailorPng,
+    volumePng,
     musicDynamicGif,
     musicIconPng,
     musicIcongray,
@@ -21,42 +27,37 @@ const Entry = (props) => {
     selectBeautifyPng,
     noResultPng,
     videomusicIconPng,
-
-  } = props
-  const { server, user, item, navigation, sendfile = () => { }, goBack = () => { }, haptics } = props;
-  const params = props.route?.params || {}
-  const initType = params.type || "post"
-  const [type, setType] = useState(initType)
-  const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current
-  const types = [{
-    type: "post", name: "作品",
-  }, {
-    type: "story", name: "快拍"
-  }]
+  } = props;
+  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
+  const params = props.route?.params || {};
+  const initType = params.type || 'post';
+  const [type, setType] = useState(initType);
+  const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current;
+  const types = [
+    {
+      type: 'post',
+      name: '作品',
+    },
+    {
+      type: 'story',
+      name: '快拍',
+    },
+  ];
 
   return (
-
     <>
-      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? "flex" : "none" }}>
+      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
         <PostUpload
           // onRef={this.onRef}
           {...props}
-          goback={
-            goBack
-
-          }
-          goStory={
-
-            () => {
-              props.navigation.replace('FeedsStory')
-            }
-          }
+          goback={goBack}
+          goStory={() => {
+            props.navigation.replace('FeedsStory');
+          }}
           goPostEditor={(data) => {
-            props.navigation.navigate('FeedsPostEditor', { ...data })
-
+            props.navigation.navigate('FeedsPostEditor', { ...data });
           }}
           type={type}
-
           setType={setType}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
@@ -64,10 +65,11 @@ const Entry = (props) => {
           changeSizeImage={changeSizePng}
           closePng={closePng}
           cameraModule={true}
+          noVolumeImage={noVolumePng}
+          volumeImage={volumePng}
         />
       </View>
-      <View style={[type === 'story' ? {} : { display: "none" }, { height: "100%", flex: 1 }]}>
-
+      <View style={[type === 'story' ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
@@ -75,12 +77,13 @@ const Entry = (props) => {
           goback={goBack}
           type={type}
           goPost={() => {
-            navigation.replace('FeedsPost')
+            navigation.replace('FeedsPost');
           }}
           // 拿到上传数据
-          getUploadFile={(data) => { sendfile(data) }}
+          getUploadFile={(data) => {
+            sendfile(data);
+          }}
           haptics={haptics}
-
           cameraFlipImage={cameraFlipPng}
           captureButtonImage={captureButtonPng}
           closeImage={closePng}
@@ -108,33 +111,33 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
-          {display: types.findIndex(i=>i.type === type) > -1 ?"flex": "none"},
+          { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           {
-            transform: [
-              { translateX: transX }
-            ]
-          }
+            transform: [{ translateX: transX }],
+          },
         ]}
       >
-        
         {types.map((i) => {
-          return (<TouchableOpacity key={i.type}
-            onPress={() => {
-              Animated.timing(transX, {
-                toValue: i.type === 'post' ? 30 : -30,
-                useNativeDriver: true
-              }).start()
-              setType(i.type)
-            }}
-          >
-            <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
-          </TouchableOpacity>)
+          return (
+            <TouchableOpacity
+              key={i.type}
+              onPress={() => {
+                Animated.timing(transX, {
+                  toValue: i.type === 'post' ? 30 : -30,
+                  useNativeDriver: true,
+                }).start();
+                setType(i.type);
+              }}
+            >
+              <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
+            </TouchableOpacity>
+          );
         })}
       </Animated.View>
     </>
     // </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   tools: {
@@ -153,16 +156,13 @@ const styles = StyleSheet.create({
   toolText: {
     color: 'white',
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: '500',
     lineHeight: 18,
     // marginRight: 10,
   },
   curretnText: {
-    color: "rgba(126, 126, 126, 1)"
+    color: 'rgba(126, 126, 126, 1)',
   },
+});
 
-})
-
-
-export default Entry
-
+export default Entry;
