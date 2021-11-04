@@ -22,7 +22,7 @@ const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => {
-  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray, setMusicState } = props;
+  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray, setMusicState, getMusicOn } = props;
 
 
   // const [musicSelect,setMusicSelect] = useState(1);
@@ -77,6 +77,7 @@ const StoryMusic = (props) => {
     }
 
     const songa = await AVService.playMusic(song.songID)
+    getMusicOn(song)
     console.log('---- 返回值: ', songa);
     // getmusicInfo(song)
   }
@@ -105,7 +106,7 @@ const StoryMusic = (props) => {
         initialNumToRender={4}
         // firstItem={!musicChoice && songData.indexOf(checkedData)}
         activeAnimationType={'timing'}
-        onBeforeSnapToItem={async (slideIndex = 0) => {
+        onSnapToItem={async (slideIndex = 0) => {
           // 当前选中的
           props.setMusic(false);
           getmusicInfo({});
@@ -243,7 +244,11 @@ const StoryMusic = (props) => {
 
           <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => {
             props.setMusic(!setMusicState);
-            getmusicInfo(checkedData);
+            if (!setMusicState) {
+              getmusicInfo(checkedData);
+            } else {
+              getmusicInfo({});
+            }
           }}>
             {setMusicState ?
               <Image source={useMusic} style={{ width: 18, height: 18, }} />

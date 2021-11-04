@@ -21,6 +21,8 @@ import Carousel from 'react-native-snap-carousel';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
 import ImageMap from '../images';
+import AVService from './AVService.ios'
+
 const { musicSelect } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
@@ -100,18 +102,25 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
-      musicInfo: {}
+      musicInfo: {},
+      musicOn: {},
+      setMusic: false,
+
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
   startExportVideo() {
-    console.log(this.state.startExportVideo);
     if (this.state.startExportVideo) {
       return;
     }
+    this.pauseMusic(this.state.musicOn)
     this.setState({ startExportVideo: true });
   }
+  async pauseMusic(song) {
+    console.info('暂停音乐', song);
+    await AVService.pauseMusic(song.songID);
 
+  }
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
     // console.log('1231', event);
@@ -123,10 +132,10 @@ export default class StoryEditor extends Component<Props, State> {
       // 
       let type = outputPath.split('.')
       uploadFile.push({
-        Type: `video/${type[type.length - 1]}`,
+        type: `video/${type[type.length - 1]}`,
         path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
         size: 0,
-        Name: outputPath
+        name: outputPath
       })
 
       this.sendUploadFile(uploadFile)
@@ -159,7 +168,7 @@ export default class StoryEditor extends Component<Props, State> {
       RNEditViewManager.stop()
     }
     // 结束编辑页面
-    console.log('拍摄编辑销毁');
+    console.info('拍摄编辑销毁');
     this.setState = () => false;
   }
 
@@ -292,6 +301,7 @@ export default class StoryEditor extends Component<Props, State> {
     );
   }
 
+
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
@@ -393,6 +403,10 @@ export default class StoryEditor extends Component<Props, State> {
               setMusicState={this.state.setMusic}
               setMusic={(data) => {
                 this.setState({ setMusic: data })
+              }}
+              getMusicOn={(data) => {
+
+                this.setState({ musicOn: data })
               }}
             />
             :
