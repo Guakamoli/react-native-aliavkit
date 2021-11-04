@@ -20,7 +20,8 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
-
+import ImageMap from '../images';
+const { musicSelect } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
@@ -99,7 +100,6 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
-      setMusic: false,
       musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
@@ -198,12 +198,13 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
-          if (this.props.fileType == 'video') {
+        'img': this.props.fileType == 'video' ? this.state.setMusic ? musicSelect : this.props.videomusicIcon
+          : this.props.musicRevampImage, 'onPress': () => {
+            if (this.props.fileType == 'video') {
 
-            this.setState({ musicOpen: !musicOpen })
-          }
-        },
+              this.setState({ musicOpen: !musicOpen })
+            }
+          },
       },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
@@ -268,7 +269,7 @@ export default class StoryEditor extends Component<Props, State> {
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
+            musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
           />
         </View>
       )
@@ -385,8 +386,11 @@ export default class StoryEditor extends Component<Props, State> {
               musicSearch={this.props.musicSearch}
               musicIcongray={this.props.musicIcongray}
               getmusicInfo={(data) => {
+
+
                 this.setState({ musicInfo: data })
               }}
+              setMusicState={this.state.setMusic}
               setMusic={(data) => {
                 this.setState({ setMusic: data })
               }}
