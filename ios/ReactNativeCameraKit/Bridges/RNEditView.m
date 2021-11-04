@@ -191,8 +191,18 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
-        frame.size.width = _editWidth.floatValue > 0.0 ? _editWidth.floatValue : [UIScreen mainScreen].bounds.size.width;
-        frame.size.height = _editHeight.floatValue > 0.0 ? _editHeight.floatValue : [UIScreen mainScreen].bounds.size.width * factor;
+        if (_editWidth.floatValue > [UIScreen mainScreen].bounds.size.width) {
+            frame.size.width = [UIScreen mainScreen].bounds.size.width;
+            if (_editHeight.floatValue == _editWidth.floatValue) {
+                frame.size.height = [UIScreen mainScreen].bounds.size.width;
+            } else {
+                frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
+            }
+        }
+        else {
+            frame.size.width = _editWidth.floatValue > 0.0 ? _editWidth.floatValue : [UIScreen mainScreen].bounds.size.width;
+            frame.size.height = _editHeight.floatValue > 0.0 ? _editHeight.floatValue : [UIScreen mainScreen].bounds.size.width * factor;
+        }
         _preview = [[UIView alloc] initWithFrame:frame];
         _preview.backgroundColor = [UIColor lightGrayColor];
     }
