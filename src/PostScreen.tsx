@@ -76,8 +76,8 @@ let cropData = {};
 let cropDataRow = {};
 
 
-const PostHead = React.memo((props)=> {
-  const {closePng, postEditor, fileSelectType, fileEditor, goback} = props
+const PostHead = React.memo((props) => {
+  const { closePng, postEditor, fileSelectType, fileEditor, goback } = props
   return (
     <View
       style={{
@@ -92,7 +92,7 @@ const PostHead = React.memo((props)=> {
     >
       <Pressable
         onPress={async () => {
-         goback();
+          goback();
         }}
       >
         <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
@@ -225,7 +225,7 @@ export default class CameraScreen extends Component<Props, State> {
       siwtchlibrary: false,
     };
   }
-  playVideo= () => {
+  playVideo = () => {
     this.setState({ videoPaused: false });
   }
   postEditor = async () => {
@@ -241,49 +241,49 @@ export default class CameraScreen extends Component<Props, State> {
       return this.myRef.current.show('请至少选择一个上传文件', 2000);
     }
     try {
-      
+
       const imageItem =
         multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
-        const trimVideoData = await AVService.saveToSandBox({
-          path: multipleData[0].image.uri
-        })
-        console.info("kaishi", trimVideoData)
-        // this.setState({ videoPaused: true });
-        if (trimVideoData) {
-          let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition ?? 0;
-          let videoTime = this.state.videoTime ?? 0;
-          const result = await ImageCropper.crop({
-            ...cropDataRow,
-            imageUri: imageItem?.uri,
-            cropSize: {
-              width: width,
-              height: width,
-            },
-            cropAreaSize: {
-              width: width,
-              height: width,
-            },
-          });
-          this.setState({
-            postEditorParams:{
-              trimVideoData,
-              videoduration: videoTime,
-              trimmerRight: trimmerRightHandlePosition,
-              fileType: this.state.fileSelectType,
-              cropDataRow:cropDataRow,
-              cropDataResult:result,
-              source: multipleData[0].image.uri,
+      const trimVideoData = await AVService.saveToSandBox({
+        path: multipleData[0].image.uri
+      })
+      console.info("kaishi", trimVideoData)
+      // this.setState({ videoPaused: true });
+      if (trimVideoData) {
+        let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition ?? 0;
+        let videoTime = this.state.videoTime ?? 0;
+        const result = await ImageCropper.crop({
+          ...cropDataRow,
+          imageUri: imageItem?.uri,
+          cropSize: {
+            width: width,
+            height: width,
+          },
+          cropAreaSize: {
+            width: width,
+            height: width,
+          },
+        });
+        this.setState({
+          postEditorParams: {
+            trimVideoData,
+            videoduration: videoTime,
+            trimmerRight: trimmerRightHandlePosition,
+            fileType: this.state.fileSelectType,
+            cropDataRow: cropDataRow,
+            cropDataResult: result,
+            source: multipleData[0].image.uri,
 
-            },
-            videoPaused: true,
-            page: "eidt"
-         
-          });
-          this.props.setType("edit")
-  
-        }
-        return
-   
+          },
+          videoPaused: true,
+          page: "eidt"
+
+        });
+        this.props.setType("edit")
+
+      }
+      return
+
       // cropData = result;
       console.info(multipleData, cropData);
       trimVideoData = await AVService.crop({
@@ -314,20 +314,20 @@ export default class CameraScreen extends Component<Props, State> {
       console.info(e, '错误');
     }
   };
-  _handleAppStateChange  =(nextAppState) => {
+  _handleAppStateChange = (nextAppState) => {
     if (
       this.appState.match(/inactive|background/) &&
       nextAppState === "active"
     ) {
       // 在这里重新获取数据
-      
+
       console.log("App has come to the foreground!");
     }
 
     this.appState = nextAppState;
 
   };
-  getPhotos = ()=> {
+  getPhotos = () => {
     //获取照片
     let getPhotos = CameraRoll.getPhotos({
       first: 100,
@@ -392,20 +392,20 @@ export default class CameraScreen extends Component<Props, State> {
       //
     });
   }
-  shouldComponentUpdate (nextProps, nextState){
-    if (nextState.CameraRollList !==this.state.CameraRollList) {
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.CameraRollList !== this.state.CameraRollList) {
       return true
     }
-    if (nextState.multipleData !==this.state.multipleData) {
+    if (nextState.multipleData !== this.state.multipleData) {
       return true
     }
-    if (nextState.startmMltiple !==this.state.startmMltiple) {
+    if (nextState.startmMltiple !== this.state.startmMltiple) {
       return true
     }
-    if (nextState.postEditorParams !==this.state.postEditorParams) {
+    if (nextState.postEditorParams !== this.state.postEditorParams) {
       return true
     }
-    if (nextState.page !==this.state.page) {
+    if (nextState.page !== this.state.page) {
       return true
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
@@ -414,7 +414,7 @@ export default class CameraScreen extends Component<Props, State> {
       }
       return false
     }
-    if (nextProps.type !== this.props.type&& nextProps.type === 'post') {
+    if (nextProps.type !== this.props.type && nextProps.type === 'post') {
       if (this.props.isDrawerOpen) {
         this.getPhotos()
       }
@@ -442,7 +442,7 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View
         style={{
-          height:50,
+          height: 50,
           backgroundColor: 'black',
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -566,7 +566,7 @@ export default class CameraScreen extends Component<Props, State> {
                         videoFile: '',
                       });
                     }
-                   
+
                   }}
                   activeOpacity={0.9}
                 >
@@ -577,40 +577,40 @@ export default class CameraScreen extends Component<Props, State> {
                       },
                     ]}
                   >
-                      <>
-                        <View
-                          style={{
-                          
-                            borderRadius: 10,
-                            borderWidth: 2,
-                            width: 20,
-                            height: 20,
-                            borderColor: 'white',
-                            overflow: 'hidden',
-                            position: 'absolute',
-                            zIndex: 99,
-                            right: 5,
-                            top: 5,
-                            display: startmMltiple? "flex":"none"
-                          }}
-                        >
-                          {multipleData.includes(item) ? (
-                            <View
-                              style={{
-                                width: 18,
-                                height: 18,
-                                borderRadius: 20,
-                                zIndex: 99,
-                                backgroundColor: '#836BFF',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                              }}
-                            >
-                       
-                            </View>
-                          ) : null}
-                        </View>
-                      </>
+                    <>
+                      <View
+                        style={{
+
+                          borderRadius: 10,
+                          borderWidth: 2,
+                          width: 20,
+                          height: 20,
+                          borderColor: 'white',
+                          overflow: 'hidden',
+                          position: 'absolute',
+                          zIndex: 99,
+                          right: 5,
+                          top: 5,
+                          display: startmMltiple ? "flex" : "none"
+                        }}
+                      >
+                        {multipleData.includes(item) ? (
+                          <View
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: 20,
+                              zIndex: 99,
+                              backgroundColor: '#836BFF',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
+                          >
+
+                          </View>
+                        ) : null}
+                      </View>
+                    </>
                     <Image
                       key={index}
                       style={[
@@ -618,7 +618,7 @@ export default class CameraScreen extends Component<Props, State> {
                           width: photosItem,
                           height: photosItem,
                         },
-                 
+
                       ]}
                       source={{ uri: item.image.uri }}
                       resizeMode='cover'
@@ -659,7 +659,30 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           />
         </View>
-  
+        <View
+          style={{
+            backgroundColor: '#222222',
+            borderRadius: 22,
+            zIndex: 1,
+            width: 120,
+            height: 43,
+            position: 'absolute',
+            right: width * 0.3,
+            bottom: 40,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 14, marginRight: 10, fontWeight: '500' }}> 作品</Text>
+          <TouchableOpacity
+            onPress={() => {
+              this.props.goStory();
+            }}
+          >
+            <Text style={{ color: '#7E7E7E', fontSize: 13, fontWeight: '400' }}> 快拍</Text>
+          </TouchableOpacity>
+        </View>
       </>
     );
   }
@@ -706,33 +729,33 @@ export default class CameraScreen extends Component<Props, State> {
 
             </View>
           </Modal> */}
-       
-     <View style={{display: this.state.page === 'main'? "flex": "none"}}>
-     <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor}/>
 
-     <PostContent
-     {...this.props}
-     videoPaused={this.state.videoPaused}
-     multipleData={this.state.multipleData}
-     CameraRollList={this.state.CameraRollList}
-     fileSelectType={this.state.fileSelectType}
-     videoFile={this.state.videoFile}
-   />
-   {this.postFileUpload()}
-   </View>
-     
-          {this.state.postEditorParams? (
-            <PostEditor {...this.props} params={this.state.postEditorParams} playVideo={this.playVideo} goback={
-              ()=> {
-                this.props.setType("post")
+        <View style={{ display: this.state.page === 'main' ? "flex" : "none" }}>
+          <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor} />
 
-                this.setState({page:"main",postEditorParams:null})
-              }
-            }/>
-          ): null}
-          
+          <PostContent
+            {...this.props}
+            videoPaused={this.state.videoPaused}
+            multipleData={this.state.multipleData}
+            CameraRollList={this.state.CameraRollList}
+            fileSelectType={this.state.fileSelectType}
+            videoFile={this.state.videoFile}
+          />
+          {this.postFileUpload()}
+        </View>
 
-    
+        {this.state.postEditorParams ? (
+          <PostEditor {...this.props} params={this.state.postEditorParams} playVideo={this.playVideo} goback={
+            () => {
+              this.props.setType("post")
+
+              this.setState({ page: "main", postEditorParams: null })
+            }
+          } />
+        ) : null}
+
+
+
       </>
     );
   }
@@ -740,7 +763,7 @@ export default class CameraScreen extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   closeIcon: {
-    width:23,
+    width: 23,
     height: 23,
   },
 
@@ -779,15 +802,15 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   continueText: {
-    fontSize: 15, 
+    fontSize: 15,
     fontWeight: '400',
-    color: '#fff', 
-    lineHeight: 21 
+    color: '#fff',
+    lineHeight: 21
   },
   textCenter: {
-    fontSize: 17, 
+    fontSize: 17,
     fontWeight: '500',
-    color: '#fff', 
-    lineHeight: 24 
+    color: '#fff',
+    lineHeight: 24
   }
 });

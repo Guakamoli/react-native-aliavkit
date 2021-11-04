@@ -1006,13 +1006,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#7E7E7E',
     lineHeight: 18,
-    fontWeight: '500',
+    fontWeight: '400',
     position: 'absolute',
     right: 60,
   },
   snapshotTitle: {
     fontSize: 13,
     lineHeight: 18,
+    fontWeight: '500',
     color: '#FFFFFF',
   },
   snapshotMuse: {

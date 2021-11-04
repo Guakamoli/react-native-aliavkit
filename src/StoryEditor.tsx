@@ -20,7 +20,8 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
-
+import ImageMap from '../images';
+const { musicSelect } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
@@ -197,12 +198,13 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
-          if (this.props.fileType == 'video') {
+        'img': this.props.fileType == 'video' ? this.state.setMusic ? musicSelect : this.props.videomusicIcon
+          : this.props.musicRevampImage, 'onPress': () => {
+            if (this.props.fileType == 'video') {
 
-            this.setState({ musicOpen: !musicOpen })
-          }
-        },
+              this.setState({ musicOpen: !musicOpen })
+            }
+          },
       },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
@@ -387,7 +389,12 @@ export default class StoryEditor extends Component<Props, State> {
 
 
                 this.setState({ musicInfo: data })
-              }} />
+              }}
+              setMusicState={this.state.setMusic}
+              setMusic={(data) => {
+                this.setState({ setMusic: data })
+              }}
+            />
             :
             this.renderBottom()}
 
