@@ -47,6 +47,17 @@ RCT_EXPORT_METHOD(capture:(NSDictionary*)options
     }];
 }
 
+RCT_EXPORT_METHOD(setPasterInfo:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    if (!options || [options isEqualToDictionary:@{}]) {
+        reject(@"",@"params can't be null or empty",nil);
+    }
+    [self.camera applyFacePaster:options];
+}
+
+
 RCT_EXPORT_METHOD(startRecording:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
