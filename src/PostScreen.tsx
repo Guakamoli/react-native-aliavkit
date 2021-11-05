@@ -113,10 +113,6 @@ const MtbMapDispatchToProps = dispatch => ({
   setMultipleData: params => {
     multipleData = params
 
-<<<<<<< HEAD
-const PostHead = React.memo((props) => {
-  const { closePng, postEditor, fileSelectType, fileEditor, goback } = props
-=======
     dispatch(setMultipleData(params))
   },
 });
@@ -148,7 +144,6 @@ const PostFileUploadHead = React.memo((props) => {
 
 const PostHead = React.memo((props) => {
   const { closePng, postEditor, goback } = props
->>>>>>> 0351223 (修正post的编辑页面)
   return (
     <View
       style={{
@@ -164,15 +159,12 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={async () => {
           goback();
-<<<<<<< HEAD
-=======
         }}
         style={{
           height: 30,
           width: 40,
 
           justifyContent: "center",
->>>>>>> 0351223 (修正post的编辑页面)
         }}
       >
         <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
@@ -341,10 +333,6 @@ class GridItemCover extends Component {
       }
     }
   }
-<<<<<<< HEAD
-  playVideo = () => {
-    this.setState({ videoPaused: false });
-=======
   shouldComponentUpdate(nextProps, nextState) {
 
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
@@ -355,7 +343,6 @@ class GridItemCover extends Component {
     }
 
     return false
->>>>>>> 0351223 (修正post的编辑页面)
   }
   clickItem = async () => {
     // if (clickItemLock) return 
@@ -375,91 +362,6 @@ class GridItemCover extends Component {
     } else {
       this.props.setMultipleData([itemCopy])
     }
-<<<<<<< HEAD
-    try {
-
-      const imageItem =
-        multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
-      const trimVideoData = await AVService.saveToSandBox({
-        path: multipleData[0].image.uri
-      })
-      console.info("kaishi", trimVideoData)
-      // this.setState({ videoPaused: true });
-      if (trimVideoData) {
-        let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition ?? 0;
-        let videoTime = this.state.videoTime ?? 0;
-        const result = await ImageCropper.crop({
-          ...cropDataRow,
-          imageUri: imageItem?.uri,
-          cropSize: {
-            width: width,
-            height: width,
-          },
-          cropAreaSize: {
-            width: width,
-            height: width,
-          },
-        });
-        this.setState({
-          postEditorParams: {
-            trimVideoData,
-            videoduration: videoTime,
-            trimmerRight: trimmerRightHandlePosition,
-            fileType: this.state.fileSelectType,
-            cropDataRow: cropDataRow,
-            cropDataResult: result,
-            source: multipleData[0].image.uri,
-
-          },
-          videoPaused: true,
-          page: "eidt"
-
-        });
-        this.props.setType("edit")
-
-      }
-      return
-
-      // cropData = result;
-      console.info(multipleData, cropData);
-      trimVideoData = await AVService.crop({
-        source: `${multipleData[0].image.uri}`,
-        cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y,
-        cropWidth: cropData.size.width,
-        cropHeight: cropData.size.height,
-      });
-      this.myRef.current.show('上传中', 3000);
-      // 进入修改
-      if (fileSelectType === 'image') {
-        console.log('开始裁剪');
-
-        this.sendUploadFile({ trimVideoData, fileType: fileSelectType });
-        this.setState({ videoPaused: true });
-        console.log('视频暂停拉');
-
-        this.props.goPostEditor({
-          trimVideoData,
-          fileType: fileSelectType,
-          playVideo: () => {
-            this.setState({ videoPaused: false });
-          },
-        });
-      }
-    } catch (e) {
-      console.info(e, '错误');
-    }
-  };
-  _handleAppStateChange = (nextAppState) => {
-    if (
-      this.appState.match(/inactive|background/) &&
-      nextAppState === "active"
-    ) {
-      // 在这里重新获取数据
-
-      console.log("App has come to the foreground!");
-    }
-=======
     prevClickCallBack?.()
     prevClickCallBack = ()=>{
       this.setState({active:false})
@@ -576,7 +478,6 @@ class GridItem extends Component {
               width: photosItem,
               height: photosItem,
             },
->>>>>>> 0351223 (修正post的编辑页面)
 
           ]}
           source={{ uri: item.image.uri }}
@@ -691,27 +592,13 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener("change", this._handleAppStateChange)
+      this.getPhotos();
 
     this.getPhotoFromCache()
 
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
-<<<<<<< HEAD
-      return true
-    }
-    if (nextState.multipleData !== this.state.multipleData) {
-      return true
-    }
-    if (nextState.startmMltiple !== this.state.startmMltiple) {
-      return true
-    }
-    if (nextState.postEditorParams !== this.state.postEditorParams) {
-      return true
-    }
-    if (nextState.page !== this.state.page) {
-=======
->>>>>>> 0351223 (修正post的编辑页面)
       return true
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
@@ -733,81 +620,12 @@ class PostFileUpload extends Component {
     AppState.removeEventListener("change", this._handleAppStateChange)
 
   }
-<<<<<<< HEAD
-  sendUploadFile(data) {
-    if (this.props.getUploadFile) {
-      this.props.getUploadFile(data);
-    }
-  }
-
-  postFileUploadHead() {
-    const { startmMltiple, multipleData } = this.state;
-
-    return (
-      <View
-        style={{
-          height: 50,
-          backgroundColor: 'black',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: 12,
-        }}
-      >
-        {/* <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: true }) }}> */}
-        <TouchableOpacity onPress={() => { }}>
-          <View>
-            <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
-          </View>
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* 多选按钮 */}
-          <TouchableOpacity
-            onPress={() => {
-              if (startmMltiple && multipleData.length) {
-                // 取最后一张
-                this.setState({ multipleData: [multipleData[multipleData.length - 1]] });
-              }
-              this.setState({ startmMltiple: !startmMltiple });
-              // 暂时单张图㲏上传
-              // this.setState({ startmMltiple: false });
-            }}
-          >
-            <Image
-              style={[styles.multipleBtnImage, { marginRight: 10 }]}
-              source={startmMltiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
-              resizeMode='contain'
-            />
-          </TouchableOpacity>
-          <Image style={styles.multipleBtnImage} source={this.props.postCameraImage} resizeMode='contain' />
-        </View>
-      </View>
-    );
-  }
-  postFileUpload() {
-    const { CameraRollList, multipleData, startmMltiple, fileSelectType } = this.state;
-
-    const formatSeconds = (s) => {
-      let t = '';
-      if (s > -1) {
-        let min = Math.floor(s / 60) % 60;
-        let sec = s % 60;
-        if (min < 10) {
-          t += '0';
-        }
-        t += min + ':';
-        if (sec < 10) {
-          t += '0';
-        }
-        t += sec;
-=======
   getPhotoFromCache = async () => {
     const { AsyncStorage } = this.props
     if (AsyncStorage) {
       let photos = await AsyncStorage.getItem("AvKitCameraRollList")
       if (photos) {
         photos = JSON.parse(photos)
->>>>>>> 0351223 (修正post的编辑页面)
       }
       if (photos) {
         const firstData = photos[0]
@@ -850,165 +668,12 @@ class PostFileUpload extends Component {
             windowSize={3}
             removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
-<<<<<<< HEAD
-            renderItem={({ index, item }) => {
-              const { type, image } = item;
-              // const a =timestamp
-              return (
-                <TouchableOpacity
-                  onPress={async () => {
-                    //  第一次
-                    cropDataRow = {};
-
-                    if (multipleData.length <= 1) {
-                      // 获取第一次选择类型
-                      let fileType = type.split('/')[0];
-                      if (fileType === 'video') {
-                        // ios 转码视频地址
-                        getVideFile(fileType, item);
-                        // 视频设置编辑器  总数 右边值 同步
-                        this.setState({
-                          trimmerRightHandlePosition:
-                            Math.ceil(item.image.playableDuration) < 300
-                              ? Math.ceil(item.image.playableDuration) * 1000
-                              : 300 * 1000,
-
-                          videoTime: Math.ceil(item.image.playableDuration) * 1000,
-                        });
-                      }
-
-                      console.log('----playableDuration', Math.ceil(item.image.playableDuration));
-                      this.setState({
-                        fileSelectType: fileType,
-                        multipleData: [item],
-                        videoFile: '',
-                      });
-                    }
-
-                  }}
-                  activeOpacity={0.9}
-                >
-                  <View
-                    style={[
-                      {
-                        position: 'relative',
-                      },
-                    ]}
-                  >
-                    <>
-                      <View
-                        style={{
-
-                          borderRadius: 10,
-                          borderWidth: 2,
-                          width: 20,
-                          height: 20,
-                          borderColor: 'white',
-                          overflow: 'hidden',
-                          position: 'absolute',
-                          zIndex: 99,
-                          right: 5,
-                          top: 5,
-                          display: startmMltiple ? "flex" : "none"
-                        }}
-                      >
-                        {multipleData.includes(item) ? (
-                          <View
-                            style={{
-                              width: 18,
-                              height: 18,
-                              borderRadius: 20,
-                              zIndex: 99,
-                              backgroundColor: '#836BFF',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                            }}
-                          >
-
-                          </View>
-                        ) : null}
-                      </View>
-                    </>
-                    <Image
-                      key={index}
-                      style={[
-                        {
-                          width: photosItem,
-                          height: photosItem,
-                        },
-
-                      ]}
-                      source={{ uri: item.image.uri }}
-                      resizeMode='cover'
-                    />
-                    <View
-                      style={[
-                        {
-                          width: photosItem,
-                          height: photosItem,
-                          position: 'absolute',
-                          backgroundColor: '#fff',
-                        },
-                        multipleData[multipleData.length - 1]?.image.uri === image.uri
-                          ? { opacity: 0.5 }
-                          : { opacity: 0 },
-                      ]}
-                    ></View>
-                    {image.playableDuration ? (
-                      <Text
-                        style={{
-                          color: '#fff',
-                          fontSize: 12,
-                          fontWeight: '400',
-                          lineHeight: 17,
-                          zIndex: 100,
-                          position: 'absolute',
-                          right: 8,
-                          bottom: 7,
-                        }}
-                      >
-                        {' '}
-                        {formatSeconds(Math.ceil(image.playableDuration ?? 0))}
-                      </Text>
-                    ) : null}
-                  </View>
-                </TouchableOpacity>
-              );
-            }}
-          />
-        </View>
-        <View
-          style={{
-            backgroundColor: '#222222',
-            borderRadius: 22,
-            zIndex: 1,
-            width: 120,
-            height: 43,
-            position: 'absolute',
-            right: width * 0.3,
-            bottom: 40,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: '#fff', fontSize: 14, marginRight: 10, fontWeight: '500' }}> 作品</Text>
-          <TouchableOpacity
-            onPress={() => {
-              this.props.goStory();
-            }}
-          >
-            <Text style={{ color: '#7E7E7E', fontSize: 13, fontWeight: '400' }}> 快拍</Text>
-          </TouchableOpacity>
-        </View>
-=======
             renderItem={(props) => {
               return <GridItem {...props} getVideFile={this.getVideFile} />
             }}
           />
         </View>
 
->>>>>>> 0351223 (修正post的编辑页面)
       </>
     );
   }
@@ -1125,61 +790,6 @@ export default class CameraScreen extends Component<Props, State> {
   render() {
     return (
       <>
-<<<<<<< HEAD
-        {/* 相册内容切换 暂时屏蔽 */}
-        {/* <Modal
-            animationType="slide"
-            transparent={false}
-            visible={this.state.siwtchlibrary}
-            style={styles.modal}
-          >
-            <View style={{ flex: 1, backgroundColor: '#000', paddingTop: 20 }}>
-              <View style={{ width: width, height: height * 0.1, backgroundColor: '#000', flexDirection: "row", alignItems: 'flex-end', justifyContent: 'center', position: 'relative', paddingBottom: 20, }} >
-                <TouchableOpacity onPress={() => { this.setState({ siwtchlibrary: false }) }} style={{ position: 'absolute', left: 0, bottom: 20, left: 10, }}>
-                  <Text style={{ color: '#fff', fontSize: 16, }} >取消</Text>
-                </TouchableOpacity>
-                <Text style={{ color: '#fff', fontSize: 16 }} >选择相册</Text>
-              </View>
-              <FlatList
-                data={this.state.photoAlbum}
-                // data={[{ a: 1 }, { a: 2 }, { a: 3 }]}
-                renderItem={({ item, index }) => {
-                  console.log('12313', item);
-
-                  return (
-                    <TouchableOpacity onPress={() => { this.setState({ photoAlbumselect: item }) }}>
-                      <View style={{ width: width, height: 100, marginBottom: 10, flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-                        <Image source={{ uri: item.coverImage.image.uri }} style={{ width: 93, height: 93, backgroundColor: 'red' }} />
-                        <View style={{ marginLeft: 10, justifyContent: 'space-around' }}>
-                          <Text style={{ color: '#fff', fontSize: 16, marginBottom: 10 }}>{item.title}</Text>
-                          <Text style={{ color: '#fff', fontSize: 12 }}>{item.count}</Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  )
-                }}
-              >
-
-              </FlatList>
-
-            </View>
-          </Modal> */}
-
-        <View style={{ display: this.state.page === 'main' ? "flex" : "none" }}>
-          <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor} />
-
-          <PostContent
-            {...this.props}
-            videoPaused={this.state.videoPaused}
-            multipleData={this.state.multipleData}
-            CameraRollList={this.state.CameraRollList}
-            fileSelectType={this.state.fileSelectType}
-            videoFile={this.state.videoFile}
-          />
-          {this.postFileUpload()}
-        </View>
-
-=======
         <StatusBar barStyle={'light-content'} />
 
         <Toast
@@ -1203,7 +813,6 @@ export default class CameraScreen extends Component<Props, State> {
           <PostFileUpload {...this.props} />
 
         </View>
->>>>>>> 0351223 (修正post的编辑页面)
         {this.state.postEditorParams ? (
           <PostEditor {...this.props} params={this.state.postEditorParams} playVideo={this.playVideo} goback={
             () => {
@@ -1213,12 +822,6 @@ export default class CameraScreen extends Component<Props, State> {
             }
           } />
         ) : null}
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> 0351223 (修正post的编辑页面)
       </>
     );
   }

@@ -294,7 +294,7 @@ export default class CameraScreen extends Component<Props, State> {
       imageCaptured: null,
       captured: false,
       cameraType: CameraType.Front,
-      showCamera: false,
+      showCamera: true,
       currentIndex: 0,
 
       showBeautify: false,
