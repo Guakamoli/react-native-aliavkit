@@ -320,6 +320,8 @@ PODS:
     - React-Core
     - SSZipArchive
     - VODUpload (= 1.6.1)
+  - RNCAsyncStorage (1.12.1):
+    - React-Core
   - RNCMaskedView (0.2.6):
     - React-Core
   - RNGestureHandler (1.10.3):
@@ -372,6 +374,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeAliAVKit (from `../..`)
+  - "RNCAsyncStorage (from `../../node_modules/@react-native-community/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../../node_modules/react-native-reanimated`)
@@ -461,6 +464,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeAliAVKit:
     :path: "../.."
+  RNCAsyncStorage:
+    :path: "../../node_modules/@react-native-community/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNGestureHandler:
@@ -517,7 +522,8 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: ea61814e047099faa51eb606746faafeebed352b
+  ReactNativeAliAVKit: 0e1712f68ea5da62ca35d3e0ce1960f4b6f4505e
+  RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
@@ -527,6 +533,6 @@ SPEC CHECKSUMS:
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 8492da84a8994507f6b1b22029bbe978aa0140c9
+PODFILE CHECKSUM: 0cd6e646097ab70e093eb1586a963f0c248c0985
 
 COCOAPODS: 1.10.1

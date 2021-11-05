@@ -17,6 +17,7 @@ interface IProps {
   areaOverlay?: ReactNode;
   scale?: number;
   srcSize: ISizeData;
+  disablePin?: boolean,
 
   setCropperParams: (params: ICropperParams) => void;
 }
@@ -32,6 +33,7 @@ export interface IState {
   height: number;
   loading: boolean;
   prevImageUri: string;
+
 }
 
 const window = Dimensions.get('window');
@@ -137,8 +139,11 @@ class ImageCropper extends PureComponent<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps) {
-    const { imageUri, scale } = this.props;
+    const { imageUri, scale ,videoFile} = this.props;
     if (imageUri && prevProps.imageUri !== imageUri) {
+      this.init();
+    }
+    if (videoFile && prevProps.videoFile !== videoFile) {
       this.init();
     }
     if (scale && prevProps.scale !== scale) {
@@ -247,6 +252,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       areaOverlay,
       videoFile,
       scale,
+      disablePin,
       videoPaused,
     } = this.props;
 
@@ -271,6 +277,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
             propsScale={scale}
+            disablePin={disablePin}
             videoPaused={videoPaused}
           />
         ) : null}
