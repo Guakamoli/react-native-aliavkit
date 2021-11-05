@@ -1,4 +1,4 @@
-import { ENCRYPTION } from '../actions/actionsTypes';
+import { STORY } from '../actions/actionsTypes';
 
 const initialState = {
     facePasterInfo: { eid: 0 },
@@ -7,18 +7,18 @@ const initialState = {
 
 export default function encryption(state = initialState, action) {
     switch (action.type) {
-        case ENCRYPTION.SET:
+        case STORY.SET:
             return {
                 ...state,
                 enabled: action.enabled,
                 banner: action.banner
             };
-        case ENCRYPTION.SET_BANNER:
+        case STORY.SET_BANNER:
             return {
                 ...state,
                 banner: action.banner
             };
-        case ENCRYPTION.INIT:
+        case STORY.INIT:
             return initialState;
         default:
             return state;
