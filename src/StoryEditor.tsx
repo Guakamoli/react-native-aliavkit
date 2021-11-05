@@ -20,10 +20,7 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
-import ImageMap from '../images';
-import AVService from './AVService.ios'
 
-const { musicSelect } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
@@ -102,25 +99,18 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
-      musicInfo: {},
-      musicOn: {},
-      setMusic: false,
-
+      musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
   startExportVideo() {
+    console.log(this.state.startExportVideo);
     if (this.state.startExportVideo) {
       return;
     }
-    this.pauseMusic(this.state.musicOn)
     this.setState({ startExportVideo: true });
   }
-  async pauseMusic(song) {
-    console.info('暂停音乐', song);
-    await AVService.pauseMusic(song.songID);
 
-  }
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
     // console.log('1231', event);
@@ -132,10 +122,10 @@ export default class StoryEditor extends Component<Props, State> {
       // 
       let type = outputPath.split('.')
       uploadFile.push({
-        type: `video/${type[type.length - 1]}`,
+        Type: `video/${type[type.length - 1]}`,
         path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
         size: 0,
-        name: outputPath
+        Name: outputPath
       })
 
       this.sendUploadFile(uploadFile)
@@ -168,7 +158,7 @@ export default class StoryEditor extends Component<Props, State> {
       RNEditViewManager.stop()
     }
     // 结束编辑页面
-    console.info('拍摄编辑销毁');
+    console.log('拍摄编辑销毁');
     this.setState = () => false;
   }
 
@@ -207,13 +197,12 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.state.setMusic ? musicSelect : this.props.videomusicIcon
-          : this.props.musicRevampImage, 'onPress': () => {
-            if (this.props.fileType == 'video') {
+        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
+          if (this.props.fileType == 'video') {
 
-              this.setState({ musicOpen: !musicOpen })
-            }
-          },
+            this.setState({ musicOpen: !musicOpen })
+          }
+        },
       },
       // 'Aa': 
       { 'img': this.props.AaImage, 'onPress': () => { } }
@@ -300,7 +289,6 @@ export default class StoryEditor extends Component<Props, State> {
       </View >
     );
   }
-
 
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
@@ -399,16 +387,7 @@ export default class StoryEditor extends Component<Props, State> {
 
 
                 this.setState({ musicInfo: data })
-              }}
-              setMusicState={this.state.setMusic}
-              setMusic={(data) => {
-                this.setState({ setMusic: data })
-              }}
-              getMusicOn={(data) => {
-
-                this.setState({ musicOn: data })
-              }}
-            />
+              }} />
             :
             this.renderBottom()}
 

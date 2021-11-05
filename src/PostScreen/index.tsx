@@ -21,14 +21,14 @@ import { useSelector } from 'react-redux'
 import {
   setSelectMultiple,
   setMultipleData
-} from './actions/post';
+} from '../actions/post';
 import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
-import AVService from './AVService.ios';
-import ImageCropper from './react-native-simple-image-cropper/src';
-import PostEditor from "./PostEditor"
+import AVService from '../AVService.ios';
+import ImageCropper from '../react-native-simple-image-cropper/src';
+import PostEditor from "../PostEditor"
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 
@@ -592,7 +592,6 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener("change", this._handleAppStateChange)
-      this.getPhotos();
 
     this.getPhotoFromCache()
 

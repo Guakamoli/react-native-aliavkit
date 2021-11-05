@@ -182,6 +182,8 @@ const PostEditor = (props) => {
     const {
        params 
     } = props;
+    console.info(props.params.cropDataResult, `sslkdfkjsdf`, props.params.cropDataRow)
+
     if (!params) return null
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
@@ -241,13 +243,22 @@ const PostEditor = (props) => {
     if (event.exportProgress === 1) {
       const cropData = props.params.cropDataResult
       let outputPath = event.outputPath;
-
+      const Wscale = 1080 / props.params.cropDataRow.srcSize.width
+      const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+      console.info({
+        source: `file://${outputPath}`,
+        cropOffsetX: cropData.offset.x,
+        cropOffsetY: cropData.offset.y * Hscale,
+        cropWidth: cropData.size.width * Wscale,
+        cropHeight: cropData.size.height * Wscale,
+        duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
+      }, 'props.params.cropDataRow', props.params.cropDataRow, 'cropData', cropData)
       outputPath = await AVService.crop({
         source: `file://${outputPath}`,
         cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y,
-        cropWidth: cropData.size.width,
-        cropHeight: cropData.size.height,
+        cropOffsetY: cropData.offset.y * Hscale,
+        cropWidth: cropData.size.width * Wscale,
+        cropHeight: cropData.size.height * Wscale,
         duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
       });
 
@@ -271,21 +282,24 @@ const PostEditor = (props) => {
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
     const top =props.params.cropDataRow.positionY
+
     const width1 =props.params.cropDataRow.fittedSize.width
     const height1 =props.params.cropDataRow.fittedSize.height
     return (
       <View style={{
-        // alignItems: 'center',
+        alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor:"red",
         width: width,
         height: width,
         overflow:"hidden"
       }}>
           <View style={{
-       
-            // transform:[{
-            //   translateY: top
-            // }]
+          width: width1,
+          height: height1,
+            transform:[{
+              translateY:top
+            }]
           }}
           >
         <VideoEditor
