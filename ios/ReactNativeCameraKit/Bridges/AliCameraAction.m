@@ -41,27 +41,17 @@
 @property (nonatomic, readwrite) BOOL isRecording;
 @property (nonatomic, strong) AliyunDownloadManager *downloadManager;
 @property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //current face paster
+@property (nonatomic) CGRect previewRect;
 
 @end
 
 @implementation AliCameraAction
 
-static AliCameraAction *_instance = nil;
-
-+ (AliCameraAction *)action
+- (instancetype)initWithPreviewFrame:(CGRect)previewFrame
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _instance = [[AliCameraAction alloc] init];
-    });
-    return _instance;
-}
-
-- (instancetype)init
-{
-    self = [super init];
-    if(self){
+    if (self = [super init]) {
         [self setupDefault];
+        self.previewRect = previewFrame;
     }
     return self;
 }
@@ -82,7 +72,7 @@ static AliCameraAction *_instance = nil;
 {
     if (!_recorder) {
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
-        _recorder.preview = [[UIView alloc] initWithFrame:[self previewFrame]];
+        _recorder.preview = [[UIView alloc] initWithFrame:self.previewRect];
         _recorder.outputType = AliyunIRecorderVideoOutputPixelFormatType420f;//SDK only support YUV
         _recorder.useFaceDetect = YES;
         _recorder.faceDetectCount = 2;
@@ -490,15 +480,15 @@ static AliCameraAction *_instance = nil;
 }
 
 ///calculate preview frame
-- (CGRect)previewFrame
-{
-    CGFloat ratio = self.mediaConfig.outputSize.width / self.mediaConfig.outputSize.height;
-    CGRect finalFrame = CGRectMake(0, NoStatusBarSafeTop+44+10, ScreenWidth, ScreenWidth /ratio);
-    if ([self.mediaConfig mediaRatio] == AliyunMediaRatio9To16){
-        finalFrame =CGRectMake((ScreenWidth - ScreenHeight * ratio)/2.f , 0, ScreenHeight * ratio, ScreenHeight);
-    }
-    return finalFrame;
-}
+//- (CGRect)previewFrame
+//{
+//    CGFloat ratio = self.mediaConfig.outputSize.width / self.mediaConfig.outputSize.height;
+//    CGRect finalFrame = CGRectMake(0, NoStatusBarSafeTop+44+10, ScreenWidth, ScreenWidth /ratio);
+//    if ([self.mediaConfig mediaRatio] == AliyunMediaRatio9To16){
+//        finalFrame =CGRectMake((ScreenWidth - ScreenHeight * ratio)/2.f , 0, ScreenHeight * ratio, ScreenHeight);
+//    }
+//    return finalFrame;
+//}
 
 
 @end

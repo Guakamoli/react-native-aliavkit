@@ -47,6 +47,8 @@ AliyunCropDelegate
     BOOL _prePlaying;
     AliyunCrop *_musicCrop;
     BOOL _isPresented;
+    CGFloat _editWidth;
+    CGFloat _editHeight;
 }
 @property(nonatomic, assign) CGSize inputOutputSize;
 @property(nonatomic, assign) CGSize outputSize;
@@ -72,8 +74,7 @@ AliyunCropDelegate
 @property (nonatomic, copy) NSDictionary *musicInfo;
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
-@property (nonatomic, strong) NSNumber *editWidth;
-@property (nonatomic, strong) NSNumber *editHeight;
+@property (nonatomic, strong) NSDictionary *editStyle;
 
 @end
 
@@ -191,17 +192,17 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
-        if (_editWidth.floatValue > [UIScreen mainScreen].bounds.size.width) {
+        if (_editWidth > [UIScreen mainScreen].bounds.size.width) {
             frame.size.width = [UIScreen mainScreen].bounds.size.width;
-            if (_editHeight.floatValue == _editWidth.floatValue) {
+            if (_editHeight == _editWidth) {
                 frame.size.height = [UIScreen mainScreen].bounds.size.width;
             } else {
                 frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
             }
         }
         else {
-            frame.size.width = _editWidth.floatValue > 0.0 ? _editWidth.floatValue : [UIScreen mainScreen].bounds.size.width;
-            frame.size.height = _editHeight.floatValue > 0.0 ? _editHeight.floatValue : [UIScreen mainScreen].bounds.size.width * factor;
+            frame.size.width = _editWidth > 0.0 ? _editWidth : [UIScreen mainScreen].bounds.size.width;
+            frame.size.height = _editHeight > 0.0 ? _editHeight : [UIScreen mainScreen].bounds.size.width * factor;
         }
         _preview = [[UIView alloc] initWithFrame:frame];
         _preview.backgroundColor = [UIColor lightGrayColor];
@@ -312,6 +313,14 @@ AliyunCropDelegate
 }
 
 #pragma mark - Setter
+
+- (void)setEditStyle:(NSDictionary *)editStyle
+{
+    if (_editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
+        _editWidth = [[editStyle valueForKey:@"width"] floatValue];
+        _editHeight = [[editStyle valueForKey:@"height"] floatValue];
+    }
+}
 
 - (void)setImagePath:(NSString *)imagePath
 {

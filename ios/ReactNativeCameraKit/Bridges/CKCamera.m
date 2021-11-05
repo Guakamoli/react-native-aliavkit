@@ -66,6 +66,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
+    CGFloat _previewWidth;
+    CGFloat _previewHeight;
+    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -87,7 +90,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
-
+@property (nonatomic, strong) NSDictionary *cameraStyle;
 @end
 
 @implementation CKCamera
@@ -129,13 +132,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     
 }
 
-- (AliCameraAction *)cameraAction {
-    if (!_cameraAction) {
-        _cameraAction = [AliCameraAction action];
-    }
-    return _cameraAction;
-}
-
 - (instancetype)init
 {
     if (self = [super init]) {
@@ -151,6 +147,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 #pragma mark - Setter
+
+- (void)setCameraStyle:(NSDictionary *)cameraStyle
+{
+    if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
+        CGFloat previewWidth = [[cameraStyle valueForKey:@"width"] floatValue];
+        CGFloat previewHeight = [[cameraStyle valueForKey:@"height"] floatValue];
+        self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
+    }
+}
+
 - (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
 {
     if (normalBeautyLevel != _normalBeautyLevel) {

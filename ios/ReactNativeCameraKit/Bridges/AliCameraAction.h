@@ -24,7 +24,8 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 @property (nonatomic, readonly) AVCaptureDevicePosition devicePositon;
 @property (nonatomic, readonly) BOOL isRecording;
-+ (AliCameraAction *)action;
+
+- (instancetype)initWithPreviewFrame:(CGRect)previewFrame;
 
 /// take still image
 - (void)takePhotos:(void (^)(NSData *imageData))handler;
