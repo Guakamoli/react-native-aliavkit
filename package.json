@@ -21,6 +21,9 @@
   },
   "main": "src/index.js",
   "dependencies": {
+    "@react-native-community/async-storage": "1.12.1",
+    "react-redux": "7.2.4",
+    "redux": "4.1.0",
     "@react-native-community/image-editor": "^2.3.0",
     "@react-navigation/native-stack": "^6.2.5",
     "react-native-image-filter-kit": "^0.8.0",
@@ -60,6 +63,9 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
+    "@react-native-community/async-storage": "1.12.1",
+    "react-redux": "7.2.4",
+    "redux": "4.1.0",
     "@react-native-community/cameraroll": "Guakamoli/react-native-cameraroll#feat/request-photo-access",
     "@react-navigation/native": "6.0.2",
     "@react-navigation/stack": "6.0.7",

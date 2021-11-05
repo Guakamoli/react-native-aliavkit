@@ -4,13 +4,14 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
+  // Pressable,
   Image,
   Dimensions,
   Platform,
   Animated,
   FlatList,
   Easing,
+  Pressable,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
@@ -24,6 +25,7 @@ import CameraRoll from '@react-native-community/cameraroll';
 import StoryEditor from './StoryEditor';
 import StoryMusic from './StoryMusic';
 import AVService from './AVService.ios';
+import { GaussianBlur, BoxBlur } from 'react-native-image-filter-kit';
 
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -41,7 +43,7 @@ const CameraHeight = height - 100;
 const stateAttrsUpdate= [
   'pasterList', 'facePasterInfo', 'showBeautify', 
 'normalBeautyLevel', 'cameraType', 'ShootSuccess',
- 'startShoot', 'flag', 'showCamera']
+ 'startShoot', 'flag', 'showCamera', 'relaloadFlag']
 
 export enum CameraType {
   Front = 'front',
@@ -123,7 +125,7 @@ type State = {
 const TestComponent = () => {
   return (
     <>
-      <TouchableOpacity
+      <Pressable
         style={{
           width: 80,
           height: 80,
@@ -138,7 +140,7 @@ const TestComponent = () => {
         }}
       >
         <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
-      </TouchableOpacity>
+      </Pressable>
     </>
   );
 };
@@ -176,6 +178,71 @@ const ProgressCircleWrapper = (props) => {
     />
   );
 };
+class RenderCamera extends Component {
+  constructor(props) {
+    super(props)
+    this.state= {
+      
+    }
+  }
+  shoot = () => {
+    if (this.state.previewImage?.uri) return (
+      <View style={{position:"absolute", zIndex:0, }}>
+      <Image source={{uri:this.state.previewImage?.uri}} style={{width: width,height:1000}} resizeMode={'repeat'}/>
+    </View>
+    )
+
+    return (
+      <>
+   
+      <View style={{position:"absolute", zIndex:1}}>
+      <Camera
+        ref={(cam) => (this.camera = cam)}
+        style={{ height: CameraHeight }}
+        cameraType={this.state.cameraType}
+        flashMode={this.state.flashData.mode}
+        torchMode={this.state.torchMode ? 'on' : 'off'}
+        ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
+        saveToCameraRoll={false}
+        showFrame={this.props.showFrame}
+        scanBarcode={this.props.scanBarcode}
+        laserColor={this.props.laserColor}
+        frameColor={this.props.frameColor}
+        onReadCode={this.props.onReadCode}
+        normalBeautyLevel={this.state.normalBeautyLevel * 10}
+        onRecordingProgress={this._onRecordingDuration}
+        facePasterInfo={this.state.facePasterInfo}
+      />
+      </View>
+      </>
+    );
+  };
+  render (){
+  return (
+    <View style={[styles.cameraContainer]}>
+      {this.isCaptureRetakeMode() ? (
+        <Image style={{ flex: 1, justifyContent: 'flex-end' }} source={{ uri: this.state.imageCaptured }} />
+      ) : (
+        <Pressable
+          style={[
+            Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end' },
+            { position: 'relative', borderRadius: 20 },
+          ]}
+          onPress={() => {
+            this.setState({ showFilterLens: false, showBeautify: false });
+          }}
+          activeOpacity={1}
+          disabled={!this.state.showBeautify}
+        >
+          {this.renderLeftButtons()}
+          {shoot()}
+        </Pressable>
+      )}
+    </View>
+  )
+}
+}
+// class C
 export default class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
@@ -257,6 +324,8 @@ export default class CameraScreen extends Component<Props, State> {
 
       // 音乐打开
       musicOpen: false,
+      previewImage: {},
+      relaloadFlag : null
     };
   }
 
@@ -294,13 +363,33 @@ export default class CameraScreen extends Component<Props, State> {
     // }
   }
   // ？？？？
+  shotPreview = async ()=>{
+    try {
+      const image = await this.camera.capture();
+      console.info(image,'iasdiadfidifi')
+      this.setState({
+        previewImage: image
+      })
+      setTimeout(()=>{
+        this.setState({
+          relaloadFlag: Math.random()
+        })
+      },0)
+    }catch (e){
+
+    }
+ 
+  }
   shouldComponentUpdate (nextProps, nextState) {
     const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
 		if (stateUpdated) {
 			return true;
 		}
-    console.info(nextProps.type , this.props.type)
     if (nextProps.type !== this.props.type) {
+      if (nextProps.type === 'post') {
+        this.shotPreview()
+      
+      }
       setTimeout(()=>{
         this.setState({
           showCamera: nextProps.type ==='story'? true: false
@@ -313,6 +402,10 @@ export default class CameraScreen extends Component<Props, State> {
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (!nextProps.isDrawerOpen) {
+        this.shotPreview()
+
+      }
       setTimeout(()=>{
         this.setState({
           showCamera: nextProps.isDrawerOpen && this.props.type ==='story'? true: false
@@ -341,22 +434,22 @@ export default class CameraScreen extends Component<Props, State> {
           {/* {this.state.startShoot || this.state.ShootSuccess ? null : (
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
               <View style={{ position: 'relative' }}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     this.props.goPost();
                   }}
                 >
                   <Text style={styles.videoTitle}>作品</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.setState({})}>
+                </Pressable>
+                <Pressable onPress={() => this.setState({})}>
                   <Text style={styles.snapshotTitle}>快拍</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           )} */}
           {/* 相机翻转 */}
 
-          <TouchableOpacity
+          <Pressable
             style={{
               position: 'absolute',
               right: 16,
@@ -365,7 +458,7 @@ export default class CameraScreen extends Component<Props, State> {
             onPress={() => this.onSwitchCameraPressed()}
           >
             <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-          </TouchableOpacity>
+          </Pressable>
         </>
       </View>
     );
@@ -376,7 +469,7 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <>
         {/* 取消 */}
-        <TouchableOpacity
+        <Pressable
           onPress={() => {
             
             this.props.goback();
@@ -386,18 +479,18 @@ export default class CameraScreen extends Component<Props, State> {
           style={styles.closeBox}
         >
           <Image style={styles.closeIcon} source={this.props.closeImage} resizeMode='contain' />
-        </TouchableOpacity>
+        </Pressable>
         <View style={styles.leftIconBox}>
           {/* 音乐 */}
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               this.setState({ musicOpen: false });
             }}
           >
             <Image style={styles.musicIcon} source={this.props.musicImage} resizeMode='contain' />
-          </TouchableOpacity>
+          </Pressable>
           {/* 美颜 */}
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               this.setState({ showBeautify: !this.state.showBeautify });
             }}
@@ -407,7 +500,7 @@ export default class CameraScreen extends Component<Props, State> {
               source={this.state.showBeautify ? this.props.selectBeautify : this.props.beautifyImage}
               resizeMode='contain'
             />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </>
     );
@@ -420,26 +513,41 @@ export default class CameraScreen extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const shoot = () => {
-      if (!this.state.showCamera  ) return null
-
+  
       return (
-        <Camera
-          ref={(cam) => (this.camera = cam)}
-          style={{ height: CameraHeight }}
-          cameraType={this.state.cameraType}
-          flashMode={this.state.flashData.mode}
-          torchMode={this.state.torchMode ? 'on' : 'off'}
-          ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
-          saveToCameraRoll={false}
-          showFrame={this.props.showFrame}
-          scanBarcode={this.props.scanBarcode}
-          laserColor={this.props.laserColor}
-          frameColor={this.props.frameColor}
-          onReadCode={this.props.onReadCode}
-          normalBeautyLevel={this.state.normalBeautyLevel * 10}
-          onRecordingProgress={this._onRecordingDuration}
-          facePasterInfo={this.state.facePasterInfo}
-        />
+        <>
+           <View style={{position:"absolute", zIndex:0,width: width,top:0 }}>
+           <BoxBlur
+              image={
+            
+                <Image source={{uri:this.state.previewImage?.uri}} style={{width: width,height:CameraHeight - 123}} resizeMode={'cover'}/>
+              }
+              radius={70}
+            />
+      </View>
+        <View style={{position:"absolute", zIndex:1}}>
+          {this.state.showCamera? (
+     <Camera
+     ref={(cam) => (this.camera = cam)}
+     style={{ height: CameraHeight }}
+     cameraType={this.state.cameraType}
+     flashMode={this.state.flashData.mode}
+     torchMode={this.state.torchMode ? 'on' : 'off'}
+     ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
+     saveToCameraRoll={false}
+     showFrame={this.props.showFrame}
+     scanBarcode={this.props.scanBarcode}
+     laserColor={this.props.laserColor}
+     frameColor={this.props.frameColor}
+     onReadCode={this.props.onReadCode}
+     normalBeautyLevel={this.state.normalBeautyLevel * 10}
+     onRecordingProgress={this._onRecordingDuration}
+     facePasterInfo={this.state.facePasterInfo}
+   />
+          ): null}
+   
+        </View>
+        </>
       );
     };
 
@@ -448,7 +556,7 @@ export default class CameraScreen extends Component<Props, State> {
         {this.isCaptureRetakeMode() ? (
           <Image style={{ flex: 1, justifyContent: 'flex-end' }} source={{ uri: this.state.imageCaptured }} />
         ) : (
-          <TouchableOpacity
+          <Pressable
             style={[
               Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end' },
               { position: 'relative', borderRadius: 20 },
@@ -461,7 +569,7 @@ export default class CameraScreen extends Component<Props, State> {
           >
             {this.renderLeftButtons()}
             {shoot()}
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
     );
@@ -477,10 +585,13 @@ export default class CameraScreen extends Component<Props, State> {
   //  拍摄按钮
   getPasterInfos = async ()=> {
     const pasters = await AVService.getFacePasterInfos({});
-    // http  -> https
-    pasters.map((item) => {
+    pasters.forEach((item, index) => {
+      if (index == 0) {
+        return
+      }
       item.icon = item.icon.replace('http://', 'https://');
-    });
+      item.url = item.url.replace('http://', 'https://');
+    })
     pasters.unshift({ eid: 0 });
     this.setState({
       pasterList: pasters,
@@ -587,7 +698,7 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View>
         {this.state.facePasterInfo.eid != 0 && (
-          <TouchableOpacity
+          <Pressable
             style={{ position: 'absolute', bottom: 100, left: (width - 32) / 2 }}
             onPress={() => {
               this.FlatListRef?.snapToItem?.(0);
@@ -595,7 +706,7 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           >
             <Image source={this.props.giveUpImage} style={{ width: 32, height: 32, zIndex: 1 }} />
-          </TouchableOpacity>
+          </Pressable>
         )}
         <Carousel
           ref={(flatList) => {
@@ -637,13 +748,13 @@ export default class CameraScreen extends Component<Props, State> {
               this.FlatListRef?.snapToItem?.(index);
             };
             return (
-              <TouchableOpacity delayLongPress={500} onPress={toItem} style={item.eid == 0 && { opacity: 0 }}>
+              <Pressable delayLongPress={500} onPress={toItem} >
                 <View style={{ position: 'relative' }}>
                   <View style={[styles.propStyle, img]}>
                     <Image style={img} source={{ uri: item.icon }} />
                   </View>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           }}
         >
@@ -657,7 +768,7 @@ export default class CameraScreen extends Component<Props, State> {
               },
             ]}
           >
-            <TouchableOpacity
+            <Pressable
               style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
               delayLongPress={500}
               // 长按
@@ -721,19 +832,7 @@ export default class CameraScreen extends Component<Props, State> {
                 }
               }}
             >
-              {/* <View style={styles.captureButtonImage}> */}
-              {/* 圆环图片 */}
-              {/* <View
-                style={{
-                  borderRadius: circleSize,
-                  borderWidth: 4,
-                  width: circleSize,
-                  height: circleSize,
-                  borderColor: '#fff',
-                  zIndex: 1
-                }}
-              >
-              </View> */}
+    
               <Image
                 source={this.props.captureButtonImage}
                 style={{ width: circleSize, height: circleSize, zIndex: 1 }}
@@ -748,6 +847,7 @@ export default class CameraScreen extends Component<Props, State> {
                 }}
               >
                 {pasterList.map((i, index) => {
+                  console.info("jasjdjasdjajsdjasjd")
                   return (
                     <View
                       key={index}
@@ -792,7 +892,7 @@ export default class CameraScreen extends Component<Props, State> {
                 })}
               </Animated.View>
               {/* </View> */}
-            </TouchableOpacity>
+            </Pressable>
           </Animated.View>
         </Carousel>
         {/* 临时方案  安卓 拍摄不会触发 */}
@@ -851,7 +951,7 @@ export default class CameraScreen extends Component<Props, State> {
         <View style={styles.beautifyBoxContent}>
           {[0, 1, 2, 3, 4, 5].map((item, index) => {
             return (
-              <TouchableOpacity
+              <Pressable
                 onPress={() => {
                   this.setState({ normalBeautyLevel: item });
                 }}
@@ -860,7 +960,7 @@ export default class CameraScreen extends Component<Props, State> {
                 <View style={[styles.beautifySelect, this.state.normalBeautyLevel === item && styles.beautifySelecin]}>
                   <Text style={styles.beautifySelectTitle}>{item}</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </View>

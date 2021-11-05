@@ -17,6 +17,11 @@ import {
   Pressable,
   AppState,
 } from 'react-native';
+import { useSelector } from 'react-redux'
+import {
+  setSelectMultiple,
+  setMultipleData
+} from './actions/post';
 import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -24,11 +29,16 @@ import { FlatGrid } from 'react-native-super-grid';
 import AVService from './AVService.ios';
 import ImageCropper from './react-native-simple-image-cropper/src';
 import PostEditor from "./PostEditor"
+import { connect } from 'react-redux';
+import Animated from 'react-native-reanimated';
+
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
+let clickItemLock =false
 
 const photosItem = width / 4;
-
+let prevClickCallBack = null
+let multipleData = []
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
   multipleBtnImage: any;
@@ -47,7 +57,7 @@ type State = {
 
   fileSelectType: string;
   multipleData: any;
-  startmMltiple: boolean;
+  selectMultiple: boolean;
   scrollViewWidth: boolean;
   photoAlbum: any;
   photoAlbumselect: any;
@@ -75,9 +85,70 @@ let trimVideoData = null;
 let cropData = {};
 let cropDataRow = {};
 
+class MultipleSelectButton extends Component {
 
+  pressMultiple = () => {
+    // 点击在这里修改数值
+    this.props.setSelectMultiple()
+  }
+  render() {
+    return (
+      <Pressable
+        onPress={this.pressMultiple}
+      >
+        <Image
+          style={[styles.multipleBtnImage, { marginRight: 10 }]}
+          source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
+          resizeMode='contain'
+        />
+      </Pressable>
+    )
+  }
+}
+const MtbMapStateToProps = state => ({
+  selectMultiple: state.shootPost.selectMultiple,
+});
+const MtbMapDispatchToProps = dispatch => ({
+  setSelectMultiple: () => dispatch(setSelectMultiple()),
+  setMultipleData: params => {
+    multipleData = params
+
+<<<<<<< HEAD
 const PostHead = React.memo((props) => {
   const { closePng, postEditor, fileSelectType, fileEditor, goback } = props
+=======
+    dispatch(setMultipleData(params))
+  },
+});
+MultipleSelectButton = connect(MtbMapStateToProps, MtbMapDispatchToProps)(MultipleSelectButton)
+const PostFileUploadHead = React.memo((props) => {
+  return (
+    <View
+      style={{
+        height: 50,
+        backgroundColor: 'black',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+      }}
+    >
+      <TouchableOpacity>
+        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
+      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
+
+        <Image style={styles.multipleBtnImage} source={props.postCameraImage} resizeMode='contain' />
+      </View>
+    </View>
+  );
+})
+
+
+const PostHead = React.memo((props) => {
+  const { closePng, postEditor, goback } = props
+>>>>>>> 0351223 (修正post的编辑页面)
   return (
     <View
       style={{
@@ -93,6 +164,15 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={async () => {
           goback();
+<<<<<<< HEAD
+=======
+        }}
+        style={{
+          height: 30,
+          width: 40,
+
+          justifyContent: "center",
+>>>>>>> 0351223 (修正post的编辑页面)
         }}
       >
         <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
@@ -102,27 +182,78 @@ const PostHead = React.memo((props) => {
 
       <Pressable
         onPress={postEditor}
+        style={{
+
+          height: 30,
+          width: 40,
+
+          justifyContent: "center",
+          alignItems: "flex-end"
+        }}
       >
         <Text style={styles.continueText}>继续</Text>
       </Pressable>
     </View>
   );
 })
-const PostContent = (props) => {
-  const [cropScale, setCropScale] = useState(0.9);
-  const { multipleData, CameraRollList, fileSelectType, videoFile } = props;
-  const imageItem = multipleData.length > 0 ? multipleData[multipleData.length - 1]?.image : CameraRollList[0]?.image;
-  const toggleCropWidth = () => {
-    if (!cropDataRow.scale || cropDataRow.scale < 1 || cropScale === 0.9) {
-      setCropScale(1);
+class PostContent extends Component {
+  constructor (props){
+    super(props)
+    this.state= {
+      cropScale:  0.9,
+      videoPaused: false
+    }
+  }
+  shouldComponentUpdate(nextProps, nextState){
+    if (nextProps.multipleData !== this.props.multipleData) {
+      this.setState({
+        videoPaused: true
+      })
+      return true
+    }
+    if (nextState.cropScale !== this.state.cropScale) {
+      return true
+    } 
+    if (nextState.videoPaused !== this.state.videoPaused) {
+      return true
+    } 
+    
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      this.setState({
+        videoPaused: !nextProps.isDrawerOpen
+      })
+      return false
+    }
+    if (nextProps.postEditorParams !== this.props.postEditorParams) {
+      console.info("修改")
+      setTimeout(() => {
+        this.setState({
+          videoPaused: !!this.props.postEditorParams
+        })
+      }, 0);
+   
+      return false
+    }
+    
+    return false
+  }
+  toggleCropWidth = () => {
+    if (!cropDataRow.scale || cropDataRow.scale < 1 || this.state.cropScale === 0.9) {
+      this.setState({
+        cropScale: 1
+      });
     } else {
-      setCropScale(0.9);
+      this.setState({
+        cropScale: 0.9
+      });
     }
   };
-  if (videoFile) {
-    console.info(imageItem, 'imageItem');
-  }
-  if (!imageItem && !videoFile) return null;
+
+  render (){
+  if (!this.props.multipleData[0]) return null
+    const imageItem = this.props.multipleData[this.props.multipleData.length - 1].image
+    const {cropScale} = this.state
+  if (!imageItem) return null;
   return (
     <View
       style={{
@@ -146,7 +277,7 @@ const PostContent = (props) => {
           bottom: 20,
           zIndex: 99,
         }}
-        onPress={toggleCropWidth}
+        onPress={this.toggleCropWidth}
       >
         <Image
           style={[
@@ -155,7 +286,7 @@ const PostContent = (props) => {
               height: 31,
             },
           ]}
-          source={props.changeSizeImage}
+          source={this.props.changeSizeImage}
         />
       </TouchableOpacity>
 
@@ -165,15 +296,16 @@ const PostContent = (props) => {
           width: '100%',
         }}
       >
-        <View style={{ backgroundColor: 'red' }}>
+        <View style={{ backgroundColor: 'black' }}>
           <ImageCropper
             imageUri={imageItem?.uri}
-            videoFile={videoFile}
-            videoPaused={props.videoPaused}
+            videoFile={imageItem?.videoFile}
+            videoPaused={this.state.videoPaused}
             srcSize={{
               width: imageItem.width,
               height: imageItem.height,
             }}
+            disablePin={!!imageItem?.videoFile}
             cropAreaWidth={width}
             cropAreaHeight={width}
             containerColor='black'
@@ -188,58 +320,62 @@ const PostContent = (props) => {
       </View>
     </View>
   );
-};
-let firstJump = false;
-export default class CameraScreen extends Component<Props, State> {
-  camera: any;
-  myRef: any;
-  editor: any;
-
-  constructor(props) {
-    super(props);
-    this.myRef = React.createRef();
-    this.appState = ''
-    this.cropData = {};
-    this.state = {
-      postEditorParams: null,
-      CameraRollList: [],
-      fileSelectType: '',
-      multipleData: [],
-
-      startmMltiple: false,
-      photoAlbum: [],
-      photoAlbumselect: {},
-      videoFile: '',
-      scrollViewWidth: true,
-
-      fileEditor: false,
-
-      trimmerRightHandlePosition: 1000,
-      videoTime: 60000,
-      scrubberPosition: 0,
-      page: "main",
-      cropOffset: [],
-      cropOffsetX: 0,
-      cropOffsetY: 0,
-      videoPaused: false,
-      siwtchlibrary: false,
-    };
   }
+}
+const PostContentMapStateToProps = state => ({
+  multipleData: state.shootPost.multipleData,
+});
+
+PostContent = connect(PostContentMapStateToProps)(PostContent)
+class GridItemCover extends Component {
+  constructor(props) {
+    super(props)
+    this.animteRef = new Animated.Value(this.props.index ===0 ? 0.5: 0)
+    this.state = {
+      active: this.props.index === 0,
+    }
+    if (this.props.index === 0) {
+      prevClickCallBack = ()=>{
+        this.setState({active:false})
+        this.animteRef.setValue(0)
+      }
+    }
+  }
+<<<<<<< HEAD
   playVideo = () => {
     this.setState({ videoPaused: false });
-  }
-  postEditor = async () => {
-    const {
-      multipleData,
-      fileSelectType,
-      cropOffsetX,
-      cropOffsetY,
+=======
+  shouldComponentUpdate(nextProps, nextState) {
 
-      CameraRollList,
-    } = this.state;
-    if (multipleData.length < 1) {
-      return this.myRef.current.show('请至少选择一个上传文件', 2000);
+    if (nextProps.selectMultiple !== this.props.selectMultiple) {
+      return true
     }
+    if (nextState.active !== this.state.active){
+      return true
+    }
+
+    return false
+>>>>>>> 0351223 (修正post的编辑页面)
+  }
+  clickItem = async () => {
+    // if (clickItemLock) return 
+    // clickItemLock = true
+    const {item} = this.props
+    const { type } = item;
+    cropDataRow = {};
+    let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image'
+    const itemCopy= {...item}
+    if (fileType === 'video') {
+      // 这里验证一下是否可以用
+      const localUri = await this.props.getVideFile(fileType, item);
+      if (!localUri) return 
+     
+      itemCopy.image.videoFile = localUri
+      this.props.setMultipleData([itemCopy])
+    } else {
+      this.props.setMultipleData([itemCopy])
+    }
+<<<<<<< HEAD
     try {
 
       const imageItem =
@@ -323,17 +459,184 @@ export default class CameraScreen extends Component<Props, State> {
 
       console.log("App has come to the foreground!");
     }
+=======
+    prevClickCallBack?.()
+    prevClickCallBack = ()=>{
+      this.setState({active:false})
+      this.animteRef.setValue(0)
+    }
 
-    this.appState = nextAppState;
+ 
+    if (this.props.selectMultiple) {
+      this.animteRef.setValue(this.state.active? 0: 0.5)
+    } else {
+      this.animteRef.setValue(0.5)
+    }
+    this.setState({
+      active: !this.state.active
+    });
+    // setTimeout(() => {
+    //   clickItemLock = false
+    // }, 60);
+  }  
+  render() {
+    const {item} = this.props
+    const { type } = item;
 
+    return (
+      <TouchableOpacity
+        onPress={this.clickItem}
+        activeOpacity={0.9}
+        style={{
+          width: photosItem,
+          height: photosItem,
+          position:"absolute",
+          zIndex: 1
+        }}
+      >
+        <>
+        <View
+          style={{
+            borderRadius: 10,
+            borderWidth: 2,
+            width: 20,
+            height: 20,
+            borderColor: 'white',
+            overflow: 'hidden',
+            position: 'absolute',
+            zIndex: 99,
+            right: 5,
+            top: 5,
+            display: this.props.selectMultiple? "flex": "none"
+
+          }}
+        >
+          <View
+            style={{
+
+              width: 18,
+              height: 18,
+              borderRadius: 20,
+              zIndex: 99,
+              backgroundColor: '#836BFF',
+              justifyContent: 'center',
+              alignItems: 'center',
+              display: this.state.active? "flex": "none"
+            }}
+          >
+
+          </View>
+        </View>
+        <Animated.View
+          style={[
+            {
+              width: photosItem,
+              height: photosItem,
+              position: 'absolute',
+              backgroundColor: '#fff',
+            },
+            { opacity: this.animteRef}
+          ]}
+        ></Animated.View>
+        </>
+      </TouchableOpacity>
+
+    )
+  }
+}
+
+
+const GIWMapStateToProps = state => ({
+  selectMultiple: state.shootPost.selectMultiple,
+  // multipleData: state.shootPost.multipleData,
+});
+const GIWMapDispatchToProps = dispatch => ({
+  setSelectMultiple: () => dispatch(setSelectMultiple()),
+  setMultipleData: params => {
+    multipleData = params
+
+    dispatch(setMultipleData(params))
+  },
+});
+GridItemCover = connect(GIWMapStateToProps, GIWMapDispatchToProps)(GridItemCover)
+class GridItem extends Component {
+  constructor(props) {
+    super(props)
+  }
+  render() {
+    const { item } = this.props
+    const { type, image } = item;
+    return (
+
+      <View>
+        <GridItemCover {...this.props} />
+        <Image
+          style={[
+            {
+              width: photosItem,
+              height: photosItem,
+            },
+>>>>>>> 0351223 (修正post的编辑页面)
+
+          ]}
+          source={{ uri: item.image.uri }}
+          resizeMode='cover'
+        />
+
+        {image.playableDuration ? (
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 12,
+              fontWeight: '400',
+              lineHeight: 17,
+              zIndex: 100,
+              position: 'absolute',
+              right: 8,
+              bottom: 7,
+            }}
+          >
+            {image.playableDurationFormat}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }
+}
+
+class PostFileUpload extends Component {
+  constructor(props) {
+    super(props)
+    this.appState = ''
+    this.state = {
+      CameraRollList: []
+    }
+  }
+  formatSeconds = (s) => {
+    let t = '';
+    if (s > -1) {
+      let min = Math.floor(s / 60) % 60;
+      let sec = s % 60;
+      if (min < 10) {
+        t += '0';
+      }
+      t += min + ':';
+      if (sec < 10) {
+        t += '0';
+      }
+      t += sec;
+    }
+    return t;
   };
   getPhotos = () => {
     //获取照片
+    clickItemLock = false
     let getPhotos = CameraRoll.getPhotos({
       first: 100,
       assetType: 'All',
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
     });
+    const { AsyncStorage } = this.props
     getPhotos.then(
 
       async (data) => {
@@ -342,21 +645,22 @@ export default class CameraScreen extends Component<Props, State> {
         var photos = [];
         for (var i in edges) {
           // ios文件
-          photos.push(edges[i].node);
+          const node = edges[i].node
+          node.image.playableDurationFormat = this.formatSeconds(Math.ceil(node.image.playableDuration ?? 0))
+          photos.push(node);
         }
-        console.log(photos[0]);
         let firstData = photos[0];
+        if (!multipleData[0]) {
+          this.props.setMultipleData([firstData])
+
+        }
+
+        if (AsyncStorage) {
+          await AsyncStorage.setItem("AvKitCameraRollList", JSON.stringify(photos))
+        }
         this.setState({
           CameraRollList: photos,
-          multipleData: [firstData],
-          fileSelectType: firstData?.type,
-          trimmerRightHandlePosition:
-            Math.ceil(firstData.image.playableDuration) < 300
-              ? Math.ceil(firstData.image.playableDuration) * 1000
-              : 300 * 1000,
-
-          videoTime: Math.ceil(firstData.image.playableDuration) * 1000,
-          videoFile: '',
+     
         });
       },
       function (err) {
@@ -364,36 +668,36 @@ export default class CameraScreen extends Component<Props, State> {
       },
     );
   }
+  _handleAppStateChange = (nextAppState) => {
+    if (
+      this.appState.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
+      clickItemLock = false
+      this.getPhotos()
+      // 在这里重新获取数据
+
+      console.log("App has come to the foreground!");
+    }
+
+    this.appState = nextAppState;
+
+  };
+  getVideFile = async (fileType, item) => {
+    if (fileType !== 'video') return '';
+    let myAssetId = item?.image?.uri.slice(5);
+    let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+    return localUri
+  };
   componentDidMount() {
-    // const { fileSelectType} =  this.state
     AppState.addEventListener("change", this._handleAppStateChange)
-    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
-    subscription = managerEmitter.addListener('cropProgress', (reminder) => {
-      console.log(reminder);
 
-      if (reminder.progress == 1 && this.state.fileSelectType === 'video' && !this.state.videoPaused) {
-        this.setState({ videoPaused: true });
+    this.getPhotoFromCache()
 
-        let trimmerRightHandlePosition = this.state.trimmerRightHandlePosition;
-        let videoTime = this.state.videoTime;
-        firstJump = true;
-        console.log('跳转了啊');
-
-        this.props.goPostEditor({
-          trimVideoData,
-          videoduration: videoTime,
-          trimmerRight: trimmerRightHandlePosition,
-          fileType: this.state.fileSelectType,
-          playVideo: () => {
-            this.setState({ videoPaused: false });
-          },
-        });
-      }
-      //
-    });
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
+<<<<<<< HEAD
       return true
     }
     if (nextState.multipleData !== this.state.multipleData) {
@@ -406,6 +710,8 @@ export default class CameraScreen extends Component<Props, State> {
       return true
     }
     if (nextState.page !== this.state.page) {
+=======
+>>>>>>> 0351223 (修正post的编辑页面)
       return true
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
@@ -420,16 +726,14 @@ export default class CameraScreen extends Component<Props, State> {
       }
       return false
     }
+
     return false
   }
   componentWillUnmount() {
-    console.log('销毁');
-    // 结束编辑页面
-    RNEditViewManager.stop();
-    this.setState = () => false;
     AppState.removeEventListener("change", this._handleAppStateChange)
 
   }
+<<<<<<< HEAD
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
@@ -496,32 +800,41 @@ export default class CameraScreen extends Component<Props, State> {
           t += '0';
         }
         t += sec;
+=======
+  getPhotoFromCache = async () => {
+    const { AsyncStorage } = this.props
+    if (AsyncStorage) {
+      let photos = await AsyncStorage.getItem("AvKitCameraRollList")
+      if (photos) {
+        photos = JSON.parse(photos)
+>>>>>>> 0351223 (修正post的编辑页面)
       }
-      return t;
-    };
-    const getVideFile = async (fileType, item) => {
-      if (fileType !== 'video') return '';
-      let myAssetId = item?.image?.uri.slice(5);
-      // 获取视频文件 url
-      // console.log(myAssetId, 'myAssetId');
+      if (photos) {
+        const firstData = photos[0]
+        if (!firstData) return
+        if (!multipleData[0]) {
+          this.props.setMultipleData([firstData])
 
-      let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+        }
+        this.setState({
+          CameraRollList: photos,
+          multipleData: [firstData],
+          fileSelectType: firstData?.type,
+          trimmerRightHandlePosition:
+            Math.ceil(firstData.image.playableDuration) < 300
+              ? Math.ceil(firstData.image.playableDuration) * 1000
+              : 300 * 1000,
 
-      this.setState({ videoFile: localUri });
-    };
+          videoTime: Math.ceil(firstData.image.playableDuration) * 1000,
+          videoFile: '',
+        });
+      }
 
+    }
+  }
+  render() {
     return (
       <>
-        <Toast
-          ref={this.myRef}
-          position='top'
-          positionValue={300}
-          fadeInDuration={1050}
-          fadeOutDuration={800}
-          opacity={0.8}
-        />
-        {this.postFileUploadHead()}
-        <StatusBar barStyle={'light-content'} />
         <View
           style={[
             { height: height * 0.4, backgroundColor: '#000' },
@@ -530,9 +843,14 @@ export default class CameraScreen extends Component<Props, State> {
         >
           <FlatGrid
             itemDimension={photosItem}
-            data={CameraRollList}
+            data={this.state.CameraRollList}
             spacing={0}
+            initialNumToRender={30}
+            maxToRenderPerBatch={30}
+            windowSize={3}
+            removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
+<<<<<<< HEAD
             renderItem={({ index, item }) => {
               const { type, image } = item;
               // const a =timestamp
@@ -683,14 +1001,131 @@ export default class CameraScreen extends Component<Props, State> {
             <Text style={{ color: '#7E7E7E', fontSize: 13, fontWeight: '400' }}> 快拍</Text>
           </TouchableOpacity>
         </View>
+=======
+            renderItem={(props) => {
+              return <GridItem {...props} getVideFile={this.getVideFile} />
+            }}
+          />
+        </View>
+
+>>>>>>> 0351223 (修正post的编辑页面)
       </>
     );
   }
+}
+const PFUMapStateToProps = state => ({
+  selectMultiple: state.shootPost.selectMultiple,
+});
+const PFUMapDispatchToProps = dispatch => ({
+  setMultipleData: params => {
+    multipleData = params
 
+    dispatch(setMultipleData(params))
+  },});
+PostFileUpload = connect(PFUMapStateToProps, PFUMapDispatchToProps)(PostFileUpload)
+export default class CameraScreen extends Component<Props, State> {
+  camera: any;
+  myRef: any;
+  editor: any;
+
+  constructor(props) {
+    super(props);
+    this.myRef = React.createRef();
+    this.appState = ''
+    this.cropData = {};
+    this.state = {
+      postEditorParams: null,
+      page: 'main',
+    };
+  }
+  playVideo = () => {
+    this.setState({ videoPaused: false });
+  }
+  postEditor = async () => {
+    if (multipleData.length < 1) {
+      return this.myRef.current.show('请至少选择一个上传文件', 2000);
+    }
+    try {
+      const imageItem = multipleData[multipleData.length - 1].image
+      const {type}  = multipleData[multipleData.length - 1]
+      const trimVideoData = await AVService.saveToSandBox({
+        path: imageItem.uri
+      })
+      // this.setState({ videoPaused: true });
+      if (trimVideoData) {
+        let trimmerRightHandlePosition = (Math.ceil(imageItem.playableDuration) < 300
+        ? Math.ceil(imageItem.playableDuration) * 1000
+        : 300 * 1000)
+        let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image'
+
+        let videoTime =  Math.ceil(imageItem.playableDuration) * 1000 ?? 0
+        const result = await ImageCropper.crop({
+          ...cropDataRow,
+          imageUri: imageItem.uri,
+          cropSize: {
+            width: width,
+            height: width,
+          },
+          cropAreaSize: {
+            width: width,
+            height: width,
+          },
+        });
+        this.setState({
+          postEditorParams: {
+            trimVideoData,
+            videoduration: videoTime,
+            trimmerRight: trimmerRightHandlePosition,
+            fileType,
+            cropDataRow: cropDataRow,
+            cropDataResult: result,
+            source: multipleData[0].image.uri,
+
+          },
+          videoPaused: true,
+          page: "eidt"
+        });
+        this.props.setType("edit")
+      }
+      return
+
+    } catch (e) {
+      console.info(e, '错误');
+    }
+  };
+
+
+
+  componentDidMount() {
+
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.postEditorParams !== this.state.postEditorParams) {
+      return true
+    }
+    if (nextState.page !== this.state.page) {
+      return true
+    }
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      return true
+    }
+    return false
+  }
+  componentWillUnmount() {
+    // 结束编辑页面
+    // RNEditViewManager.stop();
+
+  }
+  sendUploadFile(data) {
+    if (this.props.getUploadFile) {
+      this.props.getUploadFile(data);
+    }
+  }
   render() {
-    console.info("渲染了", this.state.page, this.state.postEditorParams)
     return (
       <>
+<<<<<<< HEAD
         {/* 相册内容切换 暂时屏蔽 */}
         {/* <Modal
             animationType="slide"
@@ -744,6 +1179,31 @@ export default class CameraScreen extends Component<Props, State> {
           {this.postFileUpload()}
         </View>
 
+=======
+        <StatusBar barStyle={'light-content'} />
+
+        <Toast
+          ref={this.myRef}
+          position='top'
+          positionValue={300}
+          fadeInDuration={1050}
+          fadeOutDuration={800}
+          opacity={0.8}
+        />
+        <View style={{ display: this.state.page === 'main' ? "flex" : "none" }}>
+          <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor} />
+          <PostContent
+            key={'PostContent'}
+            {...this.props}
+            postEditorParams={this.state.postEditorParams}
+
+          />
+          <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
+
+          <PostFileUpload {...this.props} />
+
+        </View>
+>>>>>>> 0351223 (修正post的编辑页面)
         {this.state.postEditorParams ? (
           <PostEditor {...this.props} params={this.state.postEditorParams} playVideo={this.playVideo} goback={
             () => {
@@ -753,9 +1213,12 @@ export default class CameraScreen extends Component<Props, State> {
             }
           } />
         ) : null}
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 0351223 (修正post的编辑页面)
       </>
     );
   }
