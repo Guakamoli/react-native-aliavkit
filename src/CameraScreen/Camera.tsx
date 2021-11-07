@@ -43,7 +43,7 @@ const stateAttrsUpdate = [
   'normalBeautyLevel', 'cameraType', 'ShootSuccess',
   'startShoot', 'flag', 'showCamera', 'relaloadFlag']
 
-class RenderswitchModule extends React.PureComponent {
+class RenderswitchModule extends React.Component {
   constructor(props) {
     super(props)
 
@@ -119,7 +119,7 @@ const RenderLeftButtons = React.memo((props) => {
   );
 })
 // 拍摄内容渲染
-class PreviewBack extends React.PureComponent{
+class PreviewBack extends React.Component{
   constructor (props){
     super(props)
     this.state= {
@@ -219,18 +219,21 @@ class RenderCamera extends Component {
     return false
   }
   renderCamera = () => {
+    console.info(this.state.showCamera , '展示出来')
     return (
       <View style={{ width: "100%", height: CameraHeight, overflow: "hidden" }}>
         <PreviewBack {...this.props} camera={this.props.camera}/>
-        <View style={{ position: "absolute", zIndex: 1 }}>
+        <View style={{ position: "absolute", zIndex: 1 , backgroundColor:"black", }}>
           {this.state.showCamera ? (
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}
-              style={{ height: CameraHeight }}
+              style={{ height: CameraHeight ,width: 414}}
+              
               cameraType={this.props.cameraType}
               saveToCameraRoll={false}
               normalBeautyLevel={this.props.normalBeautyLevel * 10}
               facePasterInfo={this.props.facePasterInfo}
+              
             />
           ) : null}
 

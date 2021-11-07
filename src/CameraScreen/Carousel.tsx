@@ -10,7 +10,6 @@ import {
     Platform,
     Animated,
     FlatList,
-    Easing,
     Pressable,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -19,13 +18,15 @@ import {
     setFacePasterInfo,
 
 } from '../actions/story';
+import Reanimated, {Easing} from 'react-native-reanimated';
+
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
 
 import AVService from '../AVService.ios';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
-
+import CircleProgress from "./CircleProgress"
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
@@ -174,7 +175,7 @@ class RenderBigCircle extends Component {
 class RenderChildren extends Component {
     constructor(props) {
         super(props)
-        this.startTime = null
+      
     }
     shouldComponentUpdate(nextProps) {
         if (nextProps.pasterList !== this.props.pasterList) {
@@ -182,10 +183,11 @@ class RenderChildren extends Component {
         }
         return false
     }
+
     render() {
-        console.info("渲染")
         const { pasterList, scrollPos, captureButtonImage } = this.props
         return (
+
             <Animated.View
                 style={[
                     styles.captureButtonImage,
@@ -202,61 +204,18 @@ class RenderChildren extends Component {
                     pressRetentionOffset={{ bottom: 1000, left: 1000, right: 1000, top: 1000 }}
                     onLongPress={async () => {
                         // 按钮动画
-                        Animated.timing(
-                            // 随时间变化而执行动画
-                            this.state.fadeInOpacity, // 动画中的变量值
-                            {
-                                toValue: 122, // 透明度最终变为1，即完全不透明
-                                duration: 500, // 让动画持续一段时间
-                                useNativeDriver: false,
-                            },
-                        ).start();
-                        const success = await this.props.camera.startRecording();
-                        // 获取开始时间
-                        this.startTime = Date.parse(new Date()).toString().substr(0, 10);
-                        this.setState({ fileType: 'video', startShoot: success });
-                        if (success) {
-                            // 调用进度条 开始拍摄
-                            this.animate();
-                        } else {
-                            this.myRef.current.show('摄像失败,请重试', 2000);
-                        }
+                        this.props.startAnimate()
                     }}
                     // 长按结束
 
                     onPressOut={async () => {
-                        this.setState({
-                            flag: null,
-                        });
-                        // 结束时间 小于两秒重置
-                        let endTime = Date.parse(new Date()).toString().substr(0, 10);
-                        if (Number(endTime) - Number(this.startTime) < 2) {
-                            this.myRef.current.show('时间小于2秒，请继续拍摄', 2000);
-                            this.setState({
-                                startShoot: false,
-                                ShootSuccess: false,
-                                fadeInOpacity: new Animated.Value(60),
-                            });
-                        }
-                        if (this.state.startShoot) {
-                            const videoPath = await this.camera.stopRecording();
-                            this.setState({
-                                fileType: 'video',
-                                videoPath,
-                                startShoot: false,
-                                ShootSuccess: true,
-                                fadeInOpacity: new Animated.Value(60),
-                            });
-                        }
+                        this.props.stopAnimate()
                     }}
                     // 单击
                     onPress={() => {
-                        const { startShoot, progress } = this.state;
-                        if (!startShoot || progress === 0) {
-                            // 拍照
-                            this.onCaptureImagePressed();
-                            this.setState({ fileType: 'image' });
-                        }
+                        console.info("anxia ")
+                        this.props.onCaptureImagePressed()
+                    
                     }}
                 >
 
@@ -264,6 +223,8 @@ class RenderChildren extends Component {
                     <RenderBigCircle {...this.props} />
                 </Pressable>
             </Animated.View>
+
+       
         )
     }
 }
@@ -272,7 +233,6 @@ const RenderItem = React.memo((props) => {
     const toItem = () => {
         snapToItem?.(index);
     };
-    console.info("nikanan")
 
     return (
         <Pressable delayLongPress={500} onPress={toItem} >
@@ -294,8 +254,87 @@ class CarouselWrapper extends Component<Props, State> {
         this.state = {
             pasterList: [],
         };
+        this.arcAngle = new Reanimated.Value(0)
+        this.ani = null
+        this.startTime = null
+        this.endTime = null
+        this.scaleAnimated = new Reanimated.Value(0)
     }
+    startAnimate = async()=>{
 
+        const success = await this.props.camera.current.startRecording();
+
+        // if (!success) {
+        //     console.info("开始222333")
+
+        //     this.myRef.current.show('摄像失败,请重试', 2000);
+
+        //     return 
+        // }
+        this.startTime = Date.now()
+        
+        Reanimated.timing(this.scaleAnimated, {
+            toValue: 1,
+            easing: Easing.inOut(Easing.quad),
+            duration: 200,
+          }).start(({finished})=>{
+              if (finished) {
+                  console.info("kIahi222s")
+                this.ani = Reanimated.timing(this.arcAngle, {
+                    toValue: 360,
+                    easing: Easing.linear,
+                    duration: 1000 * 60 * 2,
+                  })
+                  this.ani.start(({finished})=>{
+                      if (finished) {
+                        this.endTime = Date.now()
+                        console.info("结束了")
+                        this.shotCamera()
+                      }
+                  })
+              }
+          })
+    
+    
+    }
+    shotCamera = async ()=> {
+             
+        // const videoPath = await this.props.camera.current.stopRecording();
+        console.info("停止", this.ani)
+        this.ani.stop()
+        console.info("停止222")
+
+        // setTimeout(() => {
+        //     this.setState({
+        //         fileType: 'video',
+        //         videoPath,
+        //     });
+        // }, 0);
+    }
+    reset = ()=>{
+        this.ani.stop()
+        this.arcAngle.setValue(0)
+        this.startTime = null
+        this.endTime = null
+        Reanimated.timing(this.scaleAnimated, {
+            toValue: 0,
+            easing: Easing.inOut(Easing.quad),
+            duration: 200,
+        }).start()
+    }
+    stopAnimate = ()=> {
+        if (!this.startTime) return 
+        this.endTime = Date.now()
+        
+        if (this.endTime - this.startTime < 2 * 1000)  {
+            this.reset()
+            this.myRef.current.show('时间小于2秒，请重新拍摄', 2000);
+            return
+        }
+        this.shotCamera()
+ 
+        // 在这里做结算
+    }
     componentDidMount() {
         this.getPasterInfos()
         setTimeout(() => {
@@ -365,10 +404,19 @@ class CarouselWrapper extends Component<Props, State> {
     }
     render() {
         const { pasterList } = this.state;
-        console.info("这里也渲染了")
         return (
-            <View>
+            <View style={{justifyContent:"center"}}>
                 <TopReset {...this.props} snapToItem={this.snapToItem} scrollPos={this.scrollPos} />
+                <Reanimated.View style={{
+                    transform:[
+                       {scale: this.scaleAnimated.interpolate({
+                            inputRange: [0, 0.00001, 1],
+                            outputRange: [1, 0, 0],
+                            extrapolate: "clamp"
+                        })
+                    }
+                    ]
+                }}>
                 <Carousel
                     ref={(flatList) => {
                         this.FlatListRef = flatList;
@@ -389,7 +437,7 @@ class CarouselWrapper extends Component<Props, State> {
                     sliderWidth={width}
 
                     slideStyle={{ justifyContent: 'center', alignItems: 'center' }}
-                    contentContainerCustomStyle={{ height: 100, justifyContent: 'center', alignItems: 'center' }}
+                    contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
                     useScrollView={true}
                     onSnapToItem={(slideIndex = 0) => {
                         this.props.setFacePasterInfo(pasterList[slideIndex])
@@ -397,9 +445,14 @@ class CarouselWrapper extends Component<Props, State> {
                     }}
                     renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
                 >
-                    <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos} />
+                    <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos} startAnimate={this.startAnimate}
+                    stopAnimate={this.stopAnimate}/>
 
                 </Carousel>
+                </Reanimated.View>
+
+                <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle}/>
+
                 {/* 临时方案  安卓 拍摄不会触发 */}
             </View>
         );
@@ -417,6 +470,8 @@ export default connect(ClMapStateToProps, ClMapDispatchToProps)(CarouselWrapper)
 const styles = StyleSheet.create({
     bottomButtons: {
         flex: 1,
+        overflow:"visible",
+        zIndex: 100
     },
     textStyle: {
         color: 'white',
@@ -641,7 +696,11 @@ const styles = StyleSheet.create({
         height: 32,
     },
     clearBox: {
-        alignItems: "center"
+        alignItems: "center",
+        position:"absolute",
+        zIndex:1,
+        top: -32,
+        left: (width - 32)/ 2
     },
     img:
     {

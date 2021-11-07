@@ -368,7 +368,7 @@ export default class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       if (this.camera) {
-        this.camera.release();
+        this.cameraBox.current.release();
       }
     }
     this.setState = () => false;
@@ -377,13 +377,13 @@ export default class CameraScreen extends Component<Props, State> {
     // 离开story
     // if(!state.storyShow && Platform.OS === 'android'){
     //   console.log(Platform.OS === 'android');
-    //    this.camera.release();
+    //    this.cameraBox.current.release();
     // }
   }
   // ？？？？
   shotPreview = async () => {
     try {
-      const image = await this.camera.capture();
+      const image = await this.cameraBox.current.capture();
       console.info(image, 'iasdiadfidifi')
       this.setState({
         previewImage: image
@@ -404,7 +404,6 @@ export default class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.type !== this.props.type) {
-
 
       return true
     }
@@ -472,7 +471,7 @@ export default class CameraScreen extends Component<Props, State> {
                   }}
                   recordeSuccess={async (data) => {
 
-                    const videoPath = await this.camera.stopRecording();
+                    const videoPath = await this.cameraBox.current.stopRecording();
                     this.setState({
                       videoPath,
                       flag: null,
@@ -517,7 +516,7 @@ export default class CameraScreen extends Component<Props, State> {
   }
   // 拍照功能  改变文件类型
   async onCaptureImagePressed() {
-    const image = await this.camera.capture();
+    const image = await this.cameraBox.current.capture();
     //  ios
     let sandData = '';
     //
@@ -550,7 +549,7 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
         <RenderbeautifyBox {...this.props} />
-        <Carousel {...this.props} />
+        <Carousel {...this.props} onCaptureImagePressed={this.onCaptureImagePressed} camera={this.cameraBox}/>
         <RenderswitchModule {...this.props} />
       </View>
     );
@@ -634,7 +633,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     // position: 'absolute',
-    backgroundColor: "black",
+    // backgroundColor: "black",
     width: "100%",
     bottom: 0,
   },
