@@ -96,6 +96,18 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @implementation CKCamera
 
 #pragma mark - life cycle
+- (void)didMoveToSuperview
+{
+    [super didMoveToSuperview];
+    if (!self.superview && _isPresented) {
+        [self.cameraAction stopPreview];
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
+        _isPresented = NO;
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    }
+}
+
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
@@ -123,12 +135,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _isPresented = NO;
     }
     return self;
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    
 }
 
 #pragma mark - Setter

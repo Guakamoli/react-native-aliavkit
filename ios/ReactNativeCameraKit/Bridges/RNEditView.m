@@ -216,6 +216,7 @@ AliyunCropDelegate
     if (_isPresented && !self.superview) {
         AVDLog(@"🪝appeared, going disappear");
         [_editor stopEdit];
+        _isPresented = NO;
     }
 }
 
@@ -232,8 +233,11 @@ AliyunCropDelegate
             [self _initImageEditor];
         }
     }
+    if (_isPresented && !self.window) {
+        [_editor stopEdit];
+        _isPresented = NO;
+    }
 }
-
 - (void)_initVideoEditor
 {
     if (![[NSFileManager defaultManager] fileExistsAtPath:self.videoPath]) {
