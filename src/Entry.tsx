@@ -70,13 +70,15 @@ const Entry = (props) => {
           volumeImage={volumePng}
         />
       </View>
-      <View style={[type === 'story' ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
+      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
           goback={goBack}
           type={type}
+          setType={setType}
+
           goPost={() => {
             navigation.replace('FeedsPost');
           }}

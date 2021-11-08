@@ -303,11 +303,11 @@ class CarouselWrapper extends Component<Props, State> {
         setTimeout(() => {
             this.reset()
         }, 0);
-        
         setTimeout(() => {
             this.props.setShootData({
                 fileType: 'video',
                 videoPath,
+                ShootSuccess: true
             });
         }, 100);
     }

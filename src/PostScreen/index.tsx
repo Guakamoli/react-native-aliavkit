@@ -821,6 +821,7 @@ export default class CameraScreen extends Component<Props, State> {
             }
           } />
         ) : null}
+
       </>
     );
   }

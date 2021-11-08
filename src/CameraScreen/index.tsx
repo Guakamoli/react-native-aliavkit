@@ -528,14 +528,12 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ cameraType: direction });
   }
   // 拍照功能  改变文件类型
-   onCaptureImagePressed = async () =>{
+  onCaptureImagePressed = async () => {
     try {
 
 
-      console.info("zhixing le ", this)
       const image = await this.cameraBox.current.capture();
       //  ios
-      console.info(image, '聂侃图片')
       let sandData = '';
       //
       if (Platform.OS !== 'android') {
@@ -555,6 +553,7 @@ export default class CameraScreen extends Component<Props, State> {
             // captureImages: _.concat(this.state.captureImages, image?.uri),?
             captureImages: _.concat(this.state.captureImages, sandData),
           });
+          this.props.setType("storyedit")
           this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
         }
       }
@@ -564,7 +563,15 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   setShootData = (data) => {
-    this.setState(data)
+    try {
+      console.info(data, "data")
+
+      this.setState(data)
+      this.props.setType("storyedit")
+    } catch (e) {
+      console.info(e, "拍摄出错")
+    }
+   
   }
   // 底部渲染
   renderBottom() {
@@ -572,7 +579,11 @@ export default class CameraScreen extends Component<Props, State> {
     return (
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
         <RenderbeautifyBox {...this.props} />
-        <Carousel {...this.props} onCaptureImagePressed={this.onCaptureImagePressed} camera={this.cameraBox} setShootData={this.setShootData} />
+        <Carousel {...this.props}
+          onCaptureImagePressed={this.onCaptureImagePressed}
+          camera={this.cameraBox}
+          setShootData={this.setShootData}
+        />
         <RenderswitchModule {...this.props} />
       </View>
     );
@@ -598,11 +609,13 @@ export default class CameraScreen extends Component<Props, State> {
         {this.state.ShootSuccess ? (
           <StoryEditor
             rephotograph={() => {
+              this.props.setType("story")
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
             }}
             getUploadFile={(data) => {
               this.sendUploadFile(data);
             }}
+            setType={this.props.setType}
             AaImage={this.props.AaImage}
             filterImage={this.props.filterImage}
             musicRevampImage={this.props.musicRevampImage}
@@ -623,24 +636,7 @@ export default class CameraScreen extends Component<Props, State> {
           />
         ) : (
             <>
-              {/* <Camera
-        ref={(cam) => (this.camera = cam)}
-        cameraStyle={{ height: 500 ,width: 414}}
 
-        cameraType={this.state.cameraType}
-        flashMode={this.state.flashData.mode}
-        torchMode={this.state.torchMode ? 'on' : 'off'}
-        ratioOverlay={this.state.ratios[this.state.ratioArrayPosition]}
-        saveToCameraRoll={false}
-        showFrame={this.props.showFrame}
-        scanBarcode={this.props.scanBarcode}
-        laserColor={this.props.laserColor}
-        frameColor={this.props.frameColor}
-        onReadCode={this.props.onReadCode}
-        normalBeautyLevel={this.state.normalBeautyLevel * 10}
-        onRecordingProgress={this._onRecordingDuration}
-        facePasterInfo={this.state.facePasterInfo}
-      /> */}
               <RenderCamera {...this.props} camera={this.cameraBox} />
               {this.renderBottom()}
             </>
@@ -674,7 +670,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     // position: 'absolute',
-    // backgroundColor: "black",
+    backgroundColor: "black",
     width: "100%",
     bottom: 0,
   },

@@ -129,6 +129,7 @@ export default class StoryEditor extends Component<Props, State> {
       })
 
       this.sendUploadFile(uploadFile)
+      this.props.setType("story")
 
     }
   }
@@ -255,10 +256,10 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       return (
-        <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
+        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width:"100%" }}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
-            style={{ height: CameraHeight, justifyContent: 'flex-end' }}
+            style={{ height: CameraHeight, justifyContent: 'flex-end', width, }}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}

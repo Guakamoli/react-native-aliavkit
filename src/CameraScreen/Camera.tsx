@@ -177,7 +177,7 @@ class RenderCamera extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      showCamera: false,
+      showCamera: this.props.type === 'story',
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -230,8 +230,6 @@ class RenderCamera extends Component {
               saveToCameraRoll={false}
               normalBeautyLevel={this.props.normalBeautyLevel * 10}
               facePasterInfo={this.props.facePasterInfo}
-        
-
               torchMode={'off'}
               onReadCode={()=>{}}
               onRecordingProgress={()=>{}}
