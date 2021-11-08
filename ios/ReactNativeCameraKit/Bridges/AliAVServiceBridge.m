@@ -296,12 +296,20 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     CGRect cropRect = CGRectMake(cropOffsetX, cropOffsetY, cropWidth, cropHeight);
     
     if ([source hasPrefix:@"file://"]) {
-        CGFloat duration = [[options valueForKey:@"duration"] floatValue];
-        if (!duration) {
-            reject(@"",@"duration can't be zero",nil);
-            return;
+        if ([source hasSuffix:@".mp4"]) {
+            CGFloat duration = [[options valueForKey:@"duration"] floatValue];
+            if (!duration) {
+                reject(@"",@"duration can't be zero",nil);
+                return;
+            }
+            [self cropVideo:source duration:duration rect:cropRect resolve:resolve reject:reject];
         }
-        [self cropVideo:source duration:duration rect:cropRect resolve:resolve reject:reject];
+         else if ([source hasSuffix:@".png"]) {
+            [self cropImage:source rect:cropRect resolve:resolve reject:reject];
+        }
+         else {
+             reject(@"",@"file path suffix must contain mp4 or png",nil);
+         }
         return;
     }
     
@@ -359,7 +367,6 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             }
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
-        CGSize outputSize = CGSizeMake(1080, 1920);
         NSString *rootDirPath = [AliyunPathManager compositionRootDir];
         if (![[NSFileManager defaultManager] fileExistsAtPath:rootDirPath]) {
             [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
@@ -369,7 +376,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         
         
         [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
-                                                              maxSize:outputSize
+                                                              maxSize:cropRect.size
                                                            outputPath:tmpPhotoPath
                                                            completion:^(NSError *error, UIImage * _Nullable sourceImage) {
             if (sourceImage == nil) {
@@ -389,6 +396,33 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                 reject(@"",@"write file failure",nil);
             }
         }];
+    }
+}
+
+- (void)cropImage:(NSString *)sourcePath
+             rect:(CGRect)cropRect
+          resolve:(RCTPromiseResolveBlock)resolve
+           reject:(RCTPromiseRejectBlock)reject
+{
+    NSString *rootDirPath = [AliyunPathManager compositionRootDir];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:rootDirPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *outPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
+    
+    AliyunImageCrop *imageCrop = [[AliyunImageCrop alloc] init];
+    imageCrop.originImage = [[UIImage alloc] initWithContentsOfFile:sourcePath];
+    imageCrop.cropMode = AliyunImageCropModeAspectCut;
+    imageCrop.cropRect = cropRect;
+    imageCrop.outputSize = cropRect.size;
+    UIImage *generatedImage = [imageCrop generateImage];
+    NSData *data = UIImagePNGRepresentation(generatedImage);
+    BOOL writeSuccess = [data writeToFile:outPhotoPath atomically:YES];
+    if (writeSuccess) {
+        resolve(outPhotoPath);
+    } else {
+        reject(@"",@"write file failure",nil);
     }
 }
 
