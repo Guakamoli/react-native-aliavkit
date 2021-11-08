@@ -74,7 +74,7 @@ public class CoverEditActivity extends Activity {
     private void initView() {
         mIvLeft = (ImageView) findViewById(R.id.iv_left);
         mIvRight = (ImageView) findViewById(R.id.iv_right);
-        TextView title = (TextView)findViewById(R.id.tv_center);
+        TextView title = (TextView) findViewById(R.id.tv_center);
 
         mIvLeft.setVisibility(View.VISIBLE);
         mIvRight.setVisibility(View.VISIBLE);
@@ -117,16 +117,16 @@ public class CoverEditActivity extends Activity {
         nativeParser.release();
         nativeParser.dispose();
         ViewGroup.LayoutParams layoutParams = mTextureView.getLayoutParams();
-        float videoRatio = dataWidth / (float)dataHeight;
-        float frameRatio = mTextureView.getWidth() / (float)mTextureView.getHeight();
+        float videoRatio = dataWidth / (float) dataHeight;
+        float frameRatio = mTextureView.getWidth() / (float) mTextureView.getHeight();
 
         if (videoRatio >= frameRatio) {
             //视频宽高比大于TextureView的宽高比
             layoutParams.width = mTextureView.getWidth();
-            layoutParams.height = (int)(mTextureView.getWidth() / videoRatio);
+            layoutParams.height = (int) (mTextureView.getWidth() / videoRatio);
         } else {
             layoutParams.height = mTextureView.getHeight();
-            layoutParams.width = (int)(mTextureView.getHeight() * videoRatio);
+            layoutParams.width = (int) (mTextureView.getHeight() * videoRatio);
         }
         mTextureView.setLayoutParams(layoutParams);
 
@@ -169,33 +169,33 @@ public class CoverEditActivity extends Activity {
             int endOffset = v.getLeft() + mThumbnailList.getWidth() - vw - v.getPaddingLeft();
             long time = 0;
             switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                lastX = event.getRawX();
-                dx = lastX - v.getX();
-                break;
-            case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_DOWN:
+                    lastX = event.getRawX();
+                    dx = lastX - v.getX();
+                    break;
+                case MotionEvent.ACTION_MOVE:
 
-                lastX = event.getRawX();
-                float nx = lastX - dx;
-                if (nx >= endOffset) {
-                    nx = endOffset;
-                }
-                if (nx <= offset) {
-                    nx = offset;
-                }
+                    lastX = event.getRawX();
+                    float nx = lastX - dx;
+                    if (nx >= endOffset) {
+                        nx = endOffset;
+                    }
+                    if (nx <= offset) {
+                        nx = offset;
+                    }
 
-                v.setX(nx);
-                time = (long) (mThumbnailFetcher.getTotalDuration() * (nx - offset) / mThumbnailList.getWidth());
-                seek(time);
-                break;
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                float x = v.getX() - offset;
-                time = (long) (mThumbnailFetcher.getTotalDuration() * x / mThumbnailList.getWidth());
-                seek(time);
-                break;
-            default:
-                break;
+                    v.setX(nx);
+                    time = (long) (mThumbnailFetcher.getTotalDuration() * (nx - offset) / mThumbnailList.getWidth());
+                    seek(time);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    float x = v.getX() - offset;
+                    time = (long) (mThumbnailFetcher.getTotalDuration() * x / mThumbnailList.getWidth());
+                    seek(time);
+                    break;
+                default:
+                    break;
             }
             return true;
         }
@@ -219,7 +219,7 @@ public class CoverEditActivity extends Activity {
         int width = mThumbnailList.getWidth();
         int itemWidth = width / 8;
         mThumbnailFetcher.setParameters(itemWidth, itemWidth,
-                                        AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 8);
+                AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 8);
         long duration = mThumbnailFetcher.getTotalDuration();
         long itemTime = duration / 8;
         for (int i = 1; i <= 8; i++) {
@@ -229,9 +229,10 @@ public class CoverEditActivity extends Activity {
 
     /**
      * 获取缩略图
+     *
      * @param interval 取帧平均间隔
      * @param position 第几张
-     * @param count 总共的张数
+     * @param count    总共的张数
      */
     private void requestFetchThumbnail(final long interval, final int position, final int count) {
         long[] times = {(position - 1) * interval + interval / 2};
@@ -242,7 +243,7 @@ public class CoverEditActivity extends Activity {
             private int vecIndex = 1;
 
             @Override
-            public void onThumbnailReady(Bitmap frameBitmap, long longs) {
+            public void onThumbnailReady(Bitmap frameBitmap, long longs, int index) {
                 if (frameBitmap != null && !frameBitmap.isRecycled()) {
                     Log.i(TAG, "onThumbnailReady  put: " + position + " ,l = " + longs / 1000);
                     ImageView image = new ImageView(CoverEditActivity.this);
@@ -287,16 +288,16 @@ public class CoverEditActivity extends Activity {
                     public void onDataSize(int dataWidth, int dataHeight) {
 
                         ViewGroup.LayoutParams layoutParams = mTextureView.getLayoutParams();
-                        float videoRatio = dataWidth / (float)dataHeight;
-                        float frameRatio = mTextureView.getWidth() / (float)mTextureView.getHeight();
+                        float videoRatio = dataWidth / (float) dataHeight;
+                        float frameRatio = mTextureView.getWidth() / (float) mTextureView.getHeight();
 
                         if (videoRatio >= frameRatio) {
                             //视频宽高比大于TextureView的宽高比
                             layoutParams.width = mTextureView.getWidth();
-                            layoutParams.height = (int)(mTextureView.getWidth() / videoRatio);
+                            layoutParams.height = (int) (mTextureView.getWidth() / videoRatio);
                         } else {
                             layoutParams.height = mTextureView.getHeight();
-                            layoutParams.width = (int)(mTextureView.getHeight() * videoRatio);
+                            layoutParams.width = (int) (mTextureView.getHeight() * videoRatio);
                         }
                         mTextureView.setLayoutParams(layoutParams);
                         mPlayer.setDisplaySize(layoutParams.width, layoutParams.height);
@@ -370,47 +371,47 @@ public class CoverEditActivity extends Activity {
         mCoverThumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher();
         mCoverThumbnailFetcher.addVideoSource(mVideoPath, 0, Integer.MAX_VALUE, 0);
         mCoverThumbnailFetcher.setParameters(mTextureView.getWidth(), mTextureView.getHeight(), AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 2);
-        mCoverThumbnailFetcher.requestThumbnailImage(new long[] {mEndTime},
-        new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
-            @Override
-            public void onThumbnailReady(Bitmap bitmap, long l) {
-                if (bitmap != null && !bitmap.isRecycled()) {
-                    String path = getExternalFilesDir(null) + "thumbnail.jpeg";
-                    FileOutputStream fileOutputStream = null;
-                    try {
-                        fileOutputStream = new FileOutputStream(path);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
-                    } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
-                        ToastUtils.show(CoverEditActivity.this, R.string.alivc_editor_cover_fetch_cover_error);
-                        mLoadingDialog.dismiss();
-                        return;
-                    } finally {
-                        if (fileOutputStream != null) {
+        mCoverThumbnailFetcher.requestThumbnailImage(new long[]{mEndTime},
+                new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
+                    @Override
+                    public void onThumbnailReady(Bitmap bitmap, long l, int index) {
+                        if (bitmap != null && !bitmap.isRecycled()) {
+                            String path = getExternalFilesDir(null) + "thumbnail.jpeg";
+                            FileOutputStream fileOutputStream = null;
                             try {
-                                fileOutputStream.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                                fileOutputStream = new FileOutputStream(path);
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                            } catch (Exception e) {
+                                Log.e(TAG, e.getMessage());
+                                ToastUtils.show(CoverEditActivity.this, R.string.alivc_editor_cover_fetch_cover_error);
+                                mLoadingDialog.dismiss();
+                                return;
+                            } finally {
+                                if (fileOutputStream != null) {
+                                    try {
+                                        fileOutputStream.close();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
+
+                            Intent data = new Intent();
+                            data.putExtra(KEY_PARAM_RESULT, path);
+                            setResult(RESULT_OK, data);
+                            finish();
+                            mLoadingDialog.dismiss();
+                        } else {
+                            requestThumbnailCover();
                         }
                     }
 
-                    Intent data = new Intent();
-                    data.putExtra(KEY_PARAM_RESULT, path);
-                    setResult(RESULT_OK, data);
-                    finish();
-                    mLoadingDialog.dismiss();
-                } else {
-                    requestThumbnailCover();
-                }
-            }
-
-            @Override
-            public void onError(int i) {
-                ToastUtils.show(CoverEditActivity.this, R.string.alivc_editor_cover_fetch_cover_error);
-                mLoadingDialog.dismiss();
-            }
-        });
+                    @Override
+                    public void onError(int i) {
+                        ToastUtils.show(CoverEditActivity.this, R.string.alivc_editor_cover_fetch_cover_error);
+                        mLoadingDialog.dismiss();
+                    }
+                });
     }
 
 }

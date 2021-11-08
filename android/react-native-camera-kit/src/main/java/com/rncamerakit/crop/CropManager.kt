@@ -193,6 +193,8 @@ class CropManager {
 
             //设置裁剪参数
             val param = CropParam()
+            //10mbit/s
+            param.setVideoBitrate(10*1000)
             param.mediaType = MediaType.ANY_VIDEO_TYPE
             param.scaleMode = VideoDisplayMode.SCALE
 
@@ -253,7 +255,6 @@ class CropManager {
             val videoPath =
                 if (options.hasKey("videoPath")) options.getString("videoPath")
                 else null
-//                else Constants.SDCardConstants.getDir(context.applicationContext) + File.separator + "paiya-record.mp4"
             if (TextUtils.isEmpty(videoPath)) {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
@@ -289,84 +290,11 @@ class CropManager {
                 }
                 coverTimes.add(coverTime.toLong())
             }
-            getVideoFrame2(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
-//            getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
+            getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
         }
 
 
-//        private fun getVideoFrame(
-//            context: Context,
-//            videoPath: String?,
-//            videoWidth: Int,
-//            videoHeight: Int,
-//            coverTimes: List<Long>,
-//            promise: Promise?
-//        ) {
-//            val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
-//            thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
-//            thumbnailFetcher.setParameters(
-//                videoWidth,
-//                videoHeight,
-//                AliyunIThumbnailFetcher.CropMode.Mediate,
-//                VideoDisplayMode.SCALE,
-//                coverTimes.size
-//            )
-//
-//            val videoFramePaths: MutableList<String?> = ArrayList()
-//            Observable.fromIterable(coverTimes).flatMap { longs ->
-//                Observable.create<String?> { emitter ->
-//                    thumbnailFetcher.requestThumbnailImage(longArrayOf(longs), object :
-//                        AliyunIThumbnailFetcher.OnThumbnailCompletion {
-//                        override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
-//                            if (!bitmap.isRecycled) {
-//                                var videoFramePath =
-//                                    FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
-//                                val name = File(videoPath).nameWithoutExtension
-//                                videoFramePath = FileUtils.createFile(
-//                                    videoFramePath,
-//                                    "VideoFrame-$name-$longTime.jpg"
-//                                ).path
-//                                BitmapUtils.saveBitmap(bitmap, videoFramePath)
-//                                if (!TextUtils.isEmpty(videoFramePath)) {
-//                                    emitter?.onNext(videoFramePath)
-//                                    emitter?.onComplete()
-//                                } else {
-//                                    emitter?.onError(Throwable("errorMsg:video Frame is empty"))
-//                                }
-//                            }
-//                        }
-//
-//                        override fun onError(errorCode: Int) {
-//                            emitter?.onError(Throwable("errorCode:$errorCode"))
-//                        }
-//                    })
-//                }.subscribeOn(Schedulers.io())
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(object : Observer<String?> {
-//                    override fun onSubscribe(d: @NonNull Disposable?) {
-//                        Log.e("BBB", "onSubscribe:")
-//                    }
-//
-//                    override fun onNext(path: @NonNull String?) {
-//                        Log.e("BBB", "onNext:$path")
-//                        videoFramePaths.add(path)
-//                    }
-//
-//                    override fun onError(e: @NonNull Throwable?) {
-//                        Log.e("BBB", "nError:" + e?.message)
-//                    }
-//
-//                    override fun onComplete() {
-//                        Log.e("BBB", "onComplete:")
-//                        promise?.resolve(GsonBuilder().create().toJson(videoFramePaths))
-//                    }
-//                })
-//        }
-
-
-        private fun getVideoFrame2(
+        private fun getVideoFrame(
             context: Context,
             videoPath: String?,
             videoWidth: Int,
@@ -399,7 +327,7 @@ class CropManager {
                 thumbnailFetcher.setParameters(videoWidth, videoHeight, AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1)
 
                 thumbnailFetcher.requestThumbnailImage(longArrayOf(time), object : AliyunIThumbnailFetcher.OnThumbnailCompletion {
-                    override fun onThumbnailReady(bitmap: Bitmap, longTime: Long) {
+                    override fun onThumbnailReady(bitmap: Bitmap, longTime: Long, index: Int) {
                         if (!bitmap.isRecycled) {
                             var videoFramePath =
                                 FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
@@ -446,7 +374,6 @@ class CropManager {
             BitmapUtils.saveBitmap(bitmap, videoFramePath)
             return videoFramePath
         }
-
 
     }
 

@@ -56,4 +56,10 @@ export default class AVService {
     return JSON.parse(musics)
   }
 
+  static async getThumbnails({ videoPath, startTime, itemPerTime }) {
+  }
+
+  static async removeThumbnaiImages() {
+  }
+
 }

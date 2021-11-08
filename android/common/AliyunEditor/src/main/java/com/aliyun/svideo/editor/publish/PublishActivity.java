@@ -117,10 +117,10 @@ public class PublishActivity extends Activity implements View.OnClickListener {
             @Override
             public void onClick(View view) {
                 InputMethodManager inputManager = (InputMethodManager) getApplication()
-                                                  .getSystemService(Context.INPUT_METHOD_SERVICE);
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (inputManager.isActive()) {
                     inputManager
-                    .hideSoftInputFromWindow(mVideoDesc.getWindowToken(), 0);
+                            .hideSoftInputFromWindow(mVideoDesc.getWindowToken(), 0);
                 }
             }
         });
@@ -161,7 +161,7 @@ public class PublishActivity extends Activity implements View.OnClickListener {
         MyAsyncTask(PublishActivity activity) {
             ref = new WeakReference<>(activity);
             maxWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                       240, activity.getResources().getDisplayMetrics());
+                    240, activity.getResources().getDisplayMetrics());
         }
 
         @Override
@@ -222,7 +222,7 @@ public class PublishActivity extends Activity implements View.OnClickListener {
     private void initView() {
         mActionBar = findViewById(R.id.action_bar);
         mActionBar.setBackgroundColor(
-            getResources().getColor(R.color.alivc_common_theme_primary_alpha_50));
+                getResources().getColor(R.color.alivc_common_theme_primary_alpha_50));
         mPublish = (TextView) findViewById(R.id.tv_right);
         mIvLeft = (ImageView) findViewById(R.id.iv_left);
         mIvLeft.setOnClickListener(this);
@@ -358,20 +358,20 @@ public class PublishActivity extends Activity implements View.OnClickListener {
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             final AlertDialog dialog = builder.setTitle(R.string.alivc_editor_publish_dialog_cancel_content_tip)
-            .setNegativeButton(R.string.alivc_editor_publish_goback, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (mComposeCompleted) {
-                        finish();
-                    } else {
-                        if (mCompose != null) {
-                            mCompose.cancelCompose();
+                    .setNegativeButton(R.string.alivc_editor_publish_goback, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (mComposeCompleted) {
+                                finish();
+                            } else {
+                                if (mCompose != null) {
+                                    mCompose.cancelCompose();
+                                }
+                                finish();
+                            }
                         }
-                        finish();
-                    }
-                }
-            })
-            .setPositiveButton(R.string.alivc_editor_publish_continue, null).create();
+                    })
+                    .setPositiveButton(R.string.alivc_editor_publish_continue, null).create();
             dialog.show();
         }
     }
@@ -425,12 +425,12 @@ public class PublishActivity extends Activity implements View.OnClickListener {
 
             } else {
                 MediaScannerConnection.scanFile(getApplicationContext(),
-                                                new String[] {mOutputPath}, new String[] {"video/mp4"}, null);
+                        new String[]{mOutputPath}, new String[]{"video/mp4"}, null);
             }
             mComposeCompleted = true;
             aliyunIThumbnailFetcher.addVideoSource(mOutputPath, 0, Integer.MAX_VALUE, 0);
             aliyunIThumbnailFetcher.setParameters(videoWidth, videoHeight,
-                                                  AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 8);
+                    AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 8);
             requestThumbnailImage(0);
             runOnUiThread(new Runnable() {
                 @Override
@@ -449,14 +449,15 @@ public class PublishActivity extends Activity implements View.OnClickListener {
 
     private void requestThumbnailImage(int index) {
         Log.e("frameBitmap", "requestThumbnailImage" + index);
-        aliyunIThumbnailFetcher.requestThumbnailImage(new long[] {index}, mThumbnailCallback);
+        aliyunIThumbnailFetcher.requestThumbnailImage(new long[]{index}, mThumbnailCallback);
     }
+
     private final AliyunIThumbnailFetcher.OnThumbnailCompletion mThumbnailCallback = new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
         private int vecIndex = 1;
         private int mInterval = 100;
 
         @Override
-        public void onThumbnailReady(Bitmap frameBitmap, long time) {
+        public void onThumbnailReady(Bitmap frameBitmap, long time, int index) {
             if (frameBitmap != null && !frameBitmap.isRecycled()) {
                 Log.e("frameBitmap", "isRecycled");
                 mCoverImage.setVisibility(View.VISIBLE);

@@ -210,16 +210,6 @@ class CKCamera(
 
         DownloadUtils.getMusicJsonInfo()
         initLifecycle()
-
-//        val list = MusicFileInfoDao.instance.queryAll()
-//        val list1 = MusicFileInfoDao.instance.queryList(null, 1, 10)
-//        val list2 = MusicFileInfoDao.instance.queryList(null, 2, 10)
-//        val list3 = MusicFileInfoDao.instance.queryList(null, 3, 10)
-//        val list4 = MusicFileInfoDao.instance.queryList(null, 4, 10)
-//        val list5 = MusicFileInfoDao.instance.queryList("海", 1, 10)
-
-
-
     }
 
     private fun initLifecycle(){

@@ -3,6 +3,7 @@ package com.rncamerakit.editor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
@@ -12,7 +13,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.common.utils.MD5Utils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
@@ -23,19 +23,15 @@ import com.aliyun.svideosdk.common.struct.effect.EffectBean
 import com.aliyun.svideosdk.common.struct.project.Source
 import com.aliyun.svideosdk.editor.AliyunIEditor
 import com.aliyun.svideosdk.editor.EffectType
+import com.aliyun.svideosdk.editor.OnPasterRestored
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
-import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
-import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
-import com.rncamerakit.crop.CropManager
-import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileBean
-import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.*
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
@@ -43,7 +39,6 @@ import kotlinx.coroutines.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
-import java.net.URL
 
 @DelicateCoroutinesApi
 @SuppressLint("ViewConstructor")
@@ -81,6 +76,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //滤镜管理
     private var mColorFilterManager: ColorFilterManager? = null
 
+    //字幕管理
+    private var mCaptionManager: CaptionManager? = null
+
     //视频合成
     private var mComposeManager: ComposeManager? = null
 
@@ -111,6 +109,24 @@ class CKEditor(val reactContext: ThemedReactContext) :
         //设置onTextureRender能够回调
         mAliyunIEditor =
             AliyunEditorFactory.creatAliyunEditor(uri, CKPlayCallBack(mContext, this, isVideo))
+
+        mWidth = ScreenUtils.getWidth(mContext)
+        mHeight = try {
+            mWidth*mAliyunIEditor!!.videoHeight/mAliyunIEditor!!.videoWidth
+        } catch (e: Exception) {
+            e.printStackTrace()
+            mWidth*16/9
+        }
+        initVideoContainer()
+        initSurfaceView()
+
+        //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
+        val pasterManager = mAliyunIEditor?.createPasterManager()
+        pasterManager?.setDisplaySize(mWidth, mHeight)
+        pasterManager?.setOnPasterRestoreListener(OnPasterRestored {
+
+        })
+        mCaptionManager = CaptionManager(reactContext, pasterManager)
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
@@ -123,6 +139,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
             return
         }
         mAliyunIEditor?.play()
+
+        initControllerManager()
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
@@ -226,6 +244,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导出视频 \ 导出图片
      */
     fun exportVideo(promise: Promise?) {
+
+//        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！", mAliyunIEditor, mWidth, mHeight)
+
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
@@ -279,7 +300,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun seek(seekTime: Int, promise: Promise) {
         // time 时间，单位：微秒
-        mAliyunIEditor?.seek(seekTime.toLong() * 1000)
+        mAliyunIEditor?.seek(seekTime.toLong()*1000)
     }
 
     private var lastMusicBean: EffectBean? = null
@@ -309,8 +330,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
         musicEffect.source = Source(bgmPath)
 
         //切换音乐seek到0清音乐缓存，避免响一声
-        musicEffect.startTime = 0 * 1000 //单位是us所以要x1000
-        musicEffect.streamStartTime = 0 * 1000
+        musicEffect.startTime = 0*1000 //单位是us所以要x1000
+        musicEffect.streamStartTime = 0*1000
 
         //设置为最大时长
         musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
@@ -350,11 +371,15 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
 
+    private fun initControllerManager() {
+
+    }
+
     init {
-        mWidth = ScreenUtils.getWidth(mContext)
-        mHeight = mWidth * 16 / 9
-        initVideoContainer()
-        initSurfaceView()
+//        mWidth = ScreenUtils.getWidth(mContext)
+//        mHeight = mWidth*16/9
+//        initVideoContainer()
+//        initSurfaceView()
         mImportManager = ImportManager(reactContext)
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
@@ -362,58 +387,32 @@ class CKEditor(val reactContext: ThemedReactContext) :
         initLifecycle()
         DownloadUtils.getMusicJsonInfo()
 
-//        val videoFrameList: MutableList<String?> = ArrayList()
-//        val videoPath = "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/paiya-record_1635215195144.mp4"
-//        GlobalScope.launch(Dispatchers.IO) {
-//            val jobList: MutableList<Deferred<String?>> = ArrayList()
-//            for (i in 0 until 10) {
-//                jobList.add(async { getVideoFrame(videoPath, ((i + 1) * 1000 * 1000).toLong()) })
-//            }
-//            jobList.forEach {
-//                videoFrameList.add(it.await())
-//            }
-//            GlobalScope.launch(Dispatchers.Main) {
-//                videoFrameList.forEach {
-//                    Log.e("CCC ", "sync：$it")
-//                }
-//            }
-//        }
-//        val options = WritableNativeMap()
-//        options.putString("videoPath",videoPath)
-//        CropManager.corpVideoFrame(mContext,options,null)
-
     }
 
-//    private  suspend fun getVideoFrame(videoPath: String, longTime: Long): String? {
-//        val videoFramePath = CropManager.getVideoFrame(mContext, videoPath, longTime)
-//        val position = longTime / 1000 / 1000
-//        Log.e("CCC ", "async：$position - $videoFramePath")
-//        return videoFramePath
-//    }
 
-    private fun initLifecycle(){
-        BaseEventListener(reactContext,object : BaseEventListener.LifecycleEventListener() {
+    private fun initLifecycle() {
+        BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
             override fun onHostResume() {
                 super.onHostResume()
-                Log.e("AAA","onHostResume()")
+                Log.e("AAA", "onHostResume()")
                 replay()
             }
 
             override fun onHostPause() {
                 super.onHostPause()
-                Log.e("AAA","onHostPause()")
+                Log.e("AAA", "onHostPause()")
                 pause(null)
             }
 
             override fun onHostDestroy() {
                 super.onHostDestroy()
-                Log.e("AAA","onHostDestroy()")
+                Log.e("AAA", "onHostDestroy()")
                 onRelease()
             }
 
             override fun onWindowFocusChange(hasFocus: Boolean) {
                 super.onWindowFocusChange(hasFocus)
-                Log.e("AAA","onWindowFocusChange(hasFocus)：$hasFocus")
+                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
             }
         })
     }

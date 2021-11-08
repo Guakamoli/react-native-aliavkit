@@ -1247,7 +1247,7 @@ public class AliyunVideoCropActivity extends Activity implements TextureView.Sur
             private int vecIndex = 1;
 
             @Override
-            public void onThumbnailReady(Bitmap frameBitmap, long l) {
+            public void onThumbnailReady(Bitmap frameBitmap, long l,int index ) {
                 if (frameBitmap != null && !frameBitmap.isRecycled()) {
                     Log.i(TAG, "onThumbnailReady  put: " + position + " ,l = " + l / 1000);
 
