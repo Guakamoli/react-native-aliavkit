@@ -82,6 +82,7 @@ RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
 
 - (void)invalidate
 {
+    
 }
 
 @end
