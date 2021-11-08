@@ -3,6 +3,7 @@ import React, { Component, useRef, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
+  InteractionManager,
   View,
   // Pressable,
   Image,
@@ -163,7 +164,7 @@ class PreviewBack extends React.Component{
       <BoxBlur
         image={
   
-          <Image source={{ uri: this.state.previewImage?.uri }} style={{ width: width, height: CameraHeight - 123 }} resizeMode={'cover'} />
+          <Image source={{ uri: this.state.previewImage?.uri }} style={{ width: width, height: CameraHeight }} resizeMode={'cover'} />
         }
         radius={70}
       />
@@ -176,7 +177,7 @@ class RenderCamera extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      showCamera: true,
+      showCamera: false,
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -189,51 +190,51 @@ class RenderCamera extends Component {
       return true;
     }
     if (nextProps.type !== this.props.type) {
+      this.setState({
+        showCamera: nextProps.type === 'story' ? true : false
+      })
 
-      setTimeout(() => {
-        this.setState({
-          showCamera: nextProps.type === 'story' ? true : false
-        })
-      }, 0)
-      setTimeout(() => {
-        AVService.enableHapticIfExist()
+    setTimeout(() => {
+      AVService.enableHapticIfExist()
 
-      }, 2000);
+    }, 2000);
+
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-    
-      setTimeout(() => {
-        this.setState({
-          showCamera: nextProps.isDrawerOpen && this.props.type === 'story' ? true : false
-        }, () => {
-          setTimeout(() => {
-            AVService.enableHapticIfExist()
+      this.setState({
+        showCamera: nextProps.isDrawerOpen && this.props.type === 'story' ? true : false
+      }, () => {
+        setTimeout(() => {
+          AVService.enableHapticIfExist()
 
-          }, 2000);
-        })
-      }, 0)
+        }, 2000);
+      })
 
       return false
     }
     return false
   }
   renderCamera = () => {
-    console.info(this.state.showCamera , '展示出来')
+    console.info(this.state.showCamera , '展示出来', this.props.cameraType, this.props.facePasterInfo, this.props.normalBeautyLevel)
     return (
-      <View style={{ width: "100%", height: CameraHeight, overflow: "hidden" }}>
+      <View style={{ width: "100%", height: CameraHeight, overflow: "hidden" ,borderRadius: 20}}>
         <PreviewBack {...this.props} camera={this.props.camera}/>
-        <View style={{ position: "absolute", zIndex: 1 , backgroundColor:"black", }}>
+        <View style={{ position: "absolute", zIndex: 1 }}>
           {this.state.showCamera ? (
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}
-              style={{ height: CameraHeight ,width: 414}}
-              
+              cameraStyle={{ height: CameraHeight ,width}}
+              flashMode={FLASH_MODE_AUTO}
               cameraType={this.props.cameraType}
               saveToCameraRoll={false}
               normalBeautyLevel={this.props.normalBeautyLevel * 10}
               facePasterInfo={this.props.facePasterInfo}
-              
+        
+
+              torchMode={'off'}
+              onReadCode={()=>{}}
+              onRecordingProgress={()=>{}}
             />
           ) : null}
 

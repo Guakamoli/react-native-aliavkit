@@ -70,6 +70,8 @@
     "@react-navigation/stack": "6.0.7",
     "lodash": "^4.14.2",
     "react": "*",
+    "ahooks": "^2.10.11",
+
     "react-native": "*",
     "react-native-easy-toast": "^2.0.0",
     "react-native-gesture-handler": "^1.10.3",

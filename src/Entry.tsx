@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
+import { useThrottleFn } from 'ahooks';
 const { width, height } = Dimensions.get('window');
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;

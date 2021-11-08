@@ -291,8 +291,8 @@ export default class StoryEditor extends Component<Props, State> {
   }
 
   sendUploadFile(data) {
-    if (this.props.getUploadFile) {
-      this.props.getUploadFile(data);
+    if (this.props.sendfile) {
+      this.props.sendfile(data);
     }
   }
   // 美颜 滤镜 box
@@ -357,7 +357,6 @@ export default class StoryEditor extends Component<Props, State> {
 
 
   render() {
-    // console.log('getmusicInfo-----', this.state.musicInfo);
     return (
       <>
         <Toast
@@ -368,14 +367,9 @@ export default class StoryEditor extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         />
-
-        {/* story */}
-        {Platform.OS === 'android' && this.renderCamera()}
-        {Platform.OS !== 'android' && this.renderCamera()}
+        {this.renderCamera()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
-
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
-
           {this.state.musicOpen
             ?
             <StoryMusic
@@ -471,7 +465,7 @@ const styles = StyleSheet.create(
     },
     uploadBox: {
       width: 130,
-      height: 30,
+      height: 40,
       borderRadius: 22,
       backgroundColor: "#fff",
       justifyContent: 'center',

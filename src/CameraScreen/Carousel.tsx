@@ -213,7 +213,6 @@ class RenderChildren extends Component {
                     }}
                     // 单击
                     onPress={() => {
-                        console.info("anxia ")
                         this.props.onCaptureImagePressed()
                     
                     }}
@@ -299,17 +298,18 @@ class CarouselWrapper extends Component<Props, State> {
     }
     shotCamera = async ()=> {
              
-        // const videoPath = await this.props.camera.current.stopRecording();
-        console.info("停止", this.ani)
+        const videoPath = await this.props.camera.current.stopRecording();
         this.ani.stop()
-        console.info("停止222")
-
-        // setTimeout(() => {
-        //     this.setState({
-        //         fileType: 'video',
-        //         videoPath,
-        //     });
-        // }, 0);
+        setTimeout(() => {
+            this.reset()
+        }, 0);
+        
+        setTimeout(() => {
+            this.props.setShootData({
+                fileType: 'video',
+                videoPath,
+            });
+        }, 100);
     }
     reset = ()=>{
         this.ani.stop()

@@ -245,14 +245,7 @@ const PostEditor = (props) => {
       let outputPath = event.outputPath;
       const Wscale = 1080 / props.params.cropDataRow.srcSize.width
       const Hscale = 1920 / props.params.cropDataRow.srcSize.height
-      console.info({
-        source: `file://${outputPath}`,
-        cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y * Hscale,
-        cropWidth: cropData.size.width * Wscale,
-        cropHeight: cropData.size.height * Wscale,
-        duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
-      }, 'props.params.cropDataRow', props.params.cropDataRow, 'cropData', cropData)
+
       outputPath = await AVService.crop({
         source: `file://${outputPath}`,
         cropOffsetX: cropData.offset.x,
@@ -272,7 +265,11 @@ const PostEditor = (props) => {
         Name: outputPath,
         coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
       });
+      
       props.getUploadFile(uploadFile);
+      setTimeout(() => {
+        props.goback()
+      }, 0);
     }
   } catch (e) {
     console.info(e)
@@ -358,84 +355,7 @@ const PostEditor = (props) => {
         </View>
       </View>
     );
-    // }
-    // 多图 展示
-    // return(
-    //   <View style={{height:375,paddingHorizontal:0}}>
 
-    //   <Carousel
-    //   data={multipleSandBoxData}
-    //   // containerCustomStyle={{backgroundColor:'green',}}
-    //   itemWidth={1000}
-    //   sliderWidth={width}
-    //   enableSnap={this.state.aa}
-    //   onBeforeSnapToItem={(slideIndex = 0) => {
-    //     console.log('slideIndex',slideIndex,'multipleSandBoxData.length',multipleSandBoxData.length-1);
-
-    //     if(slideIndex === multipleSandBoxData.length -1){
-    //       console.log('aa:false');
-    //     this.setState({aa:false})
-    //     }else{
-    //       console.log('aa:true');
-    //       this.setState({aa:true})
-    //     }
-    //   }}
-    //   ListFooterComponent={()=>{
-    //     if(onlyOne) null
-    //     return (
-    //       <View style={{width:83,height:319,flexDirection:'row',alignItems:'center',marginTop:40}}>
-
-    //       <TouchableOpacity  style={{}} onPress={()=>{
-    //         this.setState({fileEditor:false,startmMltiple:true})
-    //       }}>
-    //          <Image
-    //        style={[{
-    //          width: 83,
-    //          height: 83,
-    //          marginHorizontal:34
-    //        }]}
-    //        source={this.props.addPhotoBtnPng}
-    //      />
-    //       </TouchableOpacity>
-    //       </View>
-    //     )
-    //   }}
-    //   renderItem={({index,item})=>{
-
-    //     // const finall = (index == multipleSandBoxData.length -1 && multipleSandBoxData.length > 1)
-
-    //     return (
-    //       <>
-    //       {/* <View style={{flexDirection:'row',alignItems:'center'}}> */}
-    //       <View style={[{height:319,width:319,marginTop:40},
-    //         // ,finall && {width:214}
-
-    //         ]}>
-    //         {/* <Image   source ={{uri:item}} style={{width:'100%',height:'100%'}} / > */}
-
-    //         <VideoEditor
-    //     ref={(edit) => (this.editor = edit)}
-    //     style={{width:'100%',height:'100%' }}
-    //     filterName={this.state.filterName}
-    //     // videoPath={item.image.uri}
-    //     imagePath={item}
-    //     saveToPhotoLibrary={false}
-    //     // startExportVideo={this.state.startExportVideo}
-    //     // videoMute={this.state.mute}
-    //     // onExportVideo={this.onExportVideo}
-    //   />
-    //         </View>
-    //        {/* {finall &&
-
-    //        } */}
-    //        {/* </View> */}
-    //       </>
-    //     )
-    //   }}
-    //   />
-
-    // </View>
-    // )
   };
   // 滤镜组件
   const filterEditorFilter = () => {
