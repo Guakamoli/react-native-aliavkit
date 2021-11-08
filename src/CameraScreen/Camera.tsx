@@ -38,7 +38,7 @@ const circleSize = 78;
 const smallImageSize = 52;
 const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
-const CameraHeight = height - 150;
+const CameraHeight = height - 120;
 const stateAttrsUpdate = [
   'pasterList', 'facePasterInfo', 'showBeautify',
   'normalBeautyLevel', 'cameraType', 'ShootSuccess',
@@ -164,7 +164,7 @@ class PreviewBack extends React.Component{
       <BoxBlur
         image={
   
-          <Image source={{ uri: this.state.previewImage?.uri }} style={{ width: width, height: CameraHeight }} resizeMode={'cover'} />
+          <Image source={{ uri: this.state.previewImage?.uri }} style={{ width: width, height: this.props.CameraFixHeight }} resizeMode={'cover'} />
         }
         radius={70}
       />
@@ -216,15 +216,16 @@ class RenderCamera extends Component {
     return false
   }
   renderCamera = () => {
+    const CameraFixHeight = height - (this.props.insets.bottom +this.props.insets.top+ 30 + 28 )
     console.info(this.state.showCamera , '展示出来', this.props.cameraType, this.props.facePasterInfo, this.props.normalBeautyLevel)
     return (
-      <View style={{ width: "100%", height: CameraHeight, overflow: "hidden" ,borderRadius: 20}}>
-        <PreviewBack {...this.props} camera={this.props.camera}/>
+      <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden" ,borderRadius: 20}}>
+        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight}/>
         <View style={{ position: "absolute", zIndex: 1 }}>
           {this.state.showCamera ? (
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}
-              cameraStyle={{ height: CameraHeight ,width}}
+              cameraStyle={{ height: CameraFixHeight ,width}}
               flashMode={FLASH_MODE_AUTO}
               cameraType={this.props.cameraType}
               saveToCameraRoll={false}

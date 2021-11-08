@@ -345,6 +345,9 @@ class CarouselWrapper extends Component<Props, State> {
     shouldComponentUpdate(nextProps, nextState) {
         const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
         if (stateUpdated) {
+            setTimeout(() => {
+                AVService.enableHapticIfExist()
+              }, 3000);
             return true;
         }
         return false

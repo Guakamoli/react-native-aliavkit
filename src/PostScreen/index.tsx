@@ -137,7 +137,7 @@ const PostFileUploadHead = React.memo((props) => {
 
 const PostHead = React.memo((props) => {
   const { postEditor, goback } = props;
-  const closePng = require('../../images/postClose.png');
+  const closePng = null
   return (
     <View
       style={{
@@ -682,9 +682,35 @@ export default class CameraScreen extends Component<Props, State> {
     try {
       const imageItem = multipleData[multipleData.length - 1].image;
       const { type } = multipleData[multipleData.length - 1];
-      const trimVideoData = await AVService.saveToSandBox({
-        path: imageItem.uri,
+      let trimVideoData = null
+      const result = await ImageCropper.crop({
+        ...cropDataRow,
+        imageUri: imageItem.uri,
+        cropSize: {
+          width: width,
+          height: width,
+        },
+        cropAreaSize: {
+          width: width,
+          height: width,
+        },
       });
+      if (type === 'video') {
+        trimVideoData = await AVService.saveToSandBox({
+          path: imageItem.uri,
+        });
+      } else {
+        const cropData = result
+
+        trimVideoData = await AVService.crop({
+          source: imageItem.uri,
+          cropOffsetX: cropData.offset.x,
+          cropOffsetY: cropData.offset.y,
+          cropWidth: cropData.size.width,
+          cropHeight: cropData.size.height,
+         
+        });
+      }
       // this.setState({ videoPaused: true });
       if (trimVideoData) {
         let trimmerRightHandlePosition =
@@ -692,18 +718,7 @@ export default class CameraScreen extends Component<Props, State> {
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-        const result = await ImageCropper.crop({
-          ...cropDataRow,
-          imageUri: imageItem.uri,
-          cropSize: {
-            width: width,
-            height: width,
-          },
-          cropAreaSize: {
-            width: width,
-            height: width,
-          },
-        });
+       
         this.setState({
           postEditorParams: {
             trimVideoData,
@@ -746,7 +761,7 @@ export default class CameraScreen extends Component<Props, State> {
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
-    }
+    } 
   }
   render() {
     return (
@@ -787,8 +802,8 @@ export default class CameraScreen extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   closeIcon: {
-    width: 23,
-    height: 23,
+    width: 16,
+    height: 16,
   },
 
   captureButton: {

@@ -48,7 +48,6 @@ const PostHead = React.memo((props)=> {
     >
       <Pressable
         onPress={async () => {
-          console.info(goback, 'goback')
          goback();
         }}
         style={{
@@ -124,19 +123,10 @@ const PostEditor = (props) => {
     const cropData = props.params.cropDataResult
 
     if (fileType === 'image') {
-      console.info('导出图片', cropData, photoFile);
       try {
 
-      const path = await AVService.crop({
-        duration: 10,
-        source: photoFile,
-        cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y,
-        cropWidth: cropData.size.width,
-        cropHeight: cropData.size.height,
-       
-      });
-      console.info(path, 'pathpathpath')
+   
+      const path = photoFile
       let uploadFile = [];
       uploadFile.push({
         Type: `image/png`,
@@ -145,8 +135,8 @@ const PostEditor = (props) => {
         Name: path,
         coverImage: path,
       });
-      console.info("uploadFile", "uploadFile", uploadFile)
       props.getUploadFile(uploadFile);
+      props.goback()
     }catch (e) {
         console.info(e, '错误')
       }
@@ -182,7 +172,6 @@ const PostEditor = (props) => {
     const {
        params 
     } = props;
-    console.info(props.params.cropDataResult, `sslkdfkjsdf`, props.params.cropDataRow)
 
     if (!params) return null
     setmultipleSandBoxData([params?.trimVideoData]);
@@ -199,9 +188,6 @@ const PostEditor = (props) => {
   }, []);
   const getcoverData = async () => {
     try {
-      console.info('获取封面3');
-      console.info('multipleSandBoxData', multipleSandBoxData);
-      console.info(fileType);
       if (fileType == 'image') {
         return null;
       }
@@ -212,7 +198,6 @@ const PostEditor = (props) => {
       if (videoTimeSecond < 10) {
         itemPerTime = videoTime / 8;
       }
-      console.info("开始拿封面")
 
       coverData = await AVService.getThumbnails({
         videoPath: multipleSandBoxData[0],
@@ -220,7 +205,6 @@ const PostEditor = (props) => {
         itemPerTime: Math.floor(itemPerTime),
       }); 
   
-      console.info(coverData, "coverDatacoverData")
       setcoverList(coverData);
       setcoverImage(coverData[0]);
     } catch (e) {
@@ -229,10 +213,8 @@ const PostEditor = (props) => {
 
   };
   useEffect(() => {
-    console.info('获取封面', multipleSandBoxData);
     if (multipleSandBoxData.length > 0) {
       getcoverData();
-      console.info('----: getcoverData');
     }
   }, [multipleSandBoxData]);
 
@@ -286,7 +268,7 @@ const PostEditor = (props) => {
       <View style={{
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor:"red",
+        backgroundColor:"black",
         width: width,
         height: width,
         overflow:"hidden"
@@ -407,14 +389,12 @@ const PostEditor = (props) => {
       }
       scrollAniRef.setValue(0);
       RNEditViewManager.seekToTime(leftPosition / 1000);
-      console.info('松开了');
       setTimeout(() => {
         lockRef.current = false;
         RNEditViewManager.play();
         stopRef.current = false;
         startRef.current = false;
       }, 500);
-      console.info(leftPosition, rightPosition, 'leftPosition, rightPosition ');
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);

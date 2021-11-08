@@ -422,7 +422,7 @@ const styles = StyleSheet.create(
           height,
           // height:400,
           flexDirection: 'column',
-          backgroundColor:"red"
+          backgroundColor:"black"
         },
       }),
     },

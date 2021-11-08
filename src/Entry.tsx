@@ -122,6 +122,7 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
+          {bottom: props.insets.bottom},
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           {
             transform: [{ translateX: transX }],
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     zIndex: 100,
     width: 120,
-    height: 43,
+    height: 36,
     position: 'absolute',
     left: (width - 120) / 2,
     bottom: 40,
