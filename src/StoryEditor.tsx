@@ -255,11 +255,13 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
+      // return null
       return (
-        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width:"100%" }}>
+        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width:"100%",overflow:"hidden" }}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
-            style={{ height: CameraHeight, justifyContent: 'flex-end', width, }}
+            editWidth={width}
+            editHeight={CameraHeight}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
@@ -416,13 +418,17 @@ const styles = StyleSheet.create(
         },
         default: {
           flex: 1,
+          width,
+          height,
           // height:400,
           flexDirection: 'column',
+          backgroundColor:"red"
         },
       }),
     },
     bottomButton: {
       flex: 1,
+      
       flexDirection: 'row',
       alignItems: 'center',
       padding: 10,

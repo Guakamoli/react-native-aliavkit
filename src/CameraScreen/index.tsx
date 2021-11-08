@@ -42,10 +42,7 @@ const FLASH_MODE_OFF = 'off';
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
-const smallImageSize = 52;
-const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
-const CameraHeight = height - 100;
 
 // import AVService from '../AVService.ios.ts';
 const stateAttrsUpdate = [
@@ -606,7 +603,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        {this.state.ShootSuccess ? (
+        {this.state.ShootSuccess  ? (
           <StoryEditor
             rephotograph={() => {
               this.props.setType("story")
@@ -721,23 +718,13 @@ const styles = StyleSheet.create({
     height: 28,
     left: -3
   },
-  leftIconBox: {
-    position: 'absolute',
-    top: CameraHeight * 0.35,
-    left: 20,
-    zIndex: 99,
-  },
+
   beautifyIcon: {
     width: 28,
     height: 28,
     marginTop: 30,
   },
-  closeBox: {
-    position: 'absolute',
-    top: CameraHeight * 0.05,
-    left: 20,
-    zIndex: 99,
-  },
+
   closeIcon: {
     width: 28,
     height: 28,

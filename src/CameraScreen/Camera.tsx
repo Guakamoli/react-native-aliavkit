@@ -38,7 +38,7 @@ const circleSize = 78;
 const smallImageSize = 52;
 const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
-const CameraHeight = height - 100;
+const CameraHeight = height - 150;
 const stateAttrsUpdate = [
   'pasterList', 'facePasterInfo', 'showBeautify',
   'normalBeautyLevel', 'cameraType', 'ShootSuccess',
