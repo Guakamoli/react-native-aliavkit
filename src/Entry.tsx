@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
+import { useThrottleFn } from 'ahooks';
 const { width, height } = Dimensions.get('window');
+
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {
@@ -32,6 +34,7 @@ const Entry = (props) => {
   const params = props.route?.params || {};
   const initType = params.type || 'post';
   const [type, setType] = useState(initType);
+  const lockFlag = React.useRef(false)
   const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current;
   const types = [
     {
@@ -43,7 +46,13 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-
+  const {run: changeType} = useThrottleFn((i)=>{
+    Animated.timing(transX, {
+      toValue: i.type === 'post' ? 30 : -30,
+      useNativeDriver: true,
+    }).start();
+    setType(i.type);
+  },{wait: 1000})
   return (
     <>
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
@@ -69,13 +78,15 @@ const Entry = (props) => {
           volumeImage={volumePng}
         />
       </View>
-      <View style={[type === 'story' ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
+      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
           goback={goBack}
           type={type}
+          setType={setType}
+
           goPost={() => {
             navigation.replace('FeedsPost');
           }}
@@ -111,6 +122,7 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
+          {bottom: props.insets.bottom},
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           {
             transform: [{ translateX: transX }],
@@ -121,12 +133,8 @@ const Entry = (props) => {
           return (
             <TouchableOpacity
               key={i.type}
-              onPress={() => {
-                Animated.timing(transX, {
-                  toValue: i.type === 'post' ? 30 : -30,
-                  useNativeDriver: true,
-                }).start();
-                setType(i.type);
+              onPress={()=>{
+                changeType(i)
               }}
             >
               <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
@@ -145,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     zIndex: 100,
     width: 120,
-    height: 43,
+    height: 36,
     position: 'absolute',
     left: (width - 120) / 2,
     bottom: 40,

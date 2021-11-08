@@ -741,10 +741,9 @@ export default class Carousel extends Component {
         this._snapToItem(repositionTo, false, false, false, false);
     }
 
-    _scrollTo(offset, animated = true) {
+    _scrollTo(offset, animated = true, manded = false) {
         const { vertical } = this.props;
         const wrappedRef = this._getWrappedRef();
-
         if (!this._mounted || !wrappedRef) {
             return;
         }
@@ -759,6 +758,11 @@ export default class Carousel extends Component {
             ...specificOptions,
             animated
         };
+        // 这里会导致出现意外情况,手工点击的时候可以触发,滚动过程中不触发
+        if (!manded) {
+            return
+
+        }
 
         if (this._needsScrollView()) {
             wrappedRef.scrollTo(options);
@@ -919,7 +923,7 @@ export default class Carousel extends Component {
 
         if (this._carouselRef) {
             this._onScrollEnd && this._onScrollEnd(false);
-            // this._onScroll(event)
+            this._onScroll(event)
         }
 
         if (onMomentumScrollEnd) {
@@ -1021,7 +1025,7 @@ export default class Carousel extends Component {
         }
     }
 
-    _snapToItem(index, animated = true, fireCallback = true, initial = false, lockScroll = true, onlySetFlag = false) {
+    _snapToItem(index, animated = true, fireCallback = true, initial = false, lockScroll = true, onlySetFlag = false, options = {}) {
         const { enableMomentum, onSnapToItem, onBeforeSnapToItem } = this.props;
         const itemsLength = this._getCustomDataLength();
         const wrappedRef = this._getWrappedRef();
@@ -1053,7 +1057,6 @@ export default class Carousel extends Component {
                 }
             }
         }
-
         this._itemToSnapTo = index;
         this._scrollOffsetRef = this._positions[index] && this._positions[index].start;
         this._onScrollTriggered = false;
@@ -1072,11 +1075,9 @@ export default class Carousel extends Component {
             }
             return
         }
-
-        this._scrollTo(this._scrollOffsetRef, animated);
+        this._scrollTo(this._scrollOffsetRef, animated, options.manded);
 
         this._scrollEndOffset = this._currentContentOffset;
-
         if (enableMomentum) {
             // iOS fix, check the note in the constructor
             if (!initial) {
@@ -1164,7 +1165,7 @@ export default class Carousel extends Component {
             return;
         }
 
-        this._snapToItem(positionIndex, animated, fireCallback);
+        this._snapToItem(positionIndex, animated, fireCallback, false, true, false, { manded: true });
     }
 
     snapToNext(animated = true, fireCallback = true) {
@@ -1177,7 +1178,7 @@ export default class Carousel extends Component {
             }
             newIndex = 0;
         }
-        this._snapToItem(newIndex, animated, fireCallback);
+        this._snapToItem(newIndex, animated, fireCallback, false, true, false, { manded: true });
     }
 
     snapToPrev(animated = true, fireCallback = true) {
@@ -1190,7 +1191,7 @@ export default class Carousel extends Component {
             }
             newIndex = itemsLength - 1;
         }
-        this._snapToItem(newIndex, animated, fireCallback);
+        this._snapToItem(newIndex, animated, fireCallback, false, true, false, { manded: true });
     }
 
     // https://github.com/facebook/react-native/issues/1831#issuecomment-231069668
