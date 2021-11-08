@@ -5,6 +5,7 @@ import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
 const { width, height } = Dimensions.get('window');
+
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {
@@ -33,6 +34,7 @@ const Entry = (props) => {
   const params = props.route?.params || {};
   const initType = params.type || 'post';
   const [type, setType] = useState(initType);
+  const lockFlag = React.useRef(false)
   const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current;
   const types = [
     {
@@ -44,7 +46,13 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-
+  const {run: changeType} = useThrottleFn((i)=>{
+    Animated.timing(transX, {
+      toValue: i.type === 'post' ? 30 : -30,
+      useNativeDriver: true,
+    }).start();
+    setType(i.type);
+  },{wait: 1000})
   return (
     <>
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
@@ -124,12 +132,8 @@ const Entry = (props) => {
           return (
             <TouchableOpacity
               key={i.type}
-              onPress={() => {
-                Animated.timing(transX, {
-                  toValue: i.type === 'post' ? 30 : -30,
-                  useNativeDriver: true,
-                }).start();
-                setType(i.type);
+              onPress={()=>{
+                changeType(i)
               }}
             >
               <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>

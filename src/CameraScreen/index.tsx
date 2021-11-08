@@ -297,6 +297,7 @@ export default class CameraScreen extends Component<Props, State> {
       },
     ];
     this.startTime = '';
+    this.rt = null
     this.cameraBox = { current: null }
     this.state = {
       // 照片存储
@@ -402,7 +403,10 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (nextProps.type !== this.props.type) {
       InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
+        if (this.rt) {
+          clearTimeout(this.rt)
+        }
+        this.rt =setTimeout(() => {
           this.setState({
             relaloadFlag: Math.random()
           })
@@ -413,7 +417,10 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
+        if (this.rt) {
+          clearTimeout(this.rt)
+        }
+        this.rt = setTimeout(() => {
           this.setState({
             relaloadFlag: Math.random()
           })
