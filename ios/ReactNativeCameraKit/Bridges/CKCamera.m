@@ -95,31 +95,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @implementation CKCamera
 
-#pragma mark - initializtion
-- (void)didMoveToSuperview
-{
-    [super didMoveToSuperview];
-    if (_isPresented && !self.superview) {
-        AVDLog(@"----： 📷 appeared, going disappear");
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
-                
-            }];
-        }
-        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-    }
-}
-
+#pragma mark - life cycle
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    if (self.window && _isPresented) {
-        AVDLog(@"--- 📷 coming back ");
-        if (self.cameraAction) {
-            [self.cameraAction startPreview];
-        }
-        return;
-    }
     if (!_isPresented && self.window) {
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
@@ -129,7 +108,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         }
         _isPresented = YES;
     }
-    
+    if (!self.window && _isPresented) {
+        [self.cameraAction stopPreview];
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
+        _isPresented = NO;
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    }
 }
 
 - (instancetype)init
