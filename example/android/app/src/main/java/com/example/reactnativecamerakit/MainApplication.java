@@ -1,6 +1,5 @@
 package com.example.reactnativecamerakit;
 
-import android.app.Application;
 import android.content.Context;
 
 import androidx.multidex.MultiDexApplication;
@@ -10,6 +9,7 @@ import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -18,9 +18,12 @@ import com.horcrux.svg.SvgPackage;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
+import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+
+import iyegoroff.imagefilterkit.MainReactPackageWithFrescoCache;
 
 public class MainApplication extends MultiDexApplication implements ReactApplication {
 
@@ -32,13 +35,20 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                 }
 
                 @Override
+                protected JSIModulePackage getJSIModulePackage() {
+                    return new ReanimatedJSIModulePackage();
+                }
+
+                @Override
                 protected List<ReactPackage> getPackages() {
                     List<ReactPackage> packages = new PackageList(this).getPackages();
                     packages.add(new RNCameraKitPackage());
-                    packages.add(new ReactVideoPackage());
                     packages.add(new CameraRollPackage());
                     packages.add(new SvgPackage());
-                    return packages;
+                    packages.add(new ReactVideoPackage());
+//                    packages.add(new RNGestureHandlerPackage());
+//                    return packages;
+                    return MainReactPackageWithFrescoCache.inject(packages);
                 }
 
                 @Override

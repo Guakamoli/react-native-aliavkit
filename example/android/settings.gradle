@@ -27,7 +27,6 @@ project(':common:AliyunResample').projectDir = new File(rootProject.projectDir, 
 include ':lib:lib-base'
 project(':lib:lib-base').projectDir = new File(rootProject.projectDir, '../../android/lib/lib-base')
 
-
 include ':react-native-video'
 project(':react-native-video').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-video/android-exoplayer')
 //include ':react-native-video'
@@ -36,5 +35,17 @@ project(':react-native-video').projectDir = new File(rootProject.projectDir, '..
 include ':react-native-svg'
 project(':react-native-svg').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-svg/android')
 
-include ':@react-native-community_cameraroll'
-project(':@react-native-community_cameraroll').projectDir = new File(rootProject.projectDir, 	'../../node_modules/@react-native-community/cameraroll/android')
+include ':react-native-image-filter-kit'
+project(':react-native-image-filter-kit').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-image-filter-kit/android')
+
+include ':@react-native-community-cameraroll'
+project(':@react-native-community-cameraroll').projectDir = new File(rootProject.projectDir, 	'../../node_modules/@react-native-community/cameraroll/android')
+
+include ':@react-native-community-image-editor'
+project(':@react-native-community-image-editor').projectDir = new File(rootProject.projectDir, 	'../../node_modules/@react-native-community/image-editor/android')
+
+include ':react-native-gesture-handler'
+project(':react-native-gesture-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gesture-handler/android')
+
+include ':react-native-reanimated'
+project(':react-native-reanimated').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-reanimated/android')
