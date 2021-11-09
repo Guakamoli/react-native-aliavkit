@@ -158,7 +158,7 @@ class RenderCamera extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      showCamera: this.props.type === 'story',
+      showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -172,7 +172,7 @@ class RenderCamera extends Component {
     }
     if (nextProps.type !== this.props.type) {
       this.setState({
-        showCamera: nextProps.type === 'story' ? true : false
+        showCamera: nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false
       })
 
     setTimeout(() => {
@@ -183,8 +183,9 @@ class RenderCamera extends Component {
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+
       this.setState({
-        showCamera: nextProps.isDrawerOpen && this.props.type === 'story' ? true : false
+        showCamera: nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false
       }, () => {
         setTimeout(() => {
           AVService.enableHapticIfExist()
