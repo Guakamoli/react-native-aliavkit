@@ -43,7 +43,6 @@ const PostHead = React.memo((props) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingBottom: 9,
-        paddingHorizontal: 12,
       }}
     >
       <Pressable
@@ -53,8 +52,14 @@ const PostHead = React.memo((props) => {
         style={{
           height: 30,
           width: 40,
+<<<<<<< HEAD
 
           justifyContent: "center",
+=======
+          paddingHorizontal: 12,
+        
+          justifyContent:"center",
+>>>>>>> 141fc44 (修正切换贴纸问题, 以及切换问题)
         }}
       >
         <Image style={styles.closeIcon} source={require("../images/backArrow.png")} resizeMode='contain' />
@@ -73,11 +78,19 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={continueEdit}
         style={{
+<<<<<<< HEAD
           height: 30,
           width: 40,
 
           justifyContent: "center",
           alignItems: "flex-end"
+=======
+          height: 30, 
+          paddingHorizontal: 12,
+        
+          justifyContent:"center",
+          alignItems:"flex-end"
+>>>>>>> 141fc44 (修正切换贴纸问题, 以及切换问题)
         }}
       >
         <Text style={styles.continueText}>继续</Text>

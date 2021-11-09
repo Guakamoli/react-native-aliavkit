@@ -44,34 +44,7 @@ const stateAttrsUpdate = [
   'normalBeautyLevel', 'cameraType', 'ShootSuccess',
   'startShoot', 'flag', 'showCamera', 'relaloadFlag']
 
-class RenderswitchModule extends React.Component {
-  constructor(props) {
-    super(props)
 
-  }
-  shouldComponentUpdate() {
-    return false
-  }
-  render() {
-    return (
-      <View style={styles.BottomBox}>
-        <Pressable
-
-          onPress={() => this.props.setCameraType()}
-        >
-          <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-        </Pressable>
-      </View>
-    );
-  }
-}
-const RDSMMapStateToProps = state => ({
-});
-const RDSMMapDispatchToProps = dispatch => ({
-  setCameraType: () => dispatch(setCameraType()),
-
-});
-RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule)
 
 const BeautyButton = React.memo((props) => {
   const dispatch = useDispatch()
@@ -81,6 +54,10 @@ const BeautyButton = React.memo((props) => {
   return (
     <Pressable
       onPress={() => {
+        AVService.enableHapticIfExist()
+
+        props.haptics?.impactAsync(props.haptics.ImpactFeedbackStyle.Medium) 
+
         dispatch(setShowBeautify())
         // this.setState({ showBeautify: !this.state.showBeautify });
       }}
@@ -145,13 +122,17 @@ class PreviewBack extends React.Component{
       return true
     }
     if (nextProps.type !== this.props.type) {
+      this.props.enableCount.count = 0
       if (nextProps.type === 'post') {
         this.shotPreview()
       }
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      this.props.enableCount.count = 0
+
       if (!nextProps.isDrawerOpen) {
+
         this.shotPreview()
       }
       return false
@@ -217,11 +198,14 @@ class RenderCamera extends Component {
   }
   renderCamera = () => {
     const CameraFixHeight = height - (this.props.insets.bottom +this.props.insets.top+ 30 + 28 )
-    console.info(this.state.showCamera , '展示出来', this.props.cameraType, this.props.facePasterInfo, this.props.normalBeautyLevel)
     return (
       <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden" ,borderRadius: 20}}>
         <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight}/>
-        <View style={{ position: "absolute", zIndex: 1 }}>
+        <View style={{ position: "absolute", zIndex: 1 }} onLayout={()=>{
+               setTimeout(() => {
+                AVService.enableHapticIfExist()
+              }, 0);
+        }}>
           {this.state.showCamera ? (
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}

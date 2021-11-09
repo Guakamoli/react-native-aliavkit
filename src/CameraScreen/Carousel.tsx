@@ -65,6 +65,7 @@ class TopReset extends Component<PropsType>{
     render() {
         const { scrollPos } = this.props
         return (
+      
             <Animated.View style={[
                 styles.clearBox,
                 {
@@ -84,7 +85,6 @@ class TopReset extends Component<PropsType>{
                     style={styles.clearIcon}
                     onPress={() => {
                         this.props.snapToItem?.(0);
-                        this.setState({ facePasterInfo: { eid: 0 } });
                     }}
                 >
                     <Image source={this.props.giveUpImage} style={styles.clearIcon} />
@@ -93,14 +93,7 @@ class TopReset extends Component<PropsType>{
         )
     }
 }
-// const TRMapStateToProps = state => ({
-//     // facePasterInfo: state.shootStory.facePasterInfo,
-// });
-// const TRMapDispatchToProps = dispatch => ({
-//     setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
 
-// });
-// TopReset = connect(TRMapStateToProps, TRMapDispatchToProps)(TopReset)
 
 class RenderBigCircle extends Component {
     constructor(props) {
@@ -282,7 +275,7 @@ class CarouselWrapper extends Component<Props, State> {
                 this.ani = Reanimated.timing(this.arcAngle, {
                     toValue: 360,
                     easing: Easing.linear,
-                    duration: 1000 * 60 * 2,
+                    duration: 1000 * 15,
                   })
                   this.ani.start(({finished})=>{
                       if (finished) {
@@ -405,6 +398,14 @@ class CarouselWrapper extends Component<Props, State> {
     snapToItem = (data) => {
         this.FlatListRef?.snapToItem?.(data)
     }
+    selectionAsync=()=> {
+        if (this.props.enableCount.count < 5) {
+            AVService.enableHapticIfExist()
+            this.props.enableCount.count +=1
+        }
+        this.props.haptics?.selectionAsync()    
+
+    }
     render() {
         const { pasterList } = this.state;
         return (
@@ -426,7 +427,7 @@ class CarouselWrapper extends Component<Props, State> {
                     }}
                     lockScrollWhileSnapping={true}
                     snapToInterval={itemWidth}
-                    impactAsync={this.props.haptics?.selectionAsync}
+                    impactAsync={this.selectionAsync}
                     enableMomentum={true}
                     scrollInterpolator={this._scrollInterpolator}
                     slideInterpolatedStyle={this._animatedStyles}
