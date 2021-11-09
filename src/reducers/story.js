@@ -3,7 +3,7 @@ import { STORY } from '../actions/actionsTypes';
 const initialState = {
     facePasterInfo: { eid: 0 },
     currentIndex: 0,
-    cameraType: 'front',
+    cameraType: 'back',
     normalBeautyLevel: 3,
     showBeautify: false,
 
@@ -23,7 +23,7 @@ export default function encryption(state = initialState, action) {
         case STORY.SET_CAMERA_TYPE:
             return {
                 ...state,
-                cameraType: cameraTypeMap[state.cameraType]
+                cameraType: action.data || cameraTypeMap[state.cameraType]
             };
         case STORY.SET_SHOWBEAUTIFY:
             return {

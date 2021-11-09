@@ -7,7 +7,6 @@ const { CKCameraManager } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
-  console.info(props.style, 'cameraStyle')
   React.useImperativeHandle(ref, () => ({
     capture: async () => {
       return await CKCameraManager.capture({});
@@ -27,6 +26,9 @@ const Camera = React.forwardRef((props, ref) => {
     //获取服务器端的贴纸
     getPasterInfos: async () => {
       return await AVService.getFacePasterInfos({});
+    },
+    setPasterInfo: async (data) => {
+      return await CKCameraManager.setPasterInfo(data);
     }
   }));
 

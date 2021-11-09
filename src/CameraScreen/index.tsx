@@ -189,25 +189,52 @@ class RenderswitchModule extends React.PureComponent {
 
   }
   shouldComponentUpdate() {
+    if (this.props.page)
     return false
   }
   render() {
     return (
       <View style={styles.BottomBox}>
+      
         <Pressable
 
-          onPress={() => this.props.setCameraType()}
+          onPress={() => {
+            this.props.setCameraType()
+            setTimeout(() => {
+              try{ 
+              this.props.camera.current?.setPasterInfo?.(this.props.facePasterInfo)
+
+              }
+              catch (e){
+                console.info("eeee", e)
+              }
+              
+            }, 100);
+
+            AVService.enableHapticIfExist()
+
+            this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium) 
+          }}
         >
+          <View style={{
+            height: 28 + 30,
+            width: 31 + 15 * 2,
+            justifyContent:"center",
+            alignItems:"center",
+          }}>
           <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
+          </View>
         </Pressable>
       </View>
     );
   }
 }
 const RDSMMapStateToProps = state => ({
+  facePasterInfo:state.shootStory.facePasterInfo,
+
 });
 const RDSMMapDispatchToProps = dispatch => ({
-  setCameraType: () => dispatch(setCameraType()),
+  setCameraType: (data) => dispatch(setCameraType(data)),
 
 });
 RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule)
@@ -258,7 +285,8 @@ const RenderLeftButtons = React.memo((props) => {
     </>
   );
 })
-export default class CameraScreen extends Component<Props, State> {
+
+class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
   };
@@ -280,6 +308,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     this.FlatListRef = React.createRef();
     this.scrollPos = new Animated.Value(0);
+    this.enableCount = {count: 0}
 
     this.currentFlashArrayPosition = 0;
     this.flashArray = [
@@ -366,22 +395,17 @@ export default class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       if (this.camera) {
-        this.cameraBox.current.release();
+        this.cameraBox.current?.release?.();
       }
     }
     this.setState = () => false;
   }
   componentDidUpdate(props, state) {
-    // 离开story
-    // if(!state.storyShow && Platform.OS === 'android'){
-    //   console.log(Platform.OS === 'android');
-    //    this.cameraBox.current.release();
-    // }
+
   }
-  // ？？？？
   shotPreview = async () => {
     try {
-      const image = await this.cameraBox.current.capture();
+      const image = await this.cameraBox.current?.capture?.();
       console.info(image, 'iasdiadfidifi')
       this.setState({
         previewImage: image
@@ -402,11 +426,14 @@ export default class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.type !== this.props.type) {
+      this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt)
         }
         this.rt =setTimeout(() => {
+        this.props.setCameraType('back')
+
           this.setState({
             relaloadFlag: Math.random()
           })
@@ -416,11 +443,15 @@ export default class CameraScreen extends Component<Props, State> {
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt)
         }
+
         this.rt = setTimeout(() => {
+        this.props.setCameraType('back')
+
           this.setState({
             relaloadFlag: Math.random()
           })
@@ -488,7 +519,7 @@ export default class CameraScreen extends Component<Props, State> {
                   }}
                   recordeSuccess={async (data) => {
 
-                    const videoPath = await this.cameraBox.current.stopRecording();
+                    const videoPath = await this.cameraBox.current?.stopRecording?.();
                     this.setState({
                       videoPath,
                       flag: null,
@@ -536,7 +567,7 @@ export default class CameraScreen extends Component<Props, State> {
     try {
 
 
-      const image = await this.cameraBox.current.capture();
+      const image = await this.cameraBox.current?.capture?.();
       //  ios
       let sandData = '';
       //
@@ -584,11 +615,14 @@ export default class CameraScreen extends Component<Props, State> {
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
         <RenderbeautifyBox {...this.props} />
         <Carousel {...this.props}
+          myRef={this.myRef}
           onCaptureImagePressed={this.onCaptureImagePressed}
           camera={this.cameraBox}
+          enableCount={this.enableCount}
           setShootData={this.setShootData}
         />
-        <RenderswitchModule {...this.props} />
+        <RenderswitchModule {...this.props} camera={this.cameraBox}
+/>
       </View>
     );
   }
@@ -617,8 +651,11 @@ export default class CameraScreen extends Component<Props, State> {
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
             }}
             getUploadFile={(data) => {
+              this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+
               this.sendUploadFile(data);
             }}
+            insets={this.props.insets}
             setType={this.props.setType}
             AaImage={this.props.AaImage}
             filterImage={this.props.filterImage}
@@ -641,7 +678,7 @@ export default class CameraScreen extends Component<Props, State> {
         ) : (
             <>
 
-              <RenderCamera {...this.props} camera={this.cameraBox} />
+              <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}/>
               {this.renderBottom()}
             </>
           )}
@@ -649,6 +686,7 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 }
+export default connect(null, RDSMMapDispatchToProps)(CameraScreen)
 
 const styles = StyleSheet.create({
   bottomButtons: {
@@ -670,8 +708,6 @@ const styles = StyleSheet.create({
 
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
     // backgroundColor:"green",
     alignItems: 'center',
     // position: 'absolute',

@@ -7,6 +7,11 @@ function createRequestTypes(base, types = defaultTypes) {
 export const POST = createRequestTypes('SHOOT_POST', [
     'SET_SELECT_MULTIPLE',
     'SET_MULTIPLEDATA',
+
+]);
+export const CONTAINER = createRequestTypes('SHOOT_CONTAINER', [
+    'SET_TYPE',
+
 ]);
 export const STORY = createRequestTypes('SHOOT_STORY', [
     'SET_FACE_PASEER_INFO',

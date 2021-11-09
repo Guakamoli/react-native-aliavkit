@@ -1,9 +1,14 @@
 /* eslint-disable */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
+import {  useSelector, useDispatch } from 'react-redux';
+import {
+  setType,
+
+} from './actions/container';
 const { width, height } = Dimensions.get('window');
 
 const Entry = (props) => {
@@ -30,12 +35,14 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
-  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
-  const params = props.route?.params || {};
-  const initType = params.type || 'post';
-  const [type, setType] = useState(initType);
+  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics, } = props;
+  const dispatch = useDispatch()
+  const type = useSelector((state) => {
+    return state.shootContainer.type
+  })
+  const changeFlagLock =React.useRef(false)
   const lockFlag = React.useRef(false)
-  const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current;
+  const transX = React.useRef(new Animated.Value(type === 'post' ? 30 : -30)).current;
   const types = [
     {
       type: 'post',
@@ -46,12 +53,22 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
+  React.useEffect(()=>{
+    if (changeFlagLock.current) return
+    transX.setValue(type === 'post' ? 30 : -30)
+  }, [
+    type
+  ])
   const {run: changeType} = useThrottleFn((i)=>{
+    changeFlagLock.current = true
     Animated.timing(transX, {
       toValue: i.type === 'post' ? 30 : -30,
       useNativeDriver: true,
     }).start();
-    setType(i.type);
+    dispatch(setType(i.type))
+    setTimeout(() => {
+      changeFlagLock.current = false
+    }, 0);
   },{wait: 1000})
   return (
     <>
@@ -67,7 +84,10 @@ const Entry = (props) => {
             props.navigation.navigate('FeedsPostEditor', { ...data });
           }}
           type={type}
-          setType={setType}
+          setType={(type)=>{
+            dispatch(setType(type))
+
+          }}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
           postCameraImage={postCameraPng}
@@ -78,14 +98,17 @@ const Entry = (props) => {
           volumeImage={volumePng}
         />
       </View>
-      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
+      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
           goback={goBack}
           type={type}
-          setType={setType}
+          setType={(type)=>{
+            dispatch(setType(type))
+
+          }}
 
           goPost={() => {
             navigation.replace('FeedsPost');

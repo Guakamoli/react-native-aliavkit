@@ -18,7 +18,7 @@ import {
     setFacePasterInfo,
 
 } from '../actions/story';
-import Reanimated, {Easing} from 'react-native-reanimated';
+import Reanimated, { Easing } from 'react-native-reanimated';
 
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
@@ -54,7 +54,8 @@ type PropsType = {
     }
     giveUpImage: any,
     snapToItem: Function,
-    scrollPos: Animated.Value
+    scrollPos: Animated.Value,
+    scaleAnimated: Reanimated.Value
 
 }
 
@@ -63,16 +64,16 @@ class TopReset extends Component<PropsType>{
         super(props)
     }
     render() {
-        const { scrollPos } = this.props
+        const { scrollPos, scaleAnimated } = this.props
         return (
-            <Animated.View style={[
+            <Reanimated.View style={[
                 styles.clearBox,
                 {
                     transform: [
                         {
-                            scale: scrollPos.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 1],
+                            scale: scaleAnimated.interpolate({
+                                inputRange: [0, 0.00001, 1],
+                                outputRange: [1, 0, 0],
                                 extrapolate: "clamp"
                             })
                         }
@@ -80,27 +81,34 @@ class TopReset extends Component<PropsType>{
                 }
 
             ]}>
-                <Pressable
-                    style={styles.clearIcon}
-                    onPress={() => {
-                        this.props.snapToItem?.(0);
-                        this.setState({ facePasterInfo: { eid: 0 } });
-                    }}
-                >
-                    <Image source={this.props.giveUpImage} style={styles.clearIcon} />
-                </Pressable>
-            </Animated.View>
+                <Animated.View style={[
+                    {
+                        transform: [
+                            {
+                                scale: scrollPos.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0, 1],
+                                    extrapolate: "clamp"
+                                })
+                            }
+                        ]
+                    }
+
+                ]}>
+                    <Pressable
+                        style={styles.clearIcon}
+                        onPress={() => {
+                            this.props.snapToItem?.(0);
+                        }}
+                    >
+                        <Image source={this.props.giveUpImage} style={styles.clearIcon} />
+                    </Pressable>
+                </Animated.View>
+            </Reanimated.View>
         )
     }
 }
-// const TRMapStateToProps = state => ({
-//     // facePasterInfo: state.shootStory.facePasterInfo,
-// });
-// const TRMapDispatchToProps = dispatch => ({
-//     setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
 
-// });
-// TopReset = connect(TRMapStateToProps, TRMapDispatchToProps)(TopReset)
 
 class RenderBigCircle extends Component {
     constructor(props) {
@@ -175,7 +183,7 @@ class RenderBigCircle extends Component {
 class RenderChildren extends Component {
     constructor(props) {
         super(props)
-      
+
     }
     shouldComponentUpdate(nextProps) {
         if (nextProps.pasterList !== this.props.pasterList) {
@@ -204,7 +212,7 @@ class RenderChildren extends Component {
                     pressRetentionOffset={{ bottom: 1000, left: 1000, right: 1000, top: 1000 }}
                     onLongPress={async () => {
                         // 按钮动画
-                        this.props.startAnimate()
+                        this.props.longPress()
                     }}
                     // 长按结束
 
@@ -213,8 +221,9 @@ class RenderChildren extends Component {
                     }}
                     // 单击
                     onPress={() => {
-                        this.props.onCaptureImagePressed()
-                    
+
+                        this.props.singlePress()
+
                     }}
                 >
 
@@ -223,7 +232,7 @@ class RenderChildren extends Component {
                 </Pressable>
             </Animated.View>
 
-       
+
         )
     }
 }
@@ -248,6 +257,7 @@ class CarouselWrapper extends Component<Props, State> {
     scrollPos: Animated.Value;
     constructor(props) {
         super(props);
+        this.pressLock = false
         this.FlatListRef = React.createRef();
         this.scrollPos = new Animated.Value(0);
         this.state = {
@@ -259,46 +269,74 @@ class CarouselWrapper extends Component<Props, State> {
         this.endTime = null
         this.scaleAnimated = new Reanimated.Value(0)
     }
-    startAnimate = async()=>{
 
-        const success = await this.props.camera.current.startRecording();
+    longPress = () => {
+        if (this.pressLock) {
+            return
+        }
+        this.pressLock = true
+        this.startAnimate()
 
-        // if (!success) {
-        //     console.info("开始222333")
-
-        //     this.myRef.current.show('摄像失败,请重试', 2000);
-
-        //     return 
-        // }
-        this.startTime = Date.now()
-        
-        Reanimated.timing(this.scaleAnimated, {
-            toValue: 1,
-            easing: Easing.inOut(Easing.quad),
-            duration: 200,
-          }).start(({finished})=>{
-              if (finished) {
-                  console.info("kIahi222s")
-                this.ani = Reanimated.timing(this.arcAngle, {
-                    toValue: 360,
-                    easing: Easing.linear,
-                    duration: 1000 * 60 * 2,
-                  })
-                  this.ani.start(({finished})=>{
-                      if (finished) {
-                        this.endTime = Date.now()
-                        console.info("结束了")
-                        this.shotCamera()
-                      }
-                  })
-              }
-          })
-    
-    
     }
-    shotCamera = async ()=> {
-             
-        const videoPath = await this.props.camera.current.stopRecording();
+    singlePress = async () => {
+        console.info(this.pressLock, 'sniasniad')
+
+        this.startTime = null
+        if (this.pressLock) {
+            return
+        }
+        this.pressLock = true
+        console.info(this.props.onCaptureImagePressed)
+        await this.props.onCaptureImagePressed()
+        setTimeout(() => {
+            this.pressLock = false
+
+        }, 2500);
+    }
+    startAnimate = async () => {
+        try {
+
+
+            const success = await this.props.camera.current?.startRecording?.();
+
+            if (!success) {
+                console.info(this.props.myRef, 'hahah')
+                this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
+                this.pressLock = false
+
+                return
+            }
+            this.startTime = Date.now()
+
+            Reanimated.timing(this.scaleAnimated, {
+                toValue: 1,
+                easing: Easing.inOut(Easing.quad),
+                duration: 200,
+            }).start(({ finished }) => {
+                if (finished) {
+                    console.info("kIahi222s")
+                    this.ani = Reanimated.timing(this.arcAngle, {
+                        toValue: 360,
+                        easing: Easing.linear,
+                        duration: 1000 * 15,
+                    })
+                    this.ani.start(({ finished }) => {
+                        if (finished) {
+                            this.endTime = Date.now()
+                            console.info("结束了")
+                            this.shotCamera()
+                        }
+                    })
+                }
+            })
+        } catch (e) {
+            console.info(e, 'eeee')
+        }
+
+    }
+    shotCamera = async () => {
+
+        const videoPath = await this.props.camera.current?.stopRecording?.();
         this.ani.stop()
         setTimeout(() => {
             this.reset()
@@ -310,8 +348,12 @@ class CarouselWrapper extends Component<Props, State> {
                 ShootSuccess: true
             });
         }, 100);
+        setTimeout(() => {
+            this.pressLock = false
+        }, 2500);
+
     }
-    reset = ()=>{
+    reset = () => {
         this.ani.stop()
         this.arcAngle.setValue(0)
         this.startTime = null
@@ -322,17 +364,23 @@ class CarouselWrapper extends Component<Props, State> {
             duration: 200,
         }).start()
     }
-    stopAnimate = ()=> {
-        if (!this.startTime) return 
-        this.endTime = Date.now()
-        
-        if (this.endTime - this.startTime < 2 * 1000)  {
-            this.reset()
-            this.myRef.current.show('时间小于2秒，请重新拍摄', 2000);
-            return
+    stopAnimate = async () => {
+        if (!this.startTime) {
+            this.pressLock = false
         }
+        this.endTime = Date.now()
+
+        // if (this.endTime - this.startTime < 2 * 1000) {
+        //     this.reset()
+        //     console.info(this.props.myRef, 'hahah')
+        //     await this.props.camera.current?.stopRecording?.();
+
+        //     this.props.myRef.current?.show?.('时间小于2秒，请重新拍摄', 2000);
+        //     this.pressLock = false
+        //     return
+        // }
         this.shotCamera()
- 
+
         // 在这里做结算
     }
     componentDidMount() {
@@ -347,7 +395,7 @@ class CarouselWrapper extends Component<Props, State> {
         if (stateUpdated) {
             setTimeout(() => {
                 AVService.enableHapticIfExist()
-              }, 3000);
+            }, 3000);
             return true;
         }
         return false
@@ -405,56 +453,68 @@ class CarouselWrapper extends Component<Props, State> {
     snapToItem = (data) => {
         this.FlatListRef?.snapToItem?.(data)
     }
+    selectionAsync = () => {
+        if (this.props.enableCount.count < 5) {
+            AVService.enableHapticIfExist()
+            this.props.enableCount.count += 1
+        }
+        this.props.haptics?.selectionAsync()
+
+    }
     render() {
         const { pasterList } = this.state;
         return (
-            <View style={{justifyContent:"center"}}>
-                <TopReset {...this.props} snapToItem={this.snapToItem} scrollPos={this.scrollPos} />
+            <View style={{ justifyContent: "center" }}>
+                <TopReset {...this.props} snapToItem={this.snapToItem} scrollPos={this.scrollPos} scaleAnimated={this.scaleAnimated} />
                 <Reanimated.View style={{
-                    transform:[
-                       {scale: this.scaleAnimated.interpolate({
-                            inputRange: [0, 0.00001, 1],
-                            outputRange: [1, 0, 0],
-                            extrapolate: "clamp"
-                        })
-                    }
+                    transform: [
+                        {
+                            scale: this.scaleAnimated.interpolate({
+                                inputRange: [0, 0.00001, 1],
+                                outputRange: [1, 0, 0],
+                                extrapolate: "clamp"
+                            })
+                        }
                     ]
                 }}>
-                <Carousel
-                    ref={(flatList) => {
-                        this.FlatListRef = flatList;
-                    }}
-                    lockScrollWhileSnapping={true}
-                    snapToInterval={itemWidth}
-                    impactAsync={this.props.haptics?.selectionAsync}
-                    enableMomentum={true}
-                    scrollInterpolator={this._scrollInterpolator}
-                    slideInterpolatedStyle={this._animatedStyles}
-                    enableSnap={true}
-                    data={pasterList}
-                    decelerationRate={'normal'}
-                    swipeThreshold={1}
-                    itemWidth={itemWidth}
-                    inactiveSlideOpacity={1}
-                    scrollPos={this.scrollPos}
-                    sliderWidth={width}
+                    <Carousel
+                        ref={(flatList) => {
+                            this.FlatListRef = flatList;
+                        }}
+                        lockScrollWhileSnapping={true}
+                        snapToInterval={itemWidth}
+                        impactAsync={this.selectionAsync}
+                        enableMomentum={true}
+                        scrollInterpolator={this._scrollInterpolator}
+                        slideInterpolatedStyle={this._animatedStyles}
+                        enableSnap={true}
+                        data={pasterList}
+                        decelerationRate={'normal'}
+                        swipeThreshold={1}
+                        itemWidth={itemWidth}
+                        inactiveSlideOpacity={1}
+                        scrollPos={this.scrollPos}
+                        sliderWidth={width}
 
-                    slideStyle={{ justifyContent: 'center', alignItems: 'center' }}
-                    contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
-                    useScrollView={true}
-                    onSnapToItem={(slideIndex = 0) => {
-                        this.props.setFacePasterInfo(pasterList[slideIndex])
+                        slideStyle={{ justifyContent: 'center', alignItems: 'center' }}
+                        contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
+                        useScrollView={true}
+                        onSnapToItem={(slideIndex = 0) => {
+                            this.props.setFacePasterInfo(pasterList[slideIndex])
 
-                    }}
-                    renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
-                >
-                    <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos} startAnimate={this.startAnimate}
-                    stopAnimate={this.stopAnimate}/>
+                        }}
+                        renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
+                    >
+                        <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos}
+                            longPress={this.longPress}
+                            singlePress={this.singlePress}
+                            startAnimate={this.startAnimate}
+                            stopAnimate={this.stopAnimate} />
 
-                </Carousel>
+                    </Carousel>
                 </Reanimated.View>
 
-                <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle}/>
+                <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} />
 
                 {/* 临时方案  安卓 拍摄不会触发 */}
             </View>
@@ -473,7 +533,7 @@ export default connect(ClMapStateToProps, ClMapDispatchToProps)(CarouselWrapper)
 const styles = StyleSheet.create({
     bottomButtons: {
         flex: 1,
-        overflow:"visible",
+        overflow: "visible",
         zIndex: 100
     },
     textStyle: {
@@ -700,10 +760,10 @@ const styles = StyleSheet.create({
     },
     clearBox: {
         alignItems: "center",
-        position:"absolute",
-        zIndex:1,
+        position: "absolute",
+        zIndex: 1,
         top: -32,
-        left: (width - 32)/ 2
+        left: (width - 32) / 2
     },
     img:
     {

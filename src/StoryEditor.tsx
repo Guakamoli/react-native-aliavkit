@@ -20,7 +20,7 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
-import AVService from './AVService';
+
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
@@ -113,7 +113,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
-    // console.log('1231', event);
+    console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
       let outputPath = event.outputPath;
@@ -128,7 +128,7 @@ export default class StoryEditor extends Component<Props, State> {
         Name: outputPath
       })
 
-      this.sendUploadFile(uploadFile)
+      this.props.getUploadFile(uploadFile)
       this.props.setType("story")
 
     }
@@ -141,7 +141,7 @@ export default class StoryEditor extends Component<Props, State> {
         // console.log('filterList111', filterList);
         this.setState({ filterList: filterList })
       } else {
-        const infos = await AVService.getFilterIcons();
+        const infos = await RNEditViewManager.getFilterIcons({});
         infos.unshift({ filterName: null, iconPath: '', title: "无效果" })
         this.setState({ filterList: infos })
       }
@@ -256,12 +256,13 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       // return null
+      const CameraFixHeight = height - (this.props.insets.bottom +this.props.insets.top+ 30 + 28 )
       return (
-        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width: "100%", overflow: "hidden" }}>
+        <View style={{ height: CameraFixHeight, backgroundColor: 'red', borderRadius: 20, width:"100%",overflow:"hidden"}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
-            editHeight={CameraHeight}
+            editHeight={CameraFixHeight}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
@@ -277,7 +278,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <View style={[styles.cameraContainer]}>
-        <TouchableOpacity style={[Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end', }, {}]}
+        <TouchableOpacity 
           onPress={() => {
             this.setState({ showFilterLens: false, musicOpen: false });
             // !this.state.showFilterLens 
@@ -351,7 +352,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ height: height * 0.15, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
+        <View style={{  justifyContent: 'center', alignContent: 'center' }}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -408,27 +409,27 @@ const styles = StyleSheet.create(
     },
 
     cameraContainer: {
-      ...Platform.select({
-        android: {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width,
-          height,
-        },
-        default: {
-          flex: 1,
-          width,
-          height,
-          // height:400,
-          flexDirection: 'column',
-          backgroundColor: "black"
-        },
-      }),
+      // ...Platform.select({
+      //   android: {
+      //     position: 'absolute',
+      //     top: 0,
+      //     left: 0,
+      //     width,
+      //     height,
+      //   },
+      //   default: {
+      //     flex: 1,
+      //     width,
+      //     height,
+      //     // height:400,
+      //     flexDirection: 'column',
+      //     backgroundColor:"black"
+      //   },
+      // }),
     },
     bottomButton: {
       flex: 1,
-
+      
       flexDirection: 'row',
       alignItems: 'center',
       padding: 10,
@@ -487,7 +488,7 @@ const styles = StyleSheet.create(
     UpdateBox: {
       position: 'absolute',
       zIndex: 99,
-      top: 40,
+      top: 20,
     },
     updateTopIcon: {
       width: 40,
