@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   toolText: {
     color: 'white',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
     lineHeight: 18,
     // marginRight: 10,

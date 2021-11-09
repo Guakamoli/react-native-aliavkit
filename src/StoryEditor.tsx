@@ -20,6 +20,8 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
+import ImageMap from '../images';
+const { musicSelect } = ImageMap;
 import AVService from './AVService';
 
 const { width, height } = Dimensions.get('window');
@@ -79,6 +81,7 @@ export default class StoryEditor extends Component<Props, State> {
   camera: any;
   myRef: any
   editor: any
+  musicOn:any
   constructor(props) {
     console.info('story 编辑页面props', props);
 
@@ -100,7 +103,8 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
-      musicInfo: {}
+      musicInfo: {},
+      setMusic: false,
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
@@ -109,9 +113,14 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.startExportVideo) {
       return;
     }
+    this.pauseMusic(this.musicOn)
     this.setState({ startExportVideo: true });
   }
+  async pauseMusic(song) {
+    console.info('暂停音乐', song);
+    await AVService.pauseMusic(song.songID);
 
+  }
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
     console.log('1231', event);
@@ -199,7 +208,7 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
+        'img': this.props.fileType == 'video' ?this.state.setMusic ? musicSelect : this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
           if (this.props.fileType == 'video') {
 
             this.setState({ musicOpen: !musicOpen })
@@ -268,11 +277,11 @@ export default class StoryEditor extends Component<Props, State> {
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
 
-            saveToPhotoLibrary={true}
+            saveToPhotoLibrary={false}
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.musicInfo ? this.state.musicInfo : {}}
+            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
           />
         </View>
       )
@@ -386,7 +395,16 @@ export default class StoryEditor extends Component<Props, State> {
 
 
                 this.setState({ musicInfo: data })
-              }} />
+              }} 
+              setMusicState={this.state.setMusic}
+              setMusic={(data) => {
+                this.setState({ setMusic: data })
+              }}
+              getMusicOn={(data) => {
+
+               this.musicOn = data
+              }}
+              />
             :
             this.renderBottom()}
 
