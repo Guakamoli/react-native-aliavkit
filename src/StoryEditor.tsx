@@ -135,7 +135,11 @@ export default class StoryEditor extends Component<Props, State> {
         // console.log('filterList111', filterList);
         this.setState({ filterList: filterList });
       } else {
+<<<<<<< HEAD
         const infos = await AVService.getFilterIcons();
+=======
+        const infos = await RNEditViewManager.getFilterIcons({});
+>>>>>>> 2bb9075 (修正拍摄器拍摄流程)
         infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
         this.setState({ filterList: infos });
       }

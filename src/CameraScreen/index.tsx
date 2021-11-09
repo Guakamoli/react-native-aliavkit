@@ -395,22 +395,17 @@ class CameraScreen extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       if (this.camera) {
-        this.cameraBox.current.release();
+        this.cameraBox.current?.release?.();
       }
     }
     this.setState = () => false;
   }
   componentDidUpdate(props, state) {
-    // 离开story
-    // if(!state.storyShow && Platform.OS === 'android'){
-    //   console.log(Platform.OS === 'android');
-    //    this.cameraBox.current.release();
-    // }
+
   }
-  // ？？？？
   shotPreview = async () => {
     try {
-      const image = await this.cameraBox.current.capture();
+      const image = await this.cameraBox.current?.capture?.();
       console.info(image, 'iasdiadfidifi')
       this.setState({
         previewImage: image
@@ -524,7 +519,7 @@ class CameraScreen extends Component<Props, State> {
                   }}
                   recordeSuccess={async (data) => {
 
-                    const videoPath = await this.cameraBox.current.stopRecording();
+                    const videoPath = await this.cameraBox.current?.stopRecording?.();
                     this.setState({
                       videoPath,
                       flag: null,
@@ -572,7 +567,7 @@ class CameraScreen extends Component<Props, State> {
     try {
 
 
-      const image = await this.cameraBox.current.capture();
+      const image = await this.cameraBox.current?.capture?.();
       //  ios
       let sandData = '';
       //
@@ -620,6 +615,7 @@ class CameraScreen extends Component<Props, State> {
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
         <RenderbeautifyBox {...this.props} />
         <Carousel {...this.props}
+          myRef={this.myRef}
           onCaptureImagePressed={this.onCaptureImagePressed}
           camera={this.cameraBox}
           enableCount={this.enableCount}
@@ -682,7 +678,7 @@ class CameraScreen extends Component<Props, State> {
         ) : (
             <>
 
-              <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount}/>
+              <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}/>
               {this.renderBottom()}
             </>
           )}

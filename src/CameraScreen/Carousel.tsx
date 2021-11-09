@@ -212,7 +212,7 @@ class RenderChildren extends Component {
                     pressRetentionOffset={{ bottom: 1000, left: 1000, right: 1000, top: 1000 }}
                     onLongPress={async () => {
                         // 按钮动画
-                        this.props.startAnimate()
+                        this.props.longPress()
                     }}
                     // 长按结束
 
@@ -221,7 +221,8 @@ class RenderChildren extends Component {
                     }}
                     // 单击
                     onPress={() => {
-                        this.props.onCaptureImagePressed()
+
+                        this.props.singlePress()
 
                     }}
                 >
@@ -256,6 +257,7 @@ class CarouselWrapper extends Component<Props, State> {
     scrollPos: Animated.Value;
     constructor(props) {
         super(props);
+        this.pressLock = false
         this.FlatListRef = React.createRef();
         this.scrollPos = new Animated.Value(0);
         this.state = {
@@ -267,46 +269,74 @@ class CarouselWrapper extends Component<Props, State> {
         this.endTime = null
         this.scaleAnimated = new Reanimated.Value(0)
     }
+
+    longPress = () => {
+        if (this.pressLock) {
+            return
+        }
+        this.pressLock = true
+        this.startAnimate()
+
+    }
+    singlePress = async () => {
+        console.info(this.pressLock, 'sniasniad')
+
+        this.startTime = null
+        if (this.pressLock) {
+            return
+        }
+        this.pressLock = true
+        console.info(this.props.onCaptureImagePressed)
+        await this.props.onCaptureImagePressed()
+        setTimeout(() => {
+            this.pressLock = false
+
+        }, 2500);
+    }
     startAnimate = async () => {
+        try {
 
-        const success = await this.props.camera.current.startRecording();
 
-        // if (!success) {
-        //     console.info("开始222333")
+            const success = await this.props.camera.current?.startRecording?.();
 
-        //     this.myRef.current.show('摄像失败,请重试', 2000);
+            if (!success) {
+                console.info(this.props.myRef, 'hahah')
+                this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
+                this.pressLock = false
 
-        //     return 
-        // }
-        this.startTime = Date.now()
-
-        Reanimated.timing(this.scaleAnimated, {
-            toValue: 1,
-            easing: Easing.inOut(Easing.quad),
-            duration: 200,
-        }).start(({ finished }) => {
-            if (finished) {
-                console.info("kIahi222s")
-                this.ani = Reanimated.timing(this.arcAngle, {
-                    toValue: 360,
-                    easing: Easing.linear,
-                    duration: 1000 * 15,
-                })
-                this.ani.start(({ finished }) => {
-                    if (finished) {
-                        this.endTime = Date.now()
-                        console.info("结束了")
-                        this.shotCamera()
-                    }
-                })
+                return
             }
-        })
+            this.startTime = Date.now()
 
+            Reanimated.timing(this.scaleAnimated, {
+                toValue: 1,
+                easing: Easing.inOut(Easing.quad),
+                duration: 200,
+            }).start(({ finished }) => {
+                if (finished) {
+                    console.info("kIahi222s")
+                    this.ani = Reanimated.timing(this.arcAngle, {
+                        toValue: 360,
+                        easing: Easing.linear,
+                        duration: 1000 * 15,
+                    })
+                    this.ani.start(({ finished }) => {
+                        if (finished) {
+                            this.endTime = Date.now()
+                            console.info("结束了")
+                            this.shotCamera()
+                        }
+                    })
+                }
+            })
+        } catch (e) {
+            console.info(e, 'eeee')
+        }
 
     }
     shotCamera = async () => {
 
-        const videoPath = await this.props.camera.current.stopRecording();
+        const videoPath = await this.props.camera.current?.stopRecording?.();
         this.ani.stop()
         setTimeout(() => {
             this.reset()
@@ -318,6 +348,10 @@ class CarouselWrapper extends Component<Props, State> {
                 ShootSuccess: true
             });
         }, 100);
+        setTimeout(() => {
+            this.pressLock = false
+        }, 2500);
+
     }
     reset = () => {
         this.ani.stop()
@@ -330,15 +364,21 @@ class CarouselWrapper extends Component<Props, State> {
             duration: 200,
         }).start()
     }
-    stopAnimate = () => {
-        if (!this.startTime) return
+    stopAnimate = async () => {
+        if (!this.startTime) {
+            this.pressLock = false
+        }
         this.endTime = Date.now()
 
-        if (this.endTime - this.startTime < 2 * 1000) {
-            this.reset()
-            this.myRef.current.show('时间小于2秒，请重新拍摄', 2000);
-            return
-        }
+        // if (this.endTime - this.startTime < 2 * 1000) {
+        //     this.reset()
+        //     console.info(this.props.myRef, 'hahah')
+        //     await this.props.camera.current?.stopRecording?.();
+
+        //     this.props.myRef.current?.show?.('时间小于2秒，请重新拍摄', 2000);
+        //     this.pressLock = false
+        //     return
+        // }
         this.shotCamera()
 
         // 在这里做结算
@@ -465,7 +505,10 @@ class CarouselWrapper extends Component<Props, State> {
                         }}
                         renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
                     >
-                        <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos} startAnimate={this.startAnimate}
+                        <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos}
+                            longPress={this.longPress}
+                            singlePress={this.singlePress}
+                            startAnimate={this.startAnimate}
                             stopAnimate={this.stopAnimate} />
 
                     </Carousel>

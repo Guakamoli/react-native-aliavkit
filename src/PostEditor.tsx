@@ -113,10 +113,11 @@ const PostEditor = (props) => {
   const stopRef = useRef(false);
   const startRef = useRef(false);
   const lockRef = useRef(false);
-
+  const continueRef = useRef(false)
   const [photoFile, setPhotoFile] = useState('');
 
   const continueEdit = async () => {
+<<<<<<< HEAD
     const cropData = props.params.cropDataResult;
 
     if (fileType === 'image') {
@@ -134,6 +135,34 @@ const PostEditor = (props) => {
         props.goback();
       } catch (e) {
         console.info(e, '错误');
+=======
+    if (continueRef.current) return 
+    continueRef.current = true
+    const cropData = props.params.cropDataResult
+
+    if (fileType === 'image') {
+      try {
+
+   
+      const path = photoFile
+      let uploadFile = [];
+      uploadFile.push({
+        Type: `image/png`,
+        path: path,
+        size: 0,
+        Name: path,
+        coverImage: path,
+      });
+      props.getUploadFile(uploadFile);
+      props.goback()
+  
+    }catch (e) {
+        console.info(e, '错误')
+        setTimeout(() => {
+          continueRef.current = false
+  
+        }, 1500);
+>>>>>>> 2bb9075 (修正拍摄器拍摄流程)
       }
     } else {
       // 裁剪视频
@@ -147,6 +176,7 @@ const PostEditor = (props) => {
       if (exportVideo) {
         return;
       }
+  
       setexportVideo(true);
     }
   };
@@ -530,6 +560,7 @@ const PostEditor = (props) => {
     const scale = props.params.cropDataRow.scale;
 
     const Extractor = (imgFilter) => {
+<<<<<<< HEAD
       const width = props.params.cropDataRow.fittedSize.width;
       const height = props.params.cropDataRow.fittedSize.height;
       const ImageComponent = (
@@ -549,6 +580,24 @@ const PostEditor = (props) => {
           source={{ uri: multipleSandBoxData[0] }}
         />
       );
+=======
+      // const width =props.params.cropDataRow.fittedSize.width
+      // const height =props.params.cropDataRow.fittedSize.height
+      const ImageComponent =   <Image
+      style={{ width: width, height: width ,
+        // transform:[
+        // {
+        //   scale:scale
+        // },
+        //    {translateX:left},
+  
+        //     {translateY:top},
+            
+        //   ]
+         }}
+      source={{ uri: multipleSandBoxData[0] }}
+    />
+>>>>>>> 2bb9075 (修正拍摄器拍摄流程)
       switch (imgFilter) {
         case 'Sepia': {
           return <Sepia image={ImageComponent} amount={2} />;
@@ -567,6 +616,7 @@ const PostEditor = (props) => {
 
     return (
       <>
+<<<<<<< HEAD
         <View style={{ width: width, height: width, overflow: 'hidden' }}>
           <View
             style={{
@@ -584,6 +634,25 @@ const PostEditor = (props) => {
               image={Extractor(imgfilterName)}
             ></Grayscale>
           </View>
+=======
+        <View style={{width: width, height:width, overflow:"hidden"}}>
+          
+        <View style={{
+          // overflow: 'hidden',
+          // alignItems: 'center',
+          // justifyContent: 'center',
+        
+          }}>
+        <Grayscale
+          amount={0}
+          onExtractImage={({ nativeEvent }) => {
+            setPhotoFile(nativeEvent.uri);
+          }}
+          extractImageEnabled={true}
+          image={Extractor(imgfilterName)}
+        ></Grayscale>
+        </View>
+>>>>>>> 2bb9075 (修正拍摄器拍摄流程)
         </View>
         <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
           <TouchableOpacity
