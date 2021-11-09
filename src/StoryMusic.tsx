@@ -17,16 +17,14 @@ import {
 
 import Carousel from 'react-native-snap-carousel';
 import AVService from './AVService.ios'
-
+import ImageMap from '../images';
+const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => {
-  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray } = props;
-  console.log('-----', props);
+  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray, setMusicState, getMusicOn } = props;
 
-  // const [musicSelect,setMusicSelect] = useState(1);
   const [musicChoice, setMmusicChoice] = useState(false);
-  // const [currentIndex, setCurrentIndex] = useState(0);
   const [checkedData, setCheckedData] = useState()
   const [musicSearchValue, setMusicSearchValue] = useState('');
   const [songData, setSongData] = useState([]);
@@ -76,6 +74,7 @@ const StoryMusic = (props) => {
     }
 
     const songa = await AVService.playMusic(song.songID)
+    getMusicOn(song)
     console.log('---- 返回值: ', songa);
     // getmusicInfo(song)
   }
@@ -102,14 +101,17 @@ const StoryMusic = (props) => {
         itemWidth={298}
         sliderWidth={width}
         initialNumToRender={4}
-        firstItem={songData.indexOf(checkedData)}
+        // firstItem={!musicChoice && songData.indexOf(checkedData)}
         activeAnimationType={'timing'}
-        onBeforeSnapToItem={async (slideIndex = 0) => {
+        onSnapToItem={async (slideIndex = 0) => {
           // 当前选中的
-          console.log('slideIndex', slideIndex);
+          props.setMusic(false);
+          getmusicInfo({});
+          setTimeout(() => {
 
-          setCheckedData(songData[slideIndex]);
-          palyMusic(songData[slideIndex])
+            setCheckedData(songData[slideIndex]);
+            palyMusic(songData[slideIndex])
+          }, 300);
 
         }}
 
@@ -177,38 +179,40 @@ const StoryMusic = (props) => {
             selectionColor='#895EFF'
           />
         </View>
-        <FlatList
-          data={songData}
-          renderItem={({ item }) => {
-            return (
-              <TouchableOpacity onPress={async () => {
-                console.log('点击', checkedData);
-                if (checkedData.songID == item.songID) {
-                  pauseMusic(item)
-                  setCheckedData({});
-                } else {
-                  setCheckedData(item);
-                  palyMusic(item)
-                }
+        <View style={{ flexDirection: 'column', paddingBottom: 120 }}>
+          <FlatList
+            data={songData}
+            renderItem={({ item }) => {
+              return (
+                <TouchableOpacity onPress={async () => {
+                  console.log('点击', checkedData);
+                  if (checkedData.songID == item.songID) {
+                    pauseMusic(item)
+                    setCheckedData({});
+                  } else {
+                    setCheckedData(item);
+                    palyMusic(item)
+                  }
 
 
-              }}>
-                <View style={[{ width: width - 30, height: 84, backgroundColor: 'rgba(0, 0, 0, 0.8)', marginTop: 20, borderRadius: 15, padding: 15, marginHorizontal: 15, alignItems: 'center', justifyContent: 'center' }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
-                  <View style={[{ flexDirection: 'row', marginBottom: 10, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Image source={checkedData?.songID == item?.songID ? musicIconPng : musicIcongray} style={{ width: 19, height: 19, marginRight: 5 }} />
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", flex: 1, alignItems: "center" }}>
-                      <Text style={[{ fontWeight: '400', fontSize: 16, color: '#fff', marginLeft: 15, lineHeight: 21, }, checkedData?.songID == item?.songID && { color: "#000" }]}>{item?.name}</Text>
-                      {/* 播放展示gif */}
-                      {checkedData?.songID == item?.songID && <Image source={musicDynamicGif} style={{ width: 30, height: 18 }} />}
+                }}>
+                  <View style={[{ width: width - 30, height: 84, backgroundColor: 'rgba(0, 0, 0, 0.8)', marginTop: 20, borderRadius: 15, padding: 15, marginHorizontal: 15, alignItems: 'center', justifyContent: 'center' }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
+                    <View style={[{ flexDirection: 'row', marginBottom: 10, alignItems: 'center', justifyContent: 'center' }]}>
+                      <Image source={checkedData?.songID == item?.songID ? musicIconPng : musicIcongray} style={{ width: 19, height: 19, marginRight: 5 }} />
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", flex: 1, alignItems: "center" }}>
+                        <Text style={[{ fontWeight: '400', fontSize: 16, color: '#fff', marginLeft: 15, lineHeight: 21, }, checkedData?.songID == item?.songID && { color: "#000" }]}>{item?.name}</Text>
+                        {/* 播放展示gif */}
+                        {checkedData?.songID == item?.songID && <Image source={musicDynamicGif} style={{ width: 30, height: 18 }} />}
+                      </View>
                     </View>
+                    {/* <Text style={{ fontWeight: '400', color: "#a6a5a2", fontSize: 15, lineHeight: 21, }}>长大以后我只能奔跑 我多害怕黑暗中跌倒</Text> */}
                   </View>
-                  {/* <Text style={{ fontWeight: '400', color: "#a6a5a2", fontSize: 15, lineHeight: 21, }}>长大以后我只能奔跑 我多害怕黑暗中跌倒</Text> */}
-                </View>
-              </TouchableOpacity>
-            )
-          }
-          }
-        />
+                </TouchableOpacity>
+              )
+            }
+            }
+          />
+        </View>
       </View >
     )
   }
@@ -235,16 +239,33 @@ const StoryMusic = (props) => {
           position: 'relative'
         }}>
 
-          {/* <TouchableOpacity onPress={() => this.setState({ storyShow: true, })}> */}
-          <Text style={{
-            fontSize: 16,
-            lineHeight: 18,
-            color: '#FFFFFF',
-            marginHorizontal: 30,
-            fontWeight: '500'
-          }}>配乐</Text>
-          {/* </TouchableOpacity> */}
-        </View>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => {
+            props.setMusic(!setMusicState);
+            if (!setMusicState) {
+              getmusicInfo(checkedData);
+            } else {
+              getmusicInfo({});
+            }
+          }}>
+            {setMusicState ?
+              <Image source={useMusic} style={{ width: 18, height: 18, }} />
+              :
+              <View
+                style={{
+                  borderWidth: 1, width: 18, height: 18, borderRadius: 18, borderColor: '#fff', zIndex: 1
+                }}
+              >
+              </View>
+            }
+            <Text style={{
+              fontSize: 16,
+              lineHeight: 18,
+              color: '#FFFFFF',
+              marginLeft: 5,
+              fontWeight: '500'
+            }}>配乐</Text>
+          </TouchableOpacity>
+        </View >
 
       }
     </View >
