@@ -23,7 +23,7 @@ import _, { lte } from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
-import AVService from '../AVService.ios';
+import AVService from '../AVService';
 import ImageCropper from '../react-native-simple-image-cropper/src';
 import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';

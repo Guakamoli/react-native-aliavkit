@@ -26,7 +26,7 @@ import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import StoryEditor from '../StoryEditor';
 import StoryMusic from '../StoryMusic';
-import AVService from '../AVService.ios';
+import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
 import RenderbeautifyBox from "./RenderbeautifyBox"
 import RenderCamera from "./Camera"
@@ -44,7 +44,6 @@ const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
 const captureIcon2 = (width - 20) / 2;
 
-// import AVService from '../AVService.ios.ts';
 const stateAttrsUpdate = [
   'pasterList', 'facePasterInfo', 'showBeautify',
   'normalBeautyLevel', 'cameraType', 'ShootSuccess',

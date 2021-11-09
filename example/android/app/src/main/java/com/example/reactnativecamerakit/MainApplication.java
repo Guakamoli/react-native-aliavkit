@@ -33,8 +33,9 @@ import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 import com.rncamerakit.db.MusicFileInfoDao;
-import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.swmansion.reanimated.ReanimatedPackage;
+//import com.swmansion.reanimated.ReanimatedJSIModulePackage;
+//import com.swmansion.reanimated.ReanimatedPackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -48,10 +49,10 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     return BuildConfig.DEBUG;
                 }
 
-                @Override
-                protected JSIModulePackage getJSIModulePackage() {
-                    return new ReanimatedJSIModulePackage();
-                }
+//                @Override
+//                protected JSIModulePackage getJSIModulePackage() {
+//                    return new ReanimatedJSIModulePackage();
+//                }
 
                 @Override
                 protected List<ReactPackage> getPackages() {

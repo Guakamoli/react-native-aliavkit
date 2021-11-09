@@ -16,7 +16,7 @@ import {
 
 
 import Carousel from 'react-native-snap-carousel';
-import AVService from './AVService.ios'
+import AVService from './AVService'
 import ImageMap from '../images';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;

@@ -25,7 +25,7 @@ import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import StoryEditor from '../StoryEditor';
 import StoryMusic from '../StoryMusic';
-import AVService from '../AVService.ios';
+import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
 import {
     setCameraType,

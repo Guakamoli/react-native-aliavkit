@@ -23,7 +23,7 @@ import Reanimated, { Easing } from 'react-native-reanimated';
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
 
-import AVService from '../AVService.ios';
+import AVService from '../AVService';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
 import CircleProgress from "./CircleProgress"
@@ -34,7 +34,6 @@ const smallImageSize = 52;
 const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
 
-// import AVService from '../AVService.ios.ts';
 const stateAttrsUpdate = [
     'pasterList', 'facePasterInfo']
 

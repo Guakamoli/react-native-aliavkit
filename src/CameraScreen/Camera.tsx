@@ -17,7 +17,7 @@ import {
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
-import AVService from '../AVService.ios';
+import AVService from '../AVService';
 
 import _ from 'lodash';
 import Camera from '../Camera';

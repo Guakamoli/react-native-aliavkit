@@ -20,7 +20,7 @@ import Video from 'react-native-video';
 import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
-import AVService from './AVService.ios';
+import AVService from './AVService';
 import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
 
 // let a  = require('../images/postEditorNoMute.png');

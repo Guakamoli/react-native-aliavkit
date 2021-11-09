@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import React from 'react';
 import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager } from 'react-native';
-import AVService from './AVService.ios'
+import AVService from './AVService'
 
 const { CKCameraManager } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
