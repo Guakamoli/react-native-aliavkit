@@ -20,7 +20,7 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
-
+import AVService from './AVService';
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
 const { RNEditViewManager } = NativeModules;
@@ -141,7 +141,7 @@ export default class StoryEditor extends Component<Props, State> {
         // console.log('filterList111', filterList);
         this.setState({ filterList: filterList })
       } else {
-        const infos = await RNEditViewManager.getFilterIcons({});
+        const infos = await AVService.getFilterIcons();
         infos.unshift({ filterName: null, iconPath: '', title: "无效果" })
         this.setState({ filterList: infos })
       }
@@ -257,7 +257,7 @@ export default class StoryEditor extends Component<Props, State> {
     const VideoEditors = () => {
       // return null
       return (
-        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width:"100%",overflow:"hidden" }}>
+        <View style={{ height: '100%', backgroundColor: 'black', borderRadius: 20, width: "100%", overflow: "hidden" }}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
@@ -422,13 +422,13 @@ const styles = StyleSheet.create(
           height,
           // height:400,
           flexDirection: 'column',
-          backgroundColor:"black"
+          backgroundColor: "black"
         },
       }),
     },
     bottomButton: {
       flex: 1,
-      
+
       flexDirection: 'row',
       alignItems: 'center',
       padding: 10,
