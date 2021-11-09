@@ -168,7 +168,7 @@ const PostEditor = (props) => {
   const getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
 
-    const infos = await RNEditViewManager.getFilterIcons({});
+    const infos = await AVService.getFilterIcons({});
 
     infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
     setfilterList(infos);

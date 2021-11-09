@@ -188,10 +188,7 @@ class RenderswitchModule extends React.PureComponent {
     super(props)
 
   }
-  shouldComponentUpdate() {
-    if (this.props.page)
-    return false
-  }
+
   render() {
     return (
       <View style={styles.BottomBox}>
