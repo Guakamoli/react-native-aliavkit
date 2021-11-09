@@ -9,6 +9,12 @@ import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.facebook.react.shell.MainReactPackage;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
+
+import iyegoroff.imagefilterkit.ImageFilterKitPackage;
+import iyegoroff.imagefilterkit.MainReactPackageWithFrescoCache;
+
 import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
@@ -19,11 +25,10 @@ import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
+import com.swmansion.reanimated.ReanimatedPackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
-import iyegoroff.imagefilterkit.MainReactPackageWithFrescoCache;
 
 public class MainApplication extends MultiDexApplication implements ReactApplication {
 
@@ -46,9 +51,31 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     packages.add(new CameraRollPackage());
                     packages.add(new SvgPackage());
                     packages.add(new ReactVideoPackage());
-//                    packages.add(new RNGestureHandlerPackage());
-//                    return packages;
-                    return MainReactPackageWithFrescoCache.inject(packages);
+                    packages.add(new ImageFilterKitPackage());
+
+                    boolean isAddRNGestureHandlerPackage = false;
+                    for (ReactPackage reactPackage : packages) {
+                        if (reactPackage.getClass() == RNGestureHandlerPackage.class) {
+                            isAddRNGestureHandlerPackage = true;
+                            break;
+                        }
+                    }
+                    if (!isAddRNGestureHandlerPackage) {
+                        packages.add(new RNGestureHandlerPackage());
+                    }
+
+                    boolean isAddReanimatedPackage = false;
+                    for (ReactPackage reactPackage : packages) {
+                        if (reactPackage.getClass() == ReanimatedPackage.class) {
+                            isAddReanimatedPackage = true;
+                            break;
+                        }
+                    }
+                    if (!isAddReanimatedPackage) {
+                        packages.add(new ReanimatedPackage());
+                    }
+
+                    return packages;
                 }
 
                 @Override

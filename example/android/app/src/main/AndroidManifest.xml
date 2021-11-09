@@ -19,6 +19,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
+            android:largeHeap="true"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
             android:label="@string/app_name"
             android:launchMode="singleTask"
