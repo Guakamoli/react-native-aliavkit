@@ -31,9 +31,9 @@ const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
 const cropWidth = width - 30 * 2;
 const PostHead = React.memo((props) => {
-  const { videoMute, setvideoMute } = props
+  const { videoMute, setvideoMute } = props;
 
-  const { closePng, volumeImage, noVolumeImage, goback, continueEdit } = props
+  const { closePng, volumeImage, noVolumeImage, goback, continueEdit } = props;
   return (
     <View
       style={{
@@ -52,17 +52,12 @@ const PostHead = React.memo((props) => {
         style={{
           height: 30,
           width: 40,
-<<<<<<< HEAD
-
-          justifyContent: "center",
-=======
           paddingHorizontal: 12,
-        
-          justifyContent:"center",
->>>>>>> 141fc44 (修正切换贴纸问题, 以及切换问题)
+
+          justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={require("../images/backArrow.png")} resizeMode='contain' />
+        <Image style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
       </Pressable>
       {props.fileType === 'video' ? (
         <TouchableOpacity
@@ -74,34 +69,24 @@ const PostHead = React.memo((props) => {
         </TouchableOpacity>
       ) : null}
 
-
       <Pressable
         onPress={continueEdit}
         style={{
-<<<<<<< HEAD
           height: 30,
-          width: 40,
-
-          justifyContent: "center",
-          alignItems: "flex-end"
-=======
-          height: 30, 
           paddingHorizontal: 12,
-        
-          justifyContent:"center",
-          alignItems:"flex-end"
->>>>>>> 141fc44 (修正切换贴纸问题, 以及切换问题)
+
+          justifyContent: 'center',
+          alignItems: 'flex-end',
         }}
       >
         <Text style={styles.continueText}>继续</Text>
       </Pressable>
     </View>
   );
-})
+});
 const PostEditor = (props) => {
   // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
-
     params: { trimVideoData = '', fileType = '' },
 
     navigation,
@@ -132,14 +117,11 @@ const PostEditor = (props) => {
   const [photoFile, setPhotoFile] = useState('');
 
   const continueEdit = async () => {
-
-    const cropData = props.params.cropDataResult
+    const cropData = props.params.cropDataResult;
 
     if (fileType === 'image') {
       try {
-
-
-        const path = photoFile
+        const path = photoFile;
         let uploadFile = [];
         uploadFile.push({
           Type: `image/png`,
@@ -149,9 +131,9 @@ const PostEditor = (props) => {
           coverImage: path,
         });
         props.getUploadFile(uploadFile);
-        props.goback()
+        props.goback();
       } catch (e) {
-        console.info(e, '错误')
+        console.info(e, '错误');
       }
     } else {
       // 裁剪视频
@@ -167,7 +149,7 @@ const PostEditor = (props) => {
       }
       setexportVideo(true);
     }
-  }
+  };
   let coverData = [];
   let editor = null;
   let scrubberInterval = null;
@@ -182,11 +164,9 @@ const PostEditor = (props) => {
 
   useEffect(() => {
     getFilters();
-    const {
-      params
-    } = props;
+    const { params } = props;
 
-    if (!params) return null
+    if (!params) return null;
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
@@ -221,9 +201,8 @@ const PostEditor = (props) => {
       setcoverList(coverData);
       setcoverImage(coverData[0]);
     } catch (e) {
-      console.info(e)
+      console.info(e);
     }
-
   };
   useEffect(() => {
     if (multipleSandBoxData.length > 0) {
@@ -233,13 +212,11 @@ const PostEditor = (props) => {
 
   const onExportVideo = async (event) => {
     try {
-
-
       if (event.exportProgress === 1) {
-        const cropData = props.params.cropDataResult
+        const cropData = props.params.cropDataResult;
         let outputPath = event.outputPath;
-        const Wscale = 1080 / props.params.cropDataRow.srcSize.width
-        const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+        const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+        const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
 
         outputPath = await AVService.crop({
           source: `file://${outputPath}`,
@@ -263,36 +240,41 @@ const PostEditor = (props) => {
 
         props.getUploadFile(uploadFile);
         setTimeout(() => {
-          props.goback()
+          props.goback();
         }, 0);
       }
     } catch (e) {
-      console.info(e)
+      console.info(e);
     }
   };
 
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
-    const top = props.params.cropDataRow.positionY
+    const top = props.params.cropDataRow.positionY;
 
-    const width1 = props.params.cropDataRow.fittedSize.width
-    const height1 = props.params.cropDataRow.fittedSize.height
+    const width1 = props.params.cropDataRow.fittedSize.width;
+    const height1 = props.params.cropDataRow.fittedSize.height;
     return (
-      <View style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: "black",
-        width: width,
-        height: width,
-        overflow: "hidden"
-      }}>
-        <View style={{
-          width: width1,
-          height: height1,
-          transform: [{
-            translateY: top
-          }]
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'black',
+          width: width,
+          height: width,
+          overflow: 'hidden',
         }}
+      >
+        <View
+          style={{
+            width: width1,
+            height: height1,
+            transform: [
+              {
+                translateY: top,
+              },
+            ],
+          }}
         >
           <VideoEditor
             editWidth={width1}
@@ -307,7 +289,11 @@ const PostEditor = (props) => {
               onExportVideo(event);
             }}
             onPlayProgress={({ nativeEvent }) => {
-              if (nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition && !startRef.current && !lockRef.current) {
+              if (
+                nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition &&
+                !startRef.current &&
+                !lockRef.current
+              ) {
                 startRef.current = true;
 
                 aniRef.current = Animated.timing(
@@ -324,7 +310,9 @@ const PostEditor = (props) => {
               if (fileType === 'video') {
                 if (
                   nativeEvent.playProgress === undefined ||
-                  (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current && !lockRef.current)
+                  (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition &&
+                    !stopRef.current &&
+                    !lockRef.current)
                 ) {
                   stopRef.current = true;
                   startRef.current = false;
@@ -350,7 +338,6 @@ const PostEditor = (props) => {
         </View>
       </View>
     );
-
   };
   // 滤镜组件
   const filterEditorFilter = () => {
@@ -538,76 +525,56 @@ const PostEditor = (props) => {
   };
   // 图片滤镜
   const result = () => {
-    const left = props.params.cropDataRow.positionX
-    const top = props.params.cropDataRow.positionY
-    const scale = props.params.cropDataRow.scale
+    const left = props.params.cropDataRow.positionX;
+    const top = props.params.cropDataRow.positionY;
+    const scale = props.params.cropDataRow.scale;
 
     const Extractor = (imgFilter) => {
-      const width = props.params.cropDataRow.fittedSize.width
-      const height = props.params.cropDataRow.fittedSize.height
-      const ImageComponent = <Image
-        style={{
-          width: width, height: height, transform: [
-            {
-              scale: scale
-            },
-            { translateX: left },
+      const width = props.params.cropDataRow.fittedSize.width;
+      const height = props.params.cropDataRow.fittedSize.height;
+      const ImageComponent = (
+        <Image
+          style={{
+            width: width,
+            height: height,
+            transform: [
+              {
+                scale: scale,
+              },
+              { translateX: left },
 
-            { translateY: top },
-
-          ]
-        }}
-        source={{ uri: multipleSandBoxData[0] }}
-      />
+              { translateY: top },
+            ],
+          }}
+          source={{ uri: multipleSandBoxData[0] }}
+        />
+      );
       switch (imgFilter) {
         case 'Sepia': {
-          return (
-            <Sepia
-              image={
-
-                ImageComponent
-              }
-              amount={2}
-            />
-          );
+          return <Sepia image={ImageComponent} amount={2} />;
         }
         case 'Temperature': {
-          return (
-            <Temperature
-              amount={0.5}
-              image={
-                ImageComponent
-              }
-            />
-          );
+          return <Temperature amount={0.5} image={ImageComponent} />;
         }
         case 'Sepia2': {
-          return (
-            <Sepia
-              amount={0.4}
-              image={
-                ImageComponent
-              }
-            />
-          );
+          return <Sepia amount={0.4} image={ImageComponent} />;
         }
         default: {
-          return ImageComponent
-
+          return ImageComponent;
         }
       }
     };
 
     return (
       <>
-        <View style={{ width: width, height: width, overflow: "hidden" }}>
-
-          <View style={{
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center',
-
-          }}>
+        <View style={{ width: width, height: width, overflow: 'hidden' }}>
+          <View
+            style={{
+              overflow: 'hidden',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Grayscale
               amount={0}
               onExtractImage={({ nativeEvent }) => {
@@ -685,16 +652,15 @@ const PostEditor = (props) => {
   };
   if (fileType == 'image') {
     return (
-      <View style={{ backgroundColor: 'black', position: 'relative', height: "100%" }}>
+      <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
         <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute} />
 
         {result()}
-
-
-      </View>)
+      </View>
+    );
   }
   return (
-    <View style={{ backgroundColor: 'black', position: 'relative', height: "100%" }}>
+    <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
       <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute} />
       {postEditorViewData()}
 
@@ -722,14 +688,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
     color: '#fff',
-    lineHeight: 21
+    lineHeight: 21,
   },
   textCenter: {
     fontSize: 17,
     fontWeight: '500',
     color: '#fff',
-    lineHeight: 24
-  }
+    lineHeight: 24,
+  },
 });
 
 export default PostEditor;
