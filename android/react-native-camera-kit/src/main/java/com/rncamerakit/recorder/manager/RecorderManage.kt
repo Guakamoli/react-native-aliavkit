@@ -322,7 +322,9 @@ class RecorderManage(
         ).absolutePath
         mRecorder?.setOutputPath(videoPath)
         mRecorder?.setVideoQuality(VideoQuality.SSD)
-        mRecorder?.setVideoBitrate(10 * 1000 * 1000)
+        //10Mbps
+        mRecorder?.setVideoBitrate(10 * 1000)
+        mRecorder?.setRatioMode(AliyunSnapVideoParam.RATIO_MODE_9_16)
         mRecorder?.setGop(30)
         mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
         mRecorder?.setCamera(CameraType.FRONT)

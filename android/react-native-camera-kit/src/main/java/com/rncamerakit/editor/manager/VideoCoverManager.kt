@@ -45,7 +45,7 @@ class VideoCoverManager {
 
             thumbnailFetcher.requestThumbnailImage(longArrayOf(seekTime), object :
                 AliyunIThumbnailFetcher.OnThumbnailCompletion {
-                override fun onThumbnailReady(frameBitmap: Bitmap?, time: Long) {
+                override fun onThumbnailReady(frameBitmap: Bitmap?, time: Long, index: Int) {
                     val timeMillis =
                         DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
                     val thumbnailPath = FileUtils.createFile(

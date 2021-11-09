@@ -1,10 +1,18 @@
 package com.example.reactnativecamerakit;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import androidx.multidex.MultiDexApplication;
 
+import com.aliyun.common.httpfinal.QupaiHttpFinal;
+import com.aliyun.svideo.base.http.EffectService;
+import com.aliyun.svideo.base.ui.SdkVersionActivity;
 import com.aliyun.svideo.downloader.DownloaderManager;
+import com.aliyun.sys.AlivcSdkCore;
 import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
 import com.facebook.react.PackageList;
@@ -24,6 +32,7 @@ import com.horcrux.svg.SvgPackage;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
+import com.rncamerakit.db.MusicFileInfoDao;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.swmansion.reanimated.ReanimatedPackage;
 
@@ -95,8 +104,15 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
         LogUtils.getConfig().setLogSwitch(true);
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager()); // Remove this line if you don't want Flipper enabled
-        DownloaderManager.getInstance().init(this);
 
+        initKitCamera();
+
+        initVideo(this);
+    }
+
+
+    private void initKitCamera() {
+        MusicFileInfoDao.instance.init(this);
         //下载管理
         FileDownloader.setupOnApplicationOnCreate(this);
     }
@@ -127,5 +143,48 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                 e.printStackTrace();
             }
         }
+    }
+
+    private void initVideo(Application application) {
+        QupaiHttpFinal.getInstance().initOkHttpFinal();
+        DownloaderManager.getInstance().init(application);
+        AlivcSdkCore.register(application.getApplicationContext());
+
+        if (BuildConfig.DEBUG) {
+            AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogWarn);
+            AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLClose);
+        } else {
+            AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogDebug);
+            AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLAll);
+        }
+        setSdkDebugParams(application);
+
+        if (TextUtils.isEmpty(mLogPath)) {
+            //保证每次运行app生成一个新的日志文件
+            long time = System.currentTimeMillis();
+            mLogPath =
+                    application.getExternalFilesDir("Log").getAbsolutePath().toString() + "/log_" + time + ".log";
+//                mLogPath = application.getExternalFilesDir("Log").getAbsolutePath() + "/log_" + time + ".log"
+            AlivcSdkCore.setLogPath(mLogPath);
+        }
+
+        EffectService.setAppInfo(
+                application.getResources().getString(R.string.app_name),
+                application.getPackageName(),
+                BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_CODE
+        );
+    }
+
+    private String mLogPath = null;
+
+    private void setSdkDebugParams(Application application) {
+        //Demo 调试用，外部客户请勿使用
+        SharedPreferences mySharedPreferences = application.getSharedPreferences(
+                SdkVersionActivity.DEBUG_PARAMS,
+                Activity.MODE_PRIVATE
+        );
+        int hostType = mySharedPreferences.getInt(SdkVersionActivity.DEBUG_DEVELOP_URL, 0);
+        //AlivcSdkCore.setDebugHostType(hostType);
     }
 }

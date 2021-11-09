@@ -4,24 +4,32 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import com.aliyun.common.utils.StorageUtils
+import com.aliyun.svideo.common.utils.MD5Utils
 import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.SPUtils
+import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloader
+import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileInfoDao
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.io.File
+import java.net.URL
 
 class DownloadUtils {
     companion object {
 
         fun downloadMusic(
             context: ReactContext,
-            songID: Int,
+            songID: String?,
             musicUrl: String?,
             promise: Promise?,
-            callback:MyFileDownloadCallback?
+            callback: MyFileDownloadCallback?
         ) {
             val fileName: String? = musicUrl?.lastIndexOf("/")?.plus(1)?.let {
                 musicUrl.substring(
@@ -41,7 +49,7 @@ class DownloadUtils {
                         totalBytes: Int
                     ) {
                         super.progress(task, soFarBytes, totalBytes)
-                        val progress = soFarBytes.toDouble() / totalBytes.toDouble() * 100
+                        val progress = soFarBytes.toDouble()/totalBytes.toDouble()*100
                         RNEventEmitter.downloadMusicProgress(context, progress.toInt())
                     }
 
@@ -99,6 +107,38 @@ class DownloadUtils {
                 .setCallbackProgressMinInterval(100)
                 .setListener(downloadCallback).start()
         }
+
+
+        fun getMusicJsonInfo() {
+            getMusicJsonInfo(null)
+        }
+
+        val spKey = "MUSIC_JSON_FILE_MD5_KEY"
+
+        fun getMusicJsonInfo(callback: Callback?) {
+            doAsync {
+                val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
+                val md5Text = MD5Utils.getMD5(text)
+
+                val md5Value = SPUtils.getInstance().getString(spKey)
+                if (md5Text != md5Value) {
+                    val baseInfo: MusicFileBaseInfo =
+                        GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                    MusicFileInfoDao.instance.insertList(baseInfo.songs)
+                    SPUtils.getInstance().put(spKey, md5Text)
+                }
+                uiThread {
+                    if (md5Text != md5Value) {
+                        val baseInfo: MusicFileBaseInfo =GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                        MusicFileInfoDao.instance.insertList(baseInfo.songs)
+                        SPUtils.getInstance().put(spKey, md5Text)
+                        callback?.invoke(baseInfo.songs)
+                    }
+                }
+            }
+        }
+
+
     }
 
 }

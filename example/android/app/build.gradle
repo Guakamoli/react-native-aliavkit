@@ -61,11 +61,19 @@ android {
         }
     }
 
+    packagingOptions {
+        exclude('META-INF/LICENSE')
+        exclude('META-INF/beans.xml')
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+    }
+
     sourceSets {
         main {
             jniLibs.srcDirs = ['src/main/jniLibs']
         }
     }
+
     lintOptions {
         abortOnError false
     }

@@ -2551,16 +2551,16 @@ public class AlivcEditView extends RelativeLayout
                     mCanvasController.applyPaintCanvas();
                     mPasterContainer.removeView(mCanvasController.getCanvas());
 
-                    View viewCanvas = mCanvasController.getCanvas();
-                    if (viewCanvas instanceof com.aliyun.svideosdk.editor.impl.d) {
-                        CanvasInfo canvasInfo = ((d) viewCanvas).getCanvasInfo();
-                        if (canvasInfo != null && canvasInfo.transfer() != null) {
-                            int size = canvasInfo.transfer().size();
-                            if (size == 0) {
-                                mCanvasController.removeCanvas();
-                            }
-                        }
-                    }
+//                    View viewCanvas = mCanvasController.getCanvas();
+//                    if (viewCanvas instanceof com.aliyun.svideosdk.editor.impl.d) {
+//                        CanvasInfo canvasInfo = ((d) viewCanvas).getCanvasInfo();
+//                        if (canvasInfo != null && canvasInfo.transfer() != null) {
+//                            int size = canvasInfo.transfer().size();
+//                            if (size == 0) {
+//                                mCanvasController.removeCanvas();
+//                            }
+//                        }
+//                    }
                 }
                 break;
             default:

@@ -261,14 +261,14 @@ public class PasterUIGifImpl extends AbstractPasterUISimpleImpl {
 
 
 
-    /**
-     * 拷贝动画
-     * @return ActionBase
-     */
-    private ActionBase copyFrameAction() {
-        ActionBase actionBase = new ActionBase();
-        actionBase.setDuration(mFrameAction.getDuration());
-        //actionBase.set
-        return null;
-    }
+//    /**
+//     * 拷贝动画
+//     * @return ActionBase
+//     */
+//    private ActionBase copyFrameAction() {
+//        ActionBase actionBase = new ActionBase();
+//        actionBase.setDuration(mFrameAction.getDuration());
+//        //actionBase.set
+//        return null;
+//    }
 }
