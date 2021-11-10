@@ -566,7 +566,6 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    this.getPhotos()
     this.getPhotoFromCache();
   }
   shouldComponentUpdate(nextProps, nextState) {
