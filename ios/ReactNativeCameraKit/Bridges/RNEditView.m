@@ -192,18 +192,8 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
-        if (_editWidth > [UIScreen mainScreen].bounds.size.width) {
-            frame.size.width = [UIScreen mainScreen].bounds.size.width;
-            if (_editHeight == _editWidth) {
-                frame.size.height = [UIScreen mainScreen].bounds.size.width;
-            } else {
-                frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
-            }
-        }
-        else {
-            frame.size.width = _editWidth > 0.0 ? _editWidth : [UIScreen mainScreen].bounds.size.width;
-            frame.size.height = _editHeight > 0.0 ? _editHeight : [UIScreen mainScreen].bounds.size.width * factor;
-        }
+        frame.size.width = _editWidth;
+        frame.size.height = _editHeight;
         _preview = [[UIView alloc] initWithFrame:frame];
         _preview.backgroundColor = [UIColor lightGrayColor];
     }
@@ -235,6 +225,7 @@ AliyunCropDelegate
     }
     if (_isPresented && !self.window) {
         [_editor stopEdit];
+        [self.preview removeFromSuperview];
         _isPresented = NO;
     }
 }
