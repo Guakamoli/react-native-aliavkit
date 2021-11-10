@@ -235,9 +235,8 @@ static BeautyEngineManager *_instance = nil;
 {
     /// 打开滤镜功能开关
     [self.beautyEngine setQueenBeautyType:kQueenBeautyTypeLUT enable:YES];
-    NSBundle *currentBundle = [NSBundle bundleForClass:[self class]];
-    NSString *lutPath = @"ReactNativeAliAVKit.bundle/lz27.png";
-    NSString *fullPath = [[currentBundle resourcePath] stringByAppendingPathComponent:lutPath];
+    NSString *lutName = [NSString stringWithFormat:@"lookups/lz27.png"];
+    NSString *fullPath = [[NSBundle mainBundle] pathForResource:lutName ofType:nil];
     // 设置滤镜资源，也可以是资源的绝对路径
     [self.beautyEngine setLutImagePath:fullPath];
     // 设置滤镜强度

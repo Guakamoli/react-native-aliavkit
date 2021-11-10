@@ -101,8 +101,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
         [self.cameraAction stopPreview];
-        [self.cameraAction.cameraPreview removeFromSuperview];
-        self.cameraAction = nil;
+//        [self.cameraAction.cameraPreview removeFromSuperview];
+//        self.cameraAction = nil;
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -122,8 +122,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
     if (!self.window && _isPresented) {
         [self.cameraAction stopPreview];
-        [self.cameraAction.cameraPreview removeFromSuperview];
-        self.cameraAction = nil;
+//        [self.cameraAction.cameraPreview removeFromSuperview];
+//        self.cameraAction = nil;
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
