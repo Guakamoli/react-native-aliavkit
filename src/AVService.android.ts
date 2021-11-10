@@ -52,7 +52,16 @@ export default class AVService {
     if(name && name == 'all-music'){
       name = "" 
     }
-    return await RNEditorKitModule.getMusicList(name, "测试", page, pageSize);
+    var musics = await RNEditorKitModule.getMusicList(name, "", page, pageSize);
+    return JSON.parse(musics)
   }
 
+  static async getThumbnails({ videoPath, startTime, itemPerTime }) {
+  }
+
+  static async removeThumbnaiImages() {
+  }
+  static enableHapticIfExist() {
+    // AliAVServiceBridge.enableHapticIfExist();
+  }
 }

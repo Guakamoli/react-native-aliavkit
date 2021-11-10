@@ -17,19 +17,19 @@ interface IMusicFileInfoDao {
     fun replace(info: MusicFileBean)
 
     @Throws(SQLException::class)
-    fun updateLocalPath(songID: Int?, localPath: String?,duration:Int?)
+    fun updateLocalPath(songID: String?, localPath: String?,duration:Int?)
 
     @Throws(android.database.SQLException::class)
     fun queryAll(): MutableList<MusicFileBean>?
 
     @Throws(android.database.SQLException::class)
-    fun query(songID: Int?): MusicFileBean?
+    fun query(songID: String?): MusicFileBean?
 
     @Throws(android.database.SQLException::class)
     fun queryList(queryMsg: String?, page: Int?, total: Int?): MutableList<MusicFileBean>?
 
     @Throws(android.database.SQLException::class)
-    fun delete(songID: Int?)
+    fun delete(songID: String?)
 
     @Throws(android.database.SQLException::class)
     fun deleteAll()

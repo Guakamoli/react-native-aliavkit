@@ -5,6 +5,7 @@ import CameraScreen, { CameraType } from './CameraScreen';
 import PostUpload from './PostScreen';
 
 import PostEditor from './PostEditor';
+import Entry from './Entry';
 
 const { CameraKit } = NativeModules;
 
@@ -19,4 +20,4 @@ export const Orientation = {
 export default CameraKit;
 
 
-export { Camera, CameraScreen, CameraType, PostUpload, PostEditor };
+export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry };

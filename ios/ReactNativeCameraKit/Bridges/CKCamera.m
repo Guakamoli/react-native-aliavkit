@@ -66,6 +66,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
+    CGFloat _previewWidth;
+    CGFloat _previewHeight;
+    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -87,22 +90,20 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
-
+@property (nonatomic, strong) NSDictionary *cameraStyle;
 @end
 
 @implementation CKCamera
 
-#pragma mark - initializtion
+#pragma mark - life cycle
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-    if (_isPresented && !self.superview) {
-        AVDLog(@"----： 📷 appeared, going disappear");
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
-                
-            }];
-        }
+    if (!self.superview && _isPresented) {
+        [self.cameraAction stopPreview];
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
+        _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
 }
@@ -110,13 +111,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    if (self.window && _isPresented) {
-        AVDLog(@"--- 📷 coming back ");
-        if (self.cameraAction) {
-            [self.cameraAction startPreview];
-        }
-        return;
-    }
     if (!_isPresented && self.window) {
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
@@ -126,14 +120,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         }
         _isPresented = YES;
     }
-    
-}
-
-- (AliCameraAction *)cameraAction {
-    if (!_cameraAction) {
-        _cameraAction = [AliCameraAction action];
+    if (!self.window && _isPresented) {
+        [self.cameraAction stopPreview];
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
+        _isPresented = NO;
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
-    return _cameraAction;
 }
 
 - (instancetype)init
@@ -144,13 +137,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     return self;
 }
 
-- (void)layoutSubviews
+#pragma mark - Setter
+
+- (void)setCameraStyle:(NSDictionary *)cameraStyle
 {
-    [super layoutSubviews];
-    
+    if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
+        CGFloat previewWidth = [[cameraStyle valueForKey:@"width"] floatValue];
+        CGFloat previewHeight = [[cameraStyle valueForKey:@"height"] floatValue];
+        self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
+    }
 }
 
-#pragma mark - Setter
 - (void)setNormalBeautyLevel:(NSUInteger)normalBeautyLevel
 {
     if (normalBeautyLevel != _normalBeautyLevel) {

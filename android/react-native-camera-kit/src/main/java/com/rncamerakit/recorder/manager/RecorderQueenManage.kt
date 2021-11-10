@@ -26,7 +26,7 @@ class RecorderQueenManage(
 ) :
     OnFrameCallBack, OnTextureIdCallBack {
     private val mQueenManager: QueenManager? = QueenManager.getInstance(mContext)
-    private val orientationDetector: OrientationDetector
+    private var orientationDetector: OrientationDetector? = null
 
     /**
      * 相机的原始NV21数据
@@ -62,7 +62,7 @@ class RecorderQueenManage(
         frameWidth = width
         frameHeight = height
         mCameraInfo = info
-        mQueenManager!!.updateBytesBufPool(width, height, bytes)
+        mQueenManager?.updateBytesBufPool(width, height, bytes)
     }
 
     override fun onChoosePreviewSize(
@@ -83,16 +83,17 @@ class RecorderQueenManage(
         isQueenDrawed = true
         if (texture2D == null) {
             texture2D =
-                mQueenManager!!.initEngine(false, textureId, textureWidth, textureHeight, true)
+                mQueenManager?.initEngine(false, textureId, textureWidth, textureHeight, true)
         }
-        return mQueenManager!!.draw(
+        return mQueenManager?.draw(
             frameBytes,
             frameWidth,
             frameHeight,
             mCameraInfo,
             matrix,
             texture2D
-        )
+        ) ?: 0
+
     }
 
     override fun onScaledIdBack(
@@ -114,7 +115,7 @@ class RecorderQueenManage(
 
     private fun queenDefaultParam() {
         beautyService = BeautyService()
-        beautyService!!.bindQueen(mContext, mQueenManager)
+        beautyService?.bindQueen(mContext, mQueenManager)
         initRememberParams()
     }
 
@@ -122,17 +123,17 @@ class RecorderQueenManage(
         //高级美颜
         val beautyFaceLevel = SharedPreferenceUtils.getBeautyFaceLevel(mContext)
         val beautyFaceParams = rememberRaceParamList[beautyFaceLevel]
-        beautyService!!.setBeautyParam(beautyFaceParams, BeautyService.BEAUTY_FACE)
+        beautyService?.setBeautyParam(beautyFaceParams, BeautyService.BEAUTY_FACE)
 
         //美肌
         val beautySkinLevel = SharedPreferenceUtils.getBeautySkinLevel(mContext)
         val beautyShinParams = rememberParamList[beautySkinLevel]
-        beautyService!!.setBeautyParam(beautyShinParams, BeautyService.BEAUTY_SKIN)
+        beautyService?.setBeautyParam(beautyShinParams, BeautyService.BEAUTY_SKIN)
 
         //美型
         val currentBeautyShapePosition = SharedPreferenceUtils.getBeautyShapeLevel(mContext)
         val shapeParams = rememberShapeParamList[currentBeautyShapePosition]
-        mQueenManager!!.setShapeParam(shapeParams)
+        mQueenManager?.setShapeParam(shapeParams)
     }
 
     fun setBeautyLevel(beautyLevel: Int) {
@@ -155,7 +156,7 @@ class RecorderQueenManage(
     }
 
     private fun getCameraRotation(): Int {
-        val orientation = orientationDetector.orientation
+        val orientation = orientationDetector?.orientation
         var rotation = 90
         if (orientation in 45..134) {
             rotation = 180
@@ -185,7 +186,7 @@ class RecorderQueenManage(
 
     fun onRelease() {
         mQueenManager?.release()
-        orientationDetector.disable()
+        orientationDetector?.disable()
     }
 
     init {
@@ -196,13 +197,13 @@ class RecorderQueenManage(
         recorderInterface.setOnFrameCallback(this)
         recorderInterface.setOnTextureIdCallback(this)
         orientationDetector = OrientationDetector(mContext)
-        orientationDetector.setOrientationChangedListener {
+        orientationDetector?.setOrientationChangedListener {
             val rotation = getCameraRotation();
             recorderInterface.setRotation(rotation)
             Camera.getCameraInfo(mCameraInfo.facing, mCameraInfo)
             mQueenManager?.setDeviceOrientation(0, ActivityUtil.getDegrees(mContext.currentActivity))
         }
-        orientationDetector.enable()
+        orientationDetector?.enable()
     }
 
 }

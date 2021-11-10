@@ -268,7 +268,7 @@ public class PaiyaPublishActivity extends BaseAliActivity {
         mCoverThumbnailFetcher.requestThumbnailImage(new long[]{0},
                 new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
                     @Override
-                    public void onThumbnailReady(Bitmap bitmap, long l) {
+                    public void onThumbnailReady(Bitmap bitmap, long l, int index) {
                         if (bitmap != null && !bitmap.isRecycled()) {
                             String path = FileUtils.getDiskCachePath(mContext) + File.separator + "Media" + File.separator;
                             mThumbnailPath = FileUtils.createFile(path, "thumbnail.jpg").getPath();

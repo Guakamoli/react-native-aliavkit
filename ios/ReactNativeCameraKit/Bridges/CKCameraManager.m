@@ -34,7 +34,7 @@ RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
-
+RCT_EXPORT_VIEW_PROPERTY(cameraStyle, NSDictionary)
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
@@ -46,6 +46,17 @@ RCT_EXPORT_METHOD(capture:(NSDictionary*)options
         reject(@"capture_error", error, nil);
     }];
 }
+
+RCT_EXPORT_METHOD(setPasterInfo:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    if (!options || [options isEqualToDictionary:@{}]) {
+        reject(@"",@"params can't be null or empty",nil);
+    }
+    [self.camera applyFacePaster:options];
+}
+
 
 RCT_EXPORT_METHOD(startRecording:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve

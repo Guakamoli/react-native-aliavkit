@@ -20,6 +20,9 @@ import Carousel from 'react-native-snap-carousel';
 // import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast'
 import StoryMusic from './StoryMusic';
+import ImageMap from '../images';
+const { musicSelect } = ImageMap;
+import AVService from './AVService';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = (height)
@@ -78,6 +81,7 @@ export default class StoryEditor extends Component<Props, State> {
   camera: any;
   myRef: any
   editor: any
+  musicOn:any
   constructor(props) {
     console.info('story 编辑页面props', props);
 
@@ -99,8 +103,8 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
+      musicInfo: {},
       setMusic: false,
-      musicInfo: {}
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
@@ -109,12 +113,17 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.startExportVideo) {
       return;
     }
+    this.pauseMusic(this.musicOn)
     this.setState({ startExportVideo: true });
   }
+  async pauseMusic(song) {
+    console.info('暂停音乐', song);
+    await AVService.pauseMusic(song.songID);
 
+  }
   //  发布快拍   导出视频  丢出数据
   onExportVideo(event) {
-    // console.log('1231', event);
+    console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
       let outputPath = event.outputPath;
@@ -129,7 +138,8 @@ export default class StoryEditor extends Component<Props, State> {
         Name: outputPath
       })
 
-      this.sendUploadFile(uploadFile)
+      this.props.getUploadFile(uploadFile)
+      this.props.setType("story")
 
     }
   }
@@ -141,7 +151,7 @@ export default class StoryEditor extends Component<Props, State> {
         // console.log('filterList111', filterList);
         this.setState({ filterList: filterList })
       } else {
-        const infos = await RNEditViewManager.getFilterIcons({});
+        const infos = await AVService.getFilterIcons({});
         infos.unshift({ filterName: null, iconPath: '', title: "无效果" })
         this.setState({ filterList: infos })
       }
@@ -198,7 +208,7 @@ export default class StoryEditor extends Component<Props, State> {
       { 'img': this.state.mute ? this.props.noVolumeImage : this.props.volumeImage, 'onPress': () => { this.setState({ mute: !this.state.mute }) }, },
       // 'music':
       {
-        'img': this.props.fileType == 'video' ? this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
+        'img': this.props.fileType == 'video' ?this.state.setMusic ? musicSelect : this.props.videomusicIcon : this.props.musicRevampImage, 'onPress': () => {
           if (this.props.fileType == 'video') {
 
             this.setState({ musicOpen: !musicOpen })
@@ -255,16 +265,19 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
+      // return null
+      const CameraFixHeight = height - (this.props.insets.bottom +this.props.insets.top+ 30 + 28 )
       return (
-        <View style={{ height: '100%', backgroundColor: '#fff', borderRadius: 20 }}>
+        <View style={{ height: CameraFixHeight, backgroundColor: 'black', borderRadius: 20, width:"100%",overflow:"hidden"}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
-            style={{ height: CameraHeight, justifyContent: 'flex-end' }}
+            editWidth={width}
+            editHeight={CameraFixHeight}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
 
-            saveToPhotoLibrary={true}
+            saveToPhotoLibrary={false}
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
@@ -275,7 +288,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <View style={[styles.cameraContainer]}>
-        <TouchableOpacity style={[Platform.OS != 'android' && { flex: 1, justifyContent: 'flex-end', }, {}]}
+        <TouchableOpacity 
           onPress={() => {
             this.setState({ showFilterLens: false, musicOpen: false });
             // !this.state.showFilterLens 
@@ -292,8 +305,8 @@ export default class StoryEditor extends Component<Props, State> {
   }
 
   sendUploadFile(data) {
-    if (this.props.getUploadFile) {
-      this.props.getUploadFile(data);
+    if (this.props.sendfile) {
+      this.props.sendfile(data);
     }
   }
   // 美颜 滤镜 box
@@ -349,7 +362,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ height: height * 0.15, backgroundColor: "#000", justifyContent: 'center', alignContent: 'center' }}>
+        <View style={{  justifyContent: 'center', alignContent: 'center' }}>
           {this.renderUploadStory()}
         </View>
       </>
@@ -358,7 +371,6 @@ export default class StoryEditor extends Component<Props, State> {
 
 
   render() {
-    // console.log('getmusicInfo-----', this.state.musicInfo);
     return (
       <>
         <Toast
@@ -369,14 +381,9 @@ export default class StoryEditor extends Component<Props, State> {
           fadeOutDuration={1000}
           opacity={0.8}
         />
-
-        {/* story */}
-        {Platform.OS === 'android' && this.renderCamera()}
-        {Platform.OS !== 'android' && this.renderCamera()}
+        {this.renderCamera()}
         {Platform.OS === 'android' && <View style={styles.gap} />}
-
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
-
           {this.state.musicOpen
             ?
             <StoryMusic
@@ -385,12 +392,19 @@ export default class StoryEditor extends Component<Props, State> {
               musicSearch={this.props.musicSearch}
               musicIcongray={this.props.musicIcongray}
               getmusicInfo={(data) => {
+
+
                 this.setState({ musicInfo: data })
-              }}
+              }} 
+              setMusicState={this.state.setMusic}
               setMusic={(data) => {
                 this.setState({ setMusic: data })
               }}
-            />
+              getMusicOn={(data) => {
+
+               this.musicOn = data
+              }}
+              />
             :
             this.renderBottom()}
 
@@ -414,23 +428,27 @@ const styles = StyleSheet.create(
     },
 
     cameraContainer: {
-      ...Platform.select({
-        android: {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width,
-          height,
-        },
-        default: {
-          flex: 1,
-          // height:400,
-          flexDirection: 'column',
-        },
-      }),
+      // ...Platform.select({
+      //   android: {
+      //     position: 'absolute',
+      //     top: 0,
+      //     left: 0,
+      //     width,
+      //     height,
+      //   },
+      //   default: {
+      //     flex: 1,
+      //     width,
+      //     height,
+      //     // height:400,
+      //     flexDirection: 'column',
+      //     backgroundColor:"black"
+      //   },
+      // }),
     },
     bottomButton: {
       flex: 1,
+      
       flexDirection: 'row',
       alignItems: 'center',
       padding: 10,
@@ -474,7 +492,7 @@ const styles = StyleSheet.create(
     },
     uploadBox: {
       width: 130,
-      height: 30,
+      height: 40,
       borderRadius: 22,
       backgroundColor: "#fff",
       justifyContent: 'center',
@@ -489,7 +507,7 @@ const styles = StyleSheet.create(
     UpdateBox: {
       position: 'absolute',
       zIndex: 99,
-      top: 40,
+      top: 20,
     },
     updateTopIcon: {
       width: 40,

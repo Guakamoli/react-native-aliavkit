@@ -203,13 +203,78 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
     ];
 }
 
+- (void)cropVideo:(NSString *)sourcePath
+         duration:(CGFloat)duration
+             rect:(CGRect)cropRect
+          resolve:(RCTPromiseResolveBlock)resolve
+           reject:(RCTPromiseRejectBlock)reject
+{
+    if (![sourcePath hasPrefix:@"file://"]) {
+        reject(@"",@"path not valid",nil);
+        return;
+    }
+    if (![sourcePath hasSuffix:@".mp4"]) {
+        reject(@"",@"Only support mp4 crop",nil);
+        return;
+    }
+    NSString *inputPath = [sourcePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:inputPath]) {
+        reject(@"",@"File doesn't exist at source path",nil);
+        return;
+    }
+    NSURL *assetURL = [NSURL URLWithString:inputPath];
+    AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:assetURL options:nil];
+    if (!urlAsset) {
+        reject(@"",@"Asset init failed",nil);
+        return;
+    }
+    NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    self.cutPanel = [[AliyunCrop alloc] initWithDelegate:(id<AliyunCropDelegate>)self];
+    self.cutPanel.inputPath = inputPath;
+    self.cutPanel.outputSize = cropRect.size;
+    self.cutPanel.outputPath = outputPath;
+    self.cutPanel.startTime = 0;
+    self.cutPanel.endTime = duration;
+    
+    // cut mode
+    self.cutPanel.cropMode = 1;
+    self.cutPanel.rect = cropRect;
+    if ([RNAVDeviceHelper isBelowIphone_11]) {
+        self.cutPanel.videoQuality = AliyunVideoQualityMedium;
+    }
+    else {
+        self.cutPanel.fps = 30;
+        self.cutPanel.gop = 30;
+        self.cutPanel.bitrate = 10*1000*1000;   // 15Mbps
+    }
+    self.cutPanel.encodeMode = 1;           // Force hardware encoding
+    self.cutPanel.shouldOptimize = NO;
+    
+    int res =[self.cutPanel startCrop];//20003004
+    if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_VIDEO){
+        reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+        return;
+    }
+    else if (res == ALIVC_SVIDEO_ERROR_MEDIA_NOT_SUPPORTED_AUDIO){
+        reject(@"",@"NOT_SUPPORTED_VIDEO",nil);
+        return;
+    }
+    else if (res <0 && res != -314){
+        reject(@"",[NSString stringWithFormat:@"%d",res],nil);
+        return;
+    }
+    else if (res == 0) {
+        resolve(outputPath);
+    }
+}
+
 RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
     NSString *source = [options valueForKey:@"source"];
-    if (!source || ![source containsString:@"ph://"]) {
-        reject(@"",@"source scheme no ph://",nil);
+    if (!source || [source isEqualToString:@""]) {
+        reject(@"",@"source must contain a path value",nil);
         return;
     }
     CGFloat cropOffsetX = [[options valueForKey:@"cropOffsetX"] floatValue];
@@ -227,12 +292,32 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         reject(@"",@"Invalid cropHeight",nil);
         return;
     }
-
-    
-    NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
-    PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     
     CGRect cropRect = CGRectMake(cropOffsetX, cropOffsetY, cropWidth, cropHeight);
+    
+    if ([source hasPrefix:@"file://"]) {
+        if ([source hasSuffix:@".mp4"]) {
+            CGFloat duration = [[options valueForKey:@"duration"] floatValue];
+            if (!duration) {
+                reject(@"",@"duration can't be zero",nil);
+                return;
+            }
+            [self cropVideo:source duration:duration rect:cropRect resolve:resolve reject:reject];
+        }
+         else if ([source hasSuffix:@".png"]) {
+            [self cropImage:source rect:cropRect resolve:resolve reject:reject];
+        }
+         else {
+             reject(@"",@"file path suffix must contain mp4 or png",nil);
+         }
+        return;
+    }
+    
+    if (![source hasPrefix:@"ph://"]) {
+        return;
+    }
+    NSString *_assetId = [source stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+    PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
     
     __weak typeof(self) weakSelf = self;
     if (phAsset.mediaType == PHAssetMediaTypeVideo) {
@@ -282,7 +367,6 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             }
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
-        CGSize outputSize = CGSizeMake(1080, 1920);
         NSString *rootDirPath = [AliyunPathManager compositionRootDir];
         if (![[NSFileManager defaultManager] fileExistsAtPath:rootDirPath]) {
             [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
@@ -292,7 +376,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         
         
         [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
-                                                              maxSize:outputSize
+                                                              maxSize:cropRect.size
                                                            outputPath:tmpPhotoPath
                                                            completion:^(NSError *error, UIImage * _Nullable sourceImage) {
             if (sourceImage == nil) {
@@ -312,6 +396,33 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                 reject(@"",@"write file failure",nil);
             }
         }];
+    }
+}
+
+- (void)cropImage:(NSString *)sourcePath
+             rect:(CGRect)cropRect
+          resolve:(RCTPromiseResolveBlock)resolve
+           reject:(RCTPromiseRejectBlock)reject
+{
+    NSString *rootDirPath = [AliyunPathManager compositionRootDir];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:rootDirPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *outPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
+    
+    AliyunImageCrop *imageCrop = [[AliyunImageCrop alloc] init];
+    imageCrop.originImage = [[UIImage alloc] initWithContentsOfFile:sourcePath];
+    imageCrop.cropMode = AliyunImageCropModeAspectCut;
+    imageCrop.cropRect = cropRect;
+    imageCrop.outputSize = cropRect.size;
+    UIImage *generatedImage = [imageCrop generateImage];
+    NSData *data = UIImagePNGRepresentation(generatedImage);
+    BOOL writeSuccess = [data writeToFile:outPhotoPath atomically:YES];
+    if (writeSuccess) {
+        resolve(outPhotoPath);
+    } else {
+        reject(@"",@"write file failure",nil);
     }
 }
 

@@ -116,7 +116,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
      */
     @ReactMethod
-    fun getMusicPath(songID: Int, promise: Promise) {
+    fun getMusicPath(songID: String, promise: Promise) {
         val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)

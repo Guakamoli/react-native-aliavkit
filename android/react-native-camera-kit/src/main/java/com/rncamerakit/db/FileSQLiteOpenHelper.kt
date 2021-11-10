@@ -11,7 +11,7 @@ class FileSQLiteOpenHelper private constructor(context: Context?) :
     override fun onCreate(db: SQLiteDatabase) {
         val sql = "CREATE TABLE $TABLE_NAME" +
                 "(" +
-                "SONG_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "SONG_ID VARCHAR2(100) PRIMARY KEY," +
                 "NAME VARCHAR2(1000)," +
                 "ARTIST VARCHAR2(200)," +
                 "IS_DB_CONTAIN INTEGER," + //0（false）和 1（true）

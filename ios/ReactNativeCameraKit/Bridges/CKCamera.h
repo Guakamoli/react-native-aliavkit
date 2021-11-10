@@ -93,4 +93,5 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
                success:(VideoStopBlock)onSuccess
               onError:(void (^)(NSString*))onError;
 
+- (void)applyFacePaster:(NSDictionary *)options;
 @end

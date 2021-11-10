@@ -151,7 +151,6 @@ export default class Editor extends Component<Props, State> {
       this.downloadMusicListener.remove();
     }
 
-    this.stopMusic();
   }
 
   render() {

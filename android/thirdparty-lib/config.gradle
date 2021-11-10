@@ -19,7 +19,7 @@ ext {
 
     externalCrashReporter = 'com.taobao.android:crashreporter:3.0.4.1@aar'
     externalUtdid = 'com.taobao.android:utdid4all:1.1.5@jar'
-    externalTbest  = 'com.taobao.android:tbrest:1.0.0.23@aar'
+    externalTbest = 'com.taobao.android:tbrest:1.0.0.23@aar'
 
     //SDK Layer
     externalJSR305 = 'com.google.code.findbugs:jsr305:3.0.0'
@@ -32,39 +32,22 @@ ext {
     externalAliyunVodUpload = 'com.aliyun.video.android:upload:1.6.1'
     externalAlivcConan = 'com.alivc.conan:AlivcConan:1.0.5'
 
-    externalAlivcFFmpeg =  'com.aliyun.video.android:AlivcFFmpeg:4.3.0'
-//    externalAlivcFFmpeg =  'com.aliyun.video.android:AlivcFFmpeg:2.0.1'
+    externalAlivcFFmpeg = 'com.aliyun.video.android:AlivcFFmpeg:4.3.1'
     externalAlivcCore = 'com.aliyun.video.android:core:1.2.2'
 
-    // 3.21.0
-//    externalSvideopro = 'com.aliyun.video.android:svideopro:3.21.0'
-//    externalSvideostandard = 'com.aliyun.video.android:svideostandard:3.21.0'
-//    externalSvideosnap = 'com.aliyun.video.android:svideosnap:3.21.0'
-//    externalPlayerFull = 'com.aliyun.sdk.android:AliyunPlayer:4.7.3-full'
-//    externalPlayerPart = 'com.aliyun.sdk.android:AliyunPlayer:4.7.3-part'
-
-    //3.22.0
-//    externalSvideopro = 'com.aliyun.video.android:svideopro:3.22.0'
-//    externalSvideostandard = 'com.aliyun.video.android:svideostandard:3.22.0'
-//    externalSvideosnap = 'com.aliyun.video.android:svideosnap:3.22.0'
-//    externalPlayerFull = 'com.aliyun.sdk.android:AliyunPlayer:5.3.0-full'
-//    externalPlayerPart = 'com.aliyun.sdk.android:AliyunPlayer:5.3.0-part'
-
-    //3.24.0
-    externalSvideopro =      'com.aliyun.video.android:svideopro:3.24.0'
-    externalSvideostandard = 'com.aliyun.video.android:svideostandard:3.24.0'
-    externalSvideosnap =     'com.aliyun.video.android:svideosnap:3.24.0'
-    externalPlayerFull = 'com.aliyun.sdk.android:AliyunPlayer:5.4.0-full'
-    externalPlayerPart = 'com.aliyun.sdk.android:AliyunPlayer:5.4.0-part'
+    //3.25.0
+//    externalSvideopro = 'com.aliyun.video.android:svideopro:3.25.+'
+    externalSvideopro = 'com.aliyun.video.android:svideopro:3.26.0'
 
     //queen sdk
-    externalAliyunQueen = 'com.aliyun.maliang.android:queen:1.2.0-official-pro'
+//    externalAliyunQueen = 'com.aliyun.maliang.android:queen:1.2.0-official-pro'
 //    externalAliyunQueen = "com.aliyun.maliang.android:queen:1.3.0-official-pro"
-//    externalAliyunQueen = "com.aliyun.maliang.android:queen:1.3.1-official-full"
+    externalAliyunQueen = 'com.aliyun.maliang.android:queen:1.4.0-official-full'
 
     externalCompileSdkVersion = 29
     externalBuildToolsVersion = '29.0.3'
     //The MinSdkVersion of the product you can add like this: externalSVideoMinSdkVersion 15
     externalMinSdkVersion = 21
     externalTargetSdkVersion = 29
+
 }

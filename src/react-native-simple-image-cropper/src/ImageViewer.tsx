@@ -16,7 +16,7 @@ interface IProps {
   onMove: ({ positionX, positionY, scale }: IImageViewerData) => void;
   containerColor?: string;
   videoFile?: string;
-
+  disablePin?: boolean,
   imageBackdropColor?: string;
   overlay?: ReactNode;
 }
@@ -109,7 +109,7 @@ class ImageViewer extends Component<IProps> {
     this.translateX = new Value(0);
     this.translateY = new Value(0);
     this.scale = new Value(minScale);
-
+    this.enableXRef = new Value(this.props.disablePin? 0: 1)
     const timingDefaultParams = {
       duration: 200,
       easing: Easing.linear,
@@ -217,7 +217,8 @@ class ImageViewer extends Component<IProps> {
         }) =>
           block([
             cond(eq(state, State.ACTIVE), [
-              set(this.translateX, add(divide(translationX, this.scale), offsetX)),
+           
+              set(this.translateX,  this.props.disablePin? offsetX :add(divide(translationX, this.scale), offsetX)),
               set(this.translateY, add(divide(translationY, this.scale), offsetY)),
 
               set(maxX, horizontalMax),
@@ -236,7 +237,7 @@ class ImageViewer extends Component<IProps> {
               ),
 
               cond(
-                and(lessThan(this.translateX, negMaxX), greaterOrEq(this.scale, new Value(minScale))),
+                and( greaterOrEq(this.enableXRef, 1),lessThan(this.translateX, negMaxX), greaterOrEq(this.scale, new Value(minScale))),
                 [
                   set(
                     this.translateX,
@@ -247,7 +248,7 @@ class ImageViewer extends Component<IProps> {
                     }),
                   ),
                 ],
-                cond(and(greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
+                cond(and(greaterOrEq(this.enableXRef, 1), greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
                   set(
                     this.translateX,
                     timing({
@@ -348,12 +349,23 @@ class ImageViewer extends Component<IProps> {
       },
     ]);
   }
+  // shouldComponentUpdate(nextProps){
+  //   const { disablePin} = this.props;
+
+  //   if (nextProps.disablePin !== disablePin) {
+  //     this.enableXRef = new Value(this.props.disablePin? 0: 1)
+  //     return false
+  //   }
+  //   return true
+  // }
   componentDidUpdate(prevProps: IProps) {
-    const { propsScale } = this.props;
+    const { propsScale , disablePin} = this.props;
 
     if (propsScale && prevProps.propsScale !== propsScale) {
       this.scale.setValue(propsScale);
     }
+  
+
   }
   handleMove = (args: readonly number[]): void => {
     const { onMove } = this.props;
@@ -452,6 +464,7 @@ class ImageViewer extends Component<IProps> {
           minPointers={1}
           maxPointers={2}
           avgTouches
+          
           onGestureEvent={this.onPanGestureEvent}
           onHandlerStateChange={this.onPanGestureEvent}
         >
@@ -460,6 +473,7 @@ class ImageViewer extends Component<IProps> {
               <Animated.View style={areaStyles}>
                 <PinchGestureHandler
                   ref={this.pinchRef}
+                  enabled={!this.props.disablePin}
                   onGestureEvent={this.onPinchGestureEvent}
                   onHandlerStateChange={this.onPinchGestureEvent}
                 >
@@ -469,6 +483,7 @@ class ImageViewer extends Component<IProps> {
                         <Video
                           paused={videoPaused}
                           repeat={true}
+                          muted={true}
                           source={{ uri: videoFile }}
                           style={{
                             width: imageWidth,
