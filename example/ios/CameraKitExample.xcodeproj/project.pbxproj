@@ -233,6 +233,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Face_Sticker",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Filter",
+				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/lookups",
 				"${PODS_CONFIGURATION_BUILD_DIR}/react-native-image-filter-kit/bundle.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -242,6 +243,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Face_Sticker",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Filter",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/lookups",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/bundle.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
