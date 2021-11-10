@@ -1,20 +1,27 @@
 import * as types from './actionsTypes';
 
-export function setRoles(roles) {
+export function setFacePasterInfo(data) {
     return {
-        type: types.ROLES.SET,
-        roles
+        type: types.STORY.SET_FACE_PASEER_INFO,
+        data
     };
 }
-export function updateRoles(id, desc) {
+export function setCameraType(data) {
     return {
-        type: types.ROLES.UPDATE,
-        payload: { id, desc }
+        type: types.STORY.SET_CAMERA_TYPE,
+        data
     };
 }
-export function removeRoles(id) {
+export function setShowBeautify(data) {
     return {
-        type: types.ROLES.REMOVE,
-        payload: { id }
+        type: types.STORY.SET_SHOWBEAUTIFY,
+        data
+    };
+}
+
+export function setNormalBeautyLevel(data) {
+    return {
+        type: types.STORY.SET_NORMAL_BEAUTY_LEVEl,
+        data
     };
 }

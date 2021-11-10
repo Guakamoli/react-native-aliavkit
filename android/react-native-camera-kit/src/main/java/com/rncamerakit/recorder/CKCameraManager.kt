@@ -137,7 +137,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     @ReactProp(name = "musicInfo")
     fun setMusicInfo(view: CKCamera, readableMap: ReadableMap?) {
         if (readableMap != null && readableMap.toHashMap().size > 0) {
-            val songID = if (readableMap.hasKey("songID")) readableMap.getInt("songID") else 0
+            val songID = if (readableMap.hasKey("songID")) readableMap.getString("songID") else ""
             val name = if (readableMap.hasKey("name")) readableMap.getString("name") else ""
             val artist = if (readableMap.hasKey("artist")) readableMap.getString("artist") else ""
             val isDbContain =

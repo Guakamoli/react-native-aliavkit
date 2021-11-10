@@ -77,7 +77,7 @@ public class ThumbnailFetcherManage {
             final int[] position = {i};
             mThumbnailFetcher.requestThumbnailImage(coverTimes, new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
                 @Override
-                public void onThumbnailReady(Bitmap bitmap, long longTime) {
+                public void onThumbnailReady(Bitmap bitmap, long longTime, int index) {
 //                    Log.e("BBB", "onThumbnailReady longTime: " + longTime);
                     if (bitmap != null && !bitmap.isRecycled()) {
                         if (callback != null) {
@@ -125,7 +125,7 @@ public class ThumbnailFetcherManage {
             final int[] position = {i};
             mThumbnailFetcher.requestThumbnailImage(coverTimes, new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
                 @Override
-                public void onThumbnailReady(Bitmap bitmap, long longTime) {
+                public void onThumbnailReady(Bitmap bitmap, long longTime, int index) {
 //                    Log.e("BBB", "onThumbnailReady longTime: " + longTime);
                     if (bitmap != null && !bitmap.isRecycled()) {
                         if (callback != null) {
@@ -159,7 +159,7 @@ public class ThumbnailFetcherManage {
             final int[] position = {i};
             mThumbnailFetcher.requestThumbnailImage(coverTimes, new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
                 @Override
-                public void onThumbnailReady(Bitmap bitmap, long longTime) {
+                public void onThumbnailReady(Bitmap bitmap, long longTime, int index) {
 //                    Log.e("BBB", "onThumbnailReady longTime: " + longTime);
                     if (bitmap != null && !bitmap.isRecycled()) {
                         if (callback != null) {
@@ -200,7 +200,7 @@ public class ThumbnailFetcherManage {
         mCoverThumbnailFetcher.requestThumbnailImage(new long[]{coverTime},
                 new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
                     @Override
-                    public void onThumbnailReady(Bitmap bitmap, long l) {
+                    public void onThumbnailReady(Bitmap bitmap, long l, int index) {
                         if (bitmap != null && !bitmap.isRecycled()) {
                             if (callback != null) {
                                 callback.onNextCover(bitmap);

@@ -1,9 +1,16 @@
 /* eslint-disable */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
+import { useThrottleFn } from 'ahooks';
+import {  useSelector, useDispatch } from 'react-redux';
+import {
+  setType,
+
+} from './actions/container';
 const { width, height } = Dimensions.get('window');
+
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {
@@ -28,11 +35,14 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
-  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
-  const params = props.route?.params || {};
-  const initType = params.type || 'post';
-  const [type, setType] = useState(initType);
-  const transX = React.useRef(new Animated.Value(initType === 'post' ? 30 : -30)).current;
+  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics, } = props;
+  const dispatch = useDispatch()
+  const type = useSelector((state) => {
+    return state.shootContainer.type
+  })
+  const changeFlagLock =React.useRef(false)
+  const lockFlag = React.useRef(false)
+  const transX = React.useRef(new Animated.Value(type === 'post' ? 30 : -30)).current;
   const types = [
     {
       type: 'post',
@@ -43,7 +53,23 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-
+  React.useEffect(()=>{
+    if (changeFlagLock.current) return
+    transX.setValue(type === 'post' ? 30 : -30)
+  }, [
+    type
+  ])
+  const {run: changeType} = useThrottleFn((i)=>{
+    changeFlagLock.current = true
+    Animated.timing(transX, {
+      toValue: i.type === 'post' ? 30 : -30,
+      useNativeDriver: true,
+    }).start();
+    dispatch(setType(i.type))
+    setTimeout(() => {
+      changeFlagLock.current = false
+    }, 0);
+  },{wait: 1000})
   return (
     <>
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
@@ -58,7 +84,10 @@ const Entry = (props) => {
             props.navigation.navigate('FeedsPostEditor', { ...data });
           }}
           type={type}
-          setType={setType}
+          setType={(type)=>{
+            dispatch(setType(type))
+
+          }}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
           postCameraImage={postCameraPng}
@@ -69,13 +98,18 @@ const Entry = (props) => {
           volumeImage={volumePng}
         />
       </View>
-      <View style={[type === 'story' ? {} : { display: 'none' }, { height: '100%', flex: 1 }]}>
+      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
           goback={goBack}
           type={type}
+          setType={(type)=>{
+            dispatch(setType(type))
+
+          }}
+
           goPost={() => {
             navigation.replace('FeedsPost');
           }}
@@ -111,6 +145,7 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
+          {bottom: props.insets.bottom},
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           {
             transform: [{ translateX: transX }],
@@ -121,12 +156,8 @@ const Entry = (props) => {
           return (
             <TouchableOpacity
               key={i.type}
-              onPress={() => {
-                Animated.timing(transX, {
-                  toValue: i.type === 'post' ? 30 : -30,
-                  useNativeDriver: true,
-                }).start();
-                setType(i.type);
+              onPress={()=>{
+                changeType(i)
               }}
             >
               <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
@@ -145,7 +176,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     zIndex: 100,
     width: 120,
-    height: 43,
+    height: 36,
     position: 'absolute',
     left: (width - 120) / 2,
     bottom: 40,
@@ -155,7 +186,7 @@ const styles = StyleSheet.create({
   },
   toolText: {
     color: 'white',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
     lineHeight: 18,
     // marginRight: 10,

@@ -14,6 +14,7 @@ export default class AVService {
     return await AliAVServiceBridge.getFilterIcons({});
   }
 
+
   static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }

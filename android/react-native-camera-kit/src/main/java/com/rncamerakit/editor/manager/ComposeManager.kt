@@ -64,7 +64,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         )
         aliyunIThumbnailFetcher.requestThumbnailImage(longArrayOf(0), object :
             AliyunIThumbnailFetcher.OnThumbnailCompletion {
-            override fun onThumbnailReady(frameBitmap: Bitmap?, time: Long) {
+            override fun onThumbnailReady(frameBitmap: Bitmap?, time: Long, index: Int) {
                 val timeMillis =
                     DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
                 val thumbnailPath = FileUtils.createFile(
@@ -87,10 +87,10 @@ class ComposeManager(private val mContext: ThemedReactContext) {
                         e.printStackTrace()
                     }
                 }
-                if(isSaveToPhotoLibrary){
-                    AliFileUtils.saveImageToMediaStore(mContext,thumbnailPath)
+                if (isSaveToPhotoLibrary) {
+                    AliFileUtils.saveImageToMediaStore(mContext, thumbnailPath)
                 }
-                RNEventEmitter.startVideoCompose(mContext, 100,thumbnailPath)
+                RNEventEmitter.startVideoCompose(mContext, 100, thumbnailPath)
                 promise?.resolve(thumbnailPath)
             }
 
@@ -111,32 +111,32 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         mOutputPath =
             Constants.SDCardConstants.getDir(mContext) + time + Constants.SDCardConstants.COMPOSE_SUFFIX
 
-        Log.e("AAA","mOutputPath:$mOutputPath")
+        Log.e("AAA", "mOutputPath:$mOutputPath")
 
         val errorCode: Int? =
             mVodCompose?.compose(configPath, mOutputPath, object : AliyunIComposeCallBack {
                 override fun onComposeError(errorCode: Int) {
-                    Log.e("AAA","onComposeError:$errorCode")
+                    Log.e("AAA", "onComposeError:$errorCode")
 //                    if (isVideo) {
-                        promise?.reject("exportVideo", "errorCode:$errorCode")
+                    promise?.reject("exportVideo", "errorCode:$errorCode")
 //                    } else {
 //                        promise?.reject("exportImage", "errorCode:$errorCode")
 //                    }
                 }
 
                 override fun onComposeProgress(progress: Int) {
-                    Log.e("AAA","onComposeProgress:$progress")
-                    RNEventEmitter.startVideoCompose(mContext, progress,"")
+                    Log.e("AAA", "onComposeProgress:$progress")
+                    RNEventEmitter.startVideoCompose(mContext, progress, "")
                 }
 
                 override fun onComposeCompleted() {
-                    Log.e("AAA","onComposeCompleted")
+                    Log.e("AAA", "onComposeCompleted")
 //                    if (isVideo) {
-                        if(isSaveToPhotoLibrary){
-                            AliFileUtils.saveVideoToMediaStore(mContext,mOutputPath)
-                        }
-                        RNEventEmitter.startVideoCompose(mContext, 100,mOutputPath)
-                        promise?.resolve(mOutputPath)
+                    if (isSaveToPhotoLibrary) {
+                        AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath)
+                    }
+                    RNEventEmitter.startVideoCompose(mContext, 100, mOutputPath)
+                    promise?.resolve(mOutputPath)
 //                    } else {
 //                        getCoverImager(promise,isSaveToPhotoLibrary)
 //                    }
@@ -144,7 +144,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
             })
 
         if (errorCode != AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS) {
-            Log.e("AAA","onComposeProgress:$errorCode")
+            Log.e("AAA", "onComposeProgress:$errorCode")
             //合成失败
             if (isVideo) {
                 promise?.reject("exportVideo", "errorCode:$errorCode")

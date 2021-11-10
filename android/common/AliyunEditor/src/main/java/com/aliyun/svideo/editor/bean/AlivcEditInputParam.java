@@ -60,11 +60,11 @@ public class AlivcEditInputParam {
 
 
     /**
-     * 编辑 视频比特率默认值
+     * 编辑 视频比特率默认值 10Mbit/s
      */
-    public static final int DEFAULT_VALUE_BITRATE = 10*1000*1000;
+    public static final int DEFAULT_VALUE_BITRATE = 10 * 1000;
     /**
-     * 视频比特率  Mbps
+     * 视频比特率  kbps
      */
     private int mBitrate;
     /**
@@ -146,17 +146,17 @@ public class AlivcEditInputParam {
      */
     public AliyunVideoParam generateVideoParam() {
         AliyunVideoParam param = new AliyunVideoParam.Builder()
-        .bitrate(mBitrate)
-        .frameRate(mFrameRate)
-        .gop(mGop)
-        .crf(mCrf)
-        .videoQuality(mVideoQuality)
-        .scaleMode(mScaleMode)
-        .scaleRate(mScaleRate)
-        .outputWidth(getOutputVideoWidth())
-        .outputHeight(geOutputtVideoHeight())
-        .videoCodec(mVideoCodec)
-        .build();
+                .bitrate(mBitrate)
+                .frameRate(mFrameRate)
+                .gop(mGop)
+                .crf(mCrf)
+                .videoQuality(mVideoQuality)
+                .scaleMode(mScaleMode)
+                .scaleRate(mScaleRate)
+                .outputWidth(getOutputVideoWidth())
+                .outputHeight(geOutputtVideoHeight())
+                .videoCodec(mVideoCodec)
+                .build();
         return param;
     }
 
@@ -167,17 +167,17 @@ public class AlivcEditInputParam {
      */
     public AliyunVideoParam generateMixVideoParam() {
         AliyunVideoParam param = new AliyunVideoParam.Builder()
-        .bitrate(mBitrate)
-        .frameRate(mFrameRate)
-        .gop(mGop)
-        .crf(mCrf)
-        .videoQuality(mVideoQuality)
-        .scaleMode(mScaleMode)
-        .scaleRate(mScaleRate)
-        .outputWidth(720)
-        .outputHeight(640)
-        .videoCodec(mVideoCodec)
-        .build();
+                .bitrate(mBitrate)
+                .frameRate(mFrameRate)
+                .gop(mGop)
+                .crf(mCrf)
+                .videoQuality(mVideoQuality)
+                .scaleMode(mScaleMode)
+                .scaleRate(mScaleRate)
+                .outputWidth(720)
+                .outputHeight(640)
+                .videoCodec(mVideoCodec)
+                .build();
         return param;
     }
 
@@ -190,25 +190,25 @@ public class AlivcEditInputParam {
         int height = 0;
         int width = getOutputVideoWidth();
         switch (mRatio) {
-        case RATIO_MODE_1_1:
-            height = width;
-            break;
-        case RATIO_MODE_3_4:
-            height = width * 4 / 3;
-            break;
-        case RATIO_MODE_9_16:
-            height = width * 16 / 9;
-            break;
-        case RATIO_MODE_ORIGINAL:
-            if (mediaInfos != null && mediaInfos.size() > 0) {
-                height = (int) (width / getMediaRatio(mediaInfos.get(0)));
-            } else {
+            case RATIO_MODE_1_1:
+                height = width;
+                break;
+            case RATIO_MODE_3_4:
+                height = width * 4 / 3;
+                break;
+            case RATIO_MODE_9_16:
                 height = width * 16 / 9;
-            }
-            break;
-        default:
-            height = width * 16 / 9;
-            break;
+                break;
+            case RATIO_MODE_ORIGINAL:
+                if (mediaInfos != null && mediaInfos.size() > 0) {
+                    height = (int) (width / getMediaRatio(mediaInfos.get(0)));
+                } else {
+                    height = width * 16 / 9;
+                }
+                break;
+            default:
+                height = width * 16 / 9;
+                break;
         }
         return height;
     }
@@ -221,21 +221,21 @@ public class AlivcEditInputParam {
     public int getOutputVideoWidth() {
         int width = 0;
         switch (mResolutionMode) {
-        case RESOLUTION_360P:
-            width = 360;
-            break;
-        case RESOLUTION_480P:
-            width = 480;
-            break;
-        case RESOLUTION_540P:
-            width = 540;
-            break;
-        case RESOLUTION_720P:
-            width = 720;
-            break;
-        default:
-            width = 540;
-            break;
+            case RESOLUTION_360P:
+                width = 360;
+                break;
+            case RESOLUTION_480P:
+                width = 480;
+                break;
+            case RESOLUTION_540P:
+                width = 540;
+                break;
+            case RESOLUTION_720P:
+                width = 720;
+                break;
+            default:
+                width = 540;
+                break;
         }
         return width;
     }
@@ -408,6 +408,7 @@ public class AlivcEditInputParam {
             mParam.mBitrate = mBitrate;
             return this;
         }
+
         public Builder setFrameRate(int mFrameRate) {
             mParam.mFrameRate = mFrameRate;
             return this;

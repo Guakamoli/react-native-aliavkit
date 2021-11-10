@@ -95,7 +95,7 @@ public class TransitionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         //获取缩略图
         mThumbnailFetcher.requestThumbnailImage(time, new AliyunIThumbnailFetcher.OnThumbnailCompletion() {
             @Override
-            public void onThumbnailReady(Bitmap bitmap, long l) {
+            public void onThumbnailReady(Bitmap bitmap, long l,int index) {
                 ((TransitionViewHolder) holder).mThumbnail.setImageBitmap(bitmap);
             }
 

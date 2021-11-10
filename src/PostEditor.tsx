@@ -20,7 +20,7 @@ import Video from 'react-native-video';
 import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
-import AVService from './AVService.ios';
+import AVService from './AVService';
 import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
 
 // let a  = require('../images/postEditorNoMute.png');
@@ -43,17 +43,16 @@ const PostHead = React.memo((props)=> {
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingBottom: 9,
-        paddingHorizontal: 12,
       }}
     >
       <Pressable
         onPress={async () => {
-          console.info(goback, 'goback')
          goback();
         }}
         style={{
           height: 30, 
           width: 40,
+          paddingHorizontal: 12,
         
           justifyContent:"center",
         }}
@@ -75,7 +74,7 @@ const PostHead = React.memo((props)=> {
         onPress={continueEdit}
         style={{
           height: 30, 
-          width: 40,
+          paddingHorizontal: 12,
         
           justifyContent:"center",
           alignItems:"flex-end"
@@ -116,27 +115,19 @@ const PostEditor = (props) => {
   const stopRef = useRef(false);
   const startRef = useRef(false);
   const lockRef = useRef(false);
-
+  const continueRef = useRef(false)
   const [photoFile, setPhotoFile] = useState('');
 
   const continueEdit = async () => {
- 
+    if (continueRef.current) return 
+    continueRef.current = true
     const cropData = props.params.cropDataResult
 
     if (fileType === 'image') {
-      console.info('导出图片', cropData, photoFile);
       try {
 
-      const path = await AVService.crop({
-        duration: 10,
-        source: photoFile,
-        cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y,
-        cropWidth: cropData.size.width,
-        cropHeight: cropData.size.height,
-       
-      });
-      console.info(path, 'pathpathpath')
+   
+      const path = photoFile
       let uploadFile = [];
       uploadFile.push({
         Type: `image/png`,
@@ -145,10 +136,15 @@ const PostEditor = (props) => {
         Name: path,
         coverImage: path,
       });
-      console.info("uploadFile", "uploadFile", uploadFile)
       props.getUploadFile(uploadFile);
+      props.goback()
+  
     }catch (e) {
         console.info(e, '错误')
+        setTimeout(() => {
+          continueRef.current = false
+  
+        }, 1500);
       }
     } else {
       // 裁剪视频
@@ -162,6 +158,7 @@ const PostEditor = (props) => {
       if (exportVideo) {
         return;
       }
+  
       setexportVideo(true);
     }
   }
@@ -171,7 +168,7 @@ const PostEditor = (props) => {
   const getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
 
-    const infos = await RNEditViewManager.getFilterIcons({});
+    const infos = await AVService.getFilterIcons({});
 
     infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
     setfilterList(infos);
@@ -182,6 +179,7 @@ const PostEditor = (props) => {
     const {
        params 
     } = props;
+
     if (!params) return null
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
@@ -197,9 +195,6 @@ const PostEditor = (props) => {
   }, []);
   const getcoverData = async () => {
     try {
-      console.info('获取封面3');
-      console.info('multipleSandBoxData', multipleSandBoxData);
-      console.info(fileType);
       if (fileType == 'image') {
         return null;
       }
@@ -210,7 +205,6 @@ const PostEditor = (props) => {
       if (videoTimeSecond < 10) {
         itemPerTime = videoTime / 8;
       }
-      console.info("开始拿封面")
 
       coverData = await AVService.getThumbnails({
         videoPath: multipleSandBoxData[0],
@@ -218,7 +212,6 @@ const PostEditor = (props) => {
         itemPerTime: Math.floor(itemPerTime),
       }); 
   
-      console.info(coverData, "coverDatacoverData")
       setcoverList(coverData);
       setcoverImage(coverData[0]);
     } catch (e) {
@@ -227,10 +220,8 @@ const PostEditor = (props) => {
 
   };
   useEffect(() => {
-    console.info('获取封面', multipleSandBoxData);
     if (multipleSandBoxData.length > 0) {
       getcoverData();
-      console.info('----: getcoverData');
     }
   }, [multipleSandBoxData]);
 
@@ -241,13 +232,15 @@ const PostEditor = (props) => {
     if (event.exportProgress === 1) {
       const cropData = props.params.cropDataResult
       let outputPath = event.outputPath;
+      const Wscale = 1080 / props.params.cropDataRow.srcSize.width
+      const Hscale = 1920 / props.params.cropDataRow.srcSize.height
 
       outputPath = await AVService.crop({
         source: `file://${outputPath}`,
         cropOffsetX: cropData.offset.x,
-        cropOffsetY: cropData.offset.y,
-        cropWidth: cropData.size.width,
-        cropHeight: cropData.size.height,
+        cropOffsetY: cropData.offset.y * Hscale,
+        cropWidth: cropData.size.width * Wscale,
+        cropHeight: cropData.size.height * Wscale,
         duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
       });
 
@@ -261,7 +254,11 @@ const PostEditor = (props) => {
         Name: outputPath,
         coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
       });
+      
       props.getUploadFile(uploadFile);
+      setTimeout(() => {
+        props.goback()
+      }, 0);
     }
   } catch (e) {
     console.info(e)
@@ -271,21 +268,24 @@ const PostEditor = (props) => {
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
     const top =props.params.cropDataRow.positionY
+
     const width1 =props.params.cropDataRow.fittedSize.width
     const height1 =props.params.cropDataRow.fittedSize.height
     return (
       <View style={{
-        // alignItems: 'center',
+        alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor:"black",
         width: width,
         height: width,
         overflow:"hidden"
       }}>
           <View style={{
-       
-            // transform:[{
-            //   translateY: top
-            // }]
+          width: width1,
+          height: height1,
+            transform:[{
+              translateY:top
+            }]
           }}
           >
         <VideoEditor
@@ -344,84 +344,7 @@ const PostEditor = (props) => {
         </View>
       </View>
     );
-    // }
-    // 多图 展示
-    // return(
-    //   <View style={{height:375,paddingHorizontal:0}}>
 
-    //   <Carousel
-    //   data={multipleSandBoxData}
-    //   // containerCustomStyle={{backgroundColor:'green',}}
-    //   itemWidth={1000}
-    //   sliderWidth={width}
-    //   enableSnap={this.state.aa}
-    //   onBeforeSnapToItem={(slideIndex = 0) => {
-    //     console.log('slideIndex',slideIndex,'multipleSandBoxData.length',multipleSandBoxData.length-1);
-
-    //     if(slideIndex === multipleSandBoxData.length -1){
-    //       console.log('aa:false');
-    //     this.setState({aa:false})
-    //     }else{
-    //       console.log('aa:true');
-    //       this.setState({aa:true})
-    //     }
-    //   }}
-    //   ListFooterComponent={()=>{
-    //     if(onlyOne) null
-    //     return (
-    //       <View style={{width:83,height:319,flexDirection:'row',alignItems:'center',marginTop:40}}>
-
-    //       <TouchableOpacity  style={{}} onPress={()=>{
-    //         this.setState({fileEditor:false,startmMltiple:true})
-    //       }}>
-    //          <Image
-    //        style={[{
-    //          width: 83,
-    //          height: 83,
-    //          marginHorizontal:34
-    //        }]}
-    //        source={this.props.addPhotoBtnPng}
-    //      />
-    //       </TouchableOpacity>
-    //       </View>
-    //     )
-    //   }}
-    //   renderItem={({index,item})=>{
-
-    //     // const finall = (index == multipleSandBoxData.length -1 && multipleSandBoxData.length > 1)
-
-    //     return (
-    //       <>
-    //       {/* <View style={{flexDirection:'row',alignItems:'center'}}> */}
-    //       <View style={[{height:319,width:319,marginTop:40},
-    //         // ,finall && {width:214}
-
-    //         ]}>
-    //         {/* <Image   source ={{uri:item}} style={{width:'100%',height:'100%'}} / > */}
-
-    //         <VideoEditor
-    //     ref={(edit) => (this.editor = edit)}
-    //     style={{width:'100%',height:'100%' }}
-    //     filterName={this.state.filterName}
-    //     // videoPath={item.image.uri}
-    //     imagePath={item}
-    //     saveToPhotoLibrary={false}
-    //     // startExportVideo={this.state.startExportVideo}
-    //     // videoMute={this.state.mute}
-    //     // onExportVideo={this.onExportVideo}
-    //   />
-    //         </View>
-    //        {/* {finall &&
-
-    //        } */}
-    //        {/* </View> */}
-    //       </>
-    //     )
-    //   }}
-    //   />
-
-    // </View>
-    // )
   };
   // 滤镜组件
   const filterEditorFilter = () => {
@@ -473,14 +396,12 @@ const PostEditor = (props) => {
       }
       scrollAniRef.setValue(0);
       RNEditViewManager.seekToTime(leftPosition / 1000);
-      console.info('松开了');
       setTimeout(() => {
         lockRef.current = false;
         RNEditViewManager.play();
         stopRef.current = false;
         startRef.current = false;
       }, 500);
-      console.info(leftPosition, rightPosition, 'leftPosition, rightPosition ');
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
@@ -616,18 +537,19 @@ const PostEditor = (props) => {
     const scale = props.params.cropDataRow.scale
    
     const Extractor = (imgFilter) => {
-      const width =props.params.cropDataRow.fittedSize.width
-      const height =props.params.cropDataRow.fittedSize.height
+      // const width =props.params.cropDataRow.fittedSize.width
+      // const height =props.params.cropDataRow.fittedSize.height
       const ImageComponent =   <Image
-      style={{ width: width, height: height ,transform:[
-        {
-          scale:scale
-        },
-           {translateX:left},
+      style={{ width: width, height: width ,
+        // transform:[
+        // {
+        //   scale:scale
+        // },
+        //    {translateX:left},
   
-            {translateY:top},
+        //     {translateY:top},
             
-          ]
+        //   ]
          }}
       source={{ uri: multipleSandBoxData[0] }}
     />
@@ -675,9 +597,9 @@ const PostEditor = (props) => {
         <View style={{width: width, height:width, overflow:"hidden"}}>
           
         <View style={{
-          overflow: 'hidden',
-          alignItems: 'center',
-          justifyContent: 'center',
+          // overflow: 'hidden',
+          // alignItems: 'center',
+          // justifyContent: 'center',
         
           }}>
         <Grayscale

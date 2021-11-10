@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Alert, NativeModules } from 'react-native';
 import VideoEditor from '../../src/VideoEditor';
 const { RNEditViewManager } = NativeModules;
-import AVService from '../../src/AVService.ios';
+import AVService from '../../src/AVService';
 
 export default class VideoEditorExample extends Component {
   constructor(props) {

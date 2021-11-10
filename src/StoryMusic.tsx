@@ -16,7 +16,7 @@ import {
 
 
 import Carousel from 'react-native-snap-carousel';
-import AVService from './AVService.ios'
+import AVService from './AVService'
 import ImageMap from '../images';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
@@ -24,10 +24,7 @@ const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => {
   const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray, setMusicState, getMusicOn } = props;
 
-
-  // const [musicSelect,setMusicSelect] = useState(1);
   const [musicChoice, setMmusicChoice] = useState(false);
-  // const [currentIndex, setCurrentIndex] = useState(0);
   const [checkedData, setCheckedData] = useState()
   const [musicSearchValue, setMusicSearchValue] = useState('');
   const [songData, setSongData] = useState([]);

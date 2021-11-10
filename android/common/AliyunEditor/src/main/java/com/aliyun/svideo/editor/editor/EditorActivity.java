@@ -314,7 +314,7 @@ public class EditorActivity extends BaseAliActivity {
         AliyunIImport mImport = AliyunImportCreator.getImportInstance(this);
 
         // 最终合成视频时，比特率固定为10Mbps
-        mVideoParam.setBitrate(15 * 1000 * 1000);
+        mVideoParam.setBitrate(10 * 1000);
 
         mImport.setVideoParam(mVideoParam);
         int size = mediaInfos.size();
@@ -343,7 +343,7 @@ public class EditorActivity extends BaseAliActivity {
     public  static String getProjectJsonPath(Context context,List<MediaInfo> mediaInfos,AliyunVideoParam videoParam) {
         AliyunIImport mImport = AliyunImportCreator.getImportInstance(context);
         // 最终合成视频时，比特率固定为10Mbps
-        videoParam.setBitrate(15 * 1000 * 1000);
+        videoParam.setBitrate(10 * 1000);
 
         mImport.setVideoParam(videoParam);
         int size = mediaInfos.size();
