@@ -115,6 +115,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
             [self addSubview:self.cameraAction.cameraPreview];
+            [self setupDefault];
             [self.cameraAction startPreview];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
@@ -135,6 +136,29 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _isPresented = NO;
     }
     return self;
+}
+
+- (void)setupDefault
+{
+    self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
+    [self changeCamera:_cameraType];
+    if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
+        [self.cameraAction switchFlashMode:_flashMode];
+    }
+    if (_focusMode == CKCameraFocusModeOn) {
+        [self.cameraAction addFocusGesture];
+    } else {
+        [self.cameraAction removeFocusGesture];
+    }
+    if (_zoomMode == CKCameraZoomModeOn) {
+        [self.cameraAction addZoomGesture];
+    } else {
+        [self.cameraAction removeZoomGesture];
+    }
+    
+    if (_facePasterInfo && ![_facePasterInfo isEqualToDictionary:@{}]) {
+        [self applyFacePaster:_facePasterInfo];
+    }
 }
 
 #pragma mark - Setter
