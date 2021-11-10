@@ -422,7 +422,7 @@ class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.type !== this.props.type) {
-      this.cameraBox = { current: null }
+      // this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt)
@@ -439,7 +439,7 @@ class CameraScreen extends Component<Props, State> {
       return false
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      this.cameraBox = { current: null }
+      // this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt)
