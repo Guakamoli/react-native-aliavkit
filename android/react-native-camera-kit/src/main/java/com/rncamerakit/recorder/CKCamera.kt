@@ -7,6 +7,7 @@ import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.*
@@ -14,20 +15,17 @@ import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
-import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.uimanager.ThemedReactContext
-import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.BaseEventListener
-import com.rncamerakit.db.MusicFileBaseInfo
-import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.R
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
 import com.rncamerakit.utils.DownloadUtils
+import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
-import java.net.URL
 import java.util.*
 
 @SuppressLint("ViewConstructor")
@@ -42,6 +40,7 @@ class CKCamera(
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
     private var mVideoContainer: FrameLayout? = null
+    private var testLayout: TextView? = null
     var mRecorderManage: RecorderManage? = null
         private set
     private var mRecorder: AlivcRecorder? = null
@@ -59,6 +58,7 @@ class CKCamera(
     private fun initVideoContainer() {
         mVideoContainer = FrameLayout(context)
         val params = LayoutParams(mWidth, mHeight)
+//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
         addView(mVideoContainer, params)
     }
@@ -69,12 +69,11 @@ class CKCamera(
     @SuppressLint("ClickableViewAccessibility")
     private fun initRecorderSurfaceView() {
         mRecorderSurfaceView = SurfaceView(context)
-        val container = FrameLayout(context)
-        val slp = LayoutParams(mWidth, mHeight)
-        slp.gravity = Gravity.CENTER
-        container.addView(mRecorderSurfaceView, slp)
-        val layoutParams = LayoutParams(slp.width, slp.height)
-        mVideoContainer?.addView(container, layoutParams)
+        val params = LayoutParams(mWidth, mHeight)
+//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
+        mVideoContainer?.addView(mRecorderSurfaceView,params)
+//        val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+//        mVideoContainer?.addView(mRecorderSurfaceView,layoutParams)
         val scaleGestureDetector = ScaleGestureDetector(context, object : OnScaleGestureListener {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val factorOffset = detector.scaleFactor - lastScaleFactor
@@ -111,11 +110,11 @@ class CKCamera(
                     val height = mRecorderSurfaceView?.height
                     var pointX = 0F
                     if (width != null) {
-                        pointX = e.x / width.toFloat()
+                        pointX = e.x/width.toFloat()
                     }
                     var pointY = 0F
                     if (height != null) {
-                        pointY = e.y / height.toFloat()
+                        pointY = e.y/height.toFloat()
                     }
                     //手动对焦
                     mRecorder?.setFocus(pointX, pointY)
@@ -196,12 +195,16 @@ class CKCamera(
 
 
     init {
+//        val view: View = LayoutInflater.from(context).inflate(R.layout.paiya_story_camera, this)
+//        mVideoContainer = view.findViewById(R.id.mVideoContainer)
+//        mRecorderSurfaceView = view.findViewById(R.id.mRecorderSurfaceView)
+//        mVideoContainer?.setBackgroundColor(0x50FF0000)
         if (!isPermissions()) {
             getPermissions()
         }
         DownloaderManager.getInstance().init(reactContext.applicationContext)
         mWidth = ScreenUtils.getWidth(context)
-        mHeight = mWidth * 16 / 9
+        mHeight = mWidth*16/9
         initVideoContainer()
         initRecorderSurfaceView()
         initRecorder()
@@ -212,29 +215,44 @@ class CKCamera(
         initLifecycle()
     }
 
-    private fun initLifecycle(){
-        BaseEventListener(reactContext,object : BaseEventListener.LifecycleEventListener() {
+    private fun initLifecycle() {
+        BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
             override fun onHostResume() {
                 super.onHostResume()
-                Log.e("AAA","onHostResume()")
+                Log.e("AAA", "onHostResume()")
             }
 
             override fun onHostPause() {
                 super.onHostPause()
-                Log.e("AAA","onHostPause()")
+                Log.e("AAA", "onHostPause()")
             }
 
             override fun onHostDestroy() {
                 super.onHostDestroy()
-                Log.e("AAA","onHostDestroy()")
+                Log.e("AAA", "onHostDestroy()")
                 onRelease()
             }
 
             override fun onWindowFocusChange(hasFocus: Boolean) {
                 super.onWindowFocusChange(hasFocus)
-                Log.e("AAA","onWindowFocusChange(hasFocus)：$hasFocus")
+                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
             }
         })
+    }
+
+    /**
+     * 设置宽高（dp）
+     */
+    fun setLayout(width: Int, height: Int) {
+        var params = mVideoContainer?.layoutParams
+        if (params == null) {
+            params = LayoutParams(dip(width), dip(height))
+        } else {
+            params.width = dip(width)
+            params.height = dip(height)
+        }
+        mVideoContainer?.layoutParams = params
+        mRecorderSurfaceView?.layoutParams = params
     }
 
 }

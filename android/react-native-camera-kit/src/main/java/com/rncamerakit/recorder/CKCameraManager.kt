@@ -1,6 +1,7 @@
 package com.rncamerakit.recorder
 
 import android.util.Log
+import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -118,6 +119,18 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     @ReactProp(name = "flashMode")
     fun setFlashMode(view: CKCamera, mode: String?) {
         view.mRecorderManage?.setLight(mode)
+    }
+
+    //设置Camera宽高
+    @ReactProp(name = "cameraStyle")
+    fun setCameraLayout(view: CKCamera, readableMap: ReadableMap?) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            val width = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
+            val height = if (readableMap.hasKey("height")) readableMap.getInt("height") else width*16/9
+            view.reactContext.runOnUiQueueThread {
+                view.setLayout(width, height)
+            }
+        }
     }
 
     //手电筒
