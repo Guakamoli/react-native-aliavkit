@@ -717,7 +717,9 @@ export default class CameraScreen extends Component<Props, State> {
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-       
+        if(type === 'video' && videoTime >300){
+           this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
+        }
         this.setState({
           postEditorParams: {
             trimVideoData,
