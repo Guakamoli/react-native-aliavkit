@@ -289,8 +289,12 @@ const PostEditor = (props) => {
           }}
           >
         <VideoEditor
-          editWidth={width1}
-          editHeight={height1}
+          // editWidth={width1}
+          // editHeight={height1}
+          editStyle={{
+            width:width1,
+            height: height1
+          }}
           ref={(edit) => (editor = edit)}
           filterName={filterName}
           videoPath={multipleSandBoxData[0]}
