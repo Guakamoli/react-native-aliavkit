@@ -426,6 +426,27 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     }
 }
 
+RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    if (!options || ![options isEqualToDictionary:@{}]) {
+        reject(@"",@"params can't be null or empty",nil);
+        return;
+    }
+    BOOL removeTmp = [[options objectForKey:@"tmp"] boolValue];
+    BOOL removeComposition = [[options objectForKey:@"composition"] boolValue];
+    BOOL removeRecord = [[options objectForKey:@"record"] boolValue];
+    if (removeTmp) {
+        [AliyunPathManager clearDir:NSTemporaryDirectory()];
+    }
+    if (removeComposition) {
+        [AliyunPathManager clearDir:[AliyunPathManager compositionRootDir]];
+    }
+    if (removeRecord) {
+        [AliyunPathManager clearDir:[[AliyunPathManager aliyunRootPath] stringByAppendingPathComponent:@"record"]];
+    }
+}
 
 #pragma mark - AliyunCropDelegate
 - (void)cropOnError:(int)error
