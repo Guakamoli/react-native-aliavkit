@@ -192,10 +192,14 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
+        CGFloat h = _editHeight;
+        
         frame.size.width = _editWidth;
-        frame.size.height = _editHeight;
+        if (_editWidth <= 375.0) {
+            h = _editWidth * factor;
+        }
+        frame.size.height = h;
         _preview = [[UIView alloc] initWithFrame:frame];
-        _preview.backgroundColor = [UIColor lightGrayColor];
     }
     return _preview;
 }
