@@ -3,17 +3,16 @@ import { NativeModules } from 'react-native';
 const { AliAVServiceBridge, RNMusicService } = NativeModules;
 
 type MusicRequestType = {
-  name: string,
-  songID: string,
-  page: number,
-  pageSize: number,
-}
+  name: string;
+  songID: string;
+  page: number;
+  pageSize: number;
+};
 
 export default class AVService {
   static async getFilterIcons() {
     return await AliAVServiceBridge.getFilterIcons({});
   }
-
 
   static async getFacePasterInfos({}) {
     return await AliAVServiceBridge.getFacePasterInfos({});
@@ -60,5 +59,9 @@ export default class AVService {
   }
   static enableHapticIfExist() {
     AliAVServiceBridge.enableHapticIfExist();
+  }
+
+  static async clearResources({ tmp, record, composition }) {
+    return await AliAVServiceBridge.clearResources({ tmp, record, composition });
   }
 }
