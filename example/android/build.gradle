@@ -13,6 +13,10 @@ buildscript {
         jcenter()
         maven { url "https://maven.aliyun.com/repository/releases" }
         maven { url 'https://jitpack.io' }
+        maven {
+            // Android JSC is installed from npm
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
     }
     apply from: '../../android/thirdparty-lib/config.gradle'
     apply from: 'thirdparty-lib/base.gradle'
@@ -37,6 +41,7 @@ allprojects {
             // Android JSC is installed from npm
             url("$rootDir/../node_modules/jsc-android/dist")
         }
+
 
         google()
         jcenter()

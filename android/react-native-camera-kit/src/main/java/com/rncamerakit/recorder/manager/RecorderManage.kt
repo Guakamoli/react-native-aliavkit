@@ -2,6 +2,7 @@ package com.rncamerakit.recorder.manager
 
 import android.content.Context
 import android.text.TextUtils
+import android.util.Log
 import com.aliyun.common.utils.CommonUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.FileUtils
@@ -142,7 +143,7 @@ class RecorderManage(
         if (TextUtils.isEmpty(bgm)) {
             mRecorder?.setMusic(null, 0, 0)
         } else {
-            mRecorder?.setMusic(bgm, 0, 30 * 1000)
+            mRecorder?.setMusic(bgm, 0, 30*1000)
         }
     }
 
@@ -194,7 +195,7 @@ class RecorderManage(
      * 开始录制
      */
     fun startRecording(reactContext: ReactApplicationContext, promise: Promise) {
-        if (CommonUtil.SDFreeSize() < 50 * 1000 * 1000) {
+        if (CommonUtil.SDFreeSize() < 50*1000*1000) {
             promise.reject(
                 "startRecording",
                 "error:" + reactContext.resources.getString(R.string.alivc_music_no_free_memory)
@@ -304,12 +305,15 @@ class RecorderManage(
         mRecorder?.release()
         mRecorder = null
         mRecorderQueenManage?.onRelease()
+        mRecorderQueenManage = null
     }
 
     init {
+        onRelease()
+        Log.e("AAA", "init recorder ")
         mRecorder = AlivcRecorder(mContext)
         val mWidth = ScreenUtils.getWidth(mContext)
-        val mHeight = mWidth * 16 / 9
+        val mHeight = mWidth*16/9
         val outputInfo = MediaInfo()
         outputInfo.fps = 35
         outputInfo.videoWidth = mWidth
@@ -323,7 +327,7 @@ class RecorderManage(
         mRecorder?.setOutputPath(videoPath)
         mRecorder?.setVideoQuality(VideoQuality.SSD)
         //10Mbps
-        mRecorder?.setVideoBitrate(10 * 1000)
+        mRecorder?.setVideoBitrate(10*1000)
         mRecorder?.setRatioMode(AliyunSnapVideoParam.RATIO_MODE_9_16)
         mRecorder?.setGop(30)
         mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
@@ -331,11 +335,10 @@ class RecorderManage(
         mRecorder?.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
         mClipManager = mRecorder?.clipManager
         //最大时间必须设置，否则设置录制背景音乐无效
-        mClipManager?.maxDuration = 30 * 1000
+        mClipManager?.maxDuration = 30*1000
         mRecordCallback = ImplRecordCallback(mContext)
         mRecorder?.setRecordCallback(mRecordCallback)
-        mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
-
+//        mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
     }
 
 }

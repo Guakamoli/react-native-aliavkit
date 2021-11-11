@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NativeModules, DeviceEventEmitter } from 'react-native';
-const { RNEditorKitModule } = NativeModules;
+const { RNEditorKitModule,RNCameraKitModule } = NativeModules;
 
 type MusicRequestType = {
   name: string,
@@ -11,6 +11,11 @@ type MusicRequestType = {
 }
 
 export default class AVService {
+
+  static async getFacePasterInfos({ }) {
+    var pasterInfos = await RNCameraKitModule.getPasterInfos();
+    return JSON.parse(pasterInfos)
+  }
 
   //视频、图片宽高裁剪
   static async crop({ source, cropOffsetX, cropOffsetY, cropWidth, cropHeight }) {
@@ -49,8 +54,8 @@ export default class AVService {
 
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     console.log('123', { name, page, songID, pageSize });
-    if(name && name == 'all-music'){
-      name = "" 
+    if (name && name == 'all-music') {
+      name = ""
     }
     var musics = await RNEditorKitModule.getMusicList(name, "", page, pageSize);
     return JSON.parse(musics)

@@ -42,9 +42,9 @@ class EffectPasterManage private constructor() {
 
     fun getPasterInfos(promise: Promise?) {
         mPasterList.clear()
-        val emptyPaster = PreviewPasterForm()
-        emptyPaster.isLocalRes = true
-        mPasterList.add(emptyPaster)
+//        val emptyPaster = PreviewPasterForm()
+//        emptyPaster.isLocalRes = true
+//        mPasterList.add(emptyPaster)
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
             for (form in localInfos!!) {
                 if (form.id == 150) {
