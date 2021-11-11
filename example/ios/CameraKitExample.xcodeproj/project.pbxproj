@@ -228,7 +228,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-resources.sh",
-				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
+				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
 				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework/queen-ios.Bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Face_Sticker",
@@ -259,7 +259,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-frameworks.sh",
 				"${PODS_ROOT}/AlivcConan/AlivcConan.framework",
-				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoCore.framework",
+				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoCore.framework",
 				"${PODS_ROOT}/QuCore-ThirdParty/frameworks/alivcffmpeg.framework",
 				"${PODS_ROOT}/Queen/Queen/Libs/opencv2.framework",
 			);
