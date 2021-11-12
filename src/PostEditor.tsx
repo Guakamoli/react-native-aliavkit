@@ -11,6 +11,7 @@ import {
   Pressable,
   Animated,
   ScrollView,
+  NativeEventEmitter,
 } from 'react-native';
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -117,6 +118,7 @@ const PostEditor = (props) => {
   const lockRef = useRef(false);
   const continueRef = useRef(false)
   const [photoFile, setPhotoFile] = useState('');
+  const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
     if (continueRef.current) return 
@@ -186,11 +188,21 @@ const PostEditor = (props) => {
     settrimmerRightHandlePosition(params?.trimmerRight);
   }, [props.params]);
   useEffect(() => {
+    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
+      console.log(reminder);
+
+      if (reminder.progress == 1 && fileType === 'video') {
+        // 可以再这里做loading
+      }
+  
+    });
     return () => {
       console.log('销毁了');
       AVService.removeThumbnaiImages();
       RNEditViewManager.stop();
       props.params?.playVideo?.();
+      managerEmitter.removeCurrentListener()
     };
   }, []);
   const getcoverData = async () => {
@@ -234,7 +246,7 @@ const PostEditor = (props) => {
       let outputPath = event.outputPath;
       const Wscale = 1080 / props.params.cropDataRow.srcSize.width
       const Hscale = 1920 / props.params.cropDataRow.srcSize.height
-
+  
       outputPath = await AVService.crop({
         source: `file://${outputPath}`,
         cropOffsetX: cropData.offset.x,
@@ -243,7 +255,6 @@ const PostEditor = (props) => {
         cropHeight: cropData.size.height * Wscale,
         duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
       });
-
       let uploadFile = [];
       //
       let type = outputPath.split('.');
