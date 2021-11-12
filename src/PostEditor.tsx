@@ -34,7 +34,7 @@ const cropWidth = width - 30 * 2;
 const PostHead = React.memo((props)=> {
   const {videoMute, setvideoMute} =props
 
-  const {closePng, volumeImage, noVolumeImage, goback, continueEdit} = props
+  const {closePng, volumeImage, noVolumeImage, goback, continueEdit, continueRef} = props
   return (
     <View
       style={{
@@ -48,6 +48,7 @@ const PostHead = React.memo((props)=> {
     >
       <Pressable
         onPress={async () => {
+          if (continueRef.current) return
          goback();
         }}
         style={{
@@ -111,6 +112,7 @@ const PostEditor = (props) => {
   const [exportVideo, setexportVideo] = useState(false);
   const scrollAniRef = useRef(new Animated.Value(10)).current;
   const aniRef = useRef(null);
+  const toast = useRef();
 
   const [imgfilterName, setImgFilterName] = useState('');
   const stopRef = useRef(false);
@@ -150,6 +152,9 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
+      console.info(toast.current, 'asasasas')
+      toast.current.show('正在导出, 请不要离开', 0);
+    
       RNEditViewManager.trimVideo({
         videoPath: multipleSandBoxData[0],
         startTime: trimmerLeftHandlePosition / 1000,
@@ -194,15 +199,17 @@ const PostEditor = (props) => {
 
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
+        toast.current.close();
+
       }
   
     });
     return () => {
-      console.log('销毁了');
+      console.info('销毁了', subscription);
       AVService.removeThumbnaiImages();
       RNEditViewManager.stop();
       props.params?.playVideo?.();
-      managerEmitter.removeCurrentListener()
+      managerEmitter.removeAllListeners('cropProgress')
     };
   }, []);
   const getcoverData = async () => {
@@ -374,6 +381,7 @@ const PostEditor = (props) => {
               <View style={{ height: 130, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                 <TouchableOpacity
                   onPress={() => {
+                    if (continueRef.current) return
                     setfilterName(item?.filterName);
                   }}
                 >
@@ -446,8 +454,10 @@ const PostEditor = (props) => {
               console.log('onScrubberPressIn');
             }}
             onRightHandlePressIn={() => {
+              if (continueRef.current) return
+
               stopRef.current = true;
-              startRef.current = false;
+              startRef.current = false;``
               lockRef.current = true;
               aniRef.current.stop();
 
@@ -457,6 +467,8 @@ const PostEditor = (props) => {
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {
+              if (continueRef.current) return
+
               aniRef.current.stop();
               lockRef.current = true;
 
@@ -695,7 +707,7 @@ const PostEditor = (props) => {
   if (fileType == 'image') {
     return (
       <View style={{ backgroundColor: 'black' ,position: 'relative',height:"100%"}}>
-        <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute}/>
+        <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute} continueRef={continueRef}/>
   
       {result()}
     
@@ -704,7 +716,15 @@ const PostEditor = (props) => {
   }
   return (
     <View style={{  backgroundColor: 'black', position: 'relative',height:"100%"}}>
-        <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute}/>
+      <Toast
+        ref={toast}
+        position='top'
+        positionValue={300}
+        fadeInDuration={1050}
+        fadeOutDuration={800}
+        opacity={0.8}
+      />
+        <PostHead {...props} continueEdit={continueEdit} continueRef={continueRef} videoMute={videoMute} setvideoMute={setvideoMute}/>
       {postEditorViewData()}
 
       {selectBottomModel === '滤镜' && filterEditorFilter()}
