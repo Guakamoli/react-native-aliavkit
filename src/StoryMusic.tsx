@@ -48,7 +48,7 @@ const StoryMusic = (props) => {
       console.log('初始化', songData[0]);
       palyMusic(songData[0])
       setCheckedData(songData[0])
-
+      !setMusicState && props.setMusic(true);
     }
   }, [songData])
 
@@ -105,10 +105,10 @@ const StoryMusic = (props) => {
         activeAnimationType={'timing'}
         onSnapToItem={async (slideIndex = 0) => {
           // 当前选中的
-          props.setMusic(false);
+          // props.setMusic(false);
           getmusicInfo({});
           setTimeout(() => {
-
+            !setMusicState && props.setMusic(true);
             setCheckedData(songData[slideIndex]);
             palyMusic(songData[slideIndex])
           }, 300);
@@ -122,10 +122,12 @@ const StoryMusic = (props) => {
             <TouchableOpacity onPress={() => {
               if (checkedData.songID == item.songID) {
                 pauseMusic(item)
+                props.setMusic(false);
                 setCheckedData({});
               } else {
                 setCheckedData(item);
                 palyMusic(item)
+                !setMusicState && props.setMusic(true);
               }
             }} >
               <View style={[{ width: 298, height: 85, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 15, marginVertical: 16, padding: 14 }, checkedData?.songID == item?.songID && { backgroundColor: "rgba(255,255,255,0.95)" }]}>
