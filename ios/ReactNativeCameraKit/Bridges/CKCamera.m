@@ -18,6 +18,7 @@
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
 #import "ShortCut.h"
+#import "BeautyEngineManager.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -123,6 +124,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
     if (!self.window && _isPresented) {
         [self.cameraAction stopPreview];
+        [[BeautyEngineManager shareManager] clear];
 //        [self.cameraAction.cameraPreview removeFromSuperview];
 //        self.cameraAction = nil;
         _isPresented = NO;
