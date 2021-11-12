@@ -25,6 +25,8 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 @interface AliAVServiceBridge ()<AliyunCropDelegate>
 {
     BOOL _hasListeners;
+    RCTPromiseResolveBlock _videoCropResolve;
+    NSString *_videoCropOutputPath;
 }
 
 @property (nonatomic, strong) AliyunCrop *cutPanel;
@@ -264,7 +266,9 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
         return;
     }
     else if (res == 0) {
-        resolve(outputPath);
+//        resolve(outputPath);
+        _videoCropOutputPath = outputPath;
+        _videoCropResolve = resolve;
     }
 }
 
@@ -363,7 +367,8 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                 return;
             }
             else if (res == 0) {
-                resolve(outputPath);
+                self->_videoCropOutputPath = outputPath;
+                self->_videoCropResolve = resolve;
             }
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
@@ -453,6 +458,8 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
     [self.cutPanel cancel];
+    _videoCropOutputPath = nil;
+    _videoCropResolve = nil;
 }
 
 - (void)cropTaskOnProgress:(float)progress
@@ -467,14 +474,21 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
 {
     AVDLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
     if (_hasListeners) {
+        if (_videoCropOutputPath && _videoCropOutputPath) {
+            _videoCropResolve(_videoCropOutputPath);
+        }
         [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
     }
     [self.cutPanel cancel];
+    _videoCropOutputPath = nil;
+    _videoCropResolve = nil;
 }
 
 - (void)cropTaskOnCancel
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
+    _videoCropOutputPath = nil;
+    _videoCropResolve = nil;
 }
 
 RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
