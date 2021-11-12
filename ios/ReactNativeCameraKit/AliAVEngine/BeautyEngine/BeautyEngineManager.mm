@@ -86,6 +86,7 @@ static BeautyEngineManager *_instance = nil;
     [self performSelector:@selector(clearBeautyEngine) onThread:self.processPixelThread withObject:nil waitUntilDone:YES];
     _newPixelBuffer = NULL;
     [self.lock unlock];
+    NSLog(@"------- beauty engine clear");
 #endif
 }
 
