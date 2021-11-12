@@ -278,14 +278,12 @@ class CarouselWrapper extends Component<Props, State> {
 
     }
     singlePress = async () => {
-        console.info(this.pressLock, 'sniasniad')
 
         this.startTime = null
         if (this.pressLock) {
             return
         }
         this.pressLock = true
-        console.info(this.props.onCaptureImagePressed)
         await this.props.onCaptureImagePressed()
         setTimeout(() => {
             this.pressLock = false
@@ -295,11 +293,9 @@ class CarouselWrapper extends Component<Props, State> {
     startAnimate = async () => {
         try {
 
-            console.info("运行接")
             const success = await this.props.camera.current?.startRecording?.();
 
             if (!success) {
-                console.info(this.props.myRef, 'hahah')
                 this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
                 this.pressLock = false
 
@@ -313,7 +309,6 @@ class CarouselWrapper extends Component<Props, State> {
                 duration: 200,
             }).start(({ finished }) => {
                 if (finished) {
-                    console.info("kIahi222s")
                     this.ani = Reanimated.timing(this.arcAngle, {
                         toValue: 360,
                         easing: Easing.linear,
@@ -322,7 +317,6 @@ class CarouselWrapper extends Component<Props, State> {
                     this.ani.start(({ finished }) => {
                         if (finished) {
                             this.endTime = Date.now()
-                            console.info("结束了", this.shotCamera)
                             this.shotCamera()
                         }
                     })
@@ -334,14 +328,12 @@ class CarouselWrapper extends Component<Props, State> {
 
     }
     shotCamera = async () => {
-        console.info("周到这里1")
 
         const videoPath = await this.props.camera.current?.stopRecording?.();
         this.ani.stop()
         setTimeout(() => {
             this.reset()
         }, 0);
-        console.info("周到这里")
         setTimeout(() => {
             this.props.setShootData({
                 fileType: 'video',

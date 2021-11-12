@@ -184,7 +184,7 @@ class PostContent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cropScale: 0.9,
+      cropScale: 1,
       videoPaused: false,
     };
   }
@@ -222,13 +222,13 @@ class PostContent extends Component {
     return false;
   }
   toggleCropWidth = () => {
-    if (!cropDataRow.scale || cropDataRow.scale < 1 || this.state.cropScale === 0.9) {
+    if (!cropDataRow.scale || cropDataRow.scale < 1 || this.state.cropScale === 1) {
       this.setState({
         cropScale: 1,
       });
     } else {
       this.setState({
-        cropScale: 0.9,
+        cropScale: 1,
       });
     }
   };
@@ -251,7 +251,7 @@ class PostContent extends Component {
         }}
       >
         {/* 左侧尺寸按钮 */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             width: 31,
             height: 31,
@@ -272,7 +272,7 @@ class PostContent extends Component {
             ]}
             source={this.props.changeSizeImage}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View
           style={{
@@ -378,7 +378,7 @@ class GridItemCover extends Component {
     return (
       <TouchableOpacity
         onPress={this.clickItem}
-        activeOpacity={0.9}
+        activeOpacity={1}
         style={{
           width: photosItem,
           height: photosItem,
@@ -700,7 +700,7 @@ export default class CameraScreen extends Component<Props, State> {
         });
       } else {
         const cropData = result
-
+        console.info('cropDatacropDatacropDatacropDatacropData', cropData, cropDataRow)
         trimVideoData = await AVService.crop({
           source: imageItem.uri,
           cropOffsetX: cropData.offset.x,
