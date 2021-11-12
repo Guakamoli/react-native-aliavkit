@@ -385,8 +385,10 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
         imgRequestOptions.synchronous = NO;
         imgRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
         
+        CGSize assetSize = CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight);
+        
         [[PHImageManager defaultManager] requestImageForAsset:phAsset
-                                                   targetSize:cropRect.size
+                                                   targetSize:assetSize
                                                   contentMode:PHImageContentModeDefault
                                                       options:imgRequestOptions
                                                 resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
