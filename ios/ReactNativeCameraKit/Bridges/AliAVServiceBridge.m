@@ -377,26 +377,37 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
         }
         
-        NSString *tmpPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
+        NSString *croppedPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
         
+        PHImageRequestOptions *imgRequestOptions = [[PHImageRequestOptions alloc] init];
+        imgRequestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+        imgRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        imgRequestOptions.synchronous = NO;
+        imgRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
         
-        [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
-                                                              maxSize:cropRect.size
-                                                           outputPath:tmpPhotoPath
-                                                           completion:^(NSError *error, UIImage * _Nullable sourceImage) {
-            if (sourceImage == nil) {
+        [[PHImageManager defaultManager] requestImageForAsset:phAsset
+                                                   targetSize:cropRect.size
+                                                  contentMode:PHImageContentModeDefault
+                                                      options:imgRequestOptions
+                                                resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            if (result == nil) {
+                reject(@"",@"fetch image from photo library failed",nil);
                 return;
             }
             AliyunImageCrop *imageCrop = [[AliyunImageCrop alloc] init];
-            imageCrop.originImage = sourceImage;
+            imageCrop.originImage = result;
             imageCrop.cropMode = AliyunImageCropModeAspectCut;
             imageCrop.cropRect = cropRect;
             imageCrop.outputSize = cropRect.size;
             UIImage *generatedImage = [imageCrop generateImage];
-            NSData *data = UIImagePNGRepresentation(generatedImage);
-            BOOL writeSuccess = [data writeToFile:tmpPhotoPath atomically:YES];
+            if (!generatedImage) {
+                reject(@"",@"image crop failed", nil);
+                return;
+            }
+            NSData *data = UIImageJPEGRepresentation(generatedImage, 0.65);
+            BOOL writeSuccess = [data writeToFile:croppedPhotoPath atomically:YES];
             if (writeSuccess) {
-                resolve(tmpPhotoPath);
+                resolve(croppedPhotoPath);
             } else {
                 reject(@"",@"write file failure",nil);
             }
@@ -422,7 +433,11 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     imageCrop.cropRect = cropRect;
     imageCrop.outputSize = cropRect.size;
     UIImage *generatedImage = [imageCrop generateImage];
-    NSData *data = UIImagePNGRepresentation(generatedImage);
+    if (!generatedImage) {
+        reject(@"",@"image crop failed", nil);
+        return;
+    }
+    NSData *data = UIImageJPEGRepresentation(generatedImage, 0.65);
     BOOL writeSuccess = [data writeToFile:outPhotoPath atomically:YES];
     if (writeSuccess) {
         resolve(outPhotoPath);
