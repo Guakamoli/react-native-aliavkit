@@ -156,6 +156,9 @@
 
 - (void)addFocusGesture
 {
+    if ([self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+        return;
+    }
     self.focusGesture =
     [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(focusAndExposeTap:)];
     [self.recorder.preview addGestureRecognizer:self.focusGesture];
@@ -163,6 +166,9 @@
 
 - (void)addZoomGesture
 {
+    if ([self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+        return;
+    }
     self.zoomGesture =
     [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchGesture:)];
     [self.recorder.preview addGestureRecognizer:self.zoomGesture];
