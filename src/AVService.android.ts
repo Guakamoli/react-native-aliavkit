@@ -12,6 +12,11 @@ type MusicRequestType = {
 
 export default class AVService {
 
+  static async getFilterIcons() {
+    let colorFilterList = await RNEditorKitModule.getColorFilterList();
+    return JSON.parse(colorFilterList)
+  }
+
   static async getFacePasterInfos({ }) {
     var pasterInfos = await RNCameraKitModule.getPasterInfos();
     return JSON.parse(pasterInfos)
@@ -29,8 +34,8 @@ export default class AVService {
       'source': source,
       'cropOffsetX': cropOffsetX,
       'cropOffsetY': cropOffsetY,
-      'cropWidth': cropWidth,
-      'cropHeight': cropHeight,
+      'cropWidth': 1280,
+      'cropHeight': 1280,
     };
     const carpFile = await RNEditorKitModule.crop(carpParam);
     carpListener.remove();
