@@ -87,7 +87,7 @@ class CropManager {
             //设置裁剪参数
             val param = CropParam()
             param.mediaType = MediaType.ANY_IMAGE_TYPE
-            param.scaleMode = VideoDisplayMode.SCALE
+//            param.scaleMode = VideoDisplayMode.FILL
             param.inputPath = imagePath
             param.outputPath = outputPath
 
@@ -100,7 +100,7 @@ class CropManager {
             //视频编码方式
             param.videoCodec = VideoCodecs.H264_HARDWARE
             //填充颜色
-            param.fillColor = Color.BLACK
+            param.fillColor = Color.WHITE
 
             aliyunCrop.setCropParam(param)
 
@@ -175,7 +175,14 @@ class CropManager {
             val startY =
                 if (readableMap.hasKey("cropOffsetY")) readableMap.getInt("cropOffsetY") else 0
             val endX = startX + outputWidth
-            val endY = startY + outputHeight
+            var endY = startY + outputHeight
+
+
+            //默认1：1 如果裁剪宽度大于视频宽度，会导致视频变形
+            //例如： 原视频宽高：720*1280 ，裁剪输出宽高：1000 * 1000；最终视频输出宽高1000*1000，但是视频范围是原视频的 宽：0~720 高：0~1000
+            if (outputWidth > mVideoWidth) {
+                endY -= (outputWidth - mVideoWidth);
+            }
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
             val duration = aliyunCrop.getVideoDuration(videoPath)
@@ -197,6 +204,8 @@ class CropManager {
             param.setVideoBitrate(10*1000)
             param.mediaType = MediaType.ANY_VIDEO_TYPE
             param.scaleMode = VideoDisplayMode.SCALE
+            //填充颜色
+            param.fillColor = Color.BLUE
 
             param.inputPath = videoPath
             param.outputPath = outputPath
@@ -216,8 +225,7 @@ class CropManager {
             param.crf = 23
             //视频编码方式
             param.videoCodec = VideoCodecs.H264_HARDWARE
-            //填充颜色
-            param.fillColor = Color.BLACK
+
 
             aliyunCrop.setCropParam(param)
             aliyunCrop.setCropCallback(object : CropCallback {
@@ -235,6 +243,20 @@ class CropManager {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
                     RNEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
+
+                    try {
+                        val nativeParser = NativeParser()
+                        nativeParser.init(outputPath)
+
+                        val videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
+                        val videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
+
+                        nativeParser.release()
+                        nativeParser.dispose()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
                     promise.resolve(outputPath)
                 }
 

@@ -338,7 +338,7 @@ class RecorderManage(
         mClipManager?.maxDuration = 30*1000
         mRecordCallback = ImplRecordCallback(mContext)
         mRecorder?.setRecordCallback(mRecordCallback)
-//        mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
+        mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
     }
 
 }

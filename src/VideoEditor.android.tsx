@@ -58,7 +58,7 @@ export default class Editor extends Component<Props, State> {
 
   //获取滤镜列表
   getColorFilterList = async () => {
-    let colorFilterList = await RNEditorKitModule.getColorFilterList(findNodeHandle(this.nativeRef.current));
+    let colorFilterList = await RNEditorKitModule.getColorFilterList();
     return JSON.parse(colorFilterList)
   };
 
@@ -107,11 +107,16 @@ export default class Editor extends Component<Props, State> {
   };
 
 
+  release = async () => {
+    console.log("Video release");
+    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+  };
+
 
   async componentDidMount() {
 
     let list = await this.getMusicList("", 2, 10);
-    console.log("getMusicList", list);
+    // console.log("getMusicList", list);
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
       // console.log("startVideoEditor", duration);
@@ -155,15 +160,14 @@ export default class Editor extends Component<Props, State> {
 
   render() {
     return (
-      <View style={styles.cameraContainer}>
-        <NativeEditor
-          ref={this.nativeRef}
-          style={{ minWidth: 100, minHeight: 100 }}
-          {...this.props}
-        // startExportVideo = {this.props.startExportVideo}
-
-        />
-      </View>
+      <NativeEditor
+        style={{ minWidth: 100, minHeight: 100 }}
+        {...this.props}
+        cameraStyle={{ height: this.props.editHeight, width: this.props.editWidth }}
+        // editLayout={{width:props.editWidth,height:props.CameraFixHeight}}
+        ref={this.nativeRef}
+      // startExportVideo = {this.props.startExportVideo}
+      />
     );
   }
 
@@ -171,13 +175,11 @@ export default class Editor extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   cameraContainer: {
-    flex: 1,
-    backgroundColor: 'red',
+
   },
 
   composeVideo: {
     flex: 1,
-    backgroundColor: 'red',
   },
   captureButtonContainer: {
     flex: 1,

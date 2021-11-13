@@ -204,11 +204,12 @@ class RenderCamera extends Component {
 
     const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28)
 
+    //TODO
     return (
-      <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden", borderRadius: 20 ,backgroundColor:"red"}}>
+      <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden", borderRadius: 20 }}>
 
         <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
-        <View style={{ width: "100%", height: CameraFixHeight ,backgroundColor:"green"}} onLayout={() => {
+        <View style={{ width: "100%", height: CameraFixHeight}} onLayout={() => {
           setTimeout(() => {
             AVService.enableHapticIfExist()
           }, 0);

@@ -36,6 +36,7 @@ import com.rncamerakit.editor.manager.*
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.*
+import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
@@ -86,14 +87,15 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private fun initVideoContainer() {
         mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
+//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
         addView(mVideoContainer, params)
     }
 
     private fun initSurfaceView() {
         mSurfaceView = SurfaceView(mContext)
-        val layoutParams = LayoutParams(mWidth, mHeight)
-        mVideoContainer?.addView(mSurfaceView, layoutParams)
+        val params = LayoutParams(mWidth, mHeight)
+        mVideoContainer?.addView(mSurfaceView,params)
     }
 
     private fun copyAssets() {
@@ -203,7 +205,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
             promise.reject("getColorFilterList", "ColorFilter is empty")
             return
         }
-        mColorFilterManager?.getColorFilter(promise)
+        ColorFilterManager.getColorFilter(mContext,promise)
     }
 
     /**
@@ -415,6 +417,23 @@ class CKEditor(val reactContext: ThemedReactContext) :
                 Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
             }
         })
+    }
+
+
+
+    /**
+     * 设置宽高（dp）
+     */
+    fun setLayout(width: Int, height: Int) {
+        var params = mVideoContainer?.layoutParams
+        if (params == null) {
+            params = LayoutParams(dip(width), dip(height))
+        } else {
+            params.width = dip(width)
+            params.height = dip(height)
+        }
+        mVideoContainer?.layoutParams = params
+        mSurfaceView?.layoutParams = params
     }
 
     /**
