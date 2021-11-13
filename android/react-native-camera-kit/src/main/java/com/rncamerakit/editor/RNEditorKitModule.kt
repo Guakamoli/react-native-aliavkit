@@ -10,6 +10,7 @@ import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.editor.manager.ColorFilterManager
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
@@ -98,13 +99,9 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
     //获取滤镜列表
     @ReactMethod
-    fun getColorFilterList(viewTag: Int, promise: Promise) {
+    fun getColorFilterList(promise: Promise) {
         val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.getColorFilterList(promise)
-        }
+        ColorFilterManager.getColorFilter(context.applicationContext, promise)
     }
 
 

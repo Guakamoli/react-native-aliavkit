@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
 import CameraScreen from './CameraScreenTest';
-import PostUpload from './PostScreen';
+import PostUpload from './PostScreenTest';
 import { useThrottleFn } from 'ahooks';
 import {  useSelector, useDispatch } from 'react-redux';
 import {
@@ -73,8 +73,7 @@ const Entry = (props) => {
   return (
     <>
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-        <Text>123123</Text>
-        {/* <PostUpload
+        <PostUpload
           // onRef={this.onRef}
           {...props}
           goback={goBack}
@@ -97,7 +96,7 @@ const Entry = (props) => {
           cameraModule={true}
           noVolumeImage={noVolumePng}
           volumeImage={volumePng}
-        /> */}
+        />
       </View>
       <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
         <CameraScreen

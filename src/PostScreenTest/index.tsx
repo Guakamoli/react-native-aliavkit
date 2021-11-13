@@ -25,7 +25,7 @@ import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
 import AVService from '../AVService';
 import ImageCropper from '../react-native-simple-image-cropper/src';
-import PostEditor from '../PostEditor';
+import PostEditorTest from '../PostEditorTest';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 
@@ -284,7 +284,8 @@ class PostContent extends Component {
             <ImageCropper
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
-              videoPaused={this.state.videoPaused}
+              //TODO
+              // videoPaused={this.state.videoPaused}
               srcSize={{
                 width: imageItem.width,
                 height: imageItem.height,
@@ -538,6 +539,9 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
+
+        
+        // console.log("CameraRollList:",photos);
         this.setState({
           CameraRollList: photos,
         });
@@ -560,14 +564,21 @@ class PostFileUpload extends Component {
   };
   getVideFile = async (fileType, item) => {
     if (fileType !== 'video') return '';
-    let myAssetId = item?.image?.uri.slice(5);
-    let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+    //TODO
+    let localUri;
+    if(Platform.OS === 'ios'){
+      let myAssetId = item?.image?.uri.slice(5);
+      localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+    }else{
+      localUri =  item?.image?.uri
+    }
+    // console.log("selected uri",localUri);
     return localUri;
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
     this.getPhotos()
-    this.getPhotoFromCache();
+    // this.getPhotoFromCache();
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
@@ -589,7 +600,7 @@ class PostFileUpload extends Component {
     return false;
   }
   componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    // AppState.removeEventListener('change', this._handleAppStateChange);
   }
   getPhotoFromCache = async () => {
     const { AsyncStorage } = this.props;
@@ -631,7 +642,8 @@ class PostFileUpload extends Component {
           <FlatGrid
             itemDimension={photosItem}
             data={this.state.CameraRollList}
-            spacing={0}
+            //TODO android上  spacing={0} 时，页面隐藏会闪退
+            // spacing={0}
             initialNumToRender={30}
             maxToRenderPerBatch={30}
             windowSize={3}
@@ -784,7 +796,7 @@ export default class CameraScreen extends Component<Props, State> {
           <PostFileUpload {...this.props} />
         </View>
         {this.state.postEditorParams ? (
-          <PostEditor
+          <PostEditorTest
             {...this.props}
             params={this.state.postEditorParams}
             playVideo={this.playVideo}

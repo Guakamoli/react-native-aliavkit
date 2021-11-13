@@ -24,7 +24,7 @@ import Carousel from './Carousel';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
-import StoryEditor from '../StoryEditor';
+import StoryEditorTest from '../StoryEditorTest';
 import StoryMusic from '../StoryMusic';
 import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
@@ -191,7 +191,6 @@ class RenderswitchModule extends React.PureComponent {
   render() {
     return (
       <View style={styles.BottomBox}>
-
         <Pressable
 
           onPress={() => {
@@ -390,9 +389,11 @@ class CameraScreen extends Component<Props, State> {
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      if (this.camera) {
-        this.cameraBox.current?.release?.();
-      }
+      //TODO
+      this.cameraBox.current?.release();
+      // if (this.camera) {
+      //   this.cameraBox.current?.release?.();
+      // }
     }
     this.setState = () => false;
   }
@@ -481,6 +482,7 @@ class CameraScreen extends Component<Props, State> {
       if (index == 0) {
         return
       }
+      //TODO
       if (item.icon) {
         item.icon = item.icon.replace('http://', 'https://');
       }
@@ -612,7 +614,14 @@ class CameraScreen extends Component<Props, State> {
   renderBottom() {
 
     return (
+      //TODO
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
+           <Pressable  onPress={() => {
+        this.onCaptureImagePressed()
+    }}>
+
+       <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
+    </Pressable>
         <RenderbeautifyBox {...this.props} />
         <Carousel {...this.props}
           myRef={this.myRef}

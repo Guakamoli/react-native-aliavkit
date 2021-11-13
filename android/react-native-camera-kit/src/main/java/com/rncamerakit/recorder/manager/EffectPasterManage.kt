@@ -35,7 +35,7 @@ class EffectPasterManage private constructor() {
         mPaterLoader = EffectLoader(mReactContext.applicationContext)
     }
 
-    private val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
+     val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
 
     private var mPaterLoader: EffectLoader? = null
 
@@ -62,7 +62,7 @@ class EffectPasterManage private constructor() {
             }
             for (mv in remoteInfos!!) {
                 mv.isLocalRes = false
-                Log.e("AAA","icon："+mv.icon+"\nURL："+mv.url)
+//                Log.e("AAA","icon："+mv.icon+"\nURL："+mv.url)
                 mPasterList.add(mv)
             }
             val jsonList = GsonBuilder().create().toJson(mPasterList)

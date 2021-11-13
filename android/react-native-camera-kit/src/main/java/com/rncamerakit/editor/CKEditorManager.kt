@@ -1,7 +1,9 @@
 package com.rncamerakit.editor
 
 import android.text.TextUtils
+import android.util.Log
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.common.utils.ScreenUtils
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -31,6 +33,22 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         }
     }
 
+    override fun onDropViewInstance(view: CKEditor) {
+        super.onDropViewInstance(view)
+        Log.e("AAA","onDropViewInstance")
+    }
+
+    //设置Editor宽高
+    @ReactProp(name = "cameraStyle")
+    fun setEditorLayout(view: CKEditor, readableMap: ReadableMap?) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            val width = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
+            val height = if (readableMap.hasKey("height")) readableMap.getInt("height") else width*16/9
+            view.reactContext.runOnUiQueueThread {
+                view.setLayout(width, height)
+            }
+        }
+    }
     //文件地址
     @ReactProp(name = "videoPath")
     fun setVideoPath(view: CKEditor, videoPath: String?) {

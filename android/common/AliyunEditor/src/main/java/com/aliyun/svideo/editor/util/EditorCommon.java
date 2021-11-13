@@ -247,6 +247,8 @@ public class EditorCommon {
         }
     }
     public static List<String> getColorFilterList(Context context) {
+        SD_DIR = getExtFileDir(context);
+        QU_DIR = SD_DIR + QU_NAME + File.separator;
         String[] colorFilterList = context.getResources().getStringArray(R.array.filter_order);
         List<String> list = new ArrayList<>();
         for (String filter : colorFilterList) {
@@ -278,7 +280,7 @@ public class EditorCommon {
     }
 
     /**
-     * @see  copyAll
+     * @see
      * @return 花字文件
      */
     public static List<String> getCoolTextFileList() {

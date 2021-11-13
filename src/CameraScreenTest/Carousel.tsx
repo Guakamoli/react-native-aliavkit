@@ -406,8 +406,13 @@ class CarouselWrapper extends Component<Props, State> {
             if (index == 0) {
                 return
             }
-            item.icon = item.icon.replace('http://', 'https://');
-            item.url = item.url.replace('http://', 'https://');
+            //TODO
+            if (item.icon) {
+                item.icon = item.icon.replace('http://', 'https://');
+            }
+            if (item.url) {
+                item.url = item.url.replace('http://', 'https://');
+            }
         })
         pasters.unshift({ eid: 0 });
         this.setState({

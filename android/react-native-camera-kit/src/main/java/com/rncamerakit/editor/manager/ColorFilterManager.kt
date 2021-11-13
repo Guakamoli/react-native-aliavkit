@@ -1,5 +1,6 @@
 package com.rncamerakit.editor.manager
 
+import android.content.Context
 import com.aliyun.svideo.editor.util.AlivcResUtil
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideosdk.common.struct.effect.EffectBean
@@ -15,18 +16,20 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
 
     private var mContext = reactContext.applicationContext
 
-    private val mColorFilterList: MutableList<ColorFilter> = ArrayList()
-
-    fun getColorFilter(promise: Promise) {
-        mColorFilterList.clear()
-        mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty"))
-        EditorCommon.getColorFilterList(mContext).forEach { path ->
-            val name = File(path).name
-            val icon = "file://$path/icon.png"
-            mColorFilterList.add(ColorFilter(name, icon))
+    companion object {
+        fun getColorFilter(mContext: Context, promise: Promise) {
+            val mColorFilterList: MutableList<ColorFilter> = ArrayList()
+//            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty"))
+            EditorCommon.getColorFilterList(mContext).forEach { path ->
+                val name = File(path).name
+                val icon = "file://$path/icon.png"
+                mColorFilterList.add(ColorFilter(name, icon))
+            }
+            promise.resolve(GsonBuilder().create().toJson(mColorFilterList))
         }
-        promise.resolve(GsonBuilder().create().toJson(mColorFilterList))
     }
+
+//    private val mColorFilterList: MutableList<ColorFilter> = ArrayList()
 
 
     fun setColorFilter(filterName: String?, mAliyunIEditor: AliyunIEditor?) {

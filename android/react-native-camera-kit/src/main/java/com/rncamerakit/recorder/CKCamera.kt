@@ -9,6 +9,7 @@ import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.*
 import com.aliyun.svideo.downloader.DownloaderManager
@@ -36,6 +37,8 @@ class CKCamera(
     LifecycleObserver {
 
 
+
+
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
@@ -56,7 +59,7 @@ class CKCamera(
     }
 
     private fun initVideoContainer() {
-        mVideoContainer = FrameLayout(context)
+        mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
 //        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
@@ -68,7 +71,7 @@ class CKCamera(
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initRecorderSurfaceView() {
-        mRecorderSurfaceView = SurfaceView(context)
+        mRecorderSurfaceView = SurfaceView(mContext)
         val params = LayoutParams(mWidth, mHeight)
 //        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         mVideoContainer?.addView(mRecorderSurfaceView,params)
@@ -213,6 +216,8 @@ class CKCamera(
 
         DownloadUtils.getMusicJsonInfo()
         initLifecycle()
+
+//        EffectPasterManage.instance.getPasterInfos(null)
     }
 
     private fun initLifecycle() {
