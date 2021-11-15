@@ -136,11 +136,8 @@ export default class StoryEditor extends Component<Props, State> {
         Name: outputPath
       })
 
-      await this.props.getUploadFile(uploadFile)
-      setTimeout(()=>{
-        this.props.setType("story")
-
-      }, 1000)
+       this.props.getUploadFile(uploadFile)
+    
     }
   }
   getFilters = async () => {
