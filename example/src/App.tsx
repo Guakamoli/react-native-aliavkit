@@ -12,41 +12,42 @@ import StoryMusic from '../../src/StoryMusic';
 
 import CameraScreenTest from '../../src/CameraScreenTest';
 import PostUploadTest from '../../src/PostUploadTest';
+import PostUpload from '../../src/PostScreen';
 import PostEditor from '../../src/PostEditor';
-import Entry from '../../src/Entry'
+import Entry from '../../src/Entry';
 import store from '../../src/store';
 import { Provider } from 'react-redux';
 
-import EntryTest from '../../src/EntryTest'
+import EntryTest from '../../src/EntryTest';
 
 import ImageMap from '../../images/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function HomeScreen(props) {
   const { server, user, item, navigation, initType } = props;
-  const insets = {bottom:20}
+  const insets = { bottom: 20 };
   const sendfile = async (data) => {
     try {
-      console.log(data)
+      console.log(data);
     } catch (e) {
       console.log(e);
     }
-
-  }
+  };
   const goBack = () => {
-    navigation.goBack()
-
-  }
+    navigation.goBack();
+  };
   return (
-
     <>
-      <EntryTest {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
-       insets={insets}
-       
+      <EntryTest
+        {...props}
+        goBack={goBack}
+        {...ImageMap}
+        sendfile={sendfile}
+        insets={insets}
         getUploadFile={(data) => {
-          navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
-        }}></EntryTest>
-
+          navigation.navigate('FeedsPublishView', { attachments: data, type: data[0].Type.split('/')[0] });
+        }}
+      ></EntryTest>
     </>
     // </View>
   );
@@ -199,7 +200,6 @@ function PostEditorBox(props) {
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-
   return (
     <Provider store={store}>
       <NavigationContainer>
