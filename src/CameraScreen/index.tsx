@@ -428,7 +428,7 @@ class CameraScreen extends Component<Props, State> {
           clearTimeout(this.rt)
         }
         this.rt =setTimeout(() => {
-        this.props.setCameraType('back')
+        // this.props.setCameraType('back')
 
           this.setState({
             relaloadFlag: Math.random()
@@ -446,7 +446,7 @@ class CameraScreen extends Component<Props, State> {
         }
 
         this.rt = setTimeout(() => {
-        this.props.setCameraType('back')
+        // this.props.setCameraType('back')
 
           this.setState({
             relaloadFlag: Math.random()
@@ -675,7 +675,7 @@ class CameraScreen extends Component<Props, State> {
             <>
 
               <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}/>
-              {this.renderBottom()}
+              {/* {this.renderBottom()} */}
             </>
           )}
       </>
