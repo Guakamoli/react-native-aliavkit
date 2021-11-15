@@ -47,6 +47,8 @@ class CKCamera(
     private var mWidth = 0
     private var mHeight = 0
 
+    private var isInit = false
+
     private fun initRecorder() {
         mRecorderManage = RecorderManage(reactContext)
         mRecorder = mRecorderManage?.mRecorder
@@ -233,12 +235,16 @@ class CKCamera(
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
+        if(this.isInit){
+            return
+        }
         this.mWidth = dip(width)
         this.mHeight = dip(height)
         initVideoContainer()
         initRecorderSurfaceView()
         initRecorder()
         initFocusView()
+        this.isInit = true;
     }
 
 }

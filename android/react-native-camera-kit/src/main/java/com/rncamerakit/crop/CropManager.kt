@@ -73,8 +73,14 @@ class CropManager {
                 if (readableMap.hasKey("cropOffsetX")) readableMap.getInt("cropOffsetX") else 0
             val startY =
                 if (readableMap.hasKey("cropOffsetY")) readableMap.getInt("cropOffsetY") else 0
-            val endX = startX + outputWidth
-            val endY = startY + outputHeight
+            var endX = startX + outputWidth
+            var endY = startY + outputHeight
+
+            //todo
+            if (outputWidth > width) {
+                endX = width
+                endY -= (outputWidth - width)
+            }
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
 
@@ -172,17 +178,24 @@ class CropManager {
 
             val startX =
                 if (readableMap.hasKey("cropOffsetX")) readableMap.getInt("cropOffsetX") else 0
-            val startY =
+            var startY =
                 if (readableMap.hasKey("cropOffsetY")) readableMap.getInt("cropOffsetY") else 0
-            val endX = startX + outputWidth
+            var endX = startX + outputWidth
             var endY = startY + outputHeight
 
 
-            //默认1：1 如果裁剪宽度大于视频宽度，会导致视频变形
-            //例如： 原视频宽高：720*1280 ，裁剪输出宽高：1000 * 1000；最终视频输出宽高1000*1000，但是视频范围是原视频的 宽：0~720 高：0~1000
+            //todo
+            //裁剪区域不会超出原视频区域。
+            //例如： 原视频宽高：720*1280 ，裁剪输出宽高：1000*1000；原视频截取的区域是 宽：0~720 高：0~1000，宽度会从 720 拉伸成 1000
             if (outputWidth > mVideoWidth) {
-                endY -= (outputWidth - mVideoWidth);
+                endX = mVideoWidth
+                //应该裁剪的高度偏移
+                val cropY = ((endY - startY) - (endX - startX))/2
+                startY += cropY
+                endY -= cropY
             }
+
+            Log.e("AAA", "裁剪区域 ~ x：$startX~$endX；y：$startY~$endY")
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
             val duration = aliyunCrop.getVideoDuration(videoPath)
@@ -251,6 +264,7 @@ class CropManager {
                         val videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
                         val videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
 
+                        Log.e("AAA", "裁剪后宽高 ~ videoWidth：$videoWidth；videoHeight：$videoHeight")
                         nativeParser.release()
                         nativeParser.dispose()
                     } catch (e: Exception) {

@@ -49,7 +49,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     }
 
     //设置Editor宽高
-    @ReactProp(name = "cameraStyle")
+    @ReactProp(name = "editStyle")
     fun setEditorLayout(view: CKEditor, readableMap: ReadableMap?) {
         if (readableMap != null && readableMap.toHashMap().size > 0) {
             this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
