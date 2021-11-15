@@ -67,9 +67,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
-    CGFloat _previewWidth;
-    CGFloat _previewHeight;
-    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -102,8 +99,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
         [self.cameraAction stopPreview];
-//        [self.cameraAction.cameraPreview removeFromSuperview];
-//        self.cameraAction = nil;
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -116,8 +114,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
             [self addSubview:self.cameraAction.cameraPreview];
-            [self setupDefault];
             [self.cameraAction startPreview];
+            [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
@@ -125,8 +123,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (!self.window && _isPresented) {
         [self.cameraAction stopPreview];
         [[BeautyEngineManager shareManager] clear];
-//        [self.cameraAction.cameraPreview removeFromSuperview];
-//        self.cameraAction = nil;
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
