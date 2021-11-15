@@ -44,7 +44,6 @@ class CropManager {
 
         private const val TAG = "CropManager"
 
-
         /**
          * 图片裁剪
          */
@@ -93,7 +92,7 @@ class CropManager {
             //设置裁剪参数
             val param = CropParam()
             param.mediaType = MediaType.ANY_IMAGE_TYPE
-//            param.scaleMode = VideoDisplayMode.FILL
+            param.scaleMode = VideoDisplayMode.FILL
             param.inputPath = imagePath
             param.outputPath = outputPath
 
@@ -125,7 +124,7 @@ class CropManager {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
                     RNEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
-                    promise.resolve(outputPath)
+                    promise.resolve("file://$outputPath")
                 }
 
                 override fun onCancelComplete() {

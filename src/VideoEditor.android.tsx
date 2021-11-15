@@ -119,7 +119,7 @@ export default class Editor extends Component<Props, State> {
     // console.log("getMusicList", list);
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
-      // console.log("startVideoEditor", duration);
+      console.log("startVideoEditor", duration);
     });
 
     // //视频裁剪进度
