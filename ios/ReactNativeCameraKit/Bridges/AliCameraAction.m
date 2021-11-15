@@ -156,7 +156,7 @@
 
 - (void)addFocusGesture
 {
-    if ([self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+    if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
         return;
     }
     self.focusGesture =
@@ -166,7 +166,7 @@
 
 - (void)addZoomGesture
 {
-    if ([self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+    if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
         return;
     }
     self.zoomGesture =
@@ -459,7 +459,7 @@
 {
     if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
         
-        return CMSampleBufferGetImageBuffer(sampleBuffer);
+        return CMSampleBufferGetImageBuffer(sampleBuffer);;
     }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
