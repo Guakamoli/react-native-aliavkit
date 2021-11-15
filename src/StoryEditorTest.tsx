@@ -165,7 +165,7 @@ export default class StoryEditorTest extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       // console.log(Platform.OS === 'android');
-      VideoEditor.release();
+      // VideoEditor.release();
     } else {
       RNEditViewManager.stop()
     }
