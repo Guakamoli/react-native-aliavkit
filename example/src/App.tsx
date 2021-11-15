@@ -11,7 +11,7 @@ import Example from './trimmer';
 import StoryMusic from '../../src/StoryMusic';
 
 import CameraScreenTest from '../../src/CameraScreenTest';
-import PostUpload from '../../src/PostScreen';
+import PostUploadTest from '../../src/PostUploadTest';
 import PostEditor from '../../src/PostEditor';
 import Entry from '../../src/Entry'
 import store from '../../src/store';

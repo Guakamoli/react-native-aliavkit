@@ -36,9 +36,6 @@ class CKCamera(
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
 
-
-
-
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
@@ -61,7 +58,6 @@ class CKCamera(
     private fun initVideoContainer() {
         mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
-//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
         addView(mVideoContainer, params)
     }
@@ -73,10 +69,7 @@ class CKCamera(
     private fun initRecorderSurfaceView() {
         mRecorderSurfaceView = SurfaceView(mContext)
         val params = LayoutParams(mWidth, mHeight)
-//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         mVideoContainer?.addView(mRecorderSurfaceView,params)
-//        val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-//        mVideoContainer?.addView(mRecorderSurfaceView,layoutParams)
         val scaleGestureDetector = ScaleGestureDetector(context, object : OnScaleGestureListener {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val factorOffset = detector.scaleFactor - lastScaleFactor
@@ -198,20 +191,11 @@ class CKCamera(
 
 
     init {
-//        val view: View = LayoutInflater.from(context).inflate(R.layout.paiya_story_camera, this)
-//        mVideoContainer = view.findViewById(R.id.mVideoContainer)
-//        mRecorderSurfaceView = view.findViewById(R.id.mRecorderSurfaceView)
-//        mVideoContainer?.setBackgroundColor(0x50FF0000)
         if (!isPermissions()) {
             getPermissions()
         }
         DownloaderManager.getInstance().init(reactContext.applicationContext)
-        mWidth = ScreenUtils.getWidth(context)
-        mHeight = mWidth*16/9
-        initVideoContainer()
-        initRecorderSurfaceView()
-        initRecorder()
-        initFocusView()
+
         copyAssets()
 
         DownloadUtils.getMusicJsonInfo()
@@ -249,15 +233,12 @@ class CKCamera(
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
-        var params = mVideoContainer?.layoutParams
-        if (params == null) {
-            params = LayoutParams(dip(width), dip(height))
-        } else {
-            params.width = dip(width)
-            params.height = dip(height)
-        }
-        mVideoContainer?.layoutParams = params
-        mRecorderSurfaceView?.layoutParams = params
+        this.mWidth = dip(width)
+        this.mHeight = dip(height)
+        initVideoContainer()
+        initRecorderSurfaceView()
+        initRecorder()
+        initFocusView()
     }
 
 }

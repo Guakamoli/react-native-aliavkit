@@ -109,7 +109,7 @@ export default class Editor extends Component<Props, State> {
 
   release = async () => {
     console.log("Video release");
-    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+    // RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
   };
 
 
@@ -141,7 +141,7 @@ export default class Editor extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+    // RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }
@@ -162,8 +162,8 @@ export default class Editor extends Component<Props, State> {
     return (
       <NativeEditor
         style={{ minWidth: 100, minHeight: 100 }}
-        {...this.props}
         cameraStyle={{ height: this.props.editHeight, width: this.props.editWidth }}
+        {...this.props}
         // editLayout={{width:props.editWidth,height:props.CameraFixHeight}}
         ref={this.nativeRef}
       // startExportVideo = {this.props.startExportVideo}
