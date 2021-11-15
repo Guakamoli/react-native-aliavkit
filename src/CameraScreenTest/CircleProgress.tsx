@@ -94,7 +94,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 122,
         height: 122,
-        zIndex: 999,
+        // TODO
+        zIndex: 120,
         backgroundColor:"rgba(255,255,255,0.3)",
         borderRadius: 129,
         // top: 66,

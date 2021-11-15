@@ -47,7 +47,8 @@ class RenderbeautifyBox extends React.PureComponent {
     render() {
         if (!this.props.showBeautify) return null
         return (
-            <View style={{ height: 200, backgroundColor: 'black', width: width, zIndex: 99, position: "absolute", bottom: 0}}>
+            // TODO
+            <View style={{ height: 200, backgroundColor: 'black', width: width, zIndex: 999, position: "absolute", bottom: 0}}>
                 <View style={styles.beautifyBoxHead}>
                     <Text style={styles.beautifyTitle}>{`美颜`}</Text>
 
