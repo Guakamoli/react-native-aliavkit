@@ -281,7 +281,7 @@ class PostContent extends Component {
           }}
         >
           <View style={{ backgroundColor: 'black' }}>
-            {/* <ImageCropper
+            <ImageCropper
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
               //TODO
@@ -300,7 +300,7 @@ class PostContent extends Component {
               setCropperParams={(cropperParams) => {
                 cropDataRow = cropperParams;
               }}
-            /> */}
+            />
           </View>
         </View>
       </View>
