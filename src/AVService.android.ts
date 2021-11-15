@@ -67,6 +67,9 @@ export default class AVService {
   }
 
   static async getThumbnails({ videoPath, startTime, itemPerTime }) {
+    console.log("getThumbnails",videoPath,startTime,itemPerTime)
+    var thumbnails = await RNEditorKitModule.corpVideoFrame({ videoPath, startTime, itemPerTime });
+    return JSON.parse(thumbnails)
   }
 
   static async removeThumbnaiImages() {

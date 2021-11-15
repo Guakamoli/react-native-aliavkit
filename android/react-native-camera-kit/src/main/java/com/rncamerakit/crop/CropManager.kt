@@ -295,21 +295,23 @@ class CropManager {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
             }
-            //ms
-            val intervalTime =
-                if (options.hasKey("intervalTime")) options.getInt("intervalTime") else 1000
+            //开始时间：ms
             val startTime = if (options.hasKey("startTime")) options.getInt("startTime") else 0
-            val videoWidth = if (options.hasKey("videoWidth")) options.getInt("videoWidth") else 200
-            val videoHeight =
-                if (options.hasKey("videoHeight")) options.getInt("videoHeight") else 200
-            val cacheSize = if (options.hasKey("cacheSize")) options.getInt("cacheSize") else 10
+            //间隔时间 ms
+            val intervalTime = if (options.hasKey("itemPerTime")) options.getInt("itemPerTime") else 1000
+
+            var videoWidth = 720
+            var videoHeight = 1280
+            var cacheSize = 10
 
             var duration = 0L
             try {
                 val nativeParser = NativeParser()
                 nativeParser.init(videoPath)
+                videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
+                videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
                 try {
-                    duration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()
+                    duration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()/1000
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -318,6 +320,11 @@ class CropManager {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+
+            if (cacheSize > 0) {
+                cacheSize = (duration/intervalTime).toInt()
+            }
+
             val coverTimes: MutableList<Long> = ArrayList()
             for (i in 0 until cacheSize) {
                 var coverTime: Int = intervalTime*i + startTime
@@ -345,13 +352,13 @@ class CropManager {
                     jobList.add(async { getJoinedGroupList(context, videoPath, videoWidth, videoHeight, it) })
                 }
                 jobList.forEach {
-                    videoFrameList.add(it.await())
+                    videoFrameList.add("file://" + it.await())
                 }
                 GlobalScope.launch(Dispatchers.Main) {
                     videoFrameList.forEach {
                         Log.e("BBB ", "sync：$it")
-                        promise?.resolve(GsonBuilder().create().toJson(videoFrameList))
                     }
+                    promise?.resolve(GsonBuilder().create().toJson(videoFrameList))
                 }
             }
         }

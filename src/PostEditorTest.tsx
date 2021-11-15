@@ -239,6 +239,8 @@ const PostEditor = (props) => {
         itemPerTime: Math.floor(itemPerTime),
       }); 
   
+
+      console.log("getThumbnails",coverData);
       setcoverList(coverData);
       setcoverImage(coverData[0]);
     } catch (e) {
@@ -295,8 +297,10 @@ const PostEditor = (props) => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
     const top =props.params.cropDataRow.positionY
 
-    const width1 =props.params.cropDataRow.fittedSize.width
-    const height1 =props.params.cropDataRow.fittedSize.height
+
+    //TODO
+    // const width1 =props.params.cropDataRow.fittedSize.width
+    // const height1 =props.params.cropDataRow.fittedSize.height
     return (
       <View style={{
         alignItems: 'center',
@@ -304,22 +308,24 @@ const PostEditor = (props) => {
         backgroundColor:"black",
         width: width,
         height: width,
+        //TODO
+        marginTop:10,
         overflow:"hidden"
       }}>
           <View style={{
-          width: width1,
-          height: height1,
-            transform:[{
-              translateY:top
-            }]
+          width: width,
+          height: width,
+            // transform:[{
+            //   translateY:top
+            // }]
           }}
           >
         <VideoEditor
           // editWidth={width1}
           // editHeight={height1}
           editStyle={{
-            width:width1,
-            height: height1
+            width:width,
+            height: width
           }}
           ref={(edit) => (editor = edit)}
           filterName={filterName}
@@ -724,7 +730,8 @@ const PostEditor = (props) => {
       </View>)
   }
   return (
-    <View style={{  backgroundColor: 'black', position: 'relative',height:"100%"}}>
+    //TODO
+    <View style={{  backgroundColor: 'blue', position: 'relative',height:"100%"}}>
       <Toast
         ref={toast}
         position='top'
