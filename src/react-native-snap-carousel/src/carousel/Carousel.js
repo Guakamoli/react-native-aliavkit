@@ -737,7 +737,6 @@ export default class Carousel extends Component {
         } else if (index < loopClonesPerSide) {
             repositionTo = index + dataLength;
         }
-
         this._snapToItem(repositionTo, false, false, false, false);
     }
 
@@ -771,7 +770,7 @@ export default class Carousel extends Component {
         }
     }
 
-    _onScroll(event) {
+    _onScroll(event, endFlag = false) {
         const { callbackOffsetMargin, enableMomentum, onScroll } = this.props;
 
         const scrollOffset = event ? this._getScrollOffset(event) : this._currentContentOffset;
@@ -789,6 +788,7 @@ export default class Carousel extends Component {
             this._playCustomSlideAnimation(this._activeItem, nextActiveItem);
         }
         if (enableMomentum) {
+
             clearTimeout(this._snapNoMomentumTimeout);
 
             if (this._activeItem !== nextActiveItem) {
@@ -824,9 +824,16 @@ export default class Carousel extends Component {
             }
         }
 
-        if (nextActiveItem === this._itemToSnapTo &&
-            scrollOffset === this._scrollOffsetRef) {
+        if ((nextActiveItem === this._itemToSnapTo &&
+            scrollOffset === this._scrollOffsetRef)) {
+
+
             this._repositionScroll(nextActiveItem);
+        }
+        if (endFlag && nextActiveItem !== this._itemToSnapTo) {
+            const { onSnapToItem } = this.props;
+
+            onSnapToItem?.(nextActiveItem);
         }
 
         if (typeof onScroll === "function" && event) {
@@ -923,7 +930,7 @@ export default class Carousel extends Component {
 
         if (this._carouselRef) {
             this._onScrollEnd && this._onScrollEnd(false);
-            this._onScroll(event)
+            this._onScroll(event, true)
         }
 
         if (onMomentumScrollEnd) {

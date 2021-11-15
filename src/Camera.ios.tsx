@@ -44,7 +44,6 @@ const Camera = React.forwardRef((props, ref) => {
 
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));
-  console.info(transformedProps, "transformedPropstransformedPropstransformedProps")
   // const nativeRef = React.useRef();
   return (
     <NativeCamera

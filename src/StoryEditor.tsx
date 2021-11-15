@@ -106,10 +106,8 @@ export default class StoryEditor extends Component<Props, State> {
       musicInfo: {},
       setMusic: false,
     };
-    this.onExportVideo = this.onExportVideo.bind(this);
   }
   startExportVideo() {
-    console.log(this.state.startExportVideo);
     if (this.state.startExportVideo) {
       return;
     }
@@ -122,7 +120,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   }
   //  发布快拍   导出视频  丢出数据
-  onExportVideo(event) {
+  onExportVideo = async(event) => {
     console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
@@ -138,9 +136,8 @@ export default class StoryEditor extends Component<Props, State> {
         Name: outputPath
       })
 
-      this.props.getUploadFile(uploadFile)
-      this.props.setType("story")
-
+       this.props.getUploadFile(uploadFile)
+    
     }
   }
   getFilters = async () => {
