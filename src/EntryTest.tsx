@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
+// TODO
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated ,Platform,} from 'react-native';
 import CameraScreenTest from './CameraScreenTest';
 import PostUpload from './PostScreenTest';
 import { useThrottleFn } from 'ahooks';
@@ -147,6 +148,9 @@ const Entry = (props) => {
           styles.tools,
           {bottom: props.insets.bottom},
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
+          // TODO
+          Platform.OS === 'android' && { opacity: types.findIndex((i) => i.type === type) > -1 ? 1 : 0 },
+          
           {
             transform: [{ translateX: transX }],
           },

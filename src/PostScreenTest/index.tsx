@@ -708,6 +708,7 @@ export default class CameraScreen extends Component<Props, State> {
         },
       });
       if (type === 'video') {
+        console.log('1231313',)
         trimVideoData = await AVService.saveToSandBox({
           path: imageItem.uri,
         });

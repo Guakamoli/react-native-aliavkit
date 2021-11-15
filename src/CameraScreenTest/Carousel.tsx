@@ -334,9 +334,10 @@ class CarouselWrapper extends Component<Props, State> {
 
     }
     shotCamera = async () => {
+        // TODO
+        this.ani.stop()
 
         const videoPath = await this.props.camera.current?.stopRecording?.();
-        this.ani.stop()
         setTimeout(() => {
             this.reset()
         }, 0);
@@ -479,7 +480,8 @@ class CarouselWrapper extends Component<Props, State> {
                                 extrapolate: "clamp"
                             })
                         }
-                    ]
+                    // TODO
+                    ],zIndex:200
                 }}>
                     <Carousel
                         ref={(flatList) => {

@@ -498,7 +498,6 @@ class CameraScreenTest extends Component<Props, State> {
   }
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
-
     return (
       this.props.captureButtonImage && (
         // !this.isCaptureRetakeMode() && (
@@ -616,13 +615,26 @@ class CameraScreenTest extends Component<Props, State> {
     return (
       //TODO
       <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
-           <Pressable  onPress={() => {
-        this.onCaptureImagePressed()
-    }}>
+           <Pressable  onPress={ async() => {
+      //   onPress={() => {
+      //     this.onCaptureImagePressed()
+      // }}>
+        const videoPath = await this.cameraBox.current?.startRecording?.();
+        console.log('startRecordingstartRecordingstartRecording',videoPath);
+        }}>
 
-       <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-    </Pressable>
-        <RenderbeautifyBox {...this.props} />
+       <Image style={{ width: 31, height: 28,marginLeft:60,marginBottom:100 }} source={this.props.cameraFlipImage} resizeMode='contain' />
+      </Pressable>
+
+      <Pressable  onPress={ async() => {
+        console.log('stopRecordingstopRecordingstopRecording');
+        const videoPath = await this.cameraBox.current?.stopRecording?.();
+        console.log('stopRecordingstopRecordingstopRecording',videoPath);
+        }}>
+
+       <Image style={{ width: 31, height: 28,marginLeft:60 }} source={this.props.cameraFlipImage} resizeMode='contain' />
+      </Pressable>
+        <RenderbeautifyBox {...this.props}  />
         <Carousel {...this.props}
           myRef={this.myRef}
           onCaptureImagePressed={this.onCaptureImagePressed}
@@ -643,7 +655,8 @@ class CameraScreenTest extends Component<Props, State> {
 
   render() {
     return (
-      <>
+      // TODO
+      <View style={{backgroundColor:'#000',flex:1}}>
         <Toast
           ref={this.myRef}
           position='center'
@@ -691,7 +704,7 @@ class CameraScreenTest extends Component<Props, State> {
             {this.renderBottom()}
           </>
         )}
-      </>
+      </View>
     );
   }
 }
