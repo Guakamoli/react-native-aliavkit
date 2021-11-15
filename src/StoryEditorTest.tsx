@@ -269,14 +269,13 @@ export default class StoryEditorTest extends Component<Props, State> {
     const VideoEditors = () => {
 
       //TODO
-      const topheight = Platform.OS === 'ios'?this.props.insets.top:StatusBar.currentHeight
+      const topheight = Platform.OS === 'ios'?this.props.insets.top??0:StatusBar.currentHeight
       // return null
-      const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28)
+      const CameraFixHeight = height - (this.props.insets.bottom??0 + topheight + 30 + 28)
 
        console.log("Camera height",CameraFixHeight);
       return (
-    
-        <View style={{ height: CameraFixHeight, backgroundColor: 'red', borderRadius: 20, width:"100%",overflow: "hidden"}}>
+        <View style={{ height: CameraFixHeight, borderRadius: 20, width:"100%",overflow: "hidden"}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
@@ -395,7 +394,8 @@ export default class StoryEditorTest extends Component<Props, State> {
           opacity={0.8}
         />
         {this.renderCamera()}
-        {Platform.OS === 'android' && <View style={styles.gap} />}
+        {/* TODO */}
+        {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen
             ?
