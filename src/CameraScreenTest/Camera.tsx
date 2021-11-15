@@ -204,6 +204,7 @@ class RenderCamera extends Component {
 
     const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28)
 
+    console.log("Camera height",CameraFixHeight);
     //TODO
     return (
       <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden", borderRadius: 20 }}>

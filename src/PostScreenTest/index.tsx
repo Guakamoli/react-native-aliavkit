@@ -24,7 +24,7 @@ import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
 import { FlatGrid } from 'react-native-super-grid';
 import AVService from '../AVService';
-// import ImageCropper from '../react-native-simple-image-cropper/src';
+import ImageCropper from '../react-native-simple-image-cropper/src';
 import PostEditorTest from '../PostEditorTest';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';

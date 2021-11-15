@@ -20,7 +20,12 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         return "CKCameraManager"
     }
 
+    private var mWidth = 0
+    private var mHeight = 0
+
     override fun createViewInstance(context: ThemedReactContext): CKCamera {
+        this.mWidth = 0
+        this.mHeight = 0
         //初始化贴纸管理
         return CKCamera(context)
     }
@@ -124,11 +129,14 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     //设置Camera宽高
     @ReactProp(name = "cameraStyle")
     fun setCameraLayout(view: CKCamera, readableMap: ReadableMap?) {
+        if (this.mWidth != 0) {
+            return
+        }
         if (readableMap != null && readableMap.toHashMap().size > 0) {
-            val width = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
-            val height = if (readableMap.hasKey("height")) readableMap.getInt("height") else width*16/9
+            this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
+            this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
             view.reactContext.runOnUiQueueThread {
-                view.setLayout(width, height)
+                view.setLayout(this.mWidth, this.mHeight)
             }
         }
     }

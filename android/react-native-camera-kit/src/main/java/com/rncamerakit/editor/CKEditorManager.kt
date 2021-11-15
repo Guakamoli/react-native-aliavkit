@@ -14,18 +14,28 @@ import com.rncamerakit.utils.DownloadUtils
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
 
+
+    private var mWidth = 0
+    private var mHeight = 0
+    private var mFilePath: String? = null
+    private var isVideo = false
+
     override fun getName(): String {
         return "CKEditorManager"
     }
 
     override fun createViewInstance(reactContext: ThemedReactContext): CKEditor {
+        this.mWidth = 0
+        this.mHeight = 0
+        this.mFilePath = null
+        this.isVideo = false
         return CKEditor(reactContext)
     }
 
     //设置滤镜
     @ReactProp(name = "filterName")
     fun setColorFilter(view: CKEditor, filterName: String?) {
-        if(TextUtils.isEmpty(filterName)){
+        if (TextUtils.isEmpty(filterName)) {
             return
         }
         view.reactContext.runOnUiQueueThread {
@@ -35,27 +45,43 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
 
     override fun onDropViewInstance(view: CKEditor) {
         super.onDropViewInstance(view)
-        Log.e("AAA","onDropViewInstance")
+        Log.e("AAA", "onDropViewInstance")
     }
 
     //设置Editor宽高
     @ReactProp(name = "cameraStyle")
     fun setEditorLayout(view: CKEditor, readableMap: ReadableMap?) {
         if (readableMap != null && readableMap.toHashMap().size > 0) {
-            val width = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
-            val height = if (readableMap.hasKey("height")) readableMap.getInt("height") else width*16/9
+            this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
+            this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
+
+            if (TextUtils.isEmpty(mFilePath)) {
+                return
+            }
             view.reactContext.runOnUiQueueThread {
-                view.setLayout(width, height)
+                Log.e("BBB", "setEditorLayout")
+                view.setLayout(mWidth, mHeight)
+                if(!TextUtils.isEmpty(mFilePath)){
+                    view.importVideo(mFilePath, isVideo)
+                }
             }
         }
     }
+
     //文件地址
     @ReactProp(name = "videoPath")
     fun setVideoPath(view: CKEditor, videoPath: String?) {
         if (TextUtils.isEmpty(videoPath)) {
             return
         }
+        this.mFilePath = videoPath
+        this.isVideo = true
+        if (this.mWidth == 0) {
+            return
+        }
         view.reactContext.runOnUiQueueThread {
+            Log.e("BBB", "setVideoPath")
+            view.setLayout(mWidth, mHeight)
             view.importVideo(videoPath, true)
         }
     }
@@ -67,7 +93,14 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(imagePath)) {
             return
         }
+        this.mFilePath = imagePath
+        this.isVideo = false
+        if (this.mWidth == 0) {
+            return
+        }
         view.reactContext.runOnUiQueueThread {
+            Log.e("BBB", "setImagePath")
+            view.setLayout(mWidth, mHeight)
             view.importVideo(imagePath, false)
         }
     }

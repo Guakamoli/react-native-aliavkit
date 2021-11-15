@@ -89,6 +89,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         val params = LayoutParams(mWidth, mHeight)
 //        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
+//        mVideoContainer?.setBackgroundColor(Color.BLUE)
         addView(mVideoContainer, params)
     }
 
@@ -111,14 +112,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
         //设置onTextureRender能够回调
         mAliyunIEditor =
             AliyunEditorFactory.creatAliyunEditor(uri, CKPlayCallBack(mContext, this, isVideo))
-
-        mWidth = ScreenUtils.getWidth(mContext)
-        mHeight = try {
-            mWidth*mAliyunIEditor!!.videoHeight/mAliyunIEditor!!.videoWidth
-        } catch (e: Exception) {
-            e.printStackTrace()
-            mWidth*16/9
-        }
+//        mWidth = ScreenUtils.getWidth(mContext)
+//        mHeight = try {
+//            mWidth*mAliyunIEditor!!.videoHeight/mAliyunIEditor!!.videoWidth
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            mWidth*16/9
+//        }
         initVideoContainer()
         initSurfaceView()
 
@@ -382,6 +382,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
 //        mHeight = mWidth*16/9
 //        initVideoContainer()
 //        initSurfaceView()
+
         mImportManager = ImportManager(reactContext)
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
@@ -425,15 +426,17 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
-        var params = mVideoContainer?.layoutParams
-        if (params == null) {
-            params = LayoutParams(dip(width), dip(height))
-        } else {
-            params.width = dip(width)
-            params.height = dip(height)
-        }
-        mVideoContainer?.layoutParams = params
-        mSurfaceView?.layoutParams = params
+        this.mWidth = dip(width)
+        this.mHeight = dip(height)
+//        var params = mVideoContainer?.layoutParams
+//        if (params == null) {
+//            params = LayoutParams(dip(width), dip(height))
+//        } else {
+//            params.width = dip(width)
+//            params.height = dip(height)
+//        }
+//        mVideoContainer?.layoutParams = params
+//        mSurfaceView?.layoutParams = params
     }
 
     /**
