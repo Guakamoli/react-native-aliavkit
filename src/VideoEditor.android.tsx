@@ -162,7 +162,6 @@ export default class Editor extends Component<Props, State> {
     return (
       <NativeEditor
         style={{ minWidth: 100, minHeight: 100 }}
-        cameraStyle={{ height: this.props.editHeight, width: this.props.editWidth }}
         {...this.props}
         // editLayout={{width:props.editWidth,height:props.CameraFixHeight}}
         ref={this.nativeRef}

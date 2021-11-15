@@ -34,8 +34,8 @@ export default class AVService {
       'source': source,
       'cropOffsetX': cropOffsetX,
       'cropOffsetY': cropOffsetY,
-      'cropWidth': 1280,
-      'cropHeight': 1280,
+      'cropWidth': cropWidth,
+      'cropHeight': cropHeight,
     };
     const carpFile = await RNEditorKitModule.crop(carpParam);
     carpListener.remove();

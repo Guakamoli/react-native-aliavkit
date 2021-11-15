@@ -275,11 +275,17 @@ export default class StoryEditorTest extends Component<Props, State> {
 
        console.log("Camera height",CameraFixHeight);
       return (
+    
         <View style={{ height: CameraFixHeight, backgroundColor: 'red', borderRadius: 20, width:"100%",overflow: "hidden"}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
             editHeight={CameraFixHeight}
+            //TODO
+            editStyle={{
+              width:width,
+              height: CameraFixHeight
+            }}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}

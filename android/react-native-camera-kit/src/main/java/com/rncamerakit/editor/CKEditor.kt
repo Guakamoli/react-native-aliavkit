@@ -61,6 +61,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //是否是视频 true:视频文件 ；false: 图片文件
     private var isVideo = false
 
+    var isInit = false
+
     /**
      * 编辑接口，包含特效使用，视频预览
      */
@@ -89,7 +91,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         val params = LayoutParams(mWidth, mHeight)
 //        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
-//        mVideoContainer?.setBackgroundColor(Color.BLUE)
+        mVideoContainer?.setBackgroundColor(Color.BLUE)
         addView(mVideoContainer, params)
     }
 
@@ -161,6 +163,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导入视频 \ 导入图片
      */
     fun importVideo(filePath: String?, isVideo: Boolean) {
+        if(this.isInit){
+            return
+        }
         this.isVideo = isVideo
         mProjectConfigure = if (isVideo) {
             mImportManager?.importVideo(filePath).toString()
@@ -169,6 +174,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         }
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
 
+        this.isInit = true;
 
 //        //TODO 测试音频
 //        val list = MusicFileInfoDao.instance.queryAll()
