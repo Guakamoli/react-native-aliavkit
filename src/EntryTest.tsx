@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
-import CameraScreen from './CameraScreenTest';
+import CameraScreenTest from './CameraScreenTest';
 import PostUpload from './PostScreenTest';
 import { useThrottleFn } from 'ahooks';
 import {  useSelector, useDispatch } from 'react-redux';
@@ -99,7 +99,7 @@ const Entry = (props) => {
         />
       </View>
       <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
-        <CameraScreen
+        <CameraScreenTest
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}

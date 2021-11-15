@@ -10,7 +10,7 @@ import VideoEditorExample from './VideoEditorExample';
 import Example from './trimmer';
 import StoryMusic from '../../src/StoryMusic';
 
-import CameraScreen from '../../src/CameraScreen';
+import CameraScreenTest from '../../src/CameraScreenTest';
 import PostUpload from '../../src/PostScreen';
 import PostEditor from '../../src/PostEditor';
 import Entry from '../../src/Entry'
@@ -85,7 +85,7 @@ function VideoEditor({ navigation }) {
 
 function Story(props) {
   return (
-    <CameraScreen
+    <CameraScreenTest
       {...props}
       // 退出操作
       goback={() => {

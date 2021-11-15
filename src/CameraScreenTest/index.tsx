@@ -281,7 +281,7 @@ const RenderLeftButtons = React.memo((props) => {
   );
 })
 
-class CameraScreen extends Component<Props, State> {
+class CameraScreenTest extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
   };
@@ -654,7 +654,7 @@ class CameraScreen extends Component<Props, State> {
         />
 
         {this.state.ShootSuccess ? (
-          <StoryEditor
+          <StoryEditorTest
             rephotograph={() => {
               this.props.setType("story")
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
@@ -695,7 +695,7 @@ class CameraScreen extends Component<Props, State> {
     );
   }
 }
-export default connect(null, RDSMMapDispatchToProps)(CameraScreen)
+export default connect(null, RDSMMapDispatchToProps)(CameraScreenTest)
 
 const styles = StyleSheet.create({
   bottomButtons: {

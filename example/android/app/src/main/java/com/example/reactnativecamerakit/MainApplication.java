@@ -63,27 +63,30 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     packages.add(new ReactVideoPackage());
                     packages.add(new ImageFilterKitPackage());
 
-                    boolean isAddRNGestureHandlerPackage = false;
-                    for (ReactPackage reactPackage : packages) {
-                        if (reactPackage.getClass() == RNGestureHandlerPackage.class) {
-                            isAddRNGestureHandlerPackage = true;
-                            break;
-                        }
-                    }
-                    if (!isAddRNGestureHandlerPackage) {
-                        packages.add(new RNGestureHandlerPackage());
-                    }
+//                    boolean isAddRNGestureHandlerPackage = false;
+//                    for (ReactPackage reactPackage : packages) {
+//                        if (reactPackage.getClass() == RNGestureHandlerPackage.class) {
+//                            isAddRNGestureHandlerPackage = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!isAddRNGestureHandlerPackage) {
+//                        packages.add(new RNGestureHandlerPackage());
+//                    }
+//
+//                    boolean isAddReanimatedPackage = false;
+//                    for (ReactPackage reactPackage : packages) {
+//                        if (reactPackage.getClass() == ReanimatedPackage.class) {
+//                            isAddReanimatedPackage = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!isAddReanimatedPackage) {
+//                        packages.add(new ReanimatedPackage());
+//                    }
 
-                    boolean isAddReanimatedPackage = false;
-                    for (ReactPackage reactPackage : packages) {
-                        if (reactPackage.getClass() == ReanimatedPackage.class) {
-                            isAddReanimatedPackage = true;
-                            break;
-                        }
-                    }
-                    if (!isAddReanimatedPackage) {
-                        packages.add(new ReanimatedPackage());
-                    }
+                    packages.add(new ReanimatedPackage());
+                    packages.add(new RNGestureHandlerPackage());
 
                     return packages;
                 }
