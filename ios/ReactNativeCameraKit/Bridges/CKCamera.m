@@ -67,6 +67,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
+    CGFloat _previewWidth;
+    CGFloat _previewHeight;
+    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
