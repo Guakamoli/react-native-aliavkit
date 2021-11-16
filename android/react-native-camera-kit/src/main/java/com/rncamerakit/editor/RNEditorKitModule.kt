@@ -109,12 +109,12 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
      * 视频裁剪，开始结束时间，软裁剪
      */
     @ReactMethod
-    fun videoTrim(options: ReadableMap, viewTag: Int, promise: Promise) {
+    fun trimVideo(options: ReadableMap, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
         context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.videoTrim(options, promise)
+            view.trimVideo(options, promise)
         }
     }
 
@@ -161,6 +161,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
 
+    //获取视频封面
     @ReactMethod
     fun videoCover(seekTime: Int, viewTag: Int, promise: Promise) {
         val context = reactContext
@@ -183,6 +184,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
 
+    //视频抽帧
     @ReactMethod
     fun corpVideoFrame(options: ReadableMap, promise: Promise) {
         val context = reactContext

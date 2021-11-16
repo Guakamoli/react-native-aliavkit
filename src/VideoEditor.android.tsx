@@ -97,13 +97,13 @@ export default class Editor extends Component<Props, State> {
 
 
   //视频裁剪，时间裁剪，传入开始结束时间,成功后会播放裁剪后的视频
-  videoTrim = async () => {
-    let trimParam = {
-      'startTime': 3000,
-      'endTime': 8000,
-    }
-    let videoTrim = await RNEditorKitModule.videoTrim(trimParam, findNodeHandle(this.nativeRef.current));
-    console.log("videoTrim", videoTrim);
+  trimVideo = async (trimParams) => {
+    // let trimParam = {
+    //   'startTime': startTime * 1000,
+    //   'endTime': endTime * 1000,
+    // }
+    let videoTrim = await RNEditorKitModule.trimVideo(trimParams, findNodeHandle(this.nativeRef.current));
+    console.log("videoTrim", videoTrim, trimParams);
   };
 
 
@@ -120,7 +120,7 @@ export default class Editor extends Component<Props, State> {
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
       // console.log("startVideoEditor", params);
-      this.props.onPlayProgress({nativeEvent:params});
+      this.props.onPlayProgress({ nativeEvent: params });
     });
 
     // //视频裁剪进度
@@ -131,7 +131,7 @@ export default class Editor extends Component<Props, State> {
     //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
       // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
-      // console.log("startVideoCompose", param);
+      console.log("视频合成中...", param);
       this.props.onExportVideo(param);
     });
 
@@ -142,7 +142,7 @@ export default class Editor extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-   
+
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }

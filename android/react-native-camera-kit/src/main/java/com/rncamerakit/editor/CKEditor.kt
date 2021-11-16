@@ -224,7 +224,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     /**
      * 视频裁剪
      */
-    fun videoTrim(readableMap: ReadableMap, promise: Promise) {
+    fun trimVideo(readableMap: ReadableMap, promise: Promise) {
         val duration = mAliyunIEditor?.streamDuration
         val startTime = if (readableMap.hasKey("startTime")) readableMap.getInt("startTime") else 0
         val endTime = if (readableMap.hasKey("endTime")) readableMap.getInt("endTime") else duration

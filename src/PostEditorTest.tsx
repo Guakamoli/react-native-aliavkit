@@ -24,6 +24,7 @@ import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
 import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
+import { compose } from 'redux';
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -153,14 +154,24 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      console.info(toast.current, 'asasasas')
+      // console.info(toast.current, 'asasasas')
       toast.current.show('正在导出, 请不要离开', 0);
 
-      RNEditViewManager.trimVideo({
-        videoPath: multipleSandBoxData[0],
-        startTime: trimmerLeftHandlePosition / 1000,
-        endTime: trimmerRightHandlePosition / 1000,
-      });
+      //TODO
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition / 1000,
+          endTime: trimmerRightHandlePosition / 1000,
+        });
+      } else {
+        const isTrim = await editor?.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition,
+          endTime: trimmerRightHandlePosition,
+        });
+        console.log("设置视频裁剪起止时间成功", isTrim);
+      }
 
       // 导出视频
       if (exportVideo) {
@@ -261,6 +272,7 @@ const PostEditor = (props) => {
       if (event.exportProgress === 1) {
         const cropData = props.params.cropDataResult
         let outputPath = event.outputPath;
+        console.log("视频导出：", outputPath);
         const Wscale = 1080 / props.params.cropDataRow.srcSize.width
         const Hscale = 1920 / props.params.cropDataRow.srcSize.height
 
@@ -275,12 +287,22 @@ const PostEditor = (props) => {
         let uploadFile = [];
         //
         let type = outputPath.split('.');
+
+
+        //TODO
+        let uploadCoverImage = ''
+        if (Platform.OS === 'ios') {
+          uploadCoverImage = coverImage ? `file://${encodeURI(coverImage)}` : '';
+        } else {
+          uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
+        }
+
         uploadFile.push({
           Type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
           size: 0,
           Name: outputPath,
-          coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
+          coverImage: uploadCoverImage,
         });
 
         props.getUploadFile(uploadFile);
@@ -373,7 +395,7 @@ const PostEditor = (props) => {
                       RNEditViewManager.play();
                     }, 500);
                   } else {
-                     editor?.onSeek(trimmerLeftHandlePosition)
+                    editor?.onSeek(trimmerLeftHandlePosition)
                     //android 默认为循环播放
                     // editor?.onStop()
                   }
@@ -450,7 +472,7 @@ const PostEditor = (props) => {
         setTimeout(() => {
           RNEditViewManager.play();
         }, 500);
-      }else{
+      } else {
         editor?.onSeek(leftPosition)
       }
 

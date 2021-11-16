@@ -70,7 +70,7 @@ class RNEventEmitter {
             val obj = Arguments.createMap()
             obj.putDouble("exportProgress", progress.toDouble()/100)
             if (progress == 100) {
-                obj.putString("outputPath", "file://$outputPath")
+                obj.putString("outputPath", outputPath)
             }
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 ?.emit("startVideoCompose", obj)
