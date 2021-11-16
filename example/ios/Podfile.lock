@@ -18,8 +18,8 @@ PODS:
     - AlivcConan/AlivcConan (= 1.0.5)
   - AlivcConan/AlivcConan (1.0.5)
   - AliyunOSSiOS (2.10.10)
-  - AliyunVideoSDKPro (3.24.0):
-    - QuCore-ThirdParty (~> 4.3.0)
+  - AliyunVideoSDKPro (3.26.0):
+    - QuCore-ThirdParty (~> 4.3.1)
   - Bolts/Tasks (1.9.0)
   - boost-for-react-native (1.63.0)
   - DoubleConversion (1.1.6)
@@ -313,7 +313,7 @@ PODS:
   - ReactNativeAliAVKit (1.2.17):
     - AFNetworking
     - AlivcConan (= 1.0.5)
-    - AliyunVideoSDKPro (= 3.24.0)
+    - AliyunVideoSDKPro (= 3.26.0)
     - FMDB
     - JSONModel
     - Queen (= 1.4.0-official-pro)
@@ -483,7 +483,7 @@ SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
   AliyunOSSiOS: b8f1dfc229cd9abf68c8ee0cb245c2d66e00dd96
-  AliyunVideoSDKPro: a1ea93591ffc337559c8ebf9b0f79786cf81ccf8
+  AliyunVideoSDKPro: 7637db7cfa6999399d0ac323ffb245668fadf989
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
@@ -522,7 +522,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: ce46bc49aa5a7582733e65edfbf8023e7f2a6f91
+  ReactNativeAliAVKit: 2c19e2c1f97a06e06a0c256f8006a1875ef9860c
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211

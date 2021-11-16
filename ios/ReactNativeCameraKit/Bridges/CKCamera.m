@@ -18,6 +18,7 @@
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
 #import "ShortCut.h"
+#import "BeautyEngineManager.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -101,8 +102,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
         [self.cameraAction stopPreview];
-//        [self.cameraAction.cameraPreview removeFromSuperview];
-//        self.cameraAction = nil;
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -117,14 +119,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self addSubview:self.cameraAction.cameraPreview];
             [self setupDefault];
             [self.cameraAction startPreview];
+            [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
     }
     if (!self.window && _isPresented) {
         [self.cameraAction stopPreview];
-//        [self.cameraAction.cameraPreview removeFromSuperview];
-//        self.cameraAction = nil;
+        [[BeautyEngineManager shareManager] clear];
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }

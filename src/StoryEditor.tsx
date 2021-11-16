@@ -271,8 +271,11 @@ export default class StoryEditor extends Component<Props, State> {
         <View style={{ height: CameraFixHeight, backgroundColor: 'black', borderRadius: 20, width:"100%",overflow:"hidden"}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
-            editWidth={width}
-            editHeight={CameraFixHeight}
+      
+            editStyle={{
+              width:width,
+              height: CameraFixHeight
+            }}
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}

@@ -107,6 +107,7 @@ class PreviewBack extends React.Component{
   shotPreview = async () => {
     try {
       const image = await this.props.camera.current.capture();
+      this.props.camera.current = null
       setTimeout(() => {
         this.setState({
           previewImage: image
