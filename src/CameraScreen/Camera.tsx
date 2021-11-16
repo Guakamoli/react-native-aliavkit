@@ -171,8 +171,12 @@ class RenderCamera extends Component {
       return true;
     }
     if (nextProps.type !== this.props.type) {
+      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
       this.setState({
-        showCamera: nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false,
+        showCamera,
       });
 
       setTimeout(() => {
@@ -182,9 +186,13 @@ class RenderCamera extends Component {
       return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
       this.setState(
         {
-          showCamera: nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false,
+          showCamera,
         },
         () => {
           setTimeout(() => {
