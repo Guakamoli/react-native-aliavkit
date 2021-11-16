@@ -128,7 +128,8 @@ const PostEditor = (props) => {
     if (continueRef.current) return
     continueRef.current = true
     const cropData = props.params.cropDataResult
-
+    console.log(12313,fileType);
+    
     if (fileType === 'image') {
       try {
 
@@ -156,7 +157,7 @@ const PostEditor = (props) => {
       // 裁剪视频
       // console.info(toast.current, 'asasasas')
       toast.current.show('正在导出, 请不要离开', 0);
-
+      
       //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.trimVideo({
@@ -165,6 +166,7 @@ const PostEditor = (props) => {
           endTime: trimmerRightHandlePosition / 1000,
         });
       } else {
+
         const isTrim = await editor?.trimVideo({
           videoPath: multipleSandBoxData[0],
           startTime: trimmerLeftHandlePosition,
@@ -207,7 +209,6 @@ const PostEditor = (props) => {
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
-      console.log(reminder);
 
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
@@ -273,9 +274,20 @@ const PostEditor = (props) => {
         const cropData = props.params.cropDataResult
         let outputPath = event.outputPath;
         console.log("视频导出：", outputPath);
-        const Wscale = 1080 / props.params.cropDataRow.srcSize.width
-        const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+        // const Wscale = 1080 / props.params.cropDataRow.srcSize.width
+        // const Hscale = 1920 / props.params.cropDataRow.srcSize.height
 
+        // TODO
+        let Wscale = 0
+        let Hscale = 0
+    
+        if(Platform.OS == 'ios'){
+          Wscale = 1080 / props.params.cropDataRow.srcSize.width
+          Hscale = 1920 / props.params.cropDataRow.srcSize.height
+        }else{
+          Wscale = 720 / props.params.cropDataRow.srcSize.width
+          Hscale = 1280 / props.params.cropDataRow.srcSize.height
+        }
         outputPath = await AVService.crop({
           source: `file://${outputPath}`,
           cropOffsetX: cropData.offset.x,
@@ -323,8 +335,8 @@ const PostEditor = (props) => {
 
 
     //TODO
-    // const width1 =props.params.cropDataRow.fittedSize.width
-    // const height1 =props.params.cropDataRow.fittedSize.height
+    const width1 =props.params.cropDataRow.fittedSize.width
+    const height1 =props.params.cropDataRow.fittedSize.height
     return (
       <View style={{
         alignItems: 'center',
@@ -332,25 +344,24 @@ const PostEditor = (props) => {
         backgroundColor: "black",
         width: width,
         height: width,
-        //TODO
-        marginTop: 10,
+
         overflow: "hidden"
       }}>
-        <View style={{
-          width: width,
-          height: width,
-          // transform:[{
-          //   translateY:top
-          // }]
-        }}
-        >
-          <VideoEditor
-            // editWidth={width1}
-            // editHeight={height1}
-            editStyle={{
-              width: width,
-              height: width
-            }}
+       <View style={{
+          width: width1,
+          height: height1,
+            transform:[{
+              translateY:top
+            }]
+          }}
+          >
+        <VideoEditor
+          // editWidth={width1}
+          // editHeight={height1}
+          editStyle={{
+            width:width1,
+            height: height1
+          }}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
             //TODO
