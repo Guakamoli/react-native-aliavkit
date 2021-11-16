@@ -75,7 +75,12 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(videoPath)) {
             return
         }
-        this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+        if (videoPath != null && (videoPath.startsWith("content://") || videoPath.startsWith("file://"))) {
+            this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+        } else {
+            this.mFilePath = videoPath
+        }
+
         this.isVideo = true
         if (this.mWidth == 0) {
             return
@@ -94,7 +99,12 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(imagePath)) {
             return
         }
-        this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+        if (imagePath != null && (imagePath.startsWith("content://") || imagePath.startsWith("file://"))) {
+            this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+        } else {
+            this.mFilePath = imagePath
+        }
+
         this.isVideo = false
         if (this.mWidth == 0) {
             return

@@ -49,8 +49,14 @@ class CropManager {
                 promise.reject("cropImager", "error: imagePath is empty")
                 return
             }
-            imagePath =
-                com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+
+            if (imagePath != null) {
+                if (imagePath.startsWith("content://") || imagePath.startsWith("file://")) {
+                    imagePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
+                }
+            }
+
+
             val bitmap = BitmapFactory.decodeFile(imagePath)
             val width = bitmap.width
             val height = bitmap.height
@@ -142,8 +148,12 @@ class CropManager {
                 return
             }
 
-            videoPath =
-                com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+            if (videoPath != null) {
+                if (videoPath.startsWith("content://") || videoPath.startsWith("file://")) {
+                    videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+                }
+            }
+
 
             var mVideoWidth = 720
             var mVideoHeight = 1280
@@ -286,7 +296,14 @@ class CropManager {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
             }
-            videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+
+
+            if (videoPath != null) {
+                if (videoPath.startsWith("content://") || videoPath.startsWith("file://")) {
+                    videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+                }
+            }
+
             //开始时间：ms
             val startTime = if (options.hasKey("startTime")) options.getInt("startTime") else 0
             //间隔时间 ms
@@ -390,12 +407,14 @@ class CropManager {
         ): String? =
             suspendCancellableCoroutine { continuation ->
 
-                val scale  = 0.25
+                val scale = 180.0/1080.0
 
                 val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
                 thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
-                thumbnailFetcher.setParameters((videoWidth*scale).toInt(),
-                    (videoHeight*scale).toInt(), AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1)
+                thumbnailFetcher.setParameters(
+                    (videoWidth*scale).toInt(),
+                    (videoHeight*scale).toInt(), AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1
+                )
 
                 thumbnailFetcher.requestThumbnailImage(longArrayOf(time), object : AliyunIThumbnailFetcher.OnThumbnailCompletion {
                     override fun onThumbnailReady(bitmap: Bitmap, longTime: Long, index: Int) {
@@ -408,7 +427,13 @@ class CropManager {
                                 "VideoFrame-$name-$longTime.jpg"
                             ).path
 
-                            val cropBitmap = Bitmap.createBitmap(bitmap, (rect.left*scale).toInt(), (rect.top*scale).toInt(), (rect.right*scale).toInt(), (rect.bottom*scale).toInt())
+                            val cropBitmap = Bitmap.createBitmap(
+                                bitmap,
+                                (rect.left*scale).toInt(),
+                                (rect.top*scale).toInt(),
+                                (rect.right*scale).toInt(),
+                                (rect.bottom*scale).toInt()
+                            )
                             bitmap.recycle()
 
                             BitmapUtils.saveBitmap(cropBitmap, videoFramePath)
