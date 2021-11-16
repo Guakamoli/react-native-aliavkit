@@ -30,6 +30,7 @@ import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
+console.log('搜集高矮的',width);
 const captureIcon = (width - 98) / 2;
 let clickItemLock = false;
 
@@ -388,20 +389,23 @@ class GridItemCover extends Component {
         }}
       >
         <>
+        {/* TODO */}
           <View
-            style={{
-              borderRadius: 10,
-              borderWidth: 2,
-              width: 20,
-              height: 20,
-              borderColor: 'white',
-              overflow: 'hidden',
-              position: 'absolute',
-              zIndex: 99,
-              right: 5,
-              top: 5,
-              display: this.props.selectMultiple ? 'flex' : 'none',
-            }}
+            style={[
+              {
+                borderRadius: 10,
+                borderWidth: 2,
+                width: 20,
+                height: 20,
+                borderColor: 'white',
+                overflow: 'hidden',
+                position: 'absolute',
+                zIndex: 99,
+                right: 5,
+                top: 5,
+                display: this.props.selectMultiple ? 'flex' : 'none',
+              },Platform.OS   === 'android' && !this.props.selectMultiple && {position:'relative'},
+            ]}
           >
             <View
               style={{
@@ -516,7 +520,7 @@ class PostFileUpload extends Component {
     //获取照片
     clickItemLock = false;
     let getPhotos = CameraRoll.getPhotos({
-      first: 100,
+      first: 50,
       assetType: 'All',
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
     });
@@ -640,10 +644,11 @@ class PostFileUpload extends Component {
           ]}
         >
           <FlatGrid
-            itemDimension={photosItem}
             data={this.state.CameraRollList}
             //TODO android上  spacing={0} 时，页面隐藏会闪退
-            // spacing={0}
+            itemDimension={ Platform.OS === 'android' ? photosItem -4 :photosItem}
+            spacing={Platform.OS === 'android' ?1 : 0}
+
             initialNumToRender={30}
             maxToRenderPerBatch={30}
             windowSize={3}
@@ -693,7 +698,9 @@ export default class CameraScreen extends Component<Props, State> {
     }
     try {
       const imageItem = multipleData[multipleData.length - 1].image;
-      const { type } = multipleData[multipleData.length - 1];
+      // TODO  安卓type 待文件类型
+      let type = multipleData[multipleData.length - 1]?.type;
+      // Platform.OS === 'android' ? type = type.split('/')[0] : ''
       let trimVideoData = null
       const result = await ImageCropper.crop({
         ...cropDataRow,
