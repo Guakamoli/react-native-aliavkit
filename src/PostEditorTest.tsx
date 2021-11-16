@@ -245,10 +245,20 @@ const PostEditor = (props) => {
         itemPerTime = videoTime / 8;
       }
 
+
+      //TODO
+      const cropData = props.params.cropDataResult
+      const Wscale = 1080 / props.params.cropDataRow.srcSize.width
+      const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+
       coverData = await AVService.getThumbnails({
         videoPath: multipleSandBoxData[0],
         startTime: 0,
         itemPerTime: Math.floor(itemPerTime),
+        cropOffsetX: cropData.offset.x,
+        cropOffsetY: cropData.offset.y * Hscale,
+        cropWidth: cropData.size.width * Wscale,
+        cropHeight: cropData.size.height * Wscale,
       });
 
 
@@ -276,7 +286,7 @@ const PostEditor = (props) => {
         console.log("视频导出：", outputPath);
         const Wscale = 1080 / props.params.cropDataRow.srcSize.width
         const Hscale = 1920 / props.params.cropDataRow.srcSize.height
-        
+
         outputPath = await AVService.crop({
           source: `file://${outputPath}`,
           cropOffsetX: cropData.offset.x,

@@ -68,13 +68,24 @@ export default class AVService {
     return JSON.parse(musics)
   }
 
-  static async getThumbnails({ videoPath, startTime, itemPerTime }) {
-    // console.log("getThumbnails",videoPath,startTime,itemPerTime)
-    var thumbnails = await RNEditorKitModule.corpVideoFrame({ videoPath, startTime, itemPerTime });
+  // static async getThumbnails({ videoPath, startTime, itemPerTime,cropOffsetX,cropOffsetY,cropWidth,cropHeight }) {
+  //   // console.log("getThumbnails",videoPath,startTime,itemPerTime)
+  //   var thumbnails = await RNEditorKitModule.corpVideoFrame({ videoPath, startTime, itemPerTime,cropOffsetX,cropOffsetY,cropWidth,cropHeight });
+  //   return JSON.parse(thumbnails)
+  // }
+
+  static async getThumbnails(params) {
+    console.log("getThumbnails",params)
+    var thumbnails = await RNEditorKitModule.corpVideoFrame(params);
     return JSON.parse(thumbnails)
   }
 
+  //删除抽帧的图片
   static async removeThumbnaiImages() {
+  }
+
+  //删除录制、编辑产生的图片视频缓存
+  static async clearResources({ tmp, record, composition }) {
   }
   static enableHapticIfExist() {
     // AliAVServiceBridge.enableHapticIfExist();
