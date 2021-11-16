@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import React from 'react';
 import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager } from 'react-native';
-import AVService from './AVService'
+import AVService from './AVService';
 
 const { CKCameraManager } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
@@ -29,7 +29,11 @@ const Camera = React.forwardRef((props, ref) => {
     },
     setPasterInfo: async (data) => {
       return await CKCameraManager.setPasterInfo(data);
-    }
+    },
+    //停止camera feed
+    cameraStopPreview: () => {
+      return CKCameraManager.cameraStopPreview();
+    },
   }));
 
   React.useEffect(() => {
@@ -44,7 +48,6 @@ const Camera = React.forwardRef((props, ref) => {
 
   const transformedProps = _.cloneDeep(props);
   _.update(transformedProps, 'cameraOptions.ratioOverlayColor', (c) => processColor(c));
-  console.info(transformedProps, "transformedPropstransformedPropstransformedProps")
   // const nativeRef = React.useRef();
   return (
     <NativeCamera
@@ -58,7 +61,6 @@ const Camera = React.forwardRef((props, ref) => {
 });
 
 Camera.defaultProps = {
-
   normalBeautyLevel: 30,
   saveToCameraRoll: true,
   saveToCameraRollWithPhUrl: true,

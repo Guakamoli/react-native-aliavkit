@@ -264,7 +264,10 @@
 
 - (void)stopPreview
 {
-    [self.recorder stopPreview];
+    [self clearBeautyEngine];
+    [_recorder stopPreview];
+    [_recorder destroyRecorder];
+    _recorder = nil;
 }
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position
@@ -272,10 +275,11 @@
     AliyunIRecorderCameraPosition cameraPosition =
     (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
     if (cameraPosition != self.recorder.cameraPosition) {
-        [self.recorder switchCameraPosition];
-        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
+        //previous front，now back then clear
+        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
             [[BeautyEngineManager shareManager] clear];
         }
+        [self.recorder switchCameraPosition];
     }
 }
 
@@ -420,7 +424,9 @@
 {
     AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
-    _complete(_videoSavePath);
+    if (_complete) {
+        _complete(_videoSavePath);        
+    }
 }
 
 - (void)_recorderFinishRecording
@@ -451,7 +457,14 @@
 
 - (void)destroyRender
 {
-    [[BeautyEngineManager shareManager] clear];
+    [self clearBeautyEngine];
+}
+
+- (void)clearBeautyEngine
+{
+    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
+        [[BeautyEngineManager shareManager] clear];
+    }
 }
 
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
@@ -459,7 +472,7 @@
 {
     if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
         
-        return CMSampleBufferGetImageBuffer(sampleBuffer);;
+        return CMSampleBufferGetImageBuffer(sampleBuffer);
     }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;

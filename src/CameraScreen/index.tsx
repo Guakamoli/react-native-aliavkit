@@ -33,6 +33,7 @@ import RenderCamera from "./Camera"
 import {
   setCameraType,
   setShowBeautify,
+  setFacePasterInfo
 
 } from '../actions/story';
 const FLASH_MODE_AUTO = 'auto';
@@ -231,7 +232,7 @@ const RDSMMapStateToProps = state => ({
 });
 const RDSMMapDispatchToProps = dispatch => ({
   setCameraType: (data) => dispatch(setCameraType(data)),
-
+  setFacePasterInfo: (data) => dispatch(setFacePasterInfo(data)),
 });
 RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule)
 
@@ -428,7 +429,7 @@ class CameraScreen extends Component<Props, State> {
           clearTimeout(this.rt)
         }
         this.rt =setTimeout(() => {
-        this.props.setCameraType('back')
+        // this.props.setFacePasterInfo({eid: 0})
 
           this.setState({
             relaloadFlag: Math.random()
@@ -446,7 +447,7 @@ class CameraScreen extends Component<Props, State> {
         }
 
         this.rt = setTimeout(() => {
-        this.props.setCameraType('back')
+          // this.props.setFacePasterInfo({eid: 0})
 
           this.setState({
             relaloadFlag: Math.random()
@@ -595,7 +596,6 @@ class CameraScreen extends Component<Props, State> {
 
   setShootData = (data) => {
     try {
-      console.info(data, "data")
 
       this.setState(data)
       this.props.setType("storyedit")
@@ -646,10 +646,15 @@ class CameraScreen extends Component<Props, State> {
               this.props.setType("story")
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
             }}
-            getUploadFile={(data) => {
-              this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+            getUploadFile={async(data) => {
+              await this.sendUploadFile(data);
 
-              this.sendUploadFile(data);
+              setTimeout(() => {
+                
+            
+                this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+                this.props.setType("story")
+              }, 1000);
             }}
             insets={this.props.insets}
             setType={this.props.setType}

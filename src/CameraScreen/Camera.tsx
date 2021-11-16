@@ -23,11 +23,7 @@ import _ from 'lodash';
 import Camera from '../Camera';
 
 import { BoxBlur } from 'react-native-image-filter-kit';
-import {
-  setCameraType,
-  setShowBeautify,
-
-} from '../actions/story';
+import { setCameraType, setShowBeautify } from '../actions/story';
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
 const FLASH_MODE_OFF = 'off';
@@ -40,25 +36,31 @@ const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
 const CameraHeight = height - 120;
 const stateAttrsUpdate = [
-  'pasterList', 'facePasterInfo', 'showBeautify',
-  'normalBeautyLevel', 'cameraType', 'ShootSuccess',
-  'startShoot', 'flag', 'showCamera', 'relaloadFlag']
-
-
+  'pasterList',
+  'facePasterInfo',
+  'showBeautify',
+  'normalBeautyLevel',
+  'cameraType',
+  'ShootSuccess',
+  'startShoot',
+  'flag',
+  'showCamera',
+  'relaloadFlag',
+];
 
 const BeautyButton = React.memo((props) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const showBeautify = useSelector((state) => {
-    return state.shootStory.showBeautify
-  })
+    return state.shootStory.showBeautify;
+  });
   return (
     <Pressable
       onPress={() => {
-        AVService.enableHapticIfExist()
+        AVService.enableHapticIfExist();
 
-        props.haptics?.impactAsync(props.haptics.ImpactFeedbackStyle.Medium) 
+        props.haptics?.impactAsync(props.haptics.ImpactFeedbackStyle.Medium);
 
-        dispatch(setShowBeautify())
+        dispatch(setShowBeautify());
         // this.setState({ showBeautify: !this.state.showBeautify });
       }}
     >
@@ -68,15 +70,14 @@ const BeautyButton = React.memo((props) => {
         resizeMode='contain'
       />
     </Pressable>
-  )
-})
+  );
+});
 const RenderLeftButtons = React.memo((props) => {
   return (
     <>
       {/* 取消 */}
       <Pressable
         onPress={() => {
-
           props.goback();
         }}
         style={styles.closeBox}
@@ -85,9 +86,7 @@ const RenderLeftButtons = React.memo((props) => {
       </Pressable>
       <View style={styles.leftIconBox}>
         {/* 音乐 */}
-        <Pressable
-
-        >
+        <Pressable>
           <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
         </Pressable>
         {/* 美颜 */}
@@ -95,134 +94,137 @@ const RenderLeftButtons = React.memo((props) => {
       </View>
     </>
   );
-})
+});
 // 拍摄内容渲染
-class PreviewBack extends React.Component{
-  constructor (props){
-    super(props)
-    this.state= {
-      previewImage: null
-    }
+class PreviewBack extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      previewImage: null,
+    };
   }
   shotPreview = async () => {
     try {
       const image = await this.props.camera.current.capture();
-      this.props.camera.current = null
+      this.props.camera.current = null;
       setTimeout(() => {
         this.setState({
-          previewImage: image
-        })
+          previewImage: image,
+        });
       }, 0);
     } catch (e) {
-      console.info(e,"拍摄错误")
+      console.info(e, '拍摄错误');
     }
-
-  }
-  shouldComponentUpdate (nextProps, nextState){
+  };
+  shouldComponentUpdate(nextProps, nextState) {
     if (nextState.previewImage !== this.state.previewImage) {
-      return true
+      return true;
     }
     if (nextProps.type !== this.props.type) {
-      this.props.enableCount.count = 0
+      this.props.enableCount.count = 0;
       if (nextProps.type === 'post') {
-        this.shotPreview()
+        this.shotPreview();
       }
-      return false
+      return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      this.props.enableCount.count = 0
+      this.props.enableCount.count = 0;
 
       if (!nextProps.isDrawerOpen) {
-
-        this.shotPreview()
+        this.shotPreview();
       }
-      return false
+      return false;
     }
-    return false
+    return false;
   }
-  render (){
+  render() {
     return (
-      <View style={{ position: "absolute", zIndex: 0, width: width, top: 0 }}>
-      <BoxBlur
-        image={
-  
-          <Image source={{ uri: this.state.previewImage?.uri }} style={{ width: width, height: this.props.CameraFixHeight }} resizeMode={'cover'} />
-        }
-        radius={70}
-      />
-    </View>
-    )
+      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0 }}>
+        <BoxBlur
+          image={
+            <Image
+              source={{ uri: this.state.previewImage?.uri }}
+              style={{ width: width, height: this.props.CameraFixHeight }}
+              resizeMode={'cover'}
+            />
+          }
+          radius={70}
+        />
+      </View>
+    );
   }
-
 }
 class RenderCamera extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
-    }
+    };
   }
   shouldComponentUpdate(nextProps, nextState) {
-    const propsUpdated = stateAttrsUpdate.some(key => nextProps[key] !== this.props[key]);
+    const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
       return true;
     }
-    const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
+    const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       return true;
     }
     if (nextProps.type !== this.props.type) {
       this.setState({
-        showCamera: nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false
-      })
+        showCamera: nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false,
+      });
 
-    setTimeout(() => {
-      AVService.enableHapticIfExist()
+      setTimeout(() => {
+        AVService.enableHapticIfExist();
+      }, 2000);
 
-    }, 2000);
-
-      return false
+      return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      this.setState(
+        {
+          showCamera: nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false,
+        },
+        () => {
+          setTimeout(() => {
+            AVService.enableHapticIfExist();
+          }, 2000);
+        },
+      );
 
-      this.setState({
-        showCamera: nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false
-      }, () => {
-        setTimeout(() => {
-          AVService.enableHapticIfExist()
-
-        }, 2000);
-      })
-
-      return false
+      return false;
     }
-    return false
+    return false;
   }
   renderCamera = () => {
-    const CameraFixHeight = height - (this.props.insets.bottom +this.props.insets.top+ 30 + 28 )
+    const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
     return (
-      <View style={{ width: "100%", height: CameraFixHeight, overflow: "hidden" ,borderRadius: 20}}>
-        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight}/>
-        <View style={{ position: "absolute", zIndex: 1 }} onLayout={()=>{
-               setTimeout(() => {
-                AVService.enableHapticIfExist()
-              }, 0);
-        }}>
+      <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
+        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
+        <View
+          style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          onLayout={() => {
+            setTimeout(() => {
+              AVService.enableHapticIfExist();
+            }, 0);
+          }}
+        >
           {this.state.showCamera ? (
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}
-              cameraStyle={{ height: CameraFixHeight ,width}}
+              cameraStyle={{ height: CameraFixHeight, width }}
               flashMode={FLASH_MODE_AUTO}
               cameraType={this.props.cameraType}
               saveToCameraRoll={false}
+              focusMode={'on'}
               normalBeautyLevel={this.props.normalBeautyLevel * 10}
               facePasterInfo={this.props.facePasterInfo}
               torchMode={'off'}
-              onReadCode={()=>{}}
-              onRecordingProgress={()=>{}}
+              onReadCode={() => {}}
+              onRecordingProgress={() => {}}
             />
           ) : null}
-
         </View>
       </View>
     );
@@ -232,9 +234,8 @@ class RenderCamera extends Component {
       <View>
         <Pressable
           onPress={() => {
-            this.props.setShowBeautify()
+            this.props.setShowBeautify();
           }}
-
         >
           <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
@@ -242,18 +243,16 @@ class RenderCamera extends Component {
       </View>
     );
   }
-
 }
-const RenderCameraMapStateToProps = state => ({
+const RenderCameraMapStateToProps = (state) => ({
   cameraType: state.shootStory.cameraType,
-  normalBeautyLevel:state.shootStory.normalBeautyLevel,
-  facePasterInfo:state.shootStory.facePasterInfo,
+  normalBeautyLevel: state.shootStory.normalBeautyLevel,
+  facePasterInfo: state.shootStory.facePasterInfo,
 });
-const RenderCameraMapDispatchToProps = dispatch => ({
+const RenderCameraMapDispatchToProps = (dispatch) => ({
   setShowBeautify: () => dispatch(setShowBeautify(false)),
-
 });
-export default connect(RenderCameraMapStateToProps, RenderCameraMapDispatchToProps)(RenderCamera)
+export default connect(RenderCameraMapStateToProps, RenderCameraMapDispatchToProps)(RenderCamera);
 const styles = StyleSheet.create({
   bottomButtons: {
     flex: 1,
@@ -271,21 +270,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   BottomBox: {
-
     flexDirection: 'row',
     justifyContent: 'flex-end',
     paddingHorizontal: 20,
     paddingVertical: 15,
     alignItems: 'center',
     // position: 'absolute',
-    backgroundColor: "black",
-    width: "100%",
+    backgroundColor: 'black',
+    width: '100%',
     bottom: 0,
   },
 
-  cameraContainer: {
-
-  },
+  cameraContainer: {},
   bottomButton: {
     flex: 1,
     flexDirection: 'row',
@@ -327,7 +323,7 @@ const styles = StyleSheet.create({
   musicIcon: {
     width: 28,
     height: 28,
-    left: -3
+    left: -3,
   },
   leftIconBox: {
     position: 'absolute',

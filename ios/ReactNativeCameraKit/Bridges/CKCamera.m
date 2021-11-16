@@ -67,9 +67,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
-    CGFloat _previewWidth;
-    CGFloat _previewHeight;
-    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -102,9 +99,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -126,7 +120,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     }
     if (!self.window && _isPresented) {
         [self.cameraAction stopPreview];
-        [[BeautyEngineManager shareManager] clear];
         if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
             [self.cameraAction.cameraPreview removeFromSuperview];
         }
