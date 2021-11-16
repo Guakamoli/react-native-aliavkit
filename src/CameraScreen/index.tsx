@@ -629,6 +629,9 @@ class CameraScreen extends Component<Props, State> {
                 this.props.setType('story');
               }, 1000);
             }}
+            textEditor={() => {
+              console.log('textEditor');
+            }}
             insets={this.props.insets}
             setType={this.props.setType}
             AaImage={this.props.AaImage}
