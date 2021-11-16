@@ -46,6 +46,7 @@ export default class AVService {
 
 
   // {sourcePth:"",resourceType:"photo/video"}
+  //保存图片到相册
   static async saveResourceToPhotoLibrary({ sourcePath, sourceType }) {
     return await RNEditorKitModule.saveMediaStore(sourcePath, sourceType);
   }

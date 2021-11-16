@@ -226,17 +226,17 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     fun saveMediaStore(filePath: String, sourceType: String, promise: Promise) {
         val context = reactContext
         context.runOnUiQueueThread {
-            if (sourceType == "video") {
+//            if (sourceType == "video") {
+//                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+//            } else {
+//                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+//            }
+            if (isVideo(filePath)) {
                 AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
             } else {
                 AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
             }
             promise.resolve(true)
-//            if (isVideo(filePath)) {
-//                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
-//            } else {
-//                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
-//            }
         }
     }
 

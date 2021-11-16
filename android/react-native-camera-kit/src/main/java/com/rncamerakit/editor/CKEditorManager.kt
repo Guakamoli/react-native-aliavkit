@@ -1,5 +1,6 @@
 package com.rncamerakit.editor
 
+import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.FileUtils
@@ -61,7 +62,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             view.reactContext.runOnUiQueueThread {
                 Log.e("BBB", "setEditorLayout")
                 view.setLayout(mWidth, mHeight)
-                if(!TextUtils.isEmpty(mFilePath)){
+                if (!TextUtils.isEmpty(mFilePath)) {
                     view.importVideo(mFilePath, isVideo)
                 }
             }
@@ -74,7 +75,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(videoPath)) {
             return
         }
-        this.mFilePath = videoPath
+        this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
         this.isVideo = true
         if (this.mWidth == 0) {
             return
@@ -82,7 +83,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         view.reactContext.runOnUiQueueThread {
             Log.e("BBB", "setVideoPath")
             view.setLayout(mWidth, mHeight)
-            view.importVideo(videoPath, true)
+            view.importVideo(this.mFilePath, true)
         }
     }
 
@@ -93,7 +94,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(imagePath)) {
             return
         }
-        this.mFilePath = imagePath
+        this.mFilePath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(imagePath)).absolutePath
         this.isVideo = false
         if (this.mWidth == 0) {
             return
@@ -101,7 +102,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         view.reactContext.runOnUiQueueThread {
             Log.e("BBB", "setImagePath")
             view.setLayout(mWidth, mHeight)
-            view.importVideo(imagePath, false)
+            view.importVideo(this.mFilePath, false)
         }
     }
 

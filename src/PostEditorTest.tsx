@@ -295,6 +295,8 @@ const PostEditor = (props) => {
           uploadCoverImage = coverImage ? `file://${encodeURI(coverImage)}` : '';
         } else {
           uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
+
+          // AVService.saveResourceToPhotoLibrary(outputPath,"video");
         }
 
         uploadFile.push({

@@ -197,7 +197,7 @@ class CropManager {
                 if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")*1000 else duration
 
             val file = File(videoPath)
-            val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
+            val fileName = "crop_" + file.name
             val pathDis =
                 FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator
             val outputPath = FileUtils.createFile(pathDis, fileName).path
@@ -209,7 +209,7 @@ class CropManager {
             param.mediaType = MediaType.ANY_VIDEO_TYPE
             param.scaleMode = VideoDisplayMode.SCALE
             //填充颜色
-            param.fillColor = Color.BLUE
+            param.fillColor = Color.BLACK
 
             param.inputPath = videoPath
             param.outputPath = outputPath
@@ -279,13 +279,14 @@ class CropManager {
          * 视频抽帧
          */
         fun corpVideoFrame(context: Context, options: ReadableMap, promise: Promise?) {
-            val videoPath =
+            var videoPath =
                 if (options.hasKey("videoPath")) options.getString("videoPath")
                 else null
             if (TextUtils.isEmpty(videoPath)) {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
             }
+            videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
             //开始时间：ms
             val startTime = if (options.hasKey("startTime")) options.getInt("startTime") else 0
             //间隔时间 ms
