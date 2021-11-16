@@ -275,6 +275,10 @@
     AliyunIRecorderCameraPosition cameraPosition =
     (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
     if (cameraPosition != self.recorder.cameraPosition) {
+        //previous front，now back then clear
+        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
+            [[BeautyEngineManager shareManager] clear];
+        }
         [self.recorder switchCameraPosition];
     }
 }
