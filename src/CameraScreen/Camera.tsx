@@ -210,7 +210,7 @@ class RenderCamera extends Component {
             }, 0);
           }}
         >
-          {this.state.showCamera ? (
+          {/* {this.state.showCamera ? ( */}
             <Camera
               ref={(cam) => (this.props.camera.current = cam)}
               cameraStyle={{ height: CameraFixHeight, width }}
@@ -224,7 +224,7 @@ class RenderCamera extends Component {
               onReadCode={() => {}}
               onRecordingProgress={() => {}}
             />
-          ) : null}
+          {/* ) : null} */}
         </View>
       </View>
     );
