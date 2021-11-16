@@ -97,11 +97,11 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-//    if (!self.superview && _isPresented) {
-//        [self.cameraAction stopPreview];
-//        _isPresented = NO;
-//        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-//    }
+    if (!self.superview && _isPresented) {
+        [self.cameraAction stopPreview];
+        _isPresented = NO;
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    }
 }
 
 - (void)didMoveToWindow
@@ -117,22 +117,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         }
         _isPresented = YES;
     }
-//    if (!self.window && _isPresented) {
-//        [self.cameraAction stopPreview];
-//        [[BeautyEngineManager shareManager] clear];
-//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-//            [self.cameraAction.cameraPreview removeFromSuperview];
-//        }
-//        _isPresented = NO;
-//    }
-}
-
-- (void)recorderStopPreview
-{
-    [self.cameraAction stopPreview];
-    [[BeautyEngineManager shareManager] clear];
-    _isPresented = NO;
-    [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    if (!self.window && _isPresented) {
+        [self.cameraAction stopPreview];
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
+        _isPresented = NO;
+        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    }
 }
 
 - (instancetype)init
