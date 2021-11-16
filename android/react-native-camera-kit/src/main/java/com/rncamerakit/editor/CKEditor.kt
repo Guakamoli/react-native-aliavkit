@@ -98,7 +98,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private fun initSurfaceView() {
         mSurfaceView = SurfaceView(mContext)
         val params = LayoutParams(mWidth, mHeight)
-        mVideoContainer?.addView(mSurfaceView,params)
+        mVideoContainer?.addView(mSurfaceView, params)
     }
 
     private fun copyAssets() {
@@ -114,13 +114,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
         //设置onTextureRender能够回调
         mAliyunIEditor =
             AliyunEditorFactory.creatAliyunEditor(uri, CKPlayCallBack(mContext, this, isVideo))
-//        mWidth = ScreenUtils.getWidth(mContext)
-//        mHeight = try {
-//            mWidth*mAliyunIEditor!!.videoHeight/mAliyunIEditor!!.videoWidth
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            mWidth*16/9
-//        }
         initVideoContainer()
         initSurfaceView()
 
@@ -148,7 +141,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
-        RNEventEmitter.startVideoEditor(reactContext, currentPlayTime,currentStreamPlayTime)
+        RNEventEmitter.startVideoEditor(reactContext, currentPlayTime, currentStreamPlayTime)
     }
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
@@ -163,10 +156,10 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导入视频 \ 导入图片
      */
     fun importVideo(filePath: String?, isVideo: Boolean) {
-        if(this.isInit){
+        if (this.isInit) {
             return
         }
-        mImportManager = ImportManager(reactContext,this.mWidth,this.mHeight)
+        mImportManager = ImportManager(reactContext, this.mWidth, this.mHeight)
         this.isVideo = isVideo
         mProjectConfigure = if (isVideo) {
             mImportManager?.importVideo(filePath).toString()
@@ -212,7 +205,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
             promise.reject("getColorFilterList", "ColorFilter is empty")
             return
         }
-        ColorFilterManager.getColorFilter(mContext,promise)
+        ColorFilterManager.getColorFilter(mContext, promise)
     }
 
     /**
@@ -428,13 +421,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
 
-
     /**
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
-        this.mWidth = dip(width)
-        this.mHeight = dip(height)
+        this.mWidth = ScreenUtils.getWidth(mContext)
+        this.mHeight = this.mWidth*height/width
+
 //        var params = mVideoContainer?.layoutParams
 //        if (params == null) {
 //            params = LayoutParams(dip(width), dip(height))

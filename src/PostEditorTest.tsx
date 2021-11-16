@@ -274,20 +274,9 @@ const PostEditor = (props) => {
         const cropData = props.params.cropDataResult
         let outputPath = event.outputPath;
         console.log("视频导出：", outputPath);
-        // const Wscale = 1080 / props.params.cropDataRow.srcSize.width
-        // const Hscale = 1920 / props.params.cropDataRow.srcSize.height
-
-        // TODO
-        let Wscale = 0
-        let Hscale = 0
-    
-        if(Platform.OS == 'ios'){
-          Wscale = 1080 / props.params.cropDataRow.srcSize.width
-          Hscale = 1920 / props.params.cropDataRow.srcSize.height
-        }else{
-          Wscale = 720 / props.params.cropDataRow.srcSize.width
-          Hscale = 1280 / props.params.cropDataRow.srcSize.height
-        }
+        const Wscale = 1080 / props.params.cropDataRow.srcSize.width
+        const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+        
         outputPath = await AVService.crop({
           source: `file://${outputPath}`,
           cropOffsetX: cropData.offset.x,
