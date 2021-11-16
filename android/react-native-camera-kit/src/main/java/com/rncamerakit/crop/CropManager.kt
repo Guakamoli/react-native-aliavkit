@@ -7,12 +7,10 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -28,12 +26,6 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.google.gson.GsonBuilder
 import com.rncamerakit.RNEventEmitter
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.annotations.NonNull
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Observer
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.*
 import java.io.File
 import kotlin.coroutines.resume
@@ -84,7 +76,7 @@ class CropManager {
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
 
             val file = File(imagePath)
-            val fileName = "crop_" + file.name
+            val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
             val pathDis =
                 FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator
             val outputPath = FileUtils.createFile(pathDis, fileName).path
@@ -205,7 +197,7 @@ class CropManager {
                 if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")*1000 else duration
 
             val file = File(videoPath)
-            val fileName = "crop_" + file.name
+            val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
             val pathDis =
                 FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator
             val outputPath = FileUtils.createFile(pathDis, fileName).path
@@ -354,9 +346,9 @@ class CropManager {
                     videoFrameList.add("file://" + it.await())
                 }
                 GlobalScope.launch(Dispatchers.Main) {
-                    videoFrameList.forEach {
-                        Log.e("BBB ", "sync：$it")
-                    }
+//                    videoFrameList.forEach {
+//                        Log.e("BBB ", "sync：$it")
+//                    }
                     promise?.resolve(GsonBuilder().create().toJson(videoFrameList))
                 }
             }
@@ -379,7 +371,7 @@ class CropManager {
                                 "VideoFrame-$name-$longTime.jpg"
                             ).path
                             BitmapUtils.saveBitmap(bitmap, videoFramePath)
-                            Log.e("BBB ", "Async：$videoFramePath")
+//                            Log.e("BBB ", "Async：$videoFramePath")
                             if (!TextUtils.isEmpty(videoFramePath)) {
                                 continuation.resume(videoFramePath)
                             } else {
