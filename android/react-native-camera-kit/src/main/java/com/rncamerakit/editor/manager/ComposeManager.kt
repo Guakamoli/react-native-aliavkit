@@ -21,6 +21,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.utils.AliFileUtils
+import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
@@ -108,8 +109,10 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         isSaveToPhotoLibrary: Boolean
     ) {
         val time = DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
-        mOutputPath =
-            Constants.SDCardConstants.getDir(mContext) + time + Constants.SDCardConstants.COMPOSE_SUFFIX
+
+        val pathDis = FileUtils.getDiskCachePath(mContext) + File.separator + "Media" + File.separator
+        val fileName = time + Constants.SDCardConstants.COMPOSE_SUFFIX
+        mOutputPath = FileUtils.createFile(pathDis, fileName).path
 
         Log.e("AAA", "mOutputPath:$mOutputPath")
 
