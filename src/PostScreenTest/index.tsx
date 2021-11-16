@@ -700,8 +700,8 @@ export default class CameraScreen extends Component<Props, State> {
       const imageItem = multipleData[multipleData.length - 1].image;
       // TODO  安卓type 待文件类型
       let type = multipleData[multipleData.length - 1]?.type;
-      // Platform.OS === 'android' ? type = type.split('/')[0] : ''
-      let trimVideoData = null
+      Platform.OS === 'android' ? type = type.split('/')[0] : '';
+      let trimVideoData = null;
       const result = await ImageCropper.crop({
         ...cropDataRow,
         imageUri: imageItem.uri,
@@ -716,9 +716,14 @@ export default class CameraScreen extends Component<Props, State> {
       });
       if (type === 'video') {
         console.log('1231313',)
-        trimVideoData = await AVService.saveToSandBox({
-          path: imageItem.uri,
-        });
+        if(Platform.OS !== 'android'){
+          trimVideoData = await AVService.saveToSandBox({
+            path: imageItem.uri,
+          });
+        }else{
+          trimVideoData = imageItem.uri
+        }
+       
       } else {
         const cropData = result
 
