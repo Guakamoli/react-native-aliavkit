@@ -34,7 +34,7 @@ const cropWidth = width - 30 * 2;
 const PostHead = React.memo((props) => {
   const { videoMute, setvideoMute } = props;
 
-  const { params: { trimVideoData = '', fileType = '' },closePng, volumeImage, noVolumeImage, goback, continueEdit,continueRef} = props
+  const { params: {  fileType = '' },closePng, volumeImage, noVolumeImage, goback, continueEdit,continueRef} = props
   return (
     <View
       style={{
