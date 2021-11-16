@@ -235,7 +235,8 @@ export default class StoryEditor extends Component<Props, State> {
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
           {
             imglist.map((item, index) => {
-              if (this.props.fileType != 'video' && index == 1) {
+              // 图片屏蔽 声音和音乐
+              if (this.props.fileType != 'video' &&(  index == 1 || index == 2)) {
                 return null
               }
               return (
