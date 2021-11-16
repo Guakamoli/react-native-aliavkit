@@ -70,7 +70,7 @@ const Entry = (props) => {
   );
   return (
     <>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 1)' }}>
         <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
           <PostUpload
             // onRef={this.onRef}
