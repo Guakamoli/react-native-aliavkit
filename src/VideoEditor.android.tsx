@@ -142,7 +142,6 @@ export default class Editor extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }
@@ -156,8 +155,10 @@ export default class Editor extends Component<Props, State> {
     if (this.downloadMusicListener != null) {
       this.downloadMusicListener.remove();
     }
-
+    // TODO post 销毁
+    if(this.props.source != 'story'){
     RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+    }
 
   }
 

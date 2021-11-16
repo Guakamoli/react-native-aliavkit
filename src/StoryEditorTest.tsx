@@ -170,7 +170,7 @@ export default class StoryEditorTest extends Component<Props, State> {
       RNEditViewManager.stop()
     }
     // 结束编辑页面
-    console.log('拍摄编辑销毁');
+    console.log('拍摄编辑销毁',222);
     this.setState = () => false;
   }
 
@@ -269,9 +269,9 @@ export default class StoryEditorTest extends Component<Props, State> {
     const VideoEditors = () => {
 
       //TODO
-      const topheight = Platform.OS === 'ios'?this.props.insets.top??0:StatusBar.currentHeight
+      const topheight = Platform.OS === 'ios'?this.props.insets.top :StatusBar.currentHeight
       // return null
-      const CameraFixHeight = height - (this.props.insets.bottom??0 + topheight + 30 + 28)
+      const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28)
 
        console.log("Camera height",CameraFixHeight);
       return (
@@ -294,6 +294,9 @@ export default class StoryEditorTest extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
+            // TODO 安卓兼容
+            onPlayProgress={() => {}}
+            source={"story"}
           />
         </View>
       )
