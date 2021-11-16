@@ -5,6 +5,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.uimanager.ThemedReactContext
+import java.util.*
+import kotlin.collections.HashMap
 
 class RNEventEmitter {
 
@@ -39,15 +41,18 @@ class RNEventEmitter {
          */
         fun startVideoPlay(reactContext: ReactContext?, currentPlayTime: Long) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("startVideoPlay", "" + currentPlayTime / 1000)
+                ?.emit("startVideoPlay", "" + currentPlayTime/1000)
         }
 
         /**
          * Editor 播放进度
          */
-        fun startVideoEditor(reactContext: ReactContext?, currentPlayTime: Long) {
+        fun startVideoEditor(reactContext: ReactContext?, currentPlayTime: Long, currentStreamPlayTime: Long) {
+            val obj = Arguments.createMap()
+            obj.putDouble("playProgress", currentPlayTime.toDouble()/1000/1000)
+            obj.putDouble("streamProgress", currentStreamPlayTime.toDouble()/1000/1000)
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("startVideoEditor", "" + currentPlayTime / 1000)
+                ?.emit("startVideoEditor", obj)
         }
 
         /**
@@ -64,7 +69,7 @@ class RNEventEmitter {
         fun startVideoCompose(reactContext: ReactContext?, progress: Int, outputPath: String) {
             val obj = Arguments.createMap()
             obj.putDouble("exportProgress", progress.toDouble()/100)
-            if(progress ==100){
+            if (progress == 100) {
                 obj.putString("outputPath", "file://$outputPath")
             }
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)

@@ -92,7 +92,7 @@ class CropManager {
             //设置裁剪参数
             val param = CropParam()
             param.mediaType = MediaType.ANY_IMAGE_TYPE
-            param.scaleMode = VideoDisplayMode.FILL
+            param.scaleMode = VideoDisplayMode.SCALE
             param.inputPath = imagePath
             param.outputPath = outputPath
 
