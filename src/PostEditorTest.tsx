@@ -679,6 +679,17 @@ const PostEditor = (props) => {
         }
       }
     };
+    // TODO
+    const filterImag = ()=>{
+      return (
+            <Image
+                  style={{ width: 100, height: 100, marginRight: 5 }}
+                  // source={require('./parrot.png')}
+                  source={{ uri: multipleSandBoxData[0] }}
+                  resizeMode={'contain'}
+                />
+      )
+    }
 
     return (
       <>
@@ -717,12 +728,7 @@ const PostEditor = (props) => {
           >
             <Sepia
               image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+                filterImag()
               }
               amount={2}
             />
@@ -735,12 +741,7 @@ const PostEditor = (props) => {
             <Temperature
               amount={0.5}
               image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+                filterImag()
               }
             />
           </TouchableOpacity>
@@ -752,12 +753,7 @@ const PostEditor = (props) => {
             <Sepia
               amount={0.4}
               image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
+                filterImag()
               }
             />
           </TouchableOpacity>
