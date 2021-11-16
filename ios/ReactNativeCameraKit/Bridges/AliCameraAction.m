@@ -264,7 +264,9 @@
 
 - (void)stopPreview
 {
-    [self.recorder stopPreview];
+    [_recorder stopPreview];
+    [_recorder destroyRecorder];
+    _recorder = nil;
 }
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position
@@ -420,7 +422,9 @@
 {
     AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
-    _complete(_videoSavePath);
+    if (_complete) {
+        _complete(_videoSavePath);        
+    }
 }
 
 - (void)_recorderFinishRecording
