@@ -109,7 +109,7 @@ export default class Editor extends Component<Props, State> {
 
   release = async () => {
     console.log("Video release");
-    // RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
   };
 
 
@@ -118,8 +118,9 @@ export default class Editor extends Component<Props, State> {
     let list = await this.getMusicList("", 2, 10);
     // console.log("getMusicList", list);
     //播放回调
-    this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
-      console.log("startVideoEditor", duration);
+    this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
+      // console.log("startVideoEditor", params);
+      this.props.onPlayProgress({nativeEvent:params});
     });
 
     // //视频裁剪进度
@@ -141,7 +142,7 @@ export default class Editor extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    // RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+   
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }
@@ -155,6 +156,8 @@ export default class Editor extends Component<Props, State> {
     if (this.downloadMusicListener != null) {
       this.downloadMusicListener.remove();
     }
+
+    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
 
   }
 

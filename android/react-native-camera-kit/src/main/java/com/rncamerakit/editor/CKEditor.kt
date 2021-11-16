@@ -148,7 +148,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
-        RNEventEmitter.startVideoEditor(reactContext, currentPlayTime)
+        RNEventEmitter.startVideoEditor(reactContext, currentPlayTime,currentStreamPlayTime)
     }
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
@@ -309,6 +309,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     fun seek(seekTime: Int, promise: Promise) {
         // time 时间，单位：微秒
         mAliyunIEditor?.seek(seekTime.toLong()*1000)
+        replay()
     }
 
     private var lastMusicBean: EffectBean? = null
