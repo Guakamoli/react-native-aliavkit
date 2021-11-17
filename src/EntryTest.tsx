@@ -73,33 +73,38 @@ const Entry = (props) => {
   },{wait: 1000})
   return (
     <>
-      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-        <PostUpload
-          // onRef={this.onRef}
-          {...props}
-          goback={goBack}
-          goStory={() => {
-            props.navigation.replace('FeedsStory');
-          }}
-          goPostEditor={(data) => {
-            props.navigation.navigate('FeedsPostEditor', { ...data });
-          }}
-          type={type}
-          setType={(type)=>{
-            dispatch(setType(type))
+    {/* TODP 安卓 初始化拍摄期 */}
+    {
+  ['post', 'edit'].indexOf(type) > -1 ? 
+    <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
+    <PostUpload
+      // onRef={this.onRef}
+      {...props}
+      goback={goBack}
+      goStory={() => {
+        props.navigation.replace('FeedsStory');
+      }}
+      goPostEditor={(data) => {
+        props.navigation.navigate('FeedsPostEditor', { ...data });
+      }}
+      type={type}
+      setType={(type)=>{
+        dispatch(setType(type))
 
-          }}
-          multipleBtnImage={multipleBtnPng}
-          startMultipleBtnImage={startMultipleBtnPng}
-          postCameraImage={postCameraPng}
-          changeSizeImage={changeSizePng}
-          closePng={closePng}
-          cameraModule={true}
-          noVolumeImage={noVolumePng}
-          volumeImage={volumePng}
-        />
-      </View>
-      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
+      }}
+      multipleBtnImage={multipleBtnPng}
+      startMultipleBtnImage={startMultipleBtnPng}
+      postCameraImage={postCameraPng}
+      changeSizeImage={changeSizePng}
+      closePng={closePng}
+      cameraModule={true}
+      noVolumeImage={noVolumePng}
+      volumeImage={volumePng}
+    />
+    </View>
+  :
+
+    <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
         <CameraScreenTest
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
@@ -143,6 +148,7 @@ const Entry = (props) => {
           cameraModule={true}
         />
       </View>
+   } 
       <Animated.View
         style={[
           styles.tools,
