@@ -179,9 +179,9 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
             bean.cover = cover
             bean.url = url
 
-            view.reactContext.runOnUiQueueThread {
+//            view.reactContext.runOnUiQueueThread {
                 view.mRecorderManage?.setMusicInfo(bean)
-            }
+//            }
         }
 
     }

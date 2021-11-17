@@ -39,9 +39,9 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (TextUtils.isEmpty(filterName)) {
             return
         }
-        view.reactContext.runOnUiQueueThread {
+//        view.reactContext.runOnUiQueueThread {
             view.setColorFilter(filterName)
-        }
+//        }
     }
 
     override fun onDropViewInstance(view: CKEditor) {
@@ -126,28 +126,28 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     //视频静音
     @ReactProp(name = "videoMute")
     fun setVideoMute(view: CKEditor, audioSilence: Boolean?) {
-        view.reactContext.runOnUiQueueThread {
+//        view.reactContext.runOnUiQueueThread {
             view.setVideoMute(audioSilence)
-        }
+//        }
     }
 
 
     //导出时是否保存到相册
     @ReactProp(name = "saveToPhotoLibrary")
     fun saveToPhotoLibrary(view: CKEditor, save: Boolean?) {
-        view.reactContext.runOnUiQueueThread {
+//        view.reactContext.runOnUiQueueThread {
             view.isSaveToPhotoLibrary(save)
-        }
+//        }
     }
 
     //是否开始导出，true 去导出视频
     @ReactProp(name = "startExportVideo")
     fun startExportVideo(view: CKEditor, save: Boolean?) {
-        view.reactContext.runOnUiQueueThread {
+//        view.reactContext.runOnUiQueueThread {
             if (save == true) {
                 view.exportVideo(null)
             }
-        }
+//        }
     }
 
 //    //设置背景音乐
@@ -183,9 +183,9 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             bean.cover = cover
             bean.url = url
 
-            view.reactContext.runOnUiQueueThread {
+//            view.reactContext.runOnUiQueueThread {
                 view.setMusicInfo(bean)
-            }
+//            }
         }
 
     }

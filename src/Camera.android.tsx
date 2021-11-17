@@ -18,6 +18,7 @@ const Camera = React.forwardRef((props, ref) => {
       return await RNCameraKitModule.startRecording(findNodeHandle(nativeRef.current));
     },
     stopRecording: async (options = {}) => {
+      console.log('android api stopRecording');
       return await RNCameraKitModule.stopRecording(findNodeHandle(nativeRef.current));
     },
     requestDeviceCameraAuthorization: async () => {

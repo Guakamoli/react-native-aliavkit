@@ -2,6 +2,7 @@ package com.rncamerakit.recorder
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.ThreadUtils
@@ -18,31 +19,39 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
     }
 
     override fun onComplete(validClip: Boolean, clipDuration: Long) {
+        Log.e("ImplRecordCallback","onComplete")
         mCallbacks?.onComplete(validClip, clipDuration)
     }
 
     override fun onFinish(outputPath: String?) {
+        Log.e("ImplRecordCallback","onFinish")
         mCallbacks?.onFinish(outputPath)
     }
 
     override fun onProgress(duration: Long) {
+        Log.e("ImplRecordCallback", "onProgress:$duration")
         mCallbacks?.onProgress(duration)
     }
 
     override fun onMaxDuration() {
+        Log.e("ImplRecordCallback", "onMaxDuration")
     }
 
     override fun onError(errorCode: Int) {
+        Log.e("ImplRecordCallback", "errorCode:$errorCode")
         mCallbacks?.onError(errorCode)
     }
 
     override fun onInitReady() {
+        Log.e("ImplRecordCallback", "onInitReady")
     }
 
     override fun onDrawReady() {
+        Log.e("ImplRecordCallback", "onDrawReady")
     }
 
     override fun onPictureBack(bitmap: Bitmap?) {
+        Log.e("ImplRecordCallback", "onPictureBack")
         ThreadUtils.runOnSubThread {
             val imgPath = File(
                 Constants.SDCardConstants.getDir(mContext.applicationContext),
@@ -87,6 +96,7 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
     }
 
     override fun onPictureDataBack(data: ByteArray?) {
+        Log.e("ImplRecordCallback", "onPictureDataBack")
     }
 
 }
