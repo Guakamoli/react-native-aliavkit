@@ -34,7 +34,7 @@ const cropWidth = width - 30 * 2;
 const PostHead = React.memo((props) => {
   const { videoMute, setvideoMute } = props;
 
-  const { closePng, volumeImage, noVolumeImage, goback, continueEdit, continueRef } = props;
+  const { params: {  fileType = '' },closePng, volumeImage, noVolumeImage, goback, continueEdit,continueRef} = props
   return (
     <View
       style={{
@@ -61,7 +61,7 @@ const PostHead = React.memo((props) => {
       >
         <Image style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
       </Pressable>
-      {props.fileType === 'video' ? (
+      {fileType === 'video' ? (
         <TouchableOpacity
           onPress={() => {
             setvideoMute(!videoMute);
@@ -70,6 +70,7 @@ const PostHead = React.memo((props) => {
           <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
         </TouchableOpacity>
       ) : null}
+    
 
       <Pressable
         onPress={continueEdit}
