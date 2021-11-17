@@ -157,6 +157,8 @@ export default class Editor extends Component<Props, State> {
     }
     // TODO post 销毁
     if(this.props.source != 'story'){
+      console.log('post 销毁');
+      
     RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
     }
 
