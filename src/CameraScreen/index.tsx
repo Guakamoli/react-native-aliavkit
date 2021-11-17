@@ -295,6 +295,8 @@ class CameraScreen extends Component<Props, State> {
   scrollPos: Animated.Value;
   editor: any;
   startTime: string;
+  
+
   constructor(props) {
     super(props);
     this.myRef = React.createRef();

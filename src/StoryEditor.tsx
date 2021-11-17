@@ -24,6 +24,9 @@ import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
 
+import GestureText from '../example/src/GestureText';
+import DraggableBox from './DraggableBox';
+
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
 const { RNEditViewManager } = NativeModules;
@@ -41,7 +44,7 @@ export type Props = {
   tailorImage: any;
   volumeImage: any;
   rephotograph: () => void;
-  textEditor:() => void;
+  textEditor: () => void;
 
   getUploadFile: (any) => void;
 
@@ -71,6 +74,7 @@ type State = {
 
   musicOpen: Boolean;
   musicInfo: any;
+  showText: boolean;
 };
 
 export default class StoryEditor extends Component<Props, State> {
@@ -101,6 +105,7 @@ export default class StoryEditor extends Component<Props, State> {
       musicOpen: false,
       musicInfo: {},
       setMusic: false,
+      showText: false,
     };
   }
   startExportVideo() {
@@ -187,11 +192,11 @@ export default class StoryEditor extends Component<Props, State> {
       </View>
     );
   }
-  
+
   // 编辑头部按钮
   renderUpdateTop() {
     // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
-    const { showFilterLens, musicOpen } = this.state;
+    const { showFilterLens, musicOpen, showText } = this.state;
     const imglist = [
       // 'filter':
       {
@@ -222,7 +227,12 @@ export default class StoryEditor extends Component<Props, State> {
         },
       },
       // 'Aa':
-      { img: this.props.AaImage, onPress: this.props.textEditor },
+      {
+        img: this.props.AaImage,
+        onPress: () => {
+          this.setState({ showText: !showText });
+        },
+      },
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -291,6 +301,11 @@ export default class StoryEditor extends Component<Props, State> {
             videoMute={this.state.mute}
             musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
           />
+          {this.state.showText && (
+            <View style={{ flex: 1, zIndex: 200 }}>
+              <GestureText />
+            </View>
+          )}
         </View>
       );
     };
