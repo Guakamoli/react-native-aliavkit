@@ -227,18 +227,18 @@ class RecorderManage(
     fun stopRecording(context: Context, promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onComplete(validClip: Boolean, clipDuration: Long) {
-                if (clipDuration < 2000) {
-                    mRecorder?.cancelRecording()
-                    promise.reject("startRecording", "recording duration" + clipDuration + "ms")
-                    return
-                }
+//                if (clipDuration < 2000) {
+//                    mRecorder?.cancelRecording()
+//                    promise.reject("The recording time is too short", "recording duration：" + clipDuration + "ms")
+//                    return
+//                }
                 mRecorder?.finishRecording()
                 mClipManager?.deleteAllPart()
             }
 
             override fun onFinish(outputPath: String?) {
-                onRelease()
                 promise.resolve(outputPath)
+//                onRelease()
             }
 
             override fun onError(errorCode: Int) {

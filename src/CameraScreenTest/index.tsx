@@ -519,8 +519,9 @@ class CameraScreenTest extends Component<Props, State> {
                     });
                   }}
                   recordeSuccess={async (data) => {
-
+                    console.log('stopRecording');
                     const videoPath = await this.cameraBox.current?.stopRecording?.();
+                    console.log('stopRecordingstopRecordingstopRecording',videoPath);
                     this.setState({
                       videoPath,
                       flag: null,

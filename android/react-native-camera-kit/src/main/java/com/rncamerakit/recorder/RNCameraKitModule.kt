@@ -48,34 +48,43 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     fun capture(options: ReadableMap, viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
+//        context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
             view.mRecorderManage?.takePhoto(context, promise)
-        }
+//        }
     }
 
     @ReactMethod
     fun startRecording(viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKCamera
-            if (!view.isPermissions()) {
-                view.getPermissions()
-                return@runOnUiQueueThread
-            }
-            view.mRecorderManage?.startRecording(context, promise)
+        val view = uiManager?.resolveView(viewTag) as CKCamera
+        if (!view.isPermissions()) {
+            view.getPermissions()
+            return
         }
+        view.mRecorderManage?.startRecording(context, promise)
+
+//        context.runOnUiQueueThread {
+//            val view = uiManager?.resolveView(viewTag) as CKCamera
+//            if (!view.isPermissions()) {
+//                view.getPermissions()
+//                return@runOnUiQueueThread
+//            }
+//            view.mRecorderManage?.startRecording(context, promise)
+//        }
     }
 
     @ReactMethod
     fun stopRecording(viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKCamera
-            view.mRecorderManage?.stopRecording(context, promise)
-        }
+        val view = uiManager?.resolveView(viewTag) as CKCamera
+        view.mRecorderManage?.stopRecording(context, promise)
+//        context.runOnUiQueueThread {
+//            val view = uiManager?.resolveView(viewTag) as CKCamera
+//            view.mRecorderManage?.stopRecording(context, promise)
+//        }
     }
 
     /**
@@ -83,9 +92,9 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun getPasterInfos(promise: Promise) {
-        reactContext.runOnUiQueueThread {
+//        reactContext.runOnUiQueueThread {
             EffectPasterManage.instance.getPasterInfos(promise)
-        }
+//        }
     }
 
 //    @ReactMethod
@@ -122,9 +131,9 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
             promise.resolve(musicInfo.localPath)
             return
         }
-        reactContext.runOnUiQueueThread {
+//        reactContext.runOnUiQueueThread {
             DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise,null)
-        }
+//        }
     }
 
 
@@ -135,7 +144,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     fun downloadPaster(readableMap: ReadableMap, viewTag: Int, promise: Promise) {
         if (readableMap.toHashMap().size > 0) {
             val context = reactContext
-            context.runOnUiQueueThread {
+//            context.runOnUiQueueThread {
                 val previewPaster = PreviewPasterForm()
                 previewPaster.icon =
                     if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
@@ -161,7 +170,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
                 previewPaster.path =
                     if (readableMap.hasKey("path")) readableMap.getString("path") else ""
                 EffectPasterManage.instance.downloadPaster(previewPaster, promise)
-            }
+//            }
         }
     }
 
@@ -169,10 +178,10 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     fun release(viewTag: Int, promise: Promise) {
         val context = reactContext
         val uiManager = context.getNativeModule(UIManagerModule::class.java)
-        context.runOnUiQueueThread {
+//        context.runOnUiQueueThread {
             val view = uiManager?.resolveView(viewTag) as CKCamera
             view.onRelease()
-        }
+//        }
     }
 
 }
