@@ -162,6 +162,17 @@ class RenderCamera extends Component {
       showCamera: true,
     }
   }
+  //TODO
+  componentDidMount() {
+    console.log('拍摄初始化');
+  }
+  componentWillUnmount(){
+    console.log('拍摄销毁');
+    if (Platform.OS === 'android') {
+      //TODO
+      this.props.camera.current?.release();
+    }
+  }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some(key => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
