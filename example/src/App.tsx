@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function HomeScreen(props) {
   const { server, user, item, navigation, initType } = props;
-  const insets = useSafeAreaInsets()
+  const insets = {bottom:20}
   const sendfile = async (data) => {
     try {
       console.log(data)
@@ -42,6 +42,7 @@ function HomeScreen(props) {
     <>
       <EntryTest {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
        insets={insets}
+       
         getUploadFile={(data) => {
           navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
         }}></EntryTest>
