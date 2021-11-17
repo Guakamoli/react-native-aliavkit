@@ -28,7 +28,7 @@ const StoryMusic = (props) => {
   const [checkedData, setCheckedData] = useState()
   const [musicSearchValue, setMusicSearchValue] = useState('');
   const [songData, setSongData] = useState([]);
-
+  const [currentIndex,setCurrentIndex] = useState(0);
 
   useEffect(() => {
     console.log(23);
@@ -46,8 +46,9 @@ const StoryMusic = (props) => {
   useEffect(() => {
     if (songData.length > 0) {
       console.log('初始化', songData[0]);
-      palyMusic(songData[0])
+      playMusic(songData[0])
       setCheckedData(songData[0])
+      getmusicInfo(songData[0]);
       !setMusicState && props.setMusic(true);
     }
   }, [songData])
@@ -66,7 +67,7 @@ const StoryMusic = (props) => {
 
     [musicSearchValue],
   );
-  const palyMusic = async (song) => {
+  const playMusic = async (song) => {
     console.log('播放音乐', song);
     // = await AVService.playMusic(song.songID);
     if (!song) {
@@ -104,13 +105,14 @@ const StoryMusic = (props) => {
         // firstItem={!musicChoice && songData.indexOf(checkedData)}
         activeAnimationType={'timing'}
         onSnapToItem={async (slideIndex = 0) => {
-          // 当前选中的
-          // props.setMusic(false);
-          getmusicInfo({});
+
+
           setTimeout(() => {
             !setMusicState && props.setMusic(true);
+            getmusicInfo(songData[slideIndex]);
             setCheckedData(songData[slideIndex]);
-            palyMusic(songData[slideIndex])
+            playMusic(songData[slideIndex])
+            setCurrentIndex(slideIndex)
           }, 300);
 
         }}
@@ -125,8 +127,9 @@ const StoryMusic = (props) => {
                 props.setMusic(false);
                 setCheckedData({});
               } else {
+                getmusicInfo(item);
                 setCheckedData(item);
-                palyMusic(item)
+                playMusic(item)
                 !setMusicState && props.setMusic(true);
               }
             }} >
@@ -193,7 +196,7 @@ const StoryMusic = (props) => {
                     setCheckedData({});
                   } else {
                     setCheckedData(item);
-                    palyMusic(item)
+                    playMusic(item)
                   }
 
 
@@ -241,11 +244,14 @@ const StoryMusic = (props) => {
           position: 'relative'
         }}>
 
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => {
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={ async() => {
             props.setMusic(!setMusicState);
             if (!setMusicState) {
-              getmusicInfo(checkedData);
+              playMusic(songData[currentIndex])
+              setCheckedData(songData[currentIndex]);
             } else {
+                pauseMusic(songData[currentIndex])
+               setCheckedData({});
               getmusicInfo({});
             }
           }}>
