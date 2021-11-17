@@ -270,10 +270,9 @@ export default class StoryEditorTest extends Component<Props, State> {
 
       //TODO
       const topheight = Platform.OS === 'ios'?this.props.insets.top :StatusBar.currentHeight
-      // return null
       const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28)
 
-       console.log("Camera height",CameraFixHeight);
+      
       return (
         <View style={{ height: CameraFixHeight, borderRadius: 20, width:"100%",overflow: "hidden"}}>
           <VideoEditor
@@ -289,14 +288,14 @@ export default class StoryEditorTest extends Component<Props, State> {
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
 
-            saveToPhotoLibrary={false}
+            saveToPhotoLibrary={true}
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
             // TODO 安卓兼容
             onPlayProgress={() => {}}
-            source={"story"}
+            // source={"story"}
           />
         </View>
       )
