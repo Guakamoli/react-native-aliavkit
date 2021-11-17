@@ -253,7 +253,7 @@ const PostEditor = (props) => {
       let outputPath = event.outputPath;
       const Wscale = 1080 / props.params.cropDataRow.srcSize.width
       const Hscale = 1920 / props.params.cropDataRow.srcSize.height
-  
+      let preOutputPath = outputPath
       outputPath = await AVService.crop({
         source: `file://${outputPath}`,
         cropOffsetX: cropData.offset.x,
@@ -262,6 +262,7 @@ const PostEditor = (props) => {
         cropHeight: cropData.size.height * Wscale,
         duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
       });
+      CameraRoll.deletePhotos([preOutputPath])
       let uploadFile = [];
       //
       let type = outputPath.split('.');
