@@ -389,10 +389,14 @@ class CameraScreenTest extends Component<Props, State> {
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
+      // console.log('1231313');
+      
       //TODO
-      this.cameraBox.current?.release();
+      // this.cameraBox.current?.release();
+      // console.log('this.cameraBoxthis.cameraBox',this.cameraBox);
+      
       // if (this.camera) {
-      //   this.cameraBox.current?.release?.();
+        // this.cameraBox.current?.release?.();
       // }
     }
     this.setState = () => false;
@@ -699,6 +703,8 @@ class CameraScreenTest extends Component<Props, State> {
           // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
+          // TODO  安卓从新chu
+          // this.props.type == 'story' &&
           <>
 
             <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />

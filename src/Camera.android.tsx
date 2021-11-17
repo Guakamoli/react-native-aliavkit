@@ -63,7 +63,9 @@ const Camera = React.forwardRef((props, ref) => {
 
     //释放资源，退出页面时调用
     release: async () => {
-      // return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      // TODO
+      // console.log("camera release");
+      return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
     },
   }));
 
