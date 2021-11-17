@@ -12,6 +12,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.utils.DownloadUtils
+import kotlinx.coroutines.DelicateCoroutinesApi
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
 
@@ -25,12 +26,15 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         return "CKEditorManager"
     }
 
+    @DelicateCoroutinesApi
     override fun createViewInstance(reactContext: ThemedReactContext): CKEditor {
         this.mWidth = 0
         this.mHeight = 0
         this.mFilePath = null
         this.isVideo = false
-        return CKEditor(reactContext)
+        val view = CKEditor(reactContext)
+        RNEditorKitModule.mView = view
+        return view
     }
 
     //设置滤镜
@@ -40,7 +44,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             return
         }
 //        view.reactContext.runOnUiQueueThread {
-            view.setColorFilter(filterName)
+        view.setColorFilter(filterName)
 //        }
     }
 
@@ -127,7 +131,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     @ReactProp(name = "videoMute")
     fun setVideoMute(view: CKEditor, audioSilence: Boolean?) {
 //        view.reactContext.runOnUiQueueThread {
-            view.setVideoMute(audioSilence)
+        view.setVideoMute(audioSilence)
 //        }
     }
 
@@ -136,7 +140,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     @ReactProp(name = "saveToPhotoLibrary")
     fun saveToPhotoLibrary(view: CKEditor, save: Boolean?) {
 //        view.reactContext.runOnUiQueueThread {
-            view.isSaveToPhotoLibrary(save)
+        view.isSaveToPhotoLibrary(save)
 //        }
     }
 
@@ -144,9 +148,9 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     @ReactProp(name = "startExportVideo")
     fun startExportVideo(view: CKEditor, save: Boolean?) {
 //        view.reactContext.runOnUiQueueThread {
-            if (save == true) {
-                view.exportVideo(null)
-            }
+        if (save == true) {
+            view.exportVideo(null)
+        }
 //        }
     }
 
@@ -184,7 +188,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             bean.url = url
 
 //            view.reactContext.runOnUiQueueThread {
-                view.setMusicInfo(bean)
+            view.setMusicInfo(bean)
 //            }
         }
 

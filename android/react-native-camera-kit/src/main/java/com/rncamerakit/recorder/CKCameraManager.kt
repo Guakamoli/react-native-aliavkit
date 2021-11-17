@@ -26,8 +26,11 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     override fun createViewInstance(context: ThemedReactContext): CKCamera {
         this.mWidth = 0
         this.mHeight = 0
+
+        val view = CKCamera(context)
+        RNCameraKitModule.mView = view
         //初始化贴纸管理
-        return CKCamera(context)
+        return view
     }
 
     override fun receiveCommand(view: CKCamera, commandId: String?, args: ReadableArray?) {

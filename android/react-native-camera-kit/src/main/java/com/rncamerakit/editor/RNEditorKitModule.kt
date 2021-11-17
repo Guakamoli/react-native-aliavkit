@@ -1,6 +1,8 @@
 package com.rncamerakit.editor
 
+import android.annotation.SuppressLint
 import android.text.TextUtils
+import android.util.Log
 import com.aliyun.svideo.common.utils.FileUtils
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
@@ -11,16 +13,25 @@ import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.ColorFilterManager
+import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
+import kotlinx.coroutines.DelicateCoroutinesApi
 import java.net.FileNameMap
 import java.net.URLConnection
 import java.util.ArrayList
 
+@DelicateCoroutinesApi
 class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
+
+
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        var mView: CKEditor? = null
+    }
 
     override fun getName(): String {
         return "RNEditorKitModule"
@@ -36,9 +47,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 //            promise.resolve(musicInfo.localPath)
 //            return
 //        }
-//        reactContext.runOnUiQueueThread {
 //            DownloadUtils.downloadMusic(reactContext, songID, musicInfo?.url, promise, null)
-//        }
 //    }
 
     @ReactMethod
@@ -74,19 +83,17 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
             }
             promise.resolve(GsonBuilder().create().toJson(musicInfo))
         }
-//        reactContext.runOnUiQueueThread {
-            if (musicInfo != null) {
-                DownloadUtils.downloadMusic(reactContext, musicInfo.songID, musicInfo.url, null,
-                    object : MyFileDownloadCallback() {
-                        override fun completed(task: BaseDownloadTask) {
-                            super.completed(task)
-                            val musicBean: MusicFileBean? = MusicFileInfoDao.instance.query(musicInfo.songID)
-                            MediaPlayerManage.instance.start(task.targetFilePath, null)
-                            promise.resolve(GsonBuilder().create().toJson(musicBean))
-                        }
+        if (musicInfo != null) {
+            DownloadUtils.downloadMusic(reactContext, musicInfo.songID, musicInfo.url, null,
+                object : MyFileDownloadCallback() {
+                    override fun completed(task: BaseDownloadTask) {
+                        super.completed(task)
+                        val musicBean: MusicFileBean? = MusicFileInfoDao.instance.query(musicInfo.songID)
+                        MediaPlayerManage.instance.start(task.targetFilePath, null)
+                        promise.resolve(GsonBuilder().create().toJson(musicBean))
                     }
-                )
-//            }
+                }
+            )
         }
     }
 
@@ -110,53 +117,58 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun trimVideo(options: ReadableMap, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.trimVideo(options, promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.trimVideo(options, promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.trimVideo(options, promise)
 //        }
     }
 
     @ReactMethod
     fun pause(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.pause(promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.pause(promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.pause(promise)
 //        }
     }
 
     @ReactMethod
     fun stop(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.stop(promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.stop(promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.stop(promise)
 //        }
     }
 
 
     @ReactMethod
     fun play(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.play(promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.play(promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.play(promise)
 //        }
     }
 
 
     @ReactMethod
     fun seek(seekTime: Int, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.seek(seekTime, promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.seek(seekTime, promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.seek(seekTime, promise)
 //        }
     }
 
@@ -164,22 +176,25 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     //获取视频封面
     @ReactMethod
     fun videoCover(seekTime: Int, viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.videoCover(seekTime, promise)
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.videoCover(seekTime, promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.videoCover(seekTime, promise)
 //        }
     }
 
 
     @ReactMethod
     fun exportVideo(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        mView?.exportVideo(promise)
+
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
 //        context.runOnUiQueueThread {
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.exportVideo(promise)
+//            val view = uiManager?.resolveView(viewTag) as CKEditor
+//            view.exportVideo(promise)
 //        }
     }
 
@@ -188,34 +203,28 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun corpVideoFrame(options: ReadableMap, promise: Promise) {
         val context = reactContext
-//        context.runOnUiQueueThread {
-            CropManager.corpVideoFrame(context.applicationContext, options, promise)
-//        }
+        CropManager.corpVideoFrame(context.applicationContext, options, promise)
     }
 
     @ReactMethod
     fun crop(options: ReadableMap, promise: Promise) {
         val context = reactContext
-//        context.runOnUiQueueThread {
-            val filePath = if (options.hasKey("source")) options.getString("source") else ""
-            if (TextUtils.isEmpty(filePath)) {
-                promise.reject("crop", "error: source is empty")
+        val filePath = if (options.hasKey("source")) options.getString("source") else ""
+        if (TextUtils.isEmpty(filePath)) {
+            promise.reject("crop", "error: source is empty")
+        } else {
+            if (isVideo(filePath)) {
+                CropManager.cropVideo(context, options, promise)
             } else {
-                if (isVideo(filePath)) {
-                    CropManager.cropVideo(context, options, promise)
-                } else {
-                    CropManager.cropImage(context, options, promise)
-                }
+                CropManager.cropImage(context, options, promise)
             }
-//        }
+        }
     }
 
     @ReactMethod
     fun cropVideo(options: ReadableMap, viewTag: Int, promise: Promise) {
         val context = reactContext
-//        context.runOnUiQueueThread {
-            CropManager.cropVideo(context, options, promise)
-//        }
+        CropManager.cropVideo(context, options, promise)
     }
 
 
@@ -225,19 +234,17 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun saveMediaStore(filePath: String, sourceType: String, promise: Promise) {
         val context = reactContext
-//        context.runOnUiQueueThread {
 //            if (sourceType == "video") {
 //                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
 //            } else {
 //                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
 //            }
-            if (isVideo(filePath)) {
-                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
-            } else {
-                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
-            }
-            promise.resolve(true)
-//        }
+        if (isVideo(filePath)) {
+            AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+        } else {
+            AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+        }
+        promise.resolve(true)
     }
 
 
@@ -247,14 +254,22 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         return contentTypeFor.contains("video")
     }
 
+
     @ReactMethod
     fun release(viewTag: Int, promise: Promise) {
-        val context = reactContext
-        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+        MediaPlayerManage.instance.release()
+        mView?.onRelease()
+
+//        val context = reactContext
+//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
+//
+//        Log.e("AAA", "CKEditor release：$viewTag")
 //        context.runOnUiQueueThread {
-            MediaPlayerManage.instance.release()
-            val view = uiManager?.resolveView(viewTag) as CKEditor
-            view.onRelease()
+//            if (uiManager?.resolveView(viewTag) != null && uiManager.resolveView(viewTag) is CKEditor) {
+//                Log.e("AAA", "CKEditor release 222")
+//                val view = uiManager?.resolveView(viewTag) as CKEditor
+//                view.onRelease()
+//            }
 //        }
     }
 
