@@ -415,9 +415,6 @@ const PostEditor = (props) => {
                 }
               }
             }}
-            onExportVideo={(event) => {
-              onExportVideo(event);
-            }}
           />
         </View>
       </View>
@@ -785,7 +782,7 @@ const PostEditor = (props) => {
   }
   return (
     //TODO
-    <View style={{ backgroundColor: 'blue', position: 'relative', height: "100%" }}>
+    <View style={{ backgroundColor: '#000', position: 'relative', height: "100%" }}>
       <Toast
         ref={toast}
         position='top'
