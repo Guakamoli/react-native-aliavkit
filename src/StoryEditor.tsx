@@ -282,7 +282,7 @@ export default class StoryEditor extends Component<Props, State> {
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
+            musicInfo={ Object.keys(this.state.musicInfo).length != 0  ? this.state.musicInfo : {}}
           />
         </View>
       )
