@@ -75,17 +75,19 @@ export default class AVService {
   // }
 
   static async getThumbnails(params) {
-    console.log("getThumbnails",params)
+    // console.log("getThumbnails",params)
     var thumbnails = await RNEditorKitModule.corpVideoFrame(params);
     return JSON.parse(thumbnails)
   }
 
   //删除抽帧的图片
   static async removeThumbnaiImages() {
+    return await RNEditorKitModule.removeThumbnaiImages();
   }
 
-  //删除录制、编辑产生的图片视频缓存
+  //删除 录制、编辑时产生的图片、视频缓存
   static async clearResources({ tmp, record, composition }) {
+    return await RNEditorKitModule.clearResources();
   }
   static enableHapticIfExist() {
     // AliAVServiceBridge.enableHapticIfExist();

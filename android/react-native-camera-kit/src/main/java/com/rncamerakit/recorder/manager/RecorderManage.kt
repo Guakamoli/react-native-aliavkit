@@ -29,6 +29,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
@@ -320,8 +321,9 @@ class RecorderManage(
         outputInfo.videoHeight = mHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
         mRecorder?.setMediaInfo(outputInfo)
+
         val videoPath = File(
-            Constants.SDCardConstants.getDir(mContext.applicationContext),
+            CropManager.getCameraDirs(mContext.applicationContext),
             "paiya-record.mp4"
         ).absolutePath
         mRecorder?.setOutputPath(videoPath)

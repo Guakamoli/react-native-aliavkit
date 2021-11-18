@@ -61,7 +61,7 @@ class CaptionManager(
 
 
     /**
-     * 获取字幕的中心点位置(x,y)
+     * 设置字幕的中心点位置(x,y) 屏幕坐标 px
      */
     fun setPosition(x: Float, y: Float) {
         mCaptionController?.position = PointF(x, y)
@@ -178,20 +178,21 @@ class CaptionManager(
      * 添加一个默认样式的视频字幕
      *
      * @param text
-     * @param duration  视频时长  us
      */
     fun addDefaultStyleCaption(text: String?, aliyunIEditor: AliyunIEditor?, width: Int, height: Int) {
         if (TextUtils.isEmpty(text) || aliyunIEditor == null) {
             return
         }
+        //视频时长 us
         val endTime = aliyunIEditor.duration
         addCaptionWithStartTime(text, null, null, 0, endTime)
 
         setPosition((width/2).toFloat(), (height/2).toFloat())
         setRotate(45F)
-        setScale(0.6F)
+        //android 默认字体大小 25sp
+        setScale(1F)
         setFontTypeface(AliyunTypeface.BOLD_ITALIC)
-        setTextAlignment(2)
+        setTextAlignment(4)// AlignHCenter = 4;
         setColor(AliyunColor(255, 0, 0, 255))
         setBackgroundColor(AliyunColor(0, 0, 0, 99))
         setOutlineColor(AliyunColor(0, 0, 255, 255))

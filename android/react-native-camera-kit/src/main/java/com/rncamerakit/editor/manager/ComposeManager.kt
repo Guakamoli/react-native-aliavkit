@@ -20,6 +20,7 @@ import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.crop.CropManager
 import com.rncamerakit.utils.AliFileUtils
 import java.io.File
 import java.io.FileOutputStream
@@ -110,7 +111,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
     ) {
         val time = DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
 
-        val pathDis = FileUtils.getDiskCachePath(mContext) + File.separator + "Media" + File.separator
+        val pathDis = CropManager.getEditorDirs(mContext.applicationContext)
         val fileName = time + Constants.SDCardConstants.COMPOSE_SUFFIX
         mOutputPath = FileUtils.createFile(pathDis, fileName).path
 

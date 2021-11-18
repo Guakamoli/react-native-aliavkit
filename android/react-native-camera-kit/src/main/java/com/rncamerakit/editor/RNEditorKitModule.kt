@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.recorder.util.RecordCommon
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
@@ -19,6 +20,8 @@ import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.DelicateCoroutinesApi
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import java.net.FileNameMap
 import java.net.URLConnection
 import java.util.ArrayList
@@ -254,6 +257,26 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         return contentTypeFor.contains("video")
     }
 
+
+    @ReactMethod
+    fun removeThumbnaiImages(promise: Promise) {
+        doAsync {
+            com.blankj.utilcode.util.FileUtils.deleteAllInDir(CropManager.getVideoFrameDirs(reactContext.applicationContext))
+            uiThread {
+                promise.resolve(true)
+            }
+        }
+    }
+
+    @ReactMethod
+    fun clearResources(promise: Promise) {
+        doAsync {
+            com.blankj.utilcode.util.FileUtils.deleteAllInDir(CropManager.getMediaCacheDirs(reactContext.applicationContext))
+            uiThread {
+                promise.resolve(true)
+            }
+        }
+    }
 
     @ReactMethod
     fun release(viewTag: Int, promise: Promise) {

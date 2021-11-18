@@ -29,7 +29,6 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
         val view = CKCamera(context)
         RNCameraKitModule.mView = view
-        //初始化贴纸管理
         return view
     }
 
@@ -140,6 +139,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
             this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
             view.reactContext.runOnUiQueueThread {
                 view.setLayout(this.mWidth, this.mHeight)
+                view.initCamera()
             }
         }
     }

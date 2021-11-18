@@ -22,6 +22,7 @@ import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.effect.EffectBean
 import com.aliyun.svideosdk.common.struct.project.Source
 import com.aliyun.svideosdk.editor.AliyunIEditor
+import com.aliyun.svideosdk.editor.AliyunPasterManager
 import com.aliyun.svideosdk.editor.EffectType
 import com.aliyun.svideosdk.editor.OnPasterRestored
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
@@ -79,6 +80,9 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //滤镜管理
     private var mColorFilterManager: ColorFilterManager? = null
 
+    //贴图、文字控制类
+    private var mAliyunPasterManager: AliyunPasterManager? = null
+
     //字幕管理
     private var mCaptionManager: CaptionManager? = null
 
@@ -89,7 +93,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private fun initVideoContainer() {
         mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
-//        val params = LayoutParams(ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
         params.gravity = Gravity.CENTER_HORIZONTAL
         mVideoContainer?.setBackgroundColor(Color.BLUE)
         addView(mVideoContainer, params)
@@ -118,12 +121,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
         initSurfaceView()
 
         //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
-        val pasterManager = mAliyunIEditor?.createPasterManager()
-        pasterManager?.setDisplaySize(mWidth, mHeight)
-        pasterManager?.setOnPasterRestoreListener(OnPasterRestored {
+        mAliyunPasterManager = mAliyunIEditor?.createPasterManager()
+        mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+        mAliyunPasterManager?.setOnPasterRestoreListener(OnPasterRestored {
 
         })
-        mCaptionManager = CaptionManager(reactContext, pasterManager)
+        mCaptionManager = CaptionManager(reactContext, mAliyunPasterManager)
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
@@ -136,8 +139,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
             return
         }
         mAliyunIEditor?.play()
-
-        initControllerManager()
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
@@ -146,9 +147,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     override fun onEnd(state: Int?, isVideo: Boolean) {
         reactContext.runOnUiQueueThread {
-//            if (isVideo) {
             mAliyunIEditor?.replay()
-//            }
         }
     }
 
@@ -167,13 +166,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
             mImportManager?.importImage(filePath).toString()
         }
         initEditor(Uri.fromFile(File(mProjectConfigure)), isVideo)
-
         this.isInit = true;
-
-//        //TODO 测试音频
-//        val list = MusicFileInfoDao.instance.queryAll()
-//        val bean = list?.get(0)
-//        setMusicInfo(bean)
     }
 
 
@@ -195,17 +188,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
         } else {
             mAliyunIEditor?.setVolume(50)
         }
-    }
-
-    /**
-     * 获取滤镜列表
-     */
-    fun getColorFilterList(promise: Promise) {
-        if (!isCopyAssets) {
-            promise.reject("getColorFilterList", "ColorFilter is empty")
-            return
-        }
-        ColorFilterManager.getColorFilter(mContext, promise)
     }
 
     /**
@@ -374,22 +356,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
 
-    private fun initControllerManager() {
-
-    }
-
     init {
-//        mWidth = ScreenUtils.getWidth(mContext)
-//        mHeight = mWidth*16/9
-//        initVideoContainer()
-//        initSurfaceView()
-
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
         copyAssets()
         initLifecycle()
         DownloadUtils.getMusicJsonInfo()
-
     }
 
 
@@ -427,16 +399,18 @@ class CKEditor(val reactContext: ThemedReactContext) :
     fun setLayout(width: Int, height: Int) {
         this.mWidth = ScreenUtils.getWidth(mContext)
         this.mHeight = this.mWidth*height/width
-
-//        var params = mVideoContainer?.layoutParams
-//        if (params == null) {
-//            params = LayoutParams(dip(width), dip(height))
-//        } else {
-//            params.width = dip(width)
-//            params.height = dip(height)
-//        }
-//        mVideoContainer?.layoutParams = params
-//        mSurfaceView?.layoutParams = params
+        if (this.isInit) {
+            var params = mVideoContainer?.layoutParams
+            if (params == null) {
+                params = LayoutParams(mWidth, mHeight)
+            } else {
+                params.width = mWidth
+                params.height = mHeight
+            }
+            mVideoContainer?.layoutParams = params
+            mSurfaceView?.layoutParams = params
+            mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+        }
     }
 
     /**
