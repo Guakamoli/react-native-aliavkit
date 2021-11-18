@@ -34,14 +34,37 @@ import kotlin.coroutines.resume
 class CropManager {
     companion object {
 
+
+        fun getMediaCacheDirs(context: Context): String{
+            return FileUtils.getDiskCachePath(context) + File.separator + "media" + File.separator
+        }
+
+        fun getCameraDirs(context: Context): String{
+            return FileUtils.getDiskCachePath(context) + File.separator + "media/camera" + File.separator
+        }
+
+        /**
+         * 编辑目录
+         */
+        fun getEditorDirs(context: Context): String {
+            return FileUtils.getDiskCachePath(context) + File.separator + "media/editor" + File.separator
+        }
+
+        /**
+         * 视频帧提取目录
+         */
+        fun getVideoFrameDirs(context: Context): String {
+            return FileUtils.getDiskCachePath(context) + File.separator + "media/videoFrame" + File.separator
+        }
+
         private const val TAG = "CropManager"
 
         /**
          * 图片裁剪
          */
-        fun cropImage(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
+        fun cropImage(reactContext: ReactContext, readableMap: ReadableMap, promise: Promise) {
 
-            val context = reactContext?.applicationContext
+            val context = reactContext.applicationContext
 
             var imagePath =
                 if (readableMap.hasKey("source")) readableMap.getString("source") else ""
@@ -83,9 +106,8 @@ class CropManager {
 
             val file = File(imagePath)
             val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
-            val pathDis =
-                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator
-            val outputPath = FileUtils.createFile(pathDis, fileName).path
+
+            val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
 
             //设置裁剪参数
             val param = CropParam()
@@ -137,9 +159,9 @@ class CropManager {
         /**
          * 视频裁剪
          */
-        fun cropVideo(reactContext: ReactContext?, readableMap: ReadableMap, promise: Promise) {
+        fun cropVideo(reactContext: ReactContext, readableMap: ReadableMap, promise: Promise) {
 
-            val context = reactContext?.applicationContext
+            val context = reactContext.applicationContext
 
             var videoPath =
                 if (readableMap.hasKey("source")) readableMap.getString("source") else ""
@@ -208,9 +230,8 @@ class CropManager {
 
             val file = File(videoPath)
             val fileName = "crop_" + file.name
-            val pathDis =
-                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator
-            val outputPath = FileUtils.createFile(pathDis, fileName).path
+
+            val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
 
             //设置裁剪参数
             val param = CropParam()
@@ -318,8 +339,6 @@ class CropManager {
             try {
                 val nativeParser = NativeParser()
                 nativeParser.init(videoPath)
-//                videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
-//                videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
                 try {
                     duration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()/1000
                 } catch (e: Exception) {
@@ -389,9 +408,6 @@ class CropManager {
                     videoFrameList.add("file://" + it.await())
                 }
                 GlobalScope.launch(Dispatchers.Main) {
-//                    videoFrameList.forEach {
-//                        Log.e("BBB ", "sync：$it")
-//                    }
                     promise?.resolve(GsonBuilder().create().toJson(videoFrameList))
                 }
             }
@@ -419,13 +435,12 @@ class CropManager {
                 thumbnailFetcher.requestThumbnailImage(longArrayOf(time), object : AliyunIThumbnailFetcher.OnThumbnailCompletion {
                     override fun onThumbnailReady(bitmap: Bitmap, longTime: Long, index: Int) {
                         if (!bitmap.isRecycled) {
-                            var videoFramePath =
-                                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
+
                             val name = File(videoPath).nameWithoutExtension
-                            videoFramePath = FileUtils.createFile(
-                                videoFramePath,
+                            var videoFramePath = FileUtils.createFile(
+                                getVideoFrameDirs(context),
                                 "VideoFrame-$name-$longTime.jpg"
-                            ).path
+                            ).absolutePath
 
                             val cropBitmap = Bitmap.createBitmap(
                                 bitmap,
@@ -437,8 +452,6 @@ class CropManager {
                             bitmap.recycle()
 
                             BitmapUtils.saveBitmap(cropBitmap, videoFramePath)
-
-//                            Log.e("BBB ", "Async：$videoFramePath")
                             if (!TextUtils.isEmpty(videoFramePath)) {
                                 continuation.resume(videoFramePath)
                             } else {

@@ -7,6 +7,7 @@ import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideosdk.recorder.RecordCallback
+import com.rncamerakit.crop.CropManager
 import java.io.File
 import java.io.IOException
 
@@ -19,12 +20,12 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
     }
 
     override fun onComplete(validClip: Boolean, clipDuration: Long) {
-        Log.e("ImplRecordCallback","onComplete")
+        Log.e("ImplRecordCallback", "onComplete")
         mCallbacks?.onComplete(validClip, clipDuration)
     }
 
     override fun onFinish(outputPath: String?) {
-        Log.e("ImplRecordCallback","onFinish")
+        Log.e("ImplRecordCallback", "onFinish")
         mCallbacks?.onFinish(outputPath)
     }
 
@@ -54,7 +55,7 @@ class ImplRecordCallback(private val mContext: Context) : RecordCallback {
         Log.e("ImplRecordCallback", "onPictureBack")
         ThreadUtils.runOnSubThread {
             val imgPath = File(
-                Constants.SDCardConstants.getDir(mContext.applicationContext),
+                CropManager.getCameraDirs(mContext.applicationContext),
                 System.currentTimeMillis().toString() + "-photo.jpg"
             ).absolutePath
             try {

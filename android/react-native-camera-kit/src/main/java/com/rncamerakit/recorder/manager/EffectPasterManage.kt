@@ -52,10 +52,10 @@ class EffectPasterManage private constructor() {
                 }
                 if(FileUtils.fileIsExists(form.path)){
                     form.isLocalRes = true
-//                    Log.e("AAA","icon："+form.icon+"\npath："+form.path)
+                    Log.e("AAA","icon："+form.icon+"\npath："+form.path)
                 }else{
                     form.isLocalRes = false
-//                    Log.e("AAA","icon："+form.icon+"\nURL："+form.url)
+                    Log.e("AAA","icon："+form.icon+"\nURL："+form.url)
                 }
                 mPasterList.add(form)
 

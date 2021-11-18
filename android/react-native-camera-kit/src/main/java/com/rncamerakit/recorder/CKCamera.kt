@@ -40,7 +40,7 @@ class CKCamera(
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
     private var mVideoContainer: FrameLayout? = null
-    private var testLayout: TextView? = null
+
     var mRecorderManage: RecorderManage? = null
         private set
     private var mRecorder: AlivcRecorder? = null
@@ -54,7 +54,8 @@ class CKCamera(
         mRecorder = mRecorderManage?.mRecorder
         mRecorder?.setDisplayView(mRecorderSurfaceView, null)
         mRecorder?.startPreview()
-
+        setFaceTrackModePath()
+        copyAssets()
     }
 
     private fun initVideoContainer() {
@@ -71,7 +72,7 @@ class CKCamera(
     private fun initRecorderSurfaceView() {
         mRecorderSurfaceView = SurfaceView(mContext)
         val params = LayoutParams(mWidth, mHeight)
-        mVideoContainer?.addView(mRecorderSurfaceView,params)
+        mVideoContainer?.addView(mRecorderSurfaceView, params)
         val scaleGestureDetector = ScaleGestureDetector(context, object : OnScaleGestureListener {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val factorOffset = detector.scaleFactor - lastScaleFactor
@@ -156,8 +157,6 @@ class CKCamera(
                 if (mRecorderManage != null) {
                     mRecorderManage?.initColorFilterAssets()
                 }
-                setFaceTrackModePath()
-                EffectPasterManage.instance.init(reactContext)
             }
         }
     }
@@ -196,14 +195,14 @@ class CKCamera(
         if (!isPermissions()) {
             getPermissions()
         }
+        //下载初始化
         DownloaderManager.getInstance().init(reactContext.applicationContext)
-
-        copyAssets()
-
+        //初始化贴纸管理
+        EffectPasterManage.instance.init(reactContext)
+        //音乐库初始化
         DownloadUtils.getMusicJsonInfo()
-        initLifecycle()
 
-//        EffectPasterManage.instance.getPasterInfos(null)
+        initLifecycle()
     }
 
     private fun initLifecycle() {
@@ -235,11 +234,27 @@ class CKCamera(
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
-        if(this.isInit){
+        this.mWidth = ScreenUtils.getWidth(mContext)
+        this.mHeight = this.mWidth*height/width
+
+        if (this.isInit) {
+            var params = mVideoContainer?.layoutParams
+            if (params == null) {
+                params = LayoutParams(mWidth, mHeight)
+            } else {
+                params.width = mWidth
+                params.height = mHeight
+            }
+            mVideoContainer?.layoutParams = params
+            mRecorderSurfaceView?.layoutParams = params
+        }
+
+    }
+
+    fun initCamera() {
+        if (this.isInit) {
             return
         }
-        this.mWidth = dip(width)
-        this.mHeight = dip(height)
         initVideoContainer()
         initRecorderSurfaceView()
         initRecorder()
