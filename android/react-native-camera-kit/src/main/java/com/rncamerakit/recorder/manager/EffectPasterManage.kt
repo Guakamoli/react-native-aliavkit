@@ -1,7 +1,9 @@
 package com.rncamerakit.recorder.manager
 
+import android.content.Context
 import android.text.TextUtils
 import android.util.Log
+import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.downloader.FileDownloaderCallback
 import com.aliyun.svideo.downloader.zipprocessor.DownloadFileUtils
 import com.aliyun.svideo.recorder.view.effects.manager.EffectLoader
@@ -12,6 +14,7 @@ import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.FileUtils
 import com.rncamerakit.RNEventEmitter
+import java.io.File
 import java.util.*
 
 
@@ -35,11 +38,14 @@ class EffectPasterManage private constructor() {
         mPaterLoader = EffectLoader(mReactContext.applicationContext)
     }
 
-     val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
+    val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
 
     private var mPaterLoader: EffectLoader? = null
 
 
+    /**
+     * 获取贴纸列表
+     */
     fun getPasterInfos(promise: Promise?) {
         mPasterList.clear()
 //        val emptyPaster = PreviewPasterForm()
@@ -50,12 +56,12 @@ class EffectPasterManage private constructor() {
                 if (form.id == 150) {
                     form.icon = "file://" + form.icon
                 }
-                if(FileUtils.fileIsExists(form.path)){
+                if (FileUtils.fileIsExists(form.path)) {
                     form.isLocalRes = true
-                    Log.e("AAA","icon："+form.icon+"\npath："+form.path)
-                }else{
+//                    Log.e("AAA", "icon：" + form.icon + "\npath：" + form.path)
+                } else {
                     form.isLocalRes = false
-                    Log.e("AAA","icon："+form.icon+"\nURL："+form.url)
+//                    Log.e("AAA", "icon：" + form.icon + "\nURL：" + form.url)
                 }
                 mPasterList.add(form)
 
@@ -65,6 +71,7 @@ class EffectPasterManage private constructor() {
 //                Log.e("AAA","icon："+mv.icon+"\nURL："+mv.url)
                 mPasterList.add(mv)
             }
+//            Log.e("AAA", "mPasterList:" + mPasterList.size)
             val jsonList = GsonBuilder().create().toJson(mPasterList)
             promise?.resolve(jsonList)
         }
@@ -74,19 +81,23 @@ class EffectPasterManage private constructor() {
         open fun onPath(path: String) {}
     }
 
-    fun setEffectPaster(paster: PreviewPasterForm?, callback: OnGifEffectPasterCallback) {
-        val path: String
-        if (paster?.isLocalRes == true) {
-            path = if (paster.id == 150) {
-                paster.path
-            } else {
-                DownloadFileUtils.getAssetPackageDir(
-                    mReactContext.applicationContext,
-                    paster.name,
-                    paster.id.toLong()
-                ).absolutePath
-            }
-            Log.e("AAA", "local progress：$path")
+    fun setEffectPaster(paster: PreviewPasterForm, callback: OnGifEffectPasterCallback) {
+        val path = if (paster.id == 150) {
+            paster.path
+        } else {
+            EffectLoader.getEffectPasterDir(
+                mReactContext.applicationContext,
+                paster.name,
+                paster.id
+            ).absolutePath
+//                DownloadFileUtils.getAssetPackageDir(
+//                    mReactContext.applicationContext,
+//                    paster.name,
+//                    paster.id.toLong()
+//                ).absolutePath
+        }
+        if (paster.isLocalRes && FileUtils.fileIsExists(path)) {
+//            Log.e("AAA", "local progress：$path")
             callback.onPath(path)
         } else {
             if (TextUtils.isEmpty(paster?.url)) {
@@ -94,7 +105,7 @@ class EffectPasterManage private constructor() {
                 return
             }
             //需要下载
-            mPaterLoader!!.downloadPaster(paster, object : FileDownloaderCallback() {
+            mPaterLoader?.downloadPaster(paster, object : FileDownloaderCallback() {
                 override fun onProgress(
                     downloadId: Int,
                     soFarBytes: Long,
@@ -102,26 +113,26 @@ class EffectPasterManage private constructor() {
                     speed: Long,
                     progress: Int
                 ) {
-                    Log.e("AAA", "download progress：$progress")
+//                    Log.e("AAA", "download progress：$progress")
                     RNEventEmitter.downloadPasterProgress(mReactContext, progress)
                 }
 
                 override fun onFinish(downloadId: Int, path: String) {
-                    Log.e("AAA", "download path：$path")
+//                    Log.e("AAA", "download path：$path")
                     RNEventEmitter.downloadPasterProgress(mReactContext, 100)
                     callback.onPath(path)
                 }
 
                 override fun onError(task: BaseDownloadTask, e: Throwable) {
                     super.onError(task, e)
-                    Log.e("AAA", "download error：${e.message}")
+//                    Log.e("AAA", "download error：${e.message}")
                 }
             })
         }
     }
 
     fun downloadPaster(paster: PreviewPasterForm?, promise: Promise) {
-        mPaterLoader!!.downloadPaster(paster, object : FileDownloaderCallback() {
+        mPaterLoader?.downloadPaster(paster, object : FileDownloaderCallback() {
             override fun onProgress(
                 downloadId: Int,
                 soFarBytes: Long,
@@ -129,12 +140,12 @@ class EffectPasterManage private constructor() {
                 speed: Long,
                 progress: Int
             ) {
-                Log.e("AAA", "download progress：$progress")
+//                Log.e("AAA", "download progress：$progress")
                 RNEventEmitter.downloadPasterProgress(mReactContext, progress)
             }
 
             override fun onFinish(downloadId: Int, path: String) {
-                Log.e("AAA", "download path：$path")
+//                Log.e("AAA", "download path：$path")
                 RNEventEmitter.downloadPasterProgress(mReactContext, 100)
                 paster?.isLocalRes = true
                 paster?.path = path
@@ -143,7 +154,7 @@ class EffectPasterManage private constructor() {
 
             override fun onError(task: BaseDownloadTask, e: Throwable) {
                 super.onError(task, e)
-                Log.e("AAA", "download error：${e.message}")
+//                Log.e("AAA", "download error：${e.message}")
                 promise.reject("downloadPaster", "error:" + (e.message))
             }
         })

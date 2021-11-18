@@ -283,7 +283,7 @@ class RecorderManage(
     /**
      * 设置人脸贴纸
      */
-    fun setFaceEffectPaster(paster: PreviewPasterForm?) {
+    fun setFaceEffectPaster(paster: PreviewPasterForm) {
         EffectPasterManage.instance.setEffectPaster(paster,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String) {

@@ -37,8 +37,8 @@ class DownloadUtils {
                 )
             }
             val savePath = File(
-                StorageUtils.getFilesDirectory(context.applicationContext),
-                "/music/download/" + songID + "_" + fileName
+                com.aliyun.svideo.common.utils.FileUtils.getFilesPath(context.applicationContext),
+                "/downloads/music/" + songID + "_" + fileName
             ).absolutePath
 
             musicUrl?.let {
