@@ -6,9 +6,6 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
-  Platform,
-  SafeAreaView,
-  ScrollView,
   FlatList,
   NativeModules,
   TextInput,
@@ -28,6 +25,7 @@ const StoryMusic = (props) => {
   const [musicSearchValue, setMusicSearchValue] = useState('');
   const [songData, setSongData] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [pages, setpage] = useState(2);
 
   useEffect(() => {
     console.log(23);
@@ -80,12 +78,10 @@ const StoryMusic = (props) => {
   };
 
   const getSong = async ({ name = 'all-music', page = 1, pageSize = 5 }) => {
-    console.log('-----', `${name}`, page, pageSize);
     if (!name) {
       name = 'all-music';
     }
     const song = await AVService.getMusics({ name, page, pageSize });
-    console.log('success', song);
     setSongData(song);
   };
 
@@ -96,14 +92,20 @@ const StoryMusic = (props) => {
         itemWidth={298}
         sliderWidth={width}
         initialNumToRender={4}
-        // firstItem={!musicChoice && songData.indexOf(checkedData)}
+        firstItem={!musicChoice && songData.indexOf(checkedData)}
         activeAnimationType={'timing'}
+        onEndReachedThreshold={0.2}
+        onEndReached={() => {
+          let page = pages + 1;
+          getSong({ name: '', page: pages, pageSize: 5 });
+          setpage(page);
+        }}
         onSnapToItem={async (slideIndex = 0) => {
+          playMusic(songData[slideIndex]);
           setTimeout(() => {
             !setMusicState && props.setMusic(true);
             getmusicInfo(songData[slideIndex]);
             setCheckedData(songData[slideIndex]);
-            playMusic(songData[slideIndex]);
             setCurrentIndex(slideIndex);
           }, 300);
         }}
@@ -117,6 +119,7 @@ const StoryMusic = (props) => {
                   pauseMusic(item);
                   props.setMusic(false);
                   setCheckedData({});
+                  getmusicInfo({});
                 } else {
                   getmusicInfo(item);
                   setCheckedData(item);
@@ -126,7 +129,7 @@ const StoryMusic = (props) => {
               }}
             >
               <View style={[styles.musicCarouselBox, IsPlayMusic && { backgroundColor: 'rgba(255,255,255,0.95)' }]}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
+                <View style={styles.musicCarouselContent}>
                   <Image source={musicIconPng} style={styles.musicIcon} />
                   {/* 播放展示gif */}
                   {IsPlayMusic && <Image source={musicDynamicGif} style={styles.musicPlayGif} />}
@@ -239,6 +242,7 @@ const StoryMusic = (props) => {
               if (!setMusicState) {
                 playMusic(songData[currentIndex]);
                 setCheckedData(songData[currentIndex]);
+                getmusicInfo(songData[currentIndex]);
               } else {
                 pauseMusic(songData[currentIndex]);
                 setCheckedData({});
@@ -303,6 +307,11 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginVertical: 16,
     padding: 14,
+  },
+  musicCarouselContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 14,
   },
   musicPlayGif: {
     width: 30,
