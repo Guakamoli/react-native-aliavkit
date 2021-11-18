@@ -6,6 +6,7 @@ package com.aliyun.svideo.editor.util;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
@@ -27,6 +28,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.liulishuo.filedownloader.util.FileDownloadUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,7 +55,7 @@ import java.util.zip.ZipInputStream;
 public class EditorCommon {
     private static final String TAG = "Common";
 
-    public static String SD_DIR ;
+    public static String SD_DIR;
     /**
      * 素材分发服务为官方demo演示使用，无法达到商业化使用程度。请自行搭建相关的服务
      */
@@ -102,27 +104,27 @@ public class EditorCommon {
         if (list == null || list.size() == 0 || h <= 0 || w <= 0) {
             return path;
         }
-        float percent = (float)w / h;
+        float percent = (float) w / h;
         int aspect = 0;
         Map map = new IdentityHashMap();
         for (int i = 0; i < list.size(); i++) {
             aspect = list.get(i).getAspect();
             path = list.get(i).getPath();
             if (aspect == 1 && exits(path + File.separator + MV1_1)) {
-                map.put(new Integer(1), (float)1);
+                map.put(new Integer(1), (float) 1);
             } else if (aspect == 2) {
                 if (exits(path + File.separator + MV3_4)) {
-                    map.put(new Integer(2), (float)3 / 4);
+                    map.put(new Integer(2), (float) 3 / 4);
                 }
                 if (exits(path + File.separator + MV4_3)) {
-                    map.put(new Integer(3), (float)4 / 3);
+                    map.put(new Integer(3), (float) 4 / 3);
                 }
             } else if (aspect == 3) {
                 if (exits(path + File.separator + MV9_16)) {
-                    map.put(new Integer(4), (float)9 / 16);
+                    map.put(new Integer(4), (float) 9 / 16);
                 }
                 if (exits(path + File.separator + MV16_9)) {
-                    map.put(new Integer(5), (float)16 / 9);
+                    map.put(new Integer(5), (float) 16 / 9);
                 }
             }
         }
@@ -132,12 +134,12 @@ public class EditorCommon {
         while (iterator.hasNext()) {
             Map.Entry entry = (Map.Entry) iterator.next();
             if (diffNum == -1) {
-                diffNum = Math.abs(percent - (float)entry.getValue());
+                diffNum = Math.abs(percent - (float) entry.getValue());
                 result = (Integer) entry.getKey();
                 continue;
             }
 
-            float diffNumTemp = Math.abs(percent - (float)entry.getValue());
+            float diffNumTemp = Math.abs(percent - (float) entry.getValue());
             if (diffNum >= diffNumTemp) {
                 diffNum = diffNumTemp;
                 result = (Integer) entry.getKey();
@@ -184,7 +186,7 @@ public class EditorCommon {
 
     public static void copySelf(Context cxt, String root) {
         try {
-            if(StringUtils.isEmpty(SD_DIR)){
+            if (StringUtils.isEmpty(SD_DIR)) {
                 SD_DIR = getExtFileDir(cxt);
             }
             String[] files = cxt.getAssets().list(root);
@@ -226,7 +228,7 @@ public class EditorCommon {
         QU_DIR = SD_DIR + QU_NAME + File.separator;
         mView = new WeakReference<>(view);
         File dir = new File(EditorCommon.QU_DIR);
-        copySelf(cxt,"font");
+        copySelf(cxt, "font");
         copySelf(cxt, CaptionConfig.COOL_TEXT_FILE_DIR);
         copySelf(cxt, QU_NAME);
         dir.mkdirs();
@@ -246,6 +248,7 @@ public class EditorCommon {
             insertOverlay();
         }
     }
+
     public static List<String> getColorFilterList(Context context) {
         SD_DIR = getExtFileDir(context);
         QU_DIR = SD_DIR + QU_NAME + File.separator;
@@ -280,8 +283,8 @@ public class EditorCommon {
     }
 
     /**
-     * @see
      * @return 花字文件
+     * @see
      */
     public static List<String> getCoolTextFileList() {
         List<String> list = new ArrayList<>();
@@ -471,6 +474,7 @@ public class EditorCommon {
     }
 
     private static int length;
+
     private static void unZip() {
         File[] files = new File(EditorCommon.SD_DIR + QU_NAME).listFiles(new FilenameFilter() {
             @Override
@@ -523,7 +527,7 @@ public class EditorCommon {
                         }
                     }
                 }
-            } .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
@@ -556,6 +560,27 @@ public class EditorCommon {
     }
 
     private static String getExtFileDir(Context cxt) {
-        return cxt.getExternalFilesDir("") + File.separator;
+        return getFilesPath(cxt) + File.separator;
+    }
+
+    /**
+     * 获取APP沙盒路径
+     *
+     * @param context
+     * @return /storage/emulated/0/Android/data/packageName/files
+     */
+    public static String getFilesPath(Context context) {
+        String filePath;
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !Environment.isExternalStorageRemovable()) {
+            //外部存储可用
+            File exFile = context.getExternalFilesDir(null);
+            if (exFile != null) {
+                return exFile.getPath();
+            }
+            return context.getFilesDir().getPath();
+        } else {
+            //外部存储不可用
+            return context.getFilesDir().getPath();
+        }
     }
 }

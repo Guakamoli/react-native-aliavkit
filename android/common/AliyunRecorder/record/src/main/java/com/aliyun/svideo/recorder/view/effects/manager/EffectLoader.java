@@ -7,6 +7,7 @@ package com.aliyun.svideo.recorder.view.effects.manager;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.aliyun.common.utils.StorageUtils;
 import com.aliyun.common.utils.ToastUtil;
 import com.aliyun.svideo.downloader.DownloaderManager;
 import com.aliyun.svideo.downloader.FileDownloaderCallback;
@@ -17,19 +18,57 @@ import com.aliyun.svideo.base.http.HttpCallback;
 import com.aliyun.svideosdk.common.struct.form.AspectForm;
 import com.aliyun.svideosdk.common.struct.form.IMVForm;
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm;
+import com.blankj.utilcode.util.FileUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.util.FileDownloadUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class EffectLoader {
+
+
+    /**
+     * 贴纸下载路径
+     *
+     * @param context
+     * @param name
+     * @param id
+     * @return
+     */
+    public static File getEffectPasterDir(Context context, String name, int id) {
+        return new File(com.aliyun.svideo.common.utils.FileUtils.getFilesPath(context.getApplicationContext()),
+                "downloads/effectPaster/" + name + "-" + String.valueOf(id));
+    }
+
+
+    /**
+     * 判断贴纸是否本地存在
+     *
+     * @param effectPasterPath
+     * @return
+     */
+    public static boolean isEffectPaster(String effectPasterPath) {
+        File file = new File(effectPasterPath);
+        if (FileUtils.isFileExists(file)) {
+            if (FileUtils.isDir(file)) {
+                List<File> listFiles = FileUtils.listFilesInDir(file);
+                if (listFiles != null && !listFiles.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public EffectService mService = new EffectService();
     private String mPackageName;
     private Context mContext;
     private ArrayList<PreviewPasterForm> mLoadingPaster;
+
     public interface LoadCallback<T> {
         void onLoadCompleted(List<T> localInfos, List<T> remoteInfos, Throwable e);
     }
@@ -39,6 +78,7 @@ public class EffectLoader {
         mPackageName = mContext.getApplicationInfo().packageName;
         mLoadingPaster = new ArrayList<>();
     }
+
     public List<FileDownloaderModel> loadLocalEffect(int effectType) {
         List<FileDownloaderModel> localPasters = new ArrayList<FileDownloaderModel>();
         List<String> selectedColumns = new ArrayList<String>();
@@ -59,7 +99,7 @@ public class EffectLoader {
         HashMap<String, String> conditionMap = new HashMap<String, String>();
         conditionMap.put(FileDownloaderModel.EFFECTTYPE, String.valueOf(effectType));
         Cursor cursor = DownloaderManager.getInstance()
-                        .getDbController().getResourceColumns(conditionMap, selectedColumns);
+                .getDbController().getResourceColumns(conditionMap, selectedColumns);
 
         while (cursor.moveToNext()) {
             FileDownloaderModel paster = new FileDownloaderModel();
@@ -90,24 +130,46 @@ public class EffectLoader {
             @Override
             public void onSuccess(List<PreviewPasterForm> result) {
                 if (callback != null) {
-                    List<PreviewPasterForm> localPasters = loadLocalPaster();
-                    List<Integer> localIds = null;
-                    if (localPasters != null && localPasters.size() > 0) {
-                        localIds = new ArrayList<Integer>(localPasters.size());
-                        for (PreviewPasterForm paster : localPasters) {
-                            localIds.add(paster.getId());
+                    List<Integer> localIds = new ArrayList<>();
+
+                    List<PreviewPasterForm> localPasterList = loadLocalPaster();
+                    Iterator<PreviewPasterForm> iterator = localPasterList.iterator();
+                    while (iterator.hasNext()) {
+                        PreviewPasterForm pasterForm = iterator.next();
+                        if (!isEffectPaster(pasterForm.getPath())) {
+                            iterator.remove();
+                        } else {
+                            localIds.add(pasterForm.getId());
                         }
                     }
-                    if (localIds != null && localIds.size() > 0) {
-                        for (int i = 0; i < result.size(); i++) {
-                            if (localIds.contains(result.get(i).getId())) {
-                                result.remove(i);
-                                i--;
+
+                    if (localIds.size() > 0) {
+                        Iterator<PreviewPasterForm> resultIterator = result.iterator();
+                        while (resultIterator.hasNext()) {
+                            PreviewPasterForm pasterForm = resultIterator.next();
+                            if (localIds.contains(pasterForm.getId())) {
+                                resultIterator.remove();
                             }
                         }
                     }
 
-                    callback.onLoadCompleted(localPasters, result, null);
+//
+//                    if (localPasters != null && localPasters.size() > 0) {
+//                        localIds = new ArrayList<Integer>(localPasters.size());
+//                        for (PreviewPasterForm paster : localPasters) {
+//                            localIds.add(paster.getId());
+//                        }
+//                    }
+//                    if (localIds != null && localIds.size() > 0) {
+//                        for (int i = 0; i < result.size(); i++) {
+//                            if (localIds.contains(result.get(i).getId())) {
+//                                result.remove(i);
+//                                i--;
+//                            }
+//                        }
+//                    }
+
+                    callback.onLoadCompleted(localPasterList, result, null);
                 }
             }
 
@@ -138,7 +200,7 @@ public class EffectLoader {
         HashMap<String, String> conditionMap = new HashMap<String, String>();
         conditionMap.put(FileDownloaderModel.EFFECTTYPE, String.valueOf(EffectService.EFFECT_FACE_PASTER));
         Cursor cursor = DownloaderManager.getInstance()
-                        .getDbController().getResourceColumns(conditionMap, selectedColumns);
+                .getDbController().getResourceColumns(conditionMap, selectedColumns);
 
         while (cursor.moveToNext()) {
             PreviewPasterForm paster = new PreviewPasterForm();
@@ -161,6 +223,7 @@ public class EffectLoader {
 
     /**
      * 下载动图
+     *
      * @param pasterForm
      * @param callback
      */
@@ -172,8 +235,14 @@ public class EffectLoader {
         FileDownloaderModel fileDownloaderModel = new FileDownloaderModel();
         fileDownloaderModel.setUrl(pasterForm.getUrl());
         fileDownloaderModel.setEffectType(EffectService.EFFECT_FACE_PASTER);
-        fileDownloaderModel.setPath(DownloadFileUtils.getAssetPackageDir(mContext,
-                                    pasterForm.getName(), pasterForm.getId()).getAbsolutePath());
+//        fileDownloaderModel.setPath(DownloadFileUtils.getAssetPackageDir(mContext,
+//                                    pasterForm.getName(), pasterForm.getId()).getAbsolutePath());
+
+        File downloadDirFile = EffectLoader.getEffectPasterDir(mContext, pasterForm.getName(), pasterForm.getId());
+        fileDownloaderModel.setPath(downloadDirFile.getAbsolutePath());
+        //必须重新设置下载保存目录，为 downloadDirFile 的 父目录
+        FileDownloadUtils.setDefaultSaveRootPath(downloadDirFile.getParent());
+
         fileDownloaderModel.setId(pasterForm.getId());
         fileDownloaderModel.setIsunzip(1);
         fileDownloaderModel.setName(pasterForm.getName());
@@ -214,14 +283,16 @@ public class EffectLoader {
                 DownloaderManager.getInstance().deleteTaskByTaskId(model.getTaskId());
                 DownloaderManager.getInstance().getDbController().deleteTaskById(pasterForm.getId());
                 if (callback != null) {
-                    callback.onError(task, e );
+                    callback.onError(task, e);
                 }
             }
         });
 
     }
+
     /**
      * 加载已经下载的mv效果
+     *
      * @return
      */
     public List<IMVForm> loadLocalMV() {
