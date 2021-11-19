@@ -279,7 +279,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun release(viewTag: Int, promise: Promise) {
+    fun release(promise: Promise) {
         MediaPlayerManage.instance.release()
         mView?.onRelease()
 
