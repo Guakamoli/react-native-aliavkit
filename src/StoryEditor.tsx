@@ -113,6 +113,7 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.startExportVideo) {
       return;
     }
+    this.props.myRef.current.show('快拍作品将在24小时后消失', 2000);
     this.setState({ musicExport: true }, () => {
       this.setState({ startExportVideo: true });
     });
