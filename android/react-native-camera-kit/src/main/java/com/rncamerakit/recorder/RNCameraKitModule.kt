@@ -181,7 +181,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun release(viewTag: Int, promise: Promise) {
+    fun release(promise: Promise) {
         mView?.onRelease()
 //        val context = reactContext
 //        val uiManager = context.getNativeModule(UIManagerModule::class.java)

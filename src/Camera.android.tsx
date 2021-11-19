@@ -65,7 +65,7 @@ const Camera = React.forwardRef((props, ref) => {
     release: async () => {
       // TODO
       // console.log("camera release");
-      return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      RNCameraKitModule.release();
     },
   }));
 
@@ -83,7 +83,7 @@ const Camera = React.forwardRef((props, ref) => {
       console.log("downloadMusic", progress);
     });
     return () => {
-      // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      RNCameraKitModule.release();
       subscription.remove();
       downloadPaster.remove();
       downloadMusic.remove();

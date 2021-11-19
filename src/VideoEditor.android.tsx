@@ -66,33 +66,33 @@ export default class Editor extends Component<Props, State> {
   //播放、继续播放
   onPlay = async () => {
     let play = await RNEditorKitModule.play(findNodeHandle(this.nativeRef.current));
-    console.log("replay", play);
+    return play
   };
 
 
   //暂停播放
   onPause = async () => {
     let pause = await RNEditorKitModule.pause(findNodeHandle(this.nativeRef.current));
-    console.log("onPause", pause);
+    return pause
   };
 
   //停止播放
   onStop = async () => {
     let stop = await RNEditorKitModule.stop(findNodeHandle(this.nativeRef.current));
-    console.log("onStop", stop);
+    return stop
   };
 
   //定位播放
   onSeek = async (time) => {
     // * seek到某个时间点   @param time 时间，单位：毫秒
     let seek = await RNEditorKitModule.seek(time, findNodeHandle(this.nativeRef.current));
-    console.log("onSeek", seek);
+    return seek
   };
 
   //获取视频封面    @param time 时间，单位：毫秒
   onVideoCover = async (time) => {
     let videoCover = await RNEditorKitModule.videoCover(time, findNodeHandle(this.nativeRef.current));
-    console.log("onVideoCover", videoCover);
+    return videoCover
   };
 
 
@@ -103,13 +103,14 @@ export default class Editor extends Component<Props, State> {
     //   'endTime': endTime * 1000,
     // }
     let videoTrim = await RNEditorKitModule.trimVideo(trimParams, findNodeHandle(this.nativeRef.current));
-    console.log("videoTrim", videoTrim, trimParams);
+    return videoTrim
+    // console.log("videoTrim", videoTrim, trimParams);
   };
 
 
   release = async () => {
-    console.log("Video release");
-    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
+    // console.log("Video release");
+    RNEditorKitModule.release();
   };
 
 
@@ -156,11 +157,11 @@ export default class Editor extends Component<Props, State> {
       this.downloadMusicListener.remove();
     }
     // TODO post 销毁
-    if(this.props.source != 'story'){
-      console.log('post 销毁');
+    // if(this.props.source != 'story'){
+    //   console.log('post 销毁');
       
-    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
-    }
+     RNEditorKitModule.release();
+    // }
 
   }
 
