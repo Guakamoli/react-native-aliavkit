@@ -296,7 +296,7 @@ export default class StoryEditor extends Component<Props, State> {
             filterName={this.state.filterName}
             videoPath={this.props.videoPath}
             imagePath={this.props.imagePath}
-            saveToPhotoLibrary={true}
+            saveToPhotoLibrary={false}
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
