@@ -301,7 +301,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
         if (TextUtils.isEmpty(bgmPath) && lastMusicBean != null) {
             //清空背景音乐
             mAliyunIEditor?.removeMusic(lastMusicBean)
-            mAliyunIEditor?.setVolume(50)
             lastMusicBean = null
             return
         }
@@ -326,7 +325,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
         mAliyunIEditor?.applyMusic(musicEffect)
 
-        mAliyunIEditor?.setVolume(50)
         mAliyunIEditor?.seek(0)
         // 重新播放
         replay()
