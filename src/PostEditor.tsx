@@ -547,12 +547,13 @@ const PostEditor = (props) => {
           justifyContent: 'space-evenly',
           alignItems: 'flex-start',
           position: 'absolute',
-          bottom: 0,
+          bottom: 30,
         }}
       >
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
+              style={{ width: 50, height: 50, paddingTop: 30 }}
               key={index}
               onPress={() => {
                 setselectBottomModel(item);
