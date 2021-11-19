@@ -78,11 +78,19 @@ const StoryMusic = (props) => {
   };
 
   const getSong = async ({ name = 'all-music', page = 1, pageSize = 5 }) => {
-    if (!name) {
+    if (!name) 
       name = 'all-music';
     }
+// 暂时
+    if (page > 5) {
+      return;
+    }
     const song = await AVService.getMusics({ name, page, pageSize });
-    setSongData(song);
+    if (song.length % pageSize != 0) {
+      setSongData(songData.concat(song));
+    } else {
+      setSongData(song);
+    }
   };
 
   const musicCarousel = () => {
@@ -182,6 +190,12 @@ const StoryMusic = (props) => {
         <View style={styles.musicFindContentBox}>
           <FlatList
             data={songData}
+            onEndReachedThreshold={0.2}
+            onEndReached={() => {
+              // let page = pages s+ 1;
+              // getSong({ name: '', page: pages, pageSize: 5 });
+              // setpage(page);
+            }}
             renderItem={({ item }) => {
               const isPlayMusic = checkedData?.songID == item?.songID;
               return (
