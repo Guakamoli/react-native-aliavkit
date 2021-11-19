@@ -21,10 +21,7 @@ import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.effect.EffectBean
 import com.aliyun.svideosdk.common.struct.project.Source
-import com.aliyun.svideosdk.editor.AliyunIEditor
-import com.aliyun.svideosdk.editor.AliyunPasterManager
-import com.aliyun.svideosdk.editor.EffectType
-import com.aliyun.svideosdk.editor.OnPasterRestored
+import com.aliyun.svideosdk.editor.*
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.ThemedReactContext
@@ -80,11 +77,15 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //滤镜管理
     private var mColorFilterManager: ColorFilterManager? = null
 
-    //贴图、文字控制类
-    private var mAliyunPasterManager: AliyunPasterManager? = null
+//    //贴图、文字控制类
+//    private var mAliyunPasterManager: AliyunPasterManager? = null
+
+    //贴图底层渲染接口，添加贴图到底层渲染
+    private var mAliyunPasterRender: AliyunPasterRender? = null
 
     //字幕管理
     private var mCaptionManager: CaptionManager? = null
+//    private var mCaptionManager2: CaptionManager2? = null
 
     //视频合成
     private var mComposeManager: ComposeManager? = null
@@ -120,13 +121,23 @@ class CKEditor(val reactContext: ThemedReactContext) :
         initVideoContainer()
         initSurfaceView()
 
-        //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
-        mAliyunPasterManager = mAliyunIEditor?.createPasterManager()
-        mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
-        mAliyunPasterManager?.setOnPasterRestoreListener(OnPasterRestored {
+//        //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
+//        mAliyunPasterManager = mAliyunIEditor?.createPasterManager()
+//        mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+//        mAliyunPasterManager?.setOnPasterRestoreListener(OnPasterRestored {
+//
+//        })
+//        mCaptionManager2 = CaptionManager2(reactContext, mAliyunPasterManager)
 
-        })
-        mCaptionManager = CaptionManager(reactContext, mAliyunPasterManager)
+        mAliyunPasterRender = mAliyunIEditor?.pasterRender
+        mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
+        //动图恢复回调
+        mAliyunPasterRender?.setOnPasterResumeAndSave {
+
+        }
+        mCaptionManager = CaptionManager(reactContext, mAliyunPasterRender)
+
+
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
@@ -229,7 +240,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun exportVideo(promise: Promise?) {
 
-//        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！", mAliyunIEditor, mWidth, mHeight)
+        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！",
+            mAliyunIEditor?.duration?.div(1000), mWidth/2, mHeight/2)
 
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
@@ -407,7 +419,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
             }
             mVideoContainer?.layoutParams = params
             mSurfaceView?.layoutParams = params
-            mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+//            mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+            mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
         }
     }
 
