@@ -382,7 +382,7 @@ class CameraScreen extends Component<Props, State> {
     this.setState = () => false;
   }
   componentDidUpdate(props, state) {
-    this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
+    // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
   shotPreview = async () => {
     try {
