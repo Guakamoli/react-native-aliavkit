@@ -78,10 +78,10 @@ const StoryMusic = (props) => {
   };
 
   const getSong = async ({ name = 'all-music', page = 1, pageSize = 5 }) => {
-    if (!name) 
+    if (!name) {
       name = 'all-music';
     }
-// 暂时
+    // 暂时
     if (page > 5) {
       return;
     }
