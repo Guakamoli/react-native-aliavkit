@@ -103,7 +103,7 @@
     if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
         _mediaConfig.minDuration = 0.5f;
-        _mediaConfig.maxDuration = 15.f;
+        _mediaConfig.maxDuration = 30.f;
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
@@ -156,6 +156,9 @@
 
 - (void)addFocusGesture
 {
+    if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+        return;
+    }
     self.focusGesture =
     [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(focusAndExposeTap:)];
     [self.recorder.preview addGestureRecognizer:self.focusGesture];
@@ -163,6 +166,9 @@
 
 - (void)addZoomGesture
 {
+    if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
+        return;
+    }
     self.zoomGesture =
     [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchGesture:)];
     [self.recorder.preview addGestureRecognizer:self.zoomGesture];
@@ -258,7 +264,10 @@
 
 - (void)stopPreview
 {
-    [self.recorder stopPreview];
+    [self clearBeautyEngine];
+    [_recorder stopPreview];
+    [_recorder destroyRecorder];
+    _recorder = nil;
 }
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position
@@ -266,6 +275,10 @@
     AliyunIRecorderCameraPosition cameraPosition =
     (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
     if (cameraPosition != self.recorder.cameraPosition) {
+        //previous front，now back then clear
+        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
+            [[BeautyEngineManager shareManager] clear];
+        }
         [self.recorder switchCameraPosition];
     }
 }
@@ -411,7 +424,11 @@
 {
     AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
-    _complete(_videoSavePath);
+    if (_complete && _videoSavePath && ![_videoSavePath isEqualToString:@""]) {
+        _complete(_videoSavePath);        
+    }
+    [self deletePreviousEffectPaster];
+    [self clearBeautyEngine];
 }
 
 - (void)_recorderFinishRecording
@@ -442,12 +459,23 @@
 
 - (void)destroyRender
 {
-    [[BeautyEngineManager shareManager] clear];
+    [self clearBeautyEngine];
+}
+
+- (void)clearBeautyEngine
+{
+    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
+        [[BeautyEngineManager shareManager] clear];
+    }
 }
 
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
+    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
+        
+        return CMSampleBufferGetImageBuffer(sampleBuffer);
+    }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
     CGFloat beautyWhite = self.normalBeautyLevel * 0.01 * 2.0f;

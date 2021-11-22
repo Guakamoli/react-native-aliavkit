@@ -85,7 +85,7 @@ AliyunCropDelegate
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
         _mediaConfig.minDuration = 0.5f;
-        _mediaConfig.maxDuration = 15.f;
+        _mediaConfig.maxDuration = 30.f;
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
@@ -192,20 +192,14 @@ AliyunCropDelegate
     if (!_preview) {
         CGFloat factor = _outputSize.height / _outputSize.width;
         CGRect frame = CGRectZero;
-        if (_editWidth > [UIScreen mainScreen].bounds.size.width) {
-            frame.size.width = [UIScreen mainScreen].bounds.size.width;
-            if (_editHeight == _editWidth) {
-                frame.size.height = [UIScreen mainScreen].bounds.size.width;
-            } else {
-                frame.size.height = [UIScreen mainScreen].bounds.size.width * factor;
-            }
+        CGFloat h = _editHeight;
+        
+        frame.size.width = _editWidth;
+        if (_editWidth <= 375.0) {
+            h = _editWidth * factor;
         }
-        else {
-            frame.size.width = _editWidth > 0.0 ? _editWidth : [UIScreen mainScreen].bounds.size.width;
-            frame.size.height = _editHeight > 0.0 ? _editHeight : [UIScreen mainScreen].bounds.size.width * factor;
-        }
+        frame.size.height = h;
         _preview = [[UIView alloc] initWithFrame:frame];
-        _preview.backgroundColor = [UIColor lightGrayColor];
     }
     return _preview;
 }
@@ -235,6 +229,7 @@ AliyunCropDelegate
     }
     if (_isPresented && !self.window) {
         [_editor stopEdit];
+        [self.preview removeFromSuperview];
         _isPresented = NO;
     }
 }
