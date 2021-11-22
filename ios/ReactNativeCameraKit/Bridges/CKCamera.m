@@ -98,7 +98,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
+        if (self.cameraAction.isRecording) {
+            [self.cameraAction stopRecordVideo:nil];
+        }
         [self.cameraAction stopPreview];
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -118,6 +124,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _isPresented = YES;
     }
     if (!self.window && _isPresented) {
+        if (self.cameraAction.isRecording) {
+            [self.cameraAction stopRecordVideo:nil];
+        }
         [self.cameraAction stopPreview];
         if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
             [self.cameraAction.cameraPreview removeFromSuperview];
