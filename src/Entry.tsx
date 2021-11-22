@@ -4,11 +4,8 @@ import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from '
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
-import {  useSelector, useDispatch } from 'react-redux';
-import {
-  setType,
-
-} from './actions/container';
+import { useSelector, useDispatch } from 'react-redux';
+import { setType } from './actions/container';
 const { width, height } = Dimensions.get('window');
 
 const Entry = (props) => {
@@ -35,13 +32,13 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
-  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics, } = props;
-  const dispatch = useDispatch()
+  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
+  const dispatch = useDispatch();
   const type = useSelector((state) => {
-    return state.shootContainer.type
-  })
-  const changeFlagLock =React.useRef(false)
-  const lockFlag = React.useRef(false)
+    return state.shootContainer.type;
+  });
+  const changeFlagLock = React.useRef(false);
+  const lockFlag = React.useRef(false);
   const transX = React.useRef(new Animated.Value(type === 'post' ? 30 : -30)).current;
   const types = [
     {
@@ -53,23 +50,24 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-  React.useEffect(()=>{
-    if (changeFlagLock.current) return
-    transX.setValue(type === 'post' ? 30 : -30)
-  }, [
-    type
-  ])
-  const {run: changeType} = useThrottleFn((i)=>{
-    changeFlagLock.current = true
-    Animated.timing(transX, {
-      toValue: i.type === 'post' ? 30 : -30,
-      useNativeDriver: true,
-    }).start();
-    dispatch(setType(i.type))
-    setTimeout(() => {
-      changeFlagLock.current = false
-    }, 0);
-  },{wait: 1000})
+  React.useEffect(() => {
+    if (changeFlagLock.current) return;
+    transX.setValue(type === 'post' ? 30 : -30);
+  }, [type]);
+  const { run: changeType } = useThrottleFn(
+    (i) => {
+      changeFlagLock.current = true;
+      Animated.timing(transX, {
+        toValue: i.type === 'post' ? 30 : -30,
+        useNativeDriver: true,
+      }).start();
+      dispatch(setType(i.type));
+      setTimeout(() => {
+        changeFlagLock.current = false;
+      }, 0);
+    },
+    { wait: 1000 },
+  );
   return (
     <>
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
@@ -84,9 +82,8 @@ const Entry = (props) => {
             props.navigation.navigate('FeedsPostEditor', { ...data });
           }}
           type={type}
-          setType={(type)=>{
-            dispatch(setType(type))
-
+          setType={(type) => {
+            dispatch(setType(type));
           }}
           multipleBtnImage={multipleBtnPng}
           startMultipleBtnImage={startMultipleBtnPng}
@@ -105,17 +102,15 @@ const Entry = (props) => {
           {...props}
           goback={goBack}
           type={type}
-          setType={(type)=>{
-            dispatch(setType(type))
-
+          setType={(type) => {
+            dispatch(setType(type));
           }}
-
           goPost={() => {
             navigation.replace('FeedsPost');
           }}
           // 拿到上传数据
-          getUploadFile={(data) => {
-            sendfile(data);
+          getUploadFile={(data, successCallBack = () => {}) => {
+            sendfile(data, successCallBack);
           }}
           haptics={haptics}
           cameraFlipImage={cameraFlipPng}
@@ -145,7 +140,7 @@ const Entry = (props) => {
       <Animated.View
         style={[
           styles.tools,
-          {bottom: props.insets.bottom},
+          { bottom: props.insets.bottom },
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           {
             transform: [{ translateX: transX }],
@@ -156,8 +151,8 @@ const Entry = (props) => {
           return (
             <TouchableOpacity
               key={i.type}
-              onPress={()=>{
-                changeType(i)
+              onPress={() => {
+                changeType(i);
               }}
             >
               <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
