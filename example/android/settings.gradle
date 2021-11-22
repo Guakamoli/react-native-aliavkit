@@ -2,8 +2,8 @@ rootProject.name = 'CameraKitExample'
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
 
-include ':react-native-camera-kit'
-project(':react-native-camera-kit').projectDir = new File(rootProject.projectDir, '../../android/react-native-camera-kit')
+include ':react-native-aliavkit'
+project(':react-native-aliavkit').projectDir = new File(rootProject.projectDir, '../../android/app')
 
 include ':common:AliyunVideoCommon'
 project(':common:AliyunVideoCommon').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunVideoCommon')
