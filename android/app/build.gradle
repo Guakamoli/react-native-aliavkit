@@ -1,3 +1,7 @@
+buildscript {
+    apply from: '../thirdparty-lib/config.gradle'
+}
+
 apply {
     plugin "com.android.library"
     plugin "kotlin-android"
