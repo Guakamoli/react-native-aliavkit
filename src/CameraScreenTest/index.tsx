@@ -28,13 +28,9 @@ import StoryEditorTest from '../StoryEditorTest';
 import StoryMusic from '../StoryMusic';
 import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
-import RenderbeautifyBox from "./RenderbeautifyBox"
-import RenderCamera from "./Camera"
-import {
-  setCameraType,
-  setShowBeautify,
-
-} from '../actions/story';
+import RenderbeautifyBox from './RenderbeautifyBox';
+import RenderCamera from './Camera';
+import { setCameraType, setShowBeautify } from '../actions/story';
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
 const FLASH_MODE_OFF = 'off';
@@ -45,9 +41,17 @@ const circleSize = 78;
 const captureIcon2 = (width - 20) / 2;
 
 const stateAttrsUpdate = [
-  'pasterList', 'facePasterInfo', 'showBeautify',
-  'normalBeautyLevel', 'cameraType', 'ShootSuccess',
-  'startShoot', 'flag', 'showCamera', 'relaloadFlag']
+  'pasterList',
+  'facePasterInfo',
+  'showBeautify',
+  'normalBeautyLevel',
+  'cameraType',
+  'ShootSuccess',
+  'startShoot',
+  'flag',
+  'showCamera',
+  'relaloadFlag',
+];
 
 export enum CameraType {
   Front = 'front',
@@ -184,39 +188,36 @@ const ProgressCircleWrapper = (props) => {
 };
 class RenderswitchModule extends React.PureComponent {
   constructor(props) {
-    super(props)
-
+    super(props);
   }
 
   render() {
     return (
       <View style={styles.BottomBox}>
         <Pressable
-
           onPress={() => {
-            this.props.setCameraType()
+            this.props.setCameraType();
             setTimeout(() => {
               try {
-                this.props.camera.current?.setPasterInfo?.(this.props.facePasterInfo)
-
+                this.props.camera.current?.setPasterInfo?.(this.props.facePasterInfo);
+              } catch (e) {
+                console.info('eeee', e);
               }
-              catch (e) {
-                console.info("eeee", e)
-              }
-
             }, 100);
 
-            AVService.enableHapticIfExist()
+            AVService.enableHapticIfExist();
 
-            this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium)
+            this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <View style={{
-            height: 28 + 30,
-            width: 31 + 15 * 2,
-            justifyContent: "center",
-            alignItems: "center",
-          }}>
+          <View
+            style={{
+              height: 28 + 30,
+              width: 31 + 15 * 2,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
           </View>
         </Pressable>
@@ -224,25 +225,23 @@ class RenderswitchModule extends React.PureComponent {
     );
   }
 }
-const RDSMMapStateToProps = state => ({
+const RDSMMapStateToProps = (state) => ({
   facePasterInfo: state.shootStory.facePasterInfo,
-
 });
-const RDSMMapDispatchToProps = dispatch => ({
+const RDSMMapDispatchToProps = (dispatch) => ({
   setCameraType: (data) => dispatch(setCameraType(data)),
-
 });
-RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule)
+RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule);
 
 const BeautyButton = (props) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const showBeautify = useSelector((state) => {
-    return state.shootStory.showBeautify
-  })
+    return state.shootStory.showBeautify;
+  });
   return (
     <Pressable
       onPress={() => {
-        dispatch(setShowBeautify())
+        dispatch(setShowBeautify());
         // this.setState({ showBeautify: !this.state.showBeautify });
       }}
     >
@@ -252,15 +251,14 @@ const BeautyButton = (props) => {
         resizeMode='contain'
       />
     </Pressable>
-  )
-}
+  );
+};
 const RenderLeftButtons = React.memo((props) => {
   return (
     <>
       {/* 取消 */}
       <Pressable
         onPress={() => {
-
           props.goback();
         }}
         style={styles.closeBox}
@@ -269,9 +267,7 @@ const RenderLeftButtons = React.memo((props) => {
       </Pressable>
       <View style={styles.leftIconBox}>
         {/* 音乐 */}
-        <Pressable
-
-        >
+        <Pressable>
           <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
         </Pressable>
         {/* 美颜 */}
@@ -279,7 +275,7 @@ const RenderLeftButtons = React.memo((props) => {
       </View>
     </>
   );
-})
+});
 
 class CameraScreenTest extends Component<Props, State> {
   static propTypes = {
@@ -303,7 +299,7 @@ class CameraScreenTest extends Component<Props, State> {
     this.myRef = React.createRef();
     this.FlatListRef = React.createRef();
     this.scrollPos = new Animated.Value(0);
-    this.enableCount = { count: 0 }
+    this.enableCount = { count: 0 };
 
     this.currentFlashArrayPosition = 0;
     this.flashArray = [
@@ -321,8 +317,8 @@ class CameraScreenTest extends Component<Props, State> {
       },
     ];
     this.startTime = '';
-    this.rt = null
-    this.cameraBox = { current: null }
+    this.rt = null;
+    this.cameraBox = { current: null };
     this.state = {
       // 照片存储
       captureImages: [],
@@ -365,7 +361,7 @@ class CameraScreenTest extends Component<Props, State> {
       // 音乐打开
       musicOpen: false,
       previewImage: {},
-      relaloadFlag: null
+      relaloadFlag: null,
     };
   }
 
@@ -374,93 +370,83 @@ class CameraScreenTest extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-    this.getPasterInfos()
+    this.getPasterInfos();
     const { cameraModule } = this.props;
     this.setState({
       ratios: ratios || [],
       ratioArrayPosition: ratios.length > 0 ? 0 : -1,
     });
     setTimeout(() => {
-      AVService.enableHapticIfExist()
-
+      AVService.enableHapticIfExist();
     }, 2000);
-
   }
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       // console.log('1231313');
-      
       //TODO
       // this.cameraBox.current?.release();
       // console.log('this.cameraBoxthis.cameraBox',this.cameraBox);
-      
       // if (this.camera) {
-        // this.cameraBox.current?.release?.();
+      // this.cameraBox.current?.release?.();
       // }
     }
     this.setState = () => false;
   }
-  componentDidUpdate(props, state) {
-
-  }
+  componentDidUpdate(props, state) {}
   shotPreview = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
-      console.info(image, 'iasdiadfidifi')
+      console.info(image, 'iasdiadfidifi');
       this.setState({
-        previewImage: image
-      })
+        previewImage: image,
+      });
       setTimeout(() => {
         this.setState({
-          relaloadFlag: Math.random()
-        })
-      }, 0)
-    } catch (e) {
-
-    }
-
-  }
+          relaloadFlag: Math.random(),
+        });
+      }, 0);
+    } catch (e) {}
+  };
   shouldComponentUpdate(nextProps, nextState) {
-    const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
+    const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       return true;
     }
     if (nextProps.type !== this.props.type) {
-      this.cameraBox = { current: null }
+      this.cameraBox = { current: null };
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
-          clearTimeout(this.rt)
+          clearTimeout(this.rt);
         }
         this.rt = setTimeout(() => {
-          this.props.setCameraType('back')
+          this.props.setCameraType('back');
 
           this.setState({
-            relaloadFlag: Math.random()
-          })
+            relaloadFlag: Math.random(),
+          });
         }, 1000);
-
-      })
-      return false
+      });
+      return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      this.cameraBox = { current: null }
+      this.cameraBox = { current: null };
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
-          clearTimeout(this.rt)
+          clearTimeout(this.rt);
         }
 
         this.rt = setTimeout(() => {
-          this.props.setCameraType('back')
+          this.props.setCameraType('back');
 
           this.setState({
-            relaloadFlag: Math.random()
-          })
+            relaloadFlag: Math.random(),
+          });
         }, 1000);
-      })
-      return false
+      });
+      return false;
     }
-    return false
+    return false;
   }
   isCaptureRetakeMode() {
     return !!(this.props.allowCaptureRetake && !_.isUndefined(this.state.imageCaptured));
@@ -469,8 +455,6 @@ class CameraScreenTest extends Component<Props, State> {
   _onRecordingDuration = (event) => {
     // EventBus.emit('record_duration', parseFloat(event.duration).toFixed(2));
   };
-
-
 
   // 进度条
   animate() {
@@ -484,7 +468,7 @@ class CameraScreenTest extends Component<Props, State> {
     const pasters = await AVService.getFacePasterInfos({});
     pasters.forEach((item, index) => {
       if (index == 0) {
-        return
+        return;
       }
       //TODO
       if (item.icon) {
@@ -493,13 +477,13 @@ class CameraScreenTest extends Component<Props, State> {
       if (item.url) {
         item.url = item.url.replace('http://', 'https://');
       }
-    })
+    });
     pasters.unshift({ eid: 0 });
     this.setState({
       pasterList: pasters,
       facePasterInfo: pasters[0],
     });
-  }
+  };
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
     return (
@@ -525,7 +509,7 @@ class CameraScreenTest extends Component<Props, State> {
                   recordeSuccess={async (data) => {
                     console.log('stopRecording');
                     const videoPath = await this.cameraBox.current?.stopRecording?.();
-                    console.log('stopRecordingstopRecordingstopRecording',videoPath);
+                    console.log('stopRecordingstopRecordingstopRecording', videoPath);
                     this.setState({
                       videoPath,
                       flag: null,
@@ -542,9 +526,7 @@ class CameraScreenTest extends Component<Props, State> {
               <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
                 {this.state.musicOpen ? (
                   <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng} />
-                ) : (
-                  null
-                )}
+                ) : null}
                 {/* this.state.musicOpen */}
               </View>
             </>
@@ -554,8 +536,6 @@ class CameraScreenTest extends Component<Props, State> {
       // )
     );
   }
-
-
 
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
@@ -571,8 +551,6 @@ class CameraScreenTest extends Component<Props, State> {
   // 拍照功能  改变文件类型
   onCaptureImagePressed = async () => {
     try {
-
-
       const image = await this.cameraBox.current?.capture?.();
       //  ios
       let sandData = '';
@@ -594,42 +572,40 @@ class CameraScreenTest extends Component<Props, State> {
             // captureImages: _.concat(this.state.captureImages, image?.uri),?
             captureImages: _.concat(this.state.captureImages, sandData),
           });
-          this.props.setType("storyedit")
+          this.props.setType('storyedit');
           this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
         }
       }
     } catch (e) {
-      console.info(e)
+      console.info(e);
     }
-  }
+  };
 
   setShootData = (data) => {
     try {
-      console.info(data, "data")
+      console.info(data, 'data');
 
-      this.setState(data)
-      this.props.setType("storyedit")
+      this.setState(data);
+      this.props.setType('storyedit');
     } catch (e) {
-      console.info(e, "拍摄出错")
+      console.info(e, '拍摄出错');
     }
-
-  }
+  };
   // 底部渲染
   renderBottom() {
-
     return (
       //TODO
-      <View style={{ position: "absolute", bottom: 0, width: "100%" }}>
-        <RenderbeautifyBox {...this.props}  />
-        <Carousel {...this.props}
+      <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+        <RenderbeautifyBox {...this.props} />
+        <Carousel
+          {...this.props}
           myRef={this.myRef}
           onCaptureImagePressed={this.onCaptureImagePressed}
           camera={this.cameraBox}
           enableCount={this.enableCount}
           setShootData={this.setShootData}
         />
-        <RenderswitchModule {...this.props} camera={this.cameraBox}
-        />
+        <RenderswitchModule {...this.props} camera={this.cameraBox} />
       </View>
     );
   }
@@ -642,7 +618,7 @@ class CameraScreenTest extends Component<Props, State> {
   render() {
     return (
       // TODO
-      <View style={{backgroundColor:'#000',flex:1}}>
+      <View style={{ backgroundColor: '#000', flex: 1 }}>
         <Toast
           ref={this.myRef}
           position='center'
@@ -655,7 +631,7 @@ class CameraScreenTest extends Component<Props, State> {
         {this.state.ShootSuccess ? (
           <StoryEditorTest
             rephotograph={() => {
-              this.props.setType("story")
+              this.props.setType('story');
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
             }}
             getUploadFile={(data) => {
@@ -681,13 +657,12 @@ class CameraScreenTest extends Component<Props, State> {
             musicSearch={this.props.musicSearch}
             imagePath={this.state.imageCaptured}
             noResultPng={this.props.noResultPng}
-          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+            // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
           // TODO  安卓从新chu
           // this.props.type == 'story' &&
           <>
-
             <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
             {this.renderBottom()}
           </>
@@ -696,7 +671,7 @@ class CameraScreenTest extends Component<Props, State> {
     );
   }
 }
-export default connect(null, RDSMMapDispatchToProps)(CameraScreenTest)
+export default connect(null, RDSMMapDispatchToProps)(CameraScreenTest);
 
 const styles = StyleSheet.create({
   bottomButtons: {
@@ -715,20 +690,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   BottomBox: {
-
     flexDirection: 'row',
     justifyContent: 'flex-end',
     // backgroundColor:"green",
     alignItems: 'center',
     // position: 'absolute',
     // backgroundColor: "black",
-    width: "100%",
+    width: '100%',
     bottom: 0,
   },
 
-  cameraContainer: {
-
-  },
+  cameraContainer: {},
   bottomButton: {
     flex: 1,
     flexDirection: 'row',
@@ -770,7 +742,7 @@ const styles = StyleSheet.create({
   musicIcon: {
     width: 28,
     height: 28,
-    left: -3
+    left: -3,
   },
 
   beautifyIcon: {
