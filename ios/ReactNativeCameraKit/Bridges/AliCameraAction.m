@@ -424,9 +424,11 @@
 {
     AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
-    if (_complete) {
+    if (_complete && _videoSavePath && ![_videoSavePath isEqualToString:@""]) {
         _complete(_videoSavePath);        
     }
+    [self deletePreviousEffectPaster];
+    [self clearBeautyEngine];
 }
 
 - (void)_recorderFinishRecording
