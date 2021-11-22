@@ -105,6 +105,11 @@ RCT_EXPORT_METHOD(requestDeviceCameraAuthorization:(RCTPromiseResolveBlock)resol
     }];
 }
 
+RCT_EXPORT_METHOD(cameraStopPreview)
+{
+//    [self.camera recorderStopPreview];
+}
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
