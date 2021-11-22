@@ -116,8 +116,11 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (!_isPresented && self.window) {
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
-            [self addSubview:self.cameraAction.cameraPreview];
+            if (![self.subviews containsObject:self.cameraAction.cameraPreview]) {
+                [self addSubview:self.cameraAction.cameraPreview];
+            }
             [self.cameraAction startPreview];
+            [self.cameraAction deletePreviousEffectPaster];
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
