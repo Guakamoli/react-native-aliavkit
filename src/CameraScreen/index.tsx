@@ -381,7 +381,9 @@ class CameraScreen extends Component<Props, State> {
     }
     this.setState = () => false;
   }
-  componentDidUpdate(props, state) { }
+  componentDidUpdate(props, state) {
+    // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
+  }
   shotPreview = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
@@ -394,7 +396,7 @@ class CameraScreen extends Component<Props, State> {
           relaloadFlag: Math.random(),
         });
       }, 0);
-    } catch (e) { }
+    } catch (e) {}
   };
   shouldComponentUpdate(nextProps, nextState) {
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
@@ -639,7 +641,7 @@ class CameraScreen extends Component<Props, State> {
             musicSearch={this.props.musicSearch}
             imagePath={this.state.imageCaptured}
             noResultPng={this.props.noResultPng}
-          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+            // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
           <>
