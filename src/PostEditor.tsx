@@ -557,6 +557,10 @@ const PostEditor = (props) => {
         rightPosition = 2000;
       }
       scrollAniRef.setValue(0);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 29892fa (安卓代码植入)
       //TODO
 
       if (Platform.OS === 'ios') {
@@ -570,6 +574,10 @@ const PostEditor = (props) => {
       } else {
         editor?.onSeek(leftPosition);
       }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 29892fa (安卓代码植入)
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
@@ -627,7 +635,11 @@ const PostEditor = (props) => {
 
               scrollAniRef.setValue(0);
 
-              RNEditViewManager.pause();
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             trackHeight={50}
           >

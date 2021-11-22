@@ -421,7 +421,7 @@ class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      // this.cameraBox = { current: null }
+      // this.cameraBox = { current: null };
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt);
@@ -581,6 +581,7 @@ class CameraScreen extends Component<Props, State> {
   // 底部渲染
   renderBottom() {
     return (
+      //TODO
       <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
         <RenderbeautifyBox {...this.props} />
         <Carousel

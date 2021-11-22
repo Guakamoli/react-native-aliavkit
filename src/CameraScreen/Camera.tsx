@@ -15,12 +15,12 @@ import {
   Pressable,
   StatusBar,
   AppState,
+  StatusBar,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
 import AVService from '../AVService';
-import CameraRoll from '@react-native-community/cameraroll';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -204,6 +204,14 @@ class RenderCamera extends Component {
     AppState.removeEventListener('change', this.handleAppStateChange);
   }
 
+  //TODO
+  componentWillUnmount() {
+    console.log('拍摄销毁');
+    if (Platform.OS === 'android') {
+      //TODO
+      this.props.camera.current?.release();
+    }
+  }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
