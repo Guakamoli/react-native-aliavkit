@@ -125,7 +125,7 @@ dependencies {
         implementation jscFlavor
     }
 
-    implementation project(':react-native-camera-kit')
+    implementation project(':react-native-aliavkit')
     implementation project (':lib:lib-base')
     implementation project (':common:AlivcMedia')
     implementation project (':common:AliyunEditor')
