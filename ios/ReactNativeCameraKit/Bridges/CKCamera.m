@@ -18,7 +18,6 @@
 #import "AliyunPathManager.h"
 #import "AliyunPhotoLibraryManager.h"
 #import "ShortCut.h"
-#import "BeautyEngineManager.h"
 
 @implementation RCTConvert(CKCameraType)
 
@@ -67,6 +66,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @interface CKCamera () <AVCaptureMetadataOutputObjectsDelegate>
 {
     BOOL _isPresented;
+    CGFloat _previewWidth;
+    CGFloat _previewHeight;
+    CGFloat _borderRadius;
 }
 
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -98,13 +100,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:nil];
-        }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -118,19 +116,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         if (self.cameraAction && !self.cameraAction.isRecording) {
             [self addSubview:self.cameraAction.cameraPreview];
             [self.cameraAction startPreview];
-            [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
     }
     if (!self.window && _isPresented) {
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:nil];
-        }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+        [self.cameraAction.cameraPreview removeFromSuperview];
+        self.cameraAction = nil;
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -142,29 +135,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _isPresented = NO;
     }
     return self;
-}
-
-- (void)setupDefault
-{
-    self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
-    [self changeCamera:_cameraType];
-    if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
-        [self.cameraAction switchFlashMode:_flashMode];
-    }
-    if (_focusMode == CKCameraFocusModeOn) {
-        [self.cameraAction addFocusGesture];
-    } else {
-        [self.cameraAction removeFocusGesture];
-    }
-    if (_zoomMode == CKCameraZoomModeOn) {
-        [self.cameraAction addZoomGesture];
-    } else {
-        [self.cameraAction removeZoomGesture];
-    }
-    
-    if (_facePasterInfo && ![_facePasterInfo isEqualToDictionary:@{}]) {
-        [self applyFacePaster:_facePasterInfo];
-    }
 }
 
 #pragma mark - Setter
