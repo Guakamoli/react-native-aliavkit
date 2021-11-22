@@ -12,7 +12,7 @@ import {
   Animated,
   ScrollView,
   NativeEventEmitter,
-  Platform
+  Platform,
 } from 'react-native';
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -34,9 +34,9 @@ const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
 const cropWidth = width - 30 * 2;
 const PostHead = React.memo((props) => {
-  const { videoMute, setvideoMute } = props
+  const { videoMute, setvideoMute } = props;
 
-  const { closePng, volumeImage, noVolumeImage, goback, continueEdit, continueRef } = props
+  const { closePng, volumeImage, noVolumeImage, goback, continueEdit, continueRef } = props;
   return (
     <View
       style={{
@@ -50,7 +50,7 @@ const PostHead = React.memo((props) => {
     >
       <Pressable
         onPress={async () => {
-          if (continueRef.current) return
+          if (continueRef.current) return;
           goback();
         }}
         style={{
@@ -58,10 +58,10 @@ const PostHead = React.memo((props) => {
           width: 40,
           paddingHorizontal: 12,
 
-          justifyContent: "center",
+          justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={require("../images/backArrow.png")} resizeMode='contain' />
+        <Image style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
       </Pressable>
       {props.fileType === 'video' ? (
         <TouchableOpacity
@@ -73,26 +73,24 @@ const PostHead = React.memo((props) => {
         </TouchableOpacity>
       ) : null}
 
-
       <Pressable
         onPress={continueEdit}
         style={{
           height: 30,
           paddingHorizontal: 12,
 
-          justifyContent: "center",
-          alignItems: "flex-end"
+          justifyContent: 'center',
+          alignItems: 'flex-end',
         }}
       >
         <Text style={styles.continueText}>继续</Text>
       </Pressable>
     </View>
   );
-})
+});
 const PostEditor = (props) => {
   // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
-
     params: { trimVideoData = '', fileType = '' },
 
     navigation,
@@ -120,21 +118,19 @@ const PostEditor = (props) => {
   const stopRef = useRef(false);
   const startRef = useRef(false);
   const lockRef = useRef(false);
-  const continueRef = useRef(false)
+  const continueRef = useRef(false);
   const [photoFile, setPhotoFile] = useState('');
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
-    if (continueRef.current) return
-    continueRef.current = true
-    const cropData = props.params.cropDataResult
-    console.log(12313,fileType);
-    
+    if (continueRef.current) return;
+    continueRef.current = true;
+    const cropData = props.params.cropDataResult;
+    console.log(12313, fileType);
+
     if (fileType === 'image') {
       try {
-
-
-        const path = photoFile
+        const path = photoFile;
         let uploadFile = [];
         uploadFile.push({
           Type: `image/png`,
@@ -144,20 +140,18 @@ const PostEditor = (props) => {
           coverImage: path,
         });
         props.getUploadFile(uploadFile);
-        props.goback()
-
+        props.goback();
       } catch (e) {
-        console.info(e, '错误')
+        console.info(e, '错误');
         setTimeout(() => {
-          continueRef.current = false
-
+          continueRef.current = false;
         }, 1500);
       }
     } else {
       // 裁剪视频
       // console.info(toast.current, 'asasasas')
       toast.current.show('正在导出, 请不要离开', 0);
-      
+
       //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.trimVideo({
@@ -166,13 +160,12 @@ const PostEditor = (props) => {
           endTime: trimmerRightHandlePosition / 1000,
         });
       } else {
-
         const isTrim = await editor?.trimVideo({
           videoPath: multipleSandBoxData[0],
           startTime: trimmerLeftHandlePosition,
           endTime: trimmerRightHandlePosition,
         });
-        console.log("设置视频裁剪起止时间成功", isTrim);
+        console.log('设置视频裁剪起止时间成功', isTrim);
       }
 
       // 导出视频
@@ -182,7 +175,7 @@ const PostEditor = (props) => {
 
       setexportVideo(true);
     }
-  }
+  };
   let coverData = [];
   let editor = null;
   let scrubberInterval = null;
@@ -197,11 +190,9 @@ const PostEditor = (props) => {
 
   useEffect(() => {
     getFilters();
-    const {
-      params
-    } = props;
+    const { params } = props;
 
-    if (!params) return null
+    if (!params) return null;
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
@@ -209,13 +200,10 @@ const PostEditor = (props) => {
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
-
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
         toast.current.close();
-
       }
-
     });
     return () => {
       console.info('销毁了', subscription);
@@ -225,11 +213,11 @@ const PostEditor = (props) => {
       if (Platform.OS === 'ios') {
         RNEditViewManager.stop();
       } else {
-        editor?.release()
+        editor?.release();
       }
 
       props.params?.playVideo?.();
-      managerEmitter.removeAllListeners('cropProgress')
+      managerEmitter.removeAllListeners('cropProgress');
     };
   }, []);
   const getcoverData = async () => {
@@ -245,11 +233,10 @@ const PostEditor = (props) => {
         itemPerTime = videoTime / 8;
       }
 
-
       //TODO
-      const cropData = props.params.cropDataResult
-      const Wscale = 1080 / props.params.cropDataRow.srcSize.width
-      const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+      const cropData = props.params.cropDataResult;
+      const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+      const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
 
       coverData = await AVService.getThumbnails({
         videoPath: multipleSandBoxData[0],
@@ -261,14 +248,12 @@ const PostEditor = (props) => {
         cropHeight: cropData.size.height * Wscale,
       });
 
-
-      console.log("getThumbnails", coverData);
+      console.log('getThumbnails', coverData);
       setcoverList(coverData);
       setcoverImage(coverData[0]);
     } catch (e) {
-      console.info(e)
+      console.info(e);
     }
-
   };
   useEffect(() => {
     if (multipleSandBoxData.length > 0) {
@@ -278,14 +263,12 @@ const PostEditor = (props) => {
 
   const onExportVideo = async (event) => {
     try {
-
-
       if (event.exportProgress === 1) {
-        const cropData = props.params.cropDataResult
+        const cropData = props.params.cropDataResult;
         let outputPath = event.outputPath;
-        console.log("视频导出：", outputPath);
-        const Wscale = 1080 / props.params.cropDataRow.srcSize.width
-        const Hscale = 1920 / props.params.cropDataRow.srcSize.height
+        console.log('视频导出：', outputPath);
+        const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+        const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
 
         outputPath = await AVService.crop({
           source: `file://${outputPath}`,
@@ -299,9 +282,8 @@ const PostEditor = (props) => {
         //
         let type = outputPath.split('.');
 
-
         //TODO
-        let uploadCoverImage = ''
+        let uploadCoverImage = '';
         if (Platform.OS === 'ios') {
           uploadCoverImage = coverImage ? `file://${encodeURI(coverImage)}` : '';
         } else {
@@ -320,47 +302,51 @@ const PostEditor = (props) => {
 
         props.getUploadFile(uploadFile);
         setTimeout(() => {
-          props.goback()
+          props.goback();
         }, 0);
       }
     } catch (e) {
-      console.info(e)
+      console.info(e);
     }
   };
 
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
-    const top = props.params.cropDataRow.positionY
-
+    const top = props.params.cropDataRow.positionY;
 
     //TODO
-    const width1 =props.params.cropDataRow.fittedSize.width
-    const height1 =props.params.cropDataRow.fittedSize.height
+    const width1 = props.params.cropDataRow.fittedSize.width;
+    const height1 = props.params.cropDataRow.fittedSize.height;
     return (
-      <View style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: "black",
-        width: width,
-        height: width,
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'black',
+          width: width,
+          height: width,
 
-        overflow: "hidden"
-      }}>
-       <View style={{
-          width: width1,
-          height: height1,
-            transform:[{
-              translateY:top
-            }]
+          overflow: 'hidden',
+        }}
+      >
+        <View
+          style={{
+            width: width1,
+            height: height1,
+            transform: [
+              {
+                translateY: top,
+              },
+            ],
           }}
-          >
-        <VideoEditor
-          // editWidth={width1}
-          // editHeight={height1}
-          editStyle={{
-            width:width1,
-            height: height1
-          }}
+        >
+          <VideoEditor
+            // editWidth={width1}
+            // editHeight={height1}
+            editStyle={{
+              width: width1,
+              height: height1,
+            }}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
             //TODO
@@ -374,7 +360,11 @@ const PostEditor = (props) => {
             onPlayProgress={(props) => {
               const { nativeEvent } = props;
               //TODO
-              if (nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition && !startRef.current && !lockRef.current) {
+              if (
+                nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition &&
+                !startRef.current &&
+                !lockRef.current
+              ) {
                 startRef.current = true;
                 aniRef.current = Animated.timing(
                   // 随时间变化而执行动画
@@ -390,7 +380,9 @@ const PostEditor = (props) => {
               if (fileType === 'video') {
                 if (
                   nativeEvent.playProgress === undefined ||
-                  (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition && !stopRef.current && !lockRef.current)
+                  (nativeEvent.playProgress * 1000 >= trimmerRightHandlePosition &&
+                    !stopRef.current &&
+                    !lockRef.current)
                 ) {
                   stopRef.current = true;
                   startRef.current = false;
@@ -407,7 +399,7 @@ const PostEditor = (props) => {
                       RNEditViewManager.play();
                     }, 500);
                   } else {
-                    editor?.onSeek(trimmerLeftHandlePosition)
+                    editor?.onSeek(trimmerLeftHandlePosition);
                     //android 默认为循环播放
                     // editor?.onStop()
                   }
@@ -419,7 +411,6 @@ const PostEditor = (props) => {
         </View>
       </View>
     );
-
   };
   // 滤镜组件
   const filterEditorFilter = () => {
@@ -434,7 +425,7 @@ const PostEditor = (props) => {
               <View style={{ height: 130, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                 <TouchableOpacity
                   onPress={() => {
-                    if (continueRef.current) return
+                    if (continueRef.current) return;
                     setfilterName(item?.filterName);
                   }}
                 >
@@ -482,9 +473,8 @@ const PostEditor = (props) => {
           RNEditViewManager.play();
         }, 500);
       } else {
-        editor?.onSeek(leftPosition)
+        editor?.onSeek(leftPosition);
       }
-
 
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
@@ -515,10 +505,11 @@ const PostEditor = (props) => {
               console.log('onScrubberPressIn');
             }}
             onRightHandlePressIn={() => {
-              if (continueRef.current) return
+              if (continueRef.current) return;
 
               stopRef.current = true;
-              startRef.current = false; ``
+              startRef.current = false;
+              ``;
               lockRef.current = true;
               aniRef.current.stop();
 
@@ -532,7 +523,7 @@ const PostEditor = (props) => {
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {
-              if (continueRef.current) return
+              if (continueRef.current) return;
 
               aniRef.current.stop();
               lockRef.current = true;
@@ -628,88 +619,70 @@ const PostEditor = (props) => {
   };
   // 图片滤镜
   const result = () => {
-    const left = props.params.cropDataRow.positionX
-    const top = props.params.cropDataRow.positionY
-    const scale = props.params.cropDataRow.scale
+    const left = props.params.cropDataRow.positionX;
+    const top = props.params.cropDataRow.positionY;
+    const scale = props.params.cropDataRow.scale;
 
     const Extractor = (imgFilter) => {
       // const width =props.params.cropDataRow.fittedSize.width
       // const height =props.params.cropDataRow.fittedSize.height
-      const ImageComponent = <Image
-        style={{
-          width: width, height: width,
-          // transform:[
-          // {
-          //   scale:scale
-          // },
-          //    {translateX:left},
+      const ImageComponent = (
+        <Image
+          style={{
+            width: width,
+            height: width,
+            // transform:[
+            // {
+            //   scale:scale
+            // },
+            //    {translateX:left},
 
-          //     {translateY:top},
+            //     {translateY:top},
 
-          //   ]
-        }}
-        source={{ uri: multipleSandBoxData[0] }}
-      />
+            //   ]
+          }}
+          source={{ uri: multipleSandBoxData[0] }}
+        />
+      );
       switch (imgFilter) {
         case 'Sepia': {
-          return (
-            <Sepia
-              image={
-
-                ImageComponent
-              }
-              amount={2}
-            />
-          );
+          return <Sepia image={ImageComponent} amount={2} />;
         }
         case 'Temperature': {
-          return (
-            <Temperature
-              amount={0.5}
-              image={
-                ImageComponent
-              }
-            />
-          );
+          return <Temperature amount={0.5} image={ImageComponent} />;
         }
         case 'Sepia2': {
-          return (
-            <Sepia
-              amount={0.4}
-              image={
-                ImageComponent
-              }
-            />
-          );
+          return <Sepia amount={0.4} image={ImageComponent} />;
         }
         default: {
-          return ImageComponent
-
+          return ImageComponent;
         }
       }
     };
     // TODO
-    const filterImag = ()=>{
+    const filterImag = () => {
       return (
-            <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-      )
-    }
+        <Image
+          style={{ width: 100, height: 100, marginRight: 5 }}
+          // source={require('./parrot.png')}
+          source={{ uri: multipleSandBoxData[0] }}
+          resizeMode={'contain'}
+        />
+      );
+    };
 
     return (
       <>
-        <View style={{ width: width, height: width, overflow: "hidden" }}>
-
-          <View style={{
-            // overflow: 'hidden',
-            // alignItems: 'center',
-            // justifyContent: 'center',
-
-          }}>
+        <View style={{ width: width, height: width, overflow: 'hidden' }}>
+          <View
+            style={
+              {
+                // overflow: 'hidden',
+                // alignItems: 'center',
+                // justifyContent: 'center',
+              }
+            }
+          >
             <Grayscale
               amount={0}
               onExtractImage={({ nativeEvent }) => {
@@ -735,36 +708,21 @@ const PostEditor = (props) => {
               setImgFilterName('Sepia');
             }}
           >
-            <Sepia
-              image={
-                filterImag()
-              }
-              amount={2}
-            />
+            <Sepia image={filterImag()} amount={2} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('Temperature');
             }}
           >
-            <Temperature
-              amount={0.5}
-              image={
-                filterImag()
-              }
-            />
+            <Temperature amount={0.5} image={filterImag()} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('Sepia2');
             }}
           >
-            <Sepia
-              amount={0.4}
-              image={
-                filterImag()
-              }
-            />
+            <Sepia amount={0.4} image={filterImag()} />
           </TouchableOpacity>
         </ScrollView>
       </>
@@ -772,26 +730,30 @@ const PostEditor = (props) => {
   };
   if (fileType == 'image') {
     return (
-      <View style={{ backgroundColor: 'black', position: 'relative', height: "100%" }}>
-        <PostHead {...props} continueEdit={continueEdit} videoMute={videoMute} setvideoMute={setvideoMute} continueRef={continueRef} />
+      <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
+        <PostHead
+          {...props}
+          continueEdit={continueEdit}
+          videoMute={videoMute}
+          setvideoMute={setvideoMute}
+          continueRef={continueRef}
+        />
 
         {result()}
-
-
-      </View>)
+      </View>
+    );
   }
   return (
     //TODO
-    <View style={{ backgroundColor: '#000', position: 'relative', height: "100%" }}>
-      <Toast
-        ref={toast}
-        position='top'
-        positionValue={300}
-        fadeInDuration={1050}
-        fadeOutDuration={800}
-        opacity={0.8}
+    <View style={{ backgroundColor: '#000', position: 'relative', height: '100%' }}>
+      <Toast ref={toast} position='top' positionValue={300} fadeInDuration={1050} fadeOutDuration={800} opacity={0.8} />
+      <PostHead
+        {...props}
+        continueEdit={continueEdit}
+        continueRef={continueRef}
+        videoMute={videoMute}
+        setvideoMute={setvideoMute}
       />
-      <PostHead {...props} continueEdit={continueEdit} continueRef={continueRef} videoMute={videoMute} setvideoMute={setvideoMute} />
       {postEditorViewData()}
 
       {selectBottomModel === '滤镜' && filterEditorFilter()}
@@ -818,14 +780,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
     color: '#fff',
-    lineHeight: 21
+    lineHeight: 21,
   },
   textCenter: {
     fontSize: 17,
     fontWeight: '500',
     color: '#fff',
-    lineHeight: 24
-  }
+    lineHeight: 24,
+  },
 });
 
 export default PostEditor;
