@@ -12,6 +12,7 @@ import {
   Animated,
   FlatList,
   NativeModules,
+  StatusBar,
 } from 'react-native';
 import _ from 'lodash';
 import Camera from './Camera';
@@ -69,7 +70,7 @@ type State = {
   startExportVideo: Boolean;
 
   musicOpen: Boolean;
-  // musicInfo: any
+  // musicInfo: any;
 };
 
 export default class StoryEditor extends Component<Props, State> {
@@ -163,7 +164,7 @@ export default class StoryEditor extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       // console.log(Platform.OS === 'android');
-      //  this.camera.release();
+      // VideoEditor.release();
     } else {
       RNEditViewManager.stop();
     }
@@ -225,6 +226,7 @@ export default class StoryEditor extends Component<Props, State> {
               : this.props.videomusicIcon
             : this.props.musicRevampImage,
         onPress: () => {
+          //TODO  story 拍摄图片最终导出的是视频，不需要背景音乐嘛？
           if (this.props.fileType == 'video') {
             this.setState({ musicOpen: !musicOpen });
           }
@@ -274,9 +276,10 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
-      // return null
-      console.info('rendering', this.musicInfo, this.state.musicExport);
-      const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+      //TODO
+      const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
+      const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+
       return (
         <View
           style={{
@@ -289,6 +292,9 @@ export default class StoryEditor extends Component<Props, State> {
         >
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
+            editWidth={width}
+            editHeight={CameraFixHeight}
+            //TODO
             editStyle={{
               width: width,
               height: CameraFixHeight,
@@ -301,6 +307,9 @@ export default class StoryEditor extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
+            // TODO 安卓兼容
+            onPlayProgress={() => {}}
+            // source={"story"}
           />
         </View>
       );
@@ -408,7 +417,8 @@ export default class StoryEditor extends Component<Props, State> {
           opacity={0.8}
         />
         {this.renderCamera()}
-        {Platform.OS === 'android' && <View style={styles.gap} />}
+        {/* TODO */}
+        {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen ? (
             <StoryMusic

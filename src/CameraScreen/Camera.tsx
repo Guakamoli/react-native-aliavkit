@@ -13,12 +13,12 @@ import {
   FlatList,
   Easing,
   Pressable,
+  StatusBar,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
 import AVService from '../AVService';
-import CameraRoll from '@react-native-community/cameraroll';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -170,6 +170,17 @@ class RenderCamera extends Component {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
     };
   }
+  //TODO
+  componentDidMount() {
+    console.log('拍摄初始化');
+  }
+  componentWillUnmount() {
+    console.log('拍摄销毁');
+    if (Platform.OS === 'android') {
+      //TODO
+      this.props.camera.current?.release();
+    }
+  }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
@@ -215,12 +226,18 @@ class RenderCamera extends Component {
     return false;
   }
   renderCamera = () => {
-    const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+    // const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+    //TODO
+    const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
+
+    const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
         <View
-          style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          // style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {
             setTimeout(() => {
               AVService.enableHapticIfExist();

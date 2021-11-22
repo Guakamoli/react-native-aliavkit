@@ -375,9 +375,6 @@ class CameraScreen extends Component<Props, State> {
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      if (this.camera) {
-        this.cameraBox.current?.release?.();
-      }
     }
     this.setState = () => false;
   }
@@ -420,7 +417,7 @@ class CameraScreen extends Component<Props, State> {
       return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      // this.cameraBox = { current: null }
+      // this.cameraBox = { current: null };
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
           clearTimeout(this.rt);
@@ -460,8 +457,13 @@ class CameraScreen extends Component<Props, State> {
       if (index == 0) {
         return;
       }
-      item.icon = item.icon.replace('http://', 'https://');
-      item.url = item.url.replace('http://', 'https://');
+      //TODO
+      if (item.icon) {
+        item.icon = item.icon.replace('http://', 'https://');
+      }
+      if (item.url) {
+        item.url = item.url.replace('http://', 'https://');
+      }
     });
     pasters.unshift({ eid: 0 });
     this.setState({
@@ -471,7 +473,6 @@ class CameraScreen extends Component<Props, State> {
   };
   renderCaptureButton() {
     const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
-
     return (
       this.props.captureButtonImage && (
         // !this.isCaptureRetakeMode() && (
@@ -576,6 +577,7 @@ class CameraScreen extends Component<Props, State> {
   // 底部渲染
   renderBottom() {
     return (
+      //TODO
       <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
         <RenderbeautifyBox {...this.props} />
         <Carousel
@@ -598,7 +600,8 @@ class CameraScreen extends Component<Props, State> {
 
   render() {
     return (
-      <>
+      // TODO
+      <View style={{ backgroundColor: '#000', flex: 1 }}>
         <Toast
           ref={this.myRef}
           position='center'
@@ -647,7 +650,7 @@ class CameraScreen extends Component<Props, State> {
             {this.renderBottom()}
           </>
         )}
-      </>
+      </View>
     );
   }
 }

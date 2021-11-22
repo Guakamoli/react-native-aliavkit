@@ -274,6 +274,10 @@ class CarouselWrapper extends Component<Props, State> {
       const success = await this.props.camera.current?.startRecording?.();
 
       if (!success) {
+<<<<<<< HEAD
+=======
+        console.info(this.props.myRef, 'hahah');
+>>>>>>> 24be05d (安卓代码植入)
         this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
         this.pressLock = false;
 
@@ -305,8 +309,15 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
+<<<<<<< HEAD
     const videoPath = await this.props.camera.current?.stopRecording?.();
     this.ani.stop();
+=======
+    // TODO
+    this.ani.stop();
+
+    const videoPath = await this.props.camera.current?.stopRecording?.();
+>>>>>>> 24be05d (安卓代码植入)
     setTimeout(() => {
       this.reset();
     }, 0);
@@ -374,8 +385,18 @@ class CarouselWrapper extends Component<Props, State> {
       if (index == 0) {
         return;
       }
+<<<<<<< HEAD
       item.icon = item.icon.replace('http://', 'https://');
       item.url = item.url.replace('http://', 'https://');
+=======
+      //TODO
+      if (item.icon) {
+        item.icon = item.icon.replace('http://', 'https://');
+      }
+      if (item.url) {
+        item.url = item.url.replace('http://', 'https://');
+      }
+>>>>>>> 24be05d (安卓代码植入)
     });
     pasters.unshift({ eid: 0 });
     this.setState({
@@ -446,7 +467,13 @@ class CarouselWrapper extends Component<Props, State> {
                   extrapolate: 'clamp',
                 }),
               },
+<<<<<<< HEAD
             ],
+=======
+              // TODO
+            ],
+            zIndex: 200,
+>>>>>>> 24be05d (安卓代码植入)
           }}
         >
           <Carousel
