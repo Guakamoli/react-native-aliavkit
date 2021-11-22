@@ -25,8 +25,6 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 @interface AliAVServiceBridge ()<AliyunCropDelegate>
 {
     BOOL _hasListeners;
-    RCTPromiseResolveBlock _videoCropResolve;
-    NSString *_videoCropOutputPath;
 }
 
 @property (nonatomic, strong) AliyunCrop *cutPanel;
@@ -266,9 +264,7 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
         return;
     }
     else if (res == 0) {
-//        resolve(outputPath);
-        _videoCropOutputPath = outputPath;
-        _videoCropResolve = resolve;
+        resolve(outputPath);
     }
 }
 
@@ -367,8 +363,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                 return;
             }
             else if (res == 0) {
-                self->_videoCropOutputPath = outputPath;
-                self->_videoCropResolve = resolve;
+                resolve(outputPath);
             }
         }];
     } else if (phAsset.mediaType == PHAssetResourceTypePhoto) {
@@ -377,39 +372,26 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
             [[NSFileManager defaultManager] createDirectoryAtPath:rootDirPath withIntermediateDirectories:YES attributes:nil error:nil];
         }
         
-        NSString *croppedPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
+        NSString *tmpPhotoPath = [[rootDirPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"jpg"];
         
-        PHImageRequestOptions *imgRequestOptions = [[PHImageRequestOptions alloc] init];
-        imgRequestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
-        imgRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-        imgRequestOptions.synchronous = NO;
-        imgRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
         
-        CGSize assetSize = CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight);
-        
-        [[PHImageManager defaultManager] requestImageForAsset:phAsset
-                                                   targetSize:assetSize
-                                                  contentMode:PHImageContentModeDefault
-                                                      options:imgRequestOptions
-                                                resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-            if (result == nil) {
-                reject(@"",@"fetch image from photo library failed",nil);
+        [[AliyunPhotoLibraryManager sharedManager] savePhotoWithAsset:phAsset
+                                                              maxSize:cropRect.size
+                                                           outputPath:tmpPhotoPath
+                                                           completion:^(NSError *error, UIImage * _Nullable sourceImage) {
+            if (sourceImage == nil) {
                 return;
             }
             AliyunImageCrop *imageCrop = [[AliyunImageCrop alloc] init];
-            imageCrop.originImage = result;
+            imageCrop.originImage = sourceImage;
             imageCrop.cropMode = AliyunImageCropModeAspectCut;
             imageCrop.cropRect = cropRect;
             imageCrop.outputSize = cropRect.size;
             UIImage *generatedImage = [imageCrop generateImage];
-            if (!generatedImage) {
-                reject(@"",@"image crop failed", nil);
-                return;
-            }
-            NSData *data = UIImageJPEGRepresentation(generatedImage, 0.65);
-            BOOL writeSuccess = [data writeToFile:croppedPhotoPath atomically:YES];
+            NSData *data = UIImagePNGRepresentation(generatedImage);
+            BOOL writeSuccess = [data writeToFile:tmpPhotoPath atomically:YES];
             if (writeSuccess) {
-                resolve(croppedPhotoPath);
+                resolve(tmpPhotoPath);
             } else {
                 reject(@"",@"write file failure",nil);
             }
@@ -435,11 +417,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     imageCrop.cropRect = cropRect;
     imageCrop.outputSize = cropRect.size;
     UIImage *generatedImage = [imageCrop generateImage];
-    if (!generatedImage) {
-        reject(@"",@"image crop failed", nil);
-        return;
-    }
-    NSData *data = UIImageJPEGRepresentation(generatedImage, 0.65);
+    NSData *data = UIImagePNGRepresentation(generatedImage);
     BOOL writeSuccess = [data writeToFile:outPhotoPath atomically:YES];
     if (writeSuccess) {
         resolve(outPhotoPath);
@@ -448,35 +426,12 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     }
 }
 
-RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-{
-    if (!options || ![options isEqualToDictionary:@{}]) {
-        reject(@"",@"params can't be null or empty",nil);
-        return;
-    }
-    BOOL removeTmp = [[options objectForKey:@"tmp"] boolValue];
-    BOOL removeComposition = [[options objectForKey:@"composition"] boolValue];
-    BOOL removeRecord = [[options objectForKey:@"record"] boolValue];
-    if (removeTmp) {
-        [AliyunPathManager clearDir:NSTemporaryDirectory()];
-    }
-    if (removeComposition) {
-        [AliyunPathManager clearDir:[AliyunPathManager compositionRootDir]];
-    }
-    if (removeRecord) {
-        [AliyunPathManager clearDir:[[AliyunPathManager aliyunRootPath] stringByAppendingPathComponent:@"record"]];
-    }
-}
 
 #pragma mark - AliyunCropDelegate
 - (void)cropOnError:(int)error
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
     [self.cutPanel cancel];
-    _videoCropOutputPath = nil;
-    _videoCropResolve = nil;
 }
 
 - (void)cropTaskOnProgress:(float)progress
@@ -491,21 +446,14 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
 {
     AVDLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
     if (_hasListeners) {
-        if (_videoCropOutputPath && _videoCropOutputPath) {
-            _videoCropResolve(_videoCropOutputPath);
-        }
         [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
     }
     [self.cutPanel cancel];
-    _videoCropOutputPath = nil;
-    _videoCropResolve = nil;
 }
 
 - (void)cropTaskOnCancel
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
-    _videoCropOutputPath = nil;
-    _videoCropResolve = nil;
 }
 
 RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options

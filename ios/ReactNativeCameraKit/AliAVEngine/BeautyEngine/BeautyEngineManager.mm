@@ -86,7 +86,6 @@ static BeautyEngineManager *_instance = nil;
     [self performSelector:@selector(clearBeautyEngine) onThread:self.processPixelThread withObject:nil waitUntilDone:YES];
     _newPixelBuffer = NULL;
     [self.lock unlock];
-    NSLog(@"------- beauty engine clear");
 #endif
 }
 
@@ -236,8 +235,9 @@ static BeautyEngineManager *_instance = nil;
 {
     /// 打开滤镜功能开关
     [self.beautyEngine setQueenBeautyType:kQueenBeautyTypeLUT enable:YES];
-    NSString *lutName = [NSString stringWithFormat:@"lookups/lz27.png"];
-    NSString *fullPath = [[NSBundle mainBundle] pathForResource:lutName ofType:nil];
+    NSBundle *currentBundle = [NSBundle bundleForClass:[self class]];
+    NSString *lutPath = @"ReactNativeAliAVKit.bundle/lz27.png";
+    NSString *fullPath = [[currentBundle resourcePath] stringByAppendingPathComponent:lutPath];
     // 设置滤镜资源，也可以是资源的绝对路径
     [self.beautyEngine setLutImagePath:fullPath];
     // 设置滤镜强度
