@@ -73,15 +73,21 @@ type State = {
   startExportVideo: Boolean;
 
   musicOpen: Boolean;
-  musicInfo: any;
-  showText: boolean;
+
 };
 
 export default class StoryEditor extends Component<Props, State> {
   camera: any;
   myRef: any;
   editor: any;
+
+  // 当前播放的音乐
   musicOn: any;
+  // 当前设置的音乐
+  musicInfo: any;
+  // 设置音乐
+  musicExport: any;
+
   constructor(props) {
     console.info('story 编辑页面props', props);
 
@@ -103,17 +109,22 @@ export default class StoryEditor extends Component<Props, State> {
 
       startExportVideo: false,
       musicOpen: false,
-      musicInfo: {},
+
       setMusic: false,
-      showText: false,
+      musicExport: false,
     };
+    this.musicInfo = {};
   }
   startExportVideo() {
     if (this.state.startExportVideo) {
       return;
     }
+
+    this.props.myRef.current.show('快拍作品将在24小时后消失', 2000);
+    this.setState({ musicExport: true }, () => {
+      this.setState({ startExportVideo: true });
+    });
     this.pauseMusic(this.musicOn);
-    this.setState({ startExportVideo: true });
   }
   async pauseMusic(song) {
     console.info('暂停音乐', song);
@@ -233,6 +244,7 @@ export default class StoryEditor extends Component<Props, State> {
           this.setState({ showText: !showText });
         },
       },
+
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -252,7 +264,8 @@ export default class StoryEditor extends Component<Props, State> {
         {/* 编辑按钮组 */}
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
           {imglist.map((item, index) => {
-            if (this.props.fileType != 'video' && index == 1) {
+            // 图片屏蔽 声音和音乐
+            if (this.props.fileType != 'video' && (index == 1 || index == 2)) {
               return null;
             }
             return (
@@ -275,6 +288,9 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       // return null
+
+      console.info('rendering', this.musicInfo, this.state.musicExport);
+
       const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
       return (
         <View
@@ -299,7 +315,7 @@ export default class StoryEditor extends Component<Props, State> {
             startExportVideo={this.state.startExportVideo}
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
-            musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
+            musicInfo={this.state.musicExport ? this.musicInfo : {}}
           />
           {this.state.showText && (
             <View style={{ flex: 1, zIndex: 200 }}>
@@ -313,6 +329,7 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={[styles.cameraContainer]}>
         <TouchableOpacity
           onPress={() => {
+            // 关闭音乐 暂停音乐
             this.setState({ showFilterLens: false, musicOpen: false });
             // !this.state.showFilterLens
           }}
@@ -420,7 +437,7 @@ export default class StoryEditor extends Component<Props, State> {
               musicSearch={this.props.musicSearch}
               musicIcongray={this.props.musicIcongray}
               getmusicInfo={(data) => {
-                this.setState({ musicInfo: data });
+                this.musicInfo = data;
               }}
               setMusicState={this.state.setMusic}
               setMusic={(data) => {

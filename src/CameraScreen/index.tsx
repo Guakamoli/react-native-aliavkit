@@ -114,9 +114,6 @@ type State = {
   progress: number;
   startShoot: boolean;
   ShootSuccess: boolean;
-  mute: boolean;
-  showFilterLens: boolean;
-  filterLensSelect: number;
 
   fadeInOpacity: any;
 
@@ -125,7 +122,7 @@ type State = {
 
   pasterList: any;
   facePasterInfo: any;
-  filterName: any;
+
   fileType: String;
   musicOpen: Boolean;
 };
@@ -294,8 +291,6 @@ class CameraScreen extends Component<Props, State> {
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
-  startTime: string;
-  
 
   constructor(props) {
     super(props);
@@ -319,7 +314,6 @@ class CameraScreen extends Component<Props, State> {
         image: _.get(this.props, 'flashImages.off'),
       },
     ];
-    this.startTime = '';
     this.rt = null;
     this.cameraBox = { current: null };
     this.state = {
@@ -343,11 +337,6 @@ class CameraScreen extends Component<Props, State> {
 
       startShoot: false,
       ShootSuccess: false,
-      // 是否静音
-      mute: false,
-
-      showFilterLens: false,
-      filterLensSelect: 0,
 
       fadeInOpacity: new Animated.Value(60),
 
@@ -359,7 +348,6 @@ class CameraScreen extends Component<Props, State> {
       pasterList: [],
       //  插最前面
       facePasterInfo: { eid: 0 },
-      filterName: '原片',
 
       // 音乐打开
       musicOpen: false,
@@ -392,7 +380,9 @@ class CameraScreen extends Component<Props, State> {
     }
     this.setState = () => false;
   }
-  componentDidUpdate(props, state) {}
+  componentDidUpdate(props, state) {
+    // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
+  }
   shotPreview = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
@@ -619,6 +609,7 @@ class CameraScreen extends Component<Props, State> {
 
         {this.state.ShootSuccess ? (
           <StoryEditor
+            myRef={this.myRef}
             rephotograph={() => {
               this.props.setType('story');
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });

@@ -18,6 +18,7 @@ import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
 import AVService from '../AVService';
+import CameraRoll from '@react-native-community/cameraroll';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -106,6 +107,9 @@ class PreviewBack extends React.Component {
   shotPreview = async () => {
     try {
       const image = await this.props.camera.current.capture();
+      if (this.state.previewImage) {
+        CameraRoll.deletePhotos([this.state.previewImage])
+      }
       this.props.camera.current = null;
       setTimeout(() => {
         this.setState({
@@ -171,8 +175,12 @@ class RenderCamera extends Component {
       return true;
     }
     if (nextProps.type !== this.props.type) {
+      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
       this.setState({
-        showCamera: nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false,
+        showCamera,
       });
 
       setTimeout(() => {
@@ -182,9 +190,13 @@ class RenderCamera extends Component {
       return false;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
       this.setState(
         {
-          showCamera: nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false,
+          showCamera,
         },
         () => {
           setTimeout(() => {
