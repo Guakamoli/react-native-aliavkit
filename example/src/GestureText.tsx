@@ -27,13 +27,31 @@ import {
   RotationGestureHandlerStateChangeEvent,
 } from 'react-native-gesture-handler';
 
+type CaptionInfo = {
+  text: string;
+  // fontName: string;
+  // fontStyle: string; // normal | italic | bold
+  // color: string;      //文字颜色
+  // textAlignment: string; //left, center, right
+  // backgroundColor: string; //背景颜色
+  // startTime: number;
+  // duration: number;
+  center: { x: number; y: number };
+  rotate: number;
+  scale: number;
+};
 
 type GestureTextProps = {
   minDist?: number;
   boxStyle?: StyleProp<ViewStyle>;
+  onTextMove: (info: CaptionInfo) => void;
 };
 
-export default class GestureText extends Component<GestureTextProps> {
+type GestureTextState = {
+  text: string;
+};
+
+export default class GestureText extends Component<GestureTextProps, GestureTextState> {
   private panRef = React.createRef<PanGestureHandler>();
   private rotationRef = React.createRef<RotationGestureHandler>();
   private pinchRef = React.createRef<PinchGestureHandler>();
@@ -87,6 +105,10 @@ export default class GestureText extends Component<GestureTextProps> {
     });
     this.lastRotate = 0;
     this.onRotateGestureEvent = Animated.event([{ nativeEvent: { rotation: this.rotate } }], { useNativeDriver: true });
+
+    this.state = {
+      text: '',
+    };
   }
 
   private onPanHandlerStateChange = (event: PanGestureHandlerStateChangeEvent) => {
@@ -99,6 +121,12 @@ export default class GestureText extends Component<GestureTextProps> {
       this.translateY.setOffset(this.lastOffset.y);
       this.translateY.setValue(0);
       console.log('-----: lastOffset.x:', this.lastOffset.x, 'lastOffset.y :', this.lastOffset.y);
+      this.props.onTextMove({
+        text: this.state.text,
+        center: { x: this.lastOffset.x, y: this.lastOffset.y },
+        rotate: this.lastRotate,
+        scale: this.lastScale,
+      });
     }
   };
 
@@ -109,6 +137,12 @@ export default class GestureText extends Component<GestureTextProps> {
       this.rotate.setOffset(this.lastRotate);
       this.rotate.setValue(0);
       console.log('-----: rotate', this.lastRotate);
+      this.props.onTextMove({
+        text: this.state.text,
+        center: { x: this.lastOffset.x, y: this.lastOffset.y },
+        rotate: this.lastRotate,
+        scale: this.lastScale,
+      });
     }
   };
   private onPinchHandlerStateChange = (event: PinchGestureHandlerStateChangeEvent) => {
@@ -118,6 +152,12 @@ export default class GestureText extends Component<GestureTextProps> {
       this.baseScale.setValue(this.lastScale);
       this.pinchScale.setValue(1);
       console.log('-----: pinch scale: ', this.lastScale);
+      this.props.onTextMove({
+        text: this.state.text,
+        center: { x: this.lastOffset.x, y: this.lastOffset.y },
+        rotate: this.lastRotate,
+        scale: this.lastScale,
+      });
     }
   };
 
@@ -163,6 +203,8 @@ export default class GestureText extends Component<GestureTextProps> {
                       placeholder='Username'
                       style={[styles.textInput, { fontSize: 18.0 * this.lastScale }]}
                       multiline={true}
+                      value={this.state.text}
+                      onChangeText={(text) => this.setState({ text })}
                     />
                   </Animated.View>
                 </PinchGestureHandler>

@@ -73,7 +73,7 @@ type State = {
   startExportVideo: Boolean;
 
   musicOpen: Boolean;
-
+  captionInfo: any;
 };
 
 export default class StoryEditor extends Component<Props, State> {
@@ -316,10 +316,16 @@ export default class StoryEditor extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
+            captionInfo={this.state.showText ? this.state.captionInfo : {}}
           />
           {this.state.showText && (
             <View style={{ flex: 1, zIndex: 200 }}>
-              <GestureText />
+              <GestureText
+                onTextMove={(info) => {
+                  this.setState({ captionInfo: info });
+                  console.log(info);
+                }}
+              />
             </View>
           )}
         </View>
