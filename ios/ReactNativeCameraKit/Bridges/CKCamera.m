@@ -98,7 +98,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [super didMoveToSuperview];
     if (!self.superview && _isPresented) {
+        if (self.cameraAction.isRecording) {
+            [self.cameraAction stopRecordVideo:nil];
+        }
         [self.cameraAction stopPreview];
+        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+            [self.cameraAction.cameraPreview removeFromSuperview];
+        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -110,15 +116,20 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (!_isPresented && self.window) {
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
-            [self addSubview:self.cameraAction.cameraPreview];
-            [self setupDefault];
+            if (![self.subviews containsObject:self.cameraAction.cameraPreview]) {
+                [self addSubview:self.cameraAction.cameraPreview];
+            }
             [self.cameraAction startPreview];
+            [self.cameraAction deletePreviousEffectPaster];
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
     }
     if (!self.window && _isPresented) {
+        if (self.cameraAction.isRecording) {
+            [self.cameraAction stopRecordVideo:nil];
+        }
         [self.cameraAction stopPreview];
         if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
             [self.cameraAction.cameraPreview removeFromSuperview];
