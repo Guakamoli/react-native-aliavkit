@@ -23,6 +23,8 @@ import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
 import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
+import ImageMap from '../images';
+const { postNoVolumePng } = ImageMap;
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -75,7 +77,7 @@ const PostHead = React.memo((props) => {
             setvideoMute(!videoMute);
           }}
         >
-          <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
+          <Image style={{ width: 36, height: 34 }} source={!videoMute ? volumeImage : noVolumeImage} />
         </TouchableOpacity>
       ) : null}
 
@@ -195,8 +197,6 @@ const PostEditor = (props) => {
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
-      console.log(reminder);
-
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
         toast.current.close();
@@ -367,9 +367,6 @@ const PostEditor = (props) => {
                 }
               }
             }}
-            onExportVideo={(event) => {
-              onExportVideo(event);
-            }}
           />
         </View>
       </View>
@@ -400,7 +397,7 @@ const PostEditor = (props) => {
                   >
                     {item.filterName == null ? (
                       <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
-                        <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+                        <Image style={{ width: 100, height: 100 }} source={postNoVolumePng} />
                       </View>
                     ) : (
                       <Image style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
@@ -541,19 +538,19 @@ const PostEditor = (props) => {
     return (
       <View
         style={{
-          height: height * 0.08,
+          height: 40,
           width: width,
           flexDirection: 'row',
           justifyContent: 'space-evenly',
           alignItems: 'flex-start',
           position: 'absolute',
-          bottom: 30,
+          bottom: 43,
         }}
       >
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
-              style={{ width: 50, height: 50, paddingTop: 30 }}
+              style={{ width: 50, height: 50, paddingTop: 35 }}
               key={index}
               onPress={() => {
                 setselectBottomModel(item);
@@ -712,6 +709,7 @@ const PostEditor = (props) => {
     );
   }
   return (
+    //TODO
     <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
       <Toast ref={toast} position='top' positionValue={300} fadeInDuration={1050} fadeOutDuration={800} opacity={0.8} />
       <PostHead
@@ -746,7 +744,7 @@ const styles = StyleSheet.create({
   continueText: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#fff',
+    color: '#836BFF',
     lineHeight: 21,
   },
   textCenter: {

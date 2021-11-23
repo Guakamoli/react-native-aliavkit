@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
   },
 
   propStyle: {
-    backgroundColor: '#334',
+    backgroundColor: '#000',
     opacity: 0.8,
   },
   clearIcon: {
