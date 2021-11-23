@@ -681,7 +681,7 @@ export default class CameraScreen extends Component<Props, State> {
     try {
       const imageItem = multipleData[multipleData.length - 1].image;
       const { type } = multipleData[multipleData.length - 1];
-      let trimVideoData = null
+      let trimVideoData = null;
       const result = await ImageCropper.crop({
         ...cropDataRow,
         imageUri: imageItem.uri,
@@ -699,15 +699,14 @@ export default class CameraScreen extends Component<Props, State> {
           path: imageItem.uri,
         });
       } else {
-        const cropData = result
-        console.info('cropDatacropDatacropDatacropDatacropData', cropData, cropDataRow)
+        const cropData = result;
+        console.info('cropDatacropDatacropDatacropDatacropData', cropData, cropDataRow);
         trimVideoData = await AVService.crop({
           source: imageItem.uri,
           cropOffsetX: cropData.offset.x,
           cropOffsetY: cropData.offset.y,
           cropWidth: cropData.size.width,
           cropHeight: cropData.size.height,
-         
         });
       }
       // this.setState({ videoPaused: true });
@@ -717,8 +716,8 @@ export default class CameraScreen extends Component<Props, State> {
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-        if(type === 'video' && Math.ceil(imageItem.playableDuration) >300 ){
-           this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
+        if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+          this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
         }
         this.setState({
           postEditorParams: {
@@ -762,7 +761,7 @@ export default class CameraScreen extends Component<Props, State> {
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
-    } 
+    }
   }
   render() {
     return (
@@ -844,7 +843,7 @@ const styles = StyleSheet.create({
   continueText: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#fff',
+    color: '#836BFF',
     lineHeight: 21,
   },
   textCenter: {
