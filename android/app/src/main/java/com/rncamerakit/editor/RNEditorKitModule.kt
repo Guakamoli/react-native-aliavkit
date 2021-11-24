@@ -110,8 +110,9 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     //获取滤镜列表
     @ReactMethod
     fun getColorFilterList(promise: Promise) {
-        val context = reactContext
-        ColorFilterManager.getColorFilter(context.applicationContext, promise)
+//        val context = reactContext
+//        ColorFilterManager.getColorFilter(context.applicationContext, promise)
+        mView?.getColorFilterList(promise)
     }
 
 

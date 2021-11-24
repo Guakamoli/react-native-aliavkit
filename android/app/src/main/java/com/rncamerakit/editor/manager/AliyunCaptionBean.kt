@@ -1,11 +1,8 @@
-package com.rncamerakit.db
+package com.rncamerakit.editor.manager
 
-import android.graphics.Color
 import android.graphics.PointF
 import android.graphics.RectF
-import android.os.Bundle
 import androidx.annotation.ColorInt
-import com.aliyun.svideo.crop.bean.AlivcCropInputParam
 import com.aliyun.svideosdk.common.AliyunColor
 import com.aliyun.svideosdk.common.AliyunFontStyle
 import com.aliyun.svideosdk.common.ISource
