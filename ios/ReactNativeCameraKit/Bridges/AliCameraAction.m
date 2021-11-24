@@ -266,6 +266,10 @@
 {
     [self clearBeautyEngine];
     [_recorder stopPreview];
+}
+
+- (void)dealloc
+{
     [_recorder destroyRecorder];
     _recorder = nil;
 }
@@ -424,9 +428,10 @@
 {
     AVDLog(@"✅ finish all record ✅");
     [self.recorder stopPreview];
-    if (_complete) {
+    if (_complete && _videoSavePath && ![_videoSavePath isEqualToString:@""]) {
         _complete(_videoSavePath);        
     }
+    [self clearBeautyEngine];
 }
 
 - (void)_recorderFinishRecording
@@ -462,18 +467,12 @@
 
 - (void)clearBeautyEngine
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
-        [[BeautyEngineManager shareManager] clear];
-    }
+    [[BeautyEngineManager shareManager] clear];
 }
 
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
-        
-        return CMSampleBufferGetImageBuffer(sampleBuffer);
-    }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
     CGFloat beautyWhite = self.normalBeautyLevel * 0.01 * 2.0f;
@@ -504,17 +503,5 @@
                                                          thinMandible:thinMandible
                                                              cutCheek:cutCheek];
 }
-
-///calculate preview frame
-//- (CGRect)previewFrame
-//{
-//    CGFloat ratio = self.mediaConfig.outputSize.width / self.mediaConfig.outputSize.height;
-//    CGRect finalFrame = CGRectMake(0, NoStatusBarSafeTop+44+10, ScreenWidth, ScreenWidth /ratio);
-//    if ([self.mediaConfig mediaRatio] == AliyunMediaRatio9To16){
-//        finalFrame =CGRectMake((ScreenWidth - ScreenHeight * ratio)/2.f , 0, ScreenHeight * ratio, ScreenHeight);
-//    }
-//    return finalFrame;
-//}
-
 
 @end
