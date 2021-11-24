@@ -521,9 +521,9 @@ class CameraScreen extends Component<Props, State> {
     );
   }
 
-  sendUploadFile(data) {
+  sendUploadFile(data, uploadSuccess) {
     if (this.props.getUploadFile) {
-      this.props.getUploadFile(data);
+      this.props.getUploadFile(data, uploadSuccess);
     }
   }
 
@@ -616,12 +616,10 @@ class CameraScreen extends Component<Props, State> {
               this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
             }}
             getUploadFile={async (data) => {
-              await this.sendUploadFile(data);
-
-              setTimeout(() => {
+              await this.sendUploadFile(data, () => {
                 this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
                 this.props.setType('story');
-              }, 1000);
+              });
             }}
             insets={this.props.insets}
             setType={this.props.setType}
