@@ -252,7 +252,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导出视频 \ 导出图片
      */
     fun exportVideo(promise: Promise?) {
-        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！")
+//        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！")
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
