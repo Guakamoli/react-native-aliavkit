@@ -107,14 +107,19 @@ class PreviewBack extends React.Component {
   shotPreview = async () => {
     try {
       const image = await this.props.camera.current.capture();
-      if (this.state.previewImage) {
-        CameraRoll.deletePhotos([this.state.previewImage])
-      }
+      const prevImage = this.state.previewImage;
       this.props.camera.current = null;
       setTimeout(() => {
-        this.setState({
-          previewImage: image,
-        });
+        this.setState(
+          {
+            previewImage: image,
+          },
+          () => {
+            if (prevImage) {
+              CameraRoll.deletePhotos([prevImage.uri]);
+            }
+          },
+        );
       }, 0);
     } catch (e) {
       console.info(e, '拍摄错误');
