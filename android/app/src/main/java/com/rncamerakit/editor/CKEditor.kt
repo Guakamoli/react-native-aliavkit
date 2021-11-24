@@ -110,8 +110,21 @@ class CKEditor(val reactContext: ThemedReactContext) :
             EditorCommon.copyAll(mContext, View(mContext))
             uiThread {
                 isCopyAssets = true
+                mColorFilterListPromise?.let { getColorFilterList(it) }
             }
         }
+    }
+
+    private var mColorFilterListPromise: Promise? = null
+
+    //获取滤镜列表
+    fun getColorFilterList(promise: Promise) {
+        //如果还没解压完成，需要解压完后返回值
+        if (!isCopyAssets) {
+            mColorFilterListPromise = promise
+            return
+        }
+        ColorFilterManager.getColorFilter(reactContext.applicationContext, promise)
     }
 
     private fun initEditor(uri: Uri, isVideo: Boolean) {
@@ -135,7 +148,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunPasterRender?.setOnPasterResumeAndSave {
 
         }
-        mCaptionManager = CaptionManager(reactContext, mAliyunPasterRender)
+        mCaptionManager = CaptionManager(reactContext, mAliyunPasterRender, mAliyunIEditor)
 
 
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
@@ -239,10 +252,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 导出视频 \ 导出图片
      */
     fun exportVideo(promise: Promise?) {
-
-        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！",
-            mAliyunIEditor?.duration?.div(1000), mWidth/2, mHeight/2)
-
+        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！")
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
