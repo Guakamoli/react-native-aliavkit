@@ -184,13 +184,12 @@ export default class Carousel extends Component {
 
         this._mounted = true;
         this._initPositionsAndInterpolators();
-
         // Without 'requestAnimationFrame' or a `0` timeout, images will randomly not be rendered on Android...
         requestAnimationFrame(() => {
             if (!this._mounted) {
                 return;
             }
-            this._snapToItem(_firstItem, false, false, true, false);
+            this._snapToItem(_firstItem, false, false, true, false, false, { manded: true });
             this._hackActiveSlideAnimation(_firstItem, 'start', true);
 
             if (apparitionDelay) {

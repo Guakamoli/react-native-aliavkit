@@ -305,8 +305,15 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
+<<<<<<< HEAD
     const videoPath = await this.props.camera.current?.stopRecording?.();
     this.ani.stop();
+=======
+    // TODO
+    this.ani.stop();
+
+    const videoPath = await this.props.camera.current?.stopRecording?.();
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
     setTimeout(() => {
       this.reset();
     }, 0);
@@ -374,8 +381,18 @@ class CarouselWrapper extends Component<Props, State> {
       if (index == 0) {
         return;
       }
+<<<<<<< HEAD
       item.icon = item.icon.replace('http://', 'https://');
       item.url = item.url.replace('http://', 'https://');
+=======
+      //TODO
+      if (item.icon) {
+        item.icon = item.icon.replace('http://', 'https://');
+      }
+      if (item.url) {
+        item.url = item.url.replace('http://', 'https://');
+      }
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
     });
     pasters.unshift({ eid: 0 });
     this.setState({
@@ -428,6 +445,17 @@ class CarouselWrapper extends Component<Props, State> {
   };
   render() {
     const { pasterList } = this.state;
+<<<<<<< HEAD
+=======
+
+    let firstItem = pasterList.findIndex((i) => {
+      return this.props.facePasterInfo.id === i.id;
+    });
+    if (firstItem === -1) {
+      firstItem = 0;
+    }
+    if (!pasterList.length) return null;
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
     return (
       <View style={{ justifyContent: 'center' }}>
         <TopReset
@@ -446,7 +474,13 @@ class CarouselWrapper extends Component<Props, State> {
                   extrapolate: 'clamp',
                 }),
               },
+<<<<<<< HEAD
             ],
+=======
+              // TODO
+            ],
+            zIndex: 200,
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
           }}
         >
           <Carousel
@@ -463,6 +497,10 @@ class CarouselWrapper extends Component<Props, State> {
             data={pasterList}
             decelerationRate={'normal'}
             swipeThreshold={1}
+<<<<<<< HEAD
+=======
+            firstItem={firstItem}
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
             itemWidth={itemWidth}
             inactiveSlideOpacity={1}
             scrollPos={this.scrollPos}
@@ -495,7 +533,11 @@ class CarouselWrapper extends Component<Props, State> {
   }
 }
 const ClMapStateToProps = (state) => ({
+<<<<<<< HEAD
   // facePasterInfo: state.shootStory.facePasterInfo,
+=======
+  facePasterInfo: state.shootStory.facePasterInfo,
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
 });
 const ClMapDispatchToProps = (dispatch) => ({
   setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
@@ -721,7 +763,11 @@ const styles = StyleSheet.create({
   },
 
   propStyle: {
+<<<<<<< HEAD
     backgroundColor: '#000',
+=======
+    backgroundColor: '#334',
+>>>>>>> fd69e60 (修正初始化贴纸的位置)
     opacity: 0.8,
   },
   clearIcon: {
