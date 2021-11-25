@@ -13,7 +13,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
-import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
+import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
 import Reanimated, { Easing } from 'react-native-reanimated';
 
@@ -171,6 +171,7 @@ class RenderBigCircle extends Component {
 class RenderChildren extends Component {
   constructor(props) {
     super(props);
+    this.longPressRef = React.createRef();
   }
   shouldComponentUpdate(nextProps) {
     if (nextProps.pasterList !== this.props.pasterList) {
@@ -191,7 +192,36 @@ class RenderChildren extends Component {
           },
         ]}
       >
-        <Pressable
+        <LongPressGestureHandler
+          ref={this.longPressRef}
+          onHandlerStateChange={({ nativeEvent }) => {
+            if (nativeEvent.state === State.ACTIVE) {
+              this.props.longPress();
+            } else if (nativeEvent.state === State.END) {
+              this.props.stopAnimate();
+            }
+          }}
+          minDurationMs={500}
+        >
+          <Animated.View
+            style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
+          >
+            <TapGestureHandler
+              onHandlerStateChange={({ nativeEvent }) => {
+                if (nativeEvent.state === State.ACTIVE) {
+                  this.props.singlePress();
+                }
+              }}
+              // waitFor={this.longPressRef}
+            >
+              <Animated.View>
+                <View style={styles.bigCircleBox}></View>
+                <RenderBigCircle {...this.props} />
+              </Animated.View>
+            </TapGestureHandler>
+          </Animated.View>
+        </LongPressGestureHandler>
+        {/* <Pressable
           style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
           delayLongPress={500}
           // 长按
@@ -212,7 +242,7 @@ class RenderChildren extends Component {
         >
           <View style={styles.bigCircleBox}></View>
           <RenderBigCircle {...this.props} />
-        </Pressable>
+        </Pressable> */}
       </Animated.View>
     );
   }
@@ -305,8 +335,10 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-    const videoPath = await this.props.camera.current?.stopRecording?.();
+    // TODO
     this.ani.stop();
+
+    const videoPath = await this.props.camera.current?.stopRecording?.();
     setTimeout(() => {
       this.reset();
     }, 0);
@@ -374,8 +406,13 @@ class CarouselWrapper extends Component<Props, State> {
       if (index == 0) {
         return;
       }
-      item.icon = item.icon.replace('http://', 'https://');
-      item.url = item.url.replace('http://', 'https://');
+      //TODO
+      if (item.icon) {
+        item.icon = item.icon.replace('http://', 'https://');
+      }
+      if (item.url) {
+        item.url = item.url.replace('http://', 'https://');
+      }
     });
     pasters.unshift({ eid: 0 });
     this.setState({
@@ -428,6 +465,14 @@ class CarouselWrapper extends Component<Props, State> {
   };
   render() {
     const { pasterList } = this.state;
+
+    let firstItem = pasterList.findIndex((i) => {
+      return this.props.facePasterInfo.id === i.id;
+    });
+    if (firstItem === -1) {
+      firstItem = 0;
+    }
+    if (!pasterList.length) return null;
     return (
       <View style={{ justifyContent: 'center' }}>
         <TopReset
@@ -446,7 +491,9 @@ class CarouselWrapper extends Component<Props, State> {
                   extrapolate: 'clamp',
                 }),
               },
+              // TODO
             ],
+            zIndex: 200,
           }}
         >
           <Carousel
@@ -463,6 +510,7 @@ class CarouselWrapper extends Component<Props, State> {
             data={pasterList}
             decelerationRate={'normal'}
             swipeThreshold={1}
+            firstItem={firstItem}
             itemWidth={itemWidth}
             inactiveSlideOpacity={1}
             scrollPos={this.scrollPos}
@@ -495,7 +543,7 @@ class CarouselWrapper extends Component<Props, State> {
   }
 }
 const ClMapStateToProps = (state) => ({
-  // facePasterInfo: state.shootStory.facePasterInfo,
+  facePasterInfo: state.shootStory.facePasterInfo,
 });
 const ClMapDispatchToProps = (dispatch) => ({
   setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
