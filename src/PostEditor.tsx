@@ -24,7 +24,7 @@ import VideoEditor from './VideoEditor';
 import AVService from './AVService';
 import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
 import ImageMap from '../images';
-const { postNoVolumePng } = ImageMap;
+const { postNoVolumePng, postvolumePng, postnoVolumeImage } = ImageMap;
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -77,7 +77,7 @@ const PostHead = React.memo((props) => {
             setvideoMute(!videoMute);
           }}
         >
-          <Image style={{ width: 36, height: 34 }} source={!videoMute ? volumeImage : noVolumeImage} />
+          <Image style={{ width: 22, height: 21 }} source={!videoMute ? postvolumePng : postnoVolumeImage} />
         </TouchableOpacity>
       ) : null}
 
@@ -396,8 +396,16 @@ const PostEditor = (props) => {
                     ]}
                   >
                     {item.filterName == null ? (
-                      <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
-                        <Image style={{ width: 100, height: 100 }} source={postNoVolumePng} />
+                      <View
+                        style={{
+                          width: 100,
+                          height: 100,
+                          backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Image style={{ width: 44, height: 44 }} source={postNoVolumePng} />
                       </View>
                     ) : (
                       <Image style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
@@ -533,7 +541,12 @@ const PostEditor = (props) => {
   };
   // 切换底部功能
   const switchProps = () => {
-    const switchProps = ['滤镜', '修剪'];
+    let switchProps;
+    if (fileType !== 'image') {
+      switchProps = ['滤镜', '修剪'];
+    } else {
+      switchProps = ['滤镜'];
+    }
 
     return (
       <View
@@ -541,7 +554,7 @@ const PostEditor = (props) => {
           height: 40,
           width: width,
           flexDirection: 'row',
-          justifyContent: 'space-evenly',
+          justifyContent: 'space-around',
           alignItems: 'flex-start',
           position: 'absolute',
           bottom: 43,
@@ -634,7 +647,7 @@ const PostEditor = (props) => {
               setImgFilterName('');
             }}
           >
-            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
+            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);', marginRight: 5 }}>
               <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
             </View>
           </TouchableOpacity>
@@ -705,6 +718,7 @@ const PostEditor = (props) => {
         />
 
         {result()}
+        {switchProps()}
       </View>
     );
   }

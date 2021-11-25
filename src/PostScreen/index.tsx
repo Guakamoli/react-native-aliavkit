@@ -29,6 +29,8 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 
+import ImageMap from '../../images';
+const { postFileSelectPng } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 let clickItemLock = false;
@@ -390,7 +392,7 @@ class GridItemCover extends Component {
           <View
             style={{
               borderRadius: 10,
-              borderWidth: 2,
+              borderWidth: 1,
               width: 20,
               height: 20,
               borderColor: 'white',
@@ -402,7 +404,7 @@ class GridItemCover extends Component {
               display: this.props.selectMultiple ? 'flex' : 'none',
             }}
           >
-            <View
+            {/* <View
               style={{
                 width: 18,
                 height: 18,
@@ -413,7 +415,20 @@ class GridItemCover extends Component {
                 alignItems: 'center',
                 display: this.state.active ? 'flex' : 'none',
               }}
-            ></View>
+            ></View> */}
+            <Image
+              source={postFileSelectPng}
+              style={{
+                width: 18,
+                height: 18,
+                // borderRadius: 20,
+                zIndex: 99,
+                // backgroundColor: '#836BFF',
+                // justifyContent: 'center',
+                // alignItems: 'center',
+                display: this.state.active ? 'flex' : 'none',
+              }}
+            />
           </View>
           <Animated.View
             style={[
@@ -842,7 +857,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '600',
     color: '#836BFF',
     lineHeight: 21,
   },
