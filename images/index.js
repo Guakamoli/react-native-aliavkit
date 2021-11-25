@@ -33,6 +33,10 @@ const ImageMap = {
 
     musicSelect: require('./musicSelect.png'),
     useMusic: require('./useMusic.png'),
-    postNoVolumePng: require('./postNoResult.png')
+    postNoVolumePng: require('./postNoResult.png'),
+    postFileSelectPng: require('./postFileSelect.png'),
+    postvolumePng: require('./postVolume.png'),
+    postnoVolumeImage: require('./postNoVolume.png')
+
 }
 export default ImageMap
