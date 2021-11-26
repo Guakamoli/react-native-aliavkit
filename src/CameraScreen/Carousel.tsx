@@ -10,6 +10,7 @@ import {
   Platform,
   Animated,
   FlatList,
+  AppState,
   Pressable,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -342,6 +343,7 @@ class CarouselWrapper extends Component<Props, State> {
     setTimeout(() => {
       this.reset();
     }, 0);
+
     setTimeout(() => {
       this.props.setShootData({
         fileType: 'video',
@@ -383,11 +385,28 @@ class CarouselWrapper extends Component<Props, State> {
 
     // 在这里做结算
   };
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        if (this.pressLock) {
+          this.ani.stop();
+          this.reset();
+          this.pressLock = false;
+        }
+      } else {
+        this.startAnimate;
+      }
+    }
+  };
   componentDidMount() {
+    AppState.addEventListener('change', this.handleAppStateChange);
     this.getPasterInfos();
     setTimeout(() => {
       AVService.enableHapticIfExist();
     }, 2000);
+  }
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);

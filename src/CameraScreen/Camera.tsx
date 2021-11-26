@@ -13,6 +13,7 @@ import {
   FlatList,
   Easing,
   Pressable,
+  AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
@@ -169,6 +170,31 @@ class RenderCamera extends Component {
     this.state = {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
     };
+  }
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        this.setState({
+          showCamera: false,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      } else {
+        this.setState({
+          showCamera: true,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      }
+    }
+  };
+  componentDidMount() {
+    AppState.addEventListener('change', this.handleAppStateChange);
+  }
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
