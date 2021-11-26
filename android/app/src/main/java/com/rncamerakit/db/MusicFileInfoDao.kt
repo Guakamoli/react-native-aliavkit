@@ -11,7 +11,6 @@ import java.util.*
 class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
 
     companion object {
-
         @JvmField
         val instance = SingletonHolder.holder
     }
@@ -31,22 +30,30 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
     }
 
     private fun getReadableDataBase() {
-        mDatabase = mHelper?.readableDatabase
+        if (mDatabase == null || mDatabase?.isOpen == false || mDatabase?.isReadOnly == false) {
+            mDatabase = mHelper?.readableDatabase
+        }
     }
 
     private fun getWritableDatabase() {
-        mDatabase = mHelper?.writableDatabase
+        if (mDatabase == null || mDatabase?.isOpen == false || mDatabase?.isReadOnly == true) {
+            mDatabase = mHelper?.writableDatabase
+        }
     }
 
-    private fun close(cursor: Cursor?) {
-        if (cursor?.isClosed == false) {
-            cursor.close()
-        }
-        if (mDatabase?.isOpen == true) {
+    fun closeDB() {
+        if (mDatabase != null && mDatabase?.isOpen == true) {
             mDatabase?.close()
         }
     }
 
+    private fun close() {
+//        if (mDatabase?.isOpen == true) {
+//            mDatabase?.close()
+//        }
+    }
+
+    @Synchronized
     override fun insert(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
@@ -65,9 +72,10 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         values.put("COVER", info.cover)
         values.put("URL", info.url)
         mDatabase?.insert(tableName, null, values)
-        close(null)
+        close()
     }
 
+    @Synchronized
     override fun insertList(list: MutableList<MusicFileBean>?) {
         getWritableDatabase()
         if (mDatabase == null) {
@@ -87,17 +95,21 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
                 mDatabase?.insert(tableName, null, values)
             }
         }
-        close(null)
+        close()
     }
 
+    @Synchronized
     private fun haveInfo(songID: String?): Boolean {
         val sql = "SELECT * FROM $tableName WHERE SONG_ID = ?"
         val cursor = mDatabase?.rawQuery(sql, arrayOf(songID)) ?: throw SQLException("Cursor is null")
         val haveData = cursor.count > 0
-        cursor.close()
+        if (!cursor.isClosed) {
+            cursor.close()
+        }
         return haveData
     }
 
+    @Synchronized
     override fun createOrUpdate(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
@@ -120,9 +132,11 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         } else {
             mDatabase?.insert(tableName, null, values)
         }
-        close(cursor)
+        cursor?.close()
+        close()
     }
 
+    @Synchronized
     override fun replace(info: MusicFileBean) {
         getWritableDatabase()
         if (mDatabase == null) {
@@ -138,9 +152,10 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         values.put("COVER", info.cover)
         values.put("URL", info.url)
         mDatabase?.replace(tableName, null, values)
-        close(null)
+        close()
     }
 
+    @Synchronized
     override fun updateLocalPath(songID: String?, localPath: String?, duration: Int?) {
         getWritableDatabase()
         if (mDatabase == null) {
@@ -151,9 +166,10 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         values.put("LOCAL_PATH", localPath)
         values.put("DURATION", duration)
         mDatabase?.update(tableName, values, "SONG_ID = ?", arrayOf(songID))
-        close(null)
+        close()
     }
 
+    @Synchronized
     override fun queryAll(): MutableList<MusicFileBean>? {
         getReadableDataBase()
         if (mDatabase == null) {
@@ -161,8 +177,8 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         }
         val sql = "SELECT * FROM $tableName"
         val cursor = mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
-        if (cursor.count <= 0) {
-            close(cursor)
+        if (!cursor.isClosed && cursor.count <= 0) {
+            cursor.close()
             return null
         }
         val infoList: MutableList<MusicFileBean> = ArrayList()
@@ -178,10 +194,14 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             info.url = cursor.getString(cursor.getColumnIndex("URL"))
             infoList.add(info)
         }
-        close(cursor)
+        if (!cursor.isClosed) {
+            cursor.close()
+        }
+        close()
         return infoList
     }
 
+    @Synchronized
     override fun query(songID: String?): MusicFileBean? {
         if (songID == null) {
             return null
@@ -193,8 +213,8 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         val sql = "SELECT * FROM $tableName WHERE SONG_ID = ?"
         val cursor = mDatabase?.rawQuery(sql, arrayOf(songID))
             ?: throw SQLException("Cursor is null")
-        if (cursor.count <= 0) {
-            close(cursor)
+        if (!cursor.isClosed && cursor.count <= 0) {
+            cursor.close()
             return null
         }
         val info = MusicFileBean()
@@ -209,10 +229,14 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             info.url = cursor.getString(cursor.getColumnIndex("URL"))
             break
         }
-        close(cursor)
+        if (!cursor.isClosed) {
+            cursor.close()
+        }
+        close()
         return info
     }
 
+    @Synchronized
     override fun queryList(
         queryMsg: String?,
         page: Int?,
@@ -252,26 +276,31 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             info.url = cursor.getString(cursor.getColumnIndex("URL"))
             infoList.add(info)
         }
-        close(cursor)
+        if (!cursor.isClosed) {
+            cursor.close()
+        }
+        close()
         return infoList
     }
 
+    @Synchronized
     override fun delete(songID: String?) {
         getWritableDatabase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
         }
         mDatabase?.delete(tableName, "SONG_ID = ?", arrayOf(songID))
-        close(null)
+        close()
     }
 
+    @Synchronized
     override fun deleteAll() {
         getWritableDatabase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
         }
         mDatabase?.delete(tableName, null, null)
-        close(null)
+        close()
     }
 
 }

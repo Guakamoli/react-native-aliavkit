@@ -12,12 +12,18 @@ import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.rncamerakit.db.MusicFileBean
+import com.rncamerakit.db.MusicFileInfoDao
 
 
 class CKCameraManager : SimpleViewManager<CKCamera>() {
 
     override fun getName(): String {
         return "CKCameraManager"
+    }
+
+    override fun onDropViewInstance(view: CKCamera) {
+        super.onDropViewInstance(view)
+        MusicFileInfoDao.instance.closeDB()
     }
 
     private var mWidth = 0

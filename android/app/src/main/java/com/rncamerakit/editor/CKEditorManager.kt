@@ -10,12 +10,12 @@ import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.rncamerakit.db.MusicFileBean
+import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.utils.DownloadUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
-
 
     private var mWidth = 0
     private var mHeight = 0
@@ -24,6 +24,12 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
 
     override fun getName(): String {
         return "CKEditorManager"
+    }
+
+    override fun onDropViewInstance(view: CKEditor) {
+        super.onDropViewInstance(view)
+        MusicFileInfoDao.instance.closeDB()
+        Log.e("AAA", "onDropViewInstance")
     }
 
     @DelicateCoroutinesApi
@@ -48,10 +54,7 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
 //        }
     }
 
-    override fun onDropViewInstance(view: CKEditor) {
-        super.onDropViewInstance(view)
-        Log.e("AAA", "onDropViewInstance")
-    }
+
 
     //设置Editor宽高
     @ReactProp(name = "editStyle")
