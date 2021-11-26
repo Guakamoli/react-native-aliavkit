@@ -85,6 +85,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
                 MediaPlayerManage.instance.start(it, null)
             }
             promise.resolve(GsonBuilder().create().toJson(musicInfo))
+            return
         }
         if (musicInfo != null) {
             DownloadUtils.downloadMusic(reactContext, musicInfo.songID, musicInfo.url, null,
