@@ -274,13 +274,9 @@ class CarouselWrapper extends Component<Props, State> {
       const success = await this.props.camera.current?.startRecording?.();
 
       if (!success) {
-<<<<<<< HEAD
-=======
         console.info(this.props.myRef, 'hahah');
->>>>>>> 24be05d (安卓代码植入)
         this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
         this.pressLock = false;
-
         return;
       }
       this.startTime = Date.now();
