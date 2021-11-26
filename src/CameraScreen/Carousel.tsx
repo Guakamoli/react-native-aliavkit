@@ -338,7 +338,6 @@ class CarouselWrapper extends Component<Props, State> {
     // TODO
     this.ani.stop();
     const videoPath = await this.props.camera.current?.stopRecording?.();
-
     setTimeout(() => {
       this.reset();
     }, 0);
@@ -424,7 +423,6 @@ class CarouselWrapper extends Component<Props, State> {
       if (index == 0) {
         return;
       }
-
       //TODO
       if (item.icon) {
         item.icon = item.icon.replace('http://', 'https://');
@@ -510,6 +508,7 @@ class CarouselWrapper extends Component<Props, State> {
                   extrapolate: 'clamp',
                 }),
               },
+              // TODO
             ],
             zIndex: 200,
           }}
