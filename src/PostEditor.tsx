@@ -757,7 +757,16 @@ const PostEditor = (props) => {
               setImgFilterName('');
             }}
           >
-            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);', marginRight: 5 }}>
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                marginRight: 5,
+                marginBottom: 5,
+                marginTop: 20,
+              }}
+            >
               <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
             </View>
             {propsTitles('M1')}
