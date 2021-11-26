@@ -22,7 +22,24 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
-import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
+import {
+  Grayscale,
+  Temperature,
+  Sepia,
+  Warm,
+  Vintage,
+  Tint,
+  Technicolor,
+  Tritanopia,
+  Browni,
+  Achromatopsia,
+  Deuteranomaly,
+  Tritanomaly,
+  Polaroid,
+  Cool,
+  Invert,
+  Emboss,
+} from 'react-native-image-filter-kit';
 import ImageMap from '../images';
 const { postNoVolumePng, postvolumePng, postnoVolumeImage } = ImageMap;
 
@@ -604,21 +621,67 @@ const PostEditor = (props) => {
         />
       );
       switch (imgFilter) {
-        case 'Sepia': {
+        case 'Sepia2': {
           return <Sepia image={ImageComponent} amount={2} />;
         }
         case 'Temperature': {
           return <Temperature amount={0.5} image={ImageComponent} />;
         }
-        case 'Sepia2': {
+        case 'Sepia0.4': {
           return <Sepia amount={0.4} image={ImageComponent} />;
         }
+        case 'Warm': {
+          return <Warm image={ImageComponent} />;
+        }
+        case 'Browni': {
+          return <Browni image={ImageComponent} />;
+        }
+        case 'Tint': {
+          return <Tint amount={0.2} image={ImageComponent} />;
+        }
+        case 'Technicolor': {
+          return <Technicolor image={ImageComponent} />;
+        }
+        case 'Tritanomaly': {
+          return <Tritanomaly image={ImageComponent} />;
+        }
+        case 'Tritanopia': {
+          return <Tritanopia image={ImageComponent} />;
+        }
+        case 'Deuteranomaly': {
+          return <Deuteranomaly image={ImageComponent} />;
+        }
+        case 'Invert': {
+          return <Invert image={ImageComponent} firstColor={'#FFE580'} secondColor={'pink'} />;
+        }
+        case 'EmbossPolaroid': {
+          return <Emboss image={<Polaroid image={ImageComponent} />} />;
+        }
+        case 'EmbossCool': {
+          return <Emboss image={<Cool image={ImageComponent} />} />;
+        }
+        case 'EmbossAchromatopsia': {
+          return <Emboss image={<Achromatopsia image={ImageComponent} />} />;
+        }
+
         default: {
           return ImageComponent;
         }
       }
     };
-
+    const propsImage = () => {
+      return (
+        <Image
+          style={{ width: 100, height: 100, marginRight: 5, marginBottom: 5, marginTop: 20 }}
+          // source={require('./parrot.png')}
+          source={{ uri: multipleSandBoxData[0] }}
+          resizeMode={'contain'}
+        />
+      );
+    };
+    const propsTitles = (title) => {
+      return <Text style={{ color: 'white', fontSize: 16, marginLeft: 40 }}>{title}</Text>;
+    };
     return (
       <>
         <View style={{ width: width, height: width, overflow: 'hidden' }}>
@@ -647,60 +710,122 @@ const PostEditor = (props) => {
               setImgFilterName('');
             }}
           >
-            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);', marginRight: 5 }}>
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                marginRight: 5,
+                marginBottom: 5,
+                marginTop: 20,
+              }}
+            >
               <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
             </View>
+            {propsTitles('M1')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Tritanomaly');
+            }}
+          >
+            <Tritanomaly image={propsImage()} />
+            {propsTitles('M2')}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setImgFilterName('Sepia');
+              setImgFilterName('Tritanopia');
             }}
           >
-            <Sepia
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-              amount={2}
-            />
+            <Tritanopia image={propsImage()} />
+            {propsTitles('M3')}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setImgFilterName('Temperature');
+              setImgFilterName('Deuteranomaly');
             }}
           >
-            <Temperature
-              amount={0.5}
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-            />
+            <Deuteranomaly image={propsImage()} />
+            {propsTitles('M4')}
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Sepia0.4');
+            }}
+          >
+            <Sepia amount={0.4} image={propsImage()} />
+            {propsTitles('M5')}
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('Sepia2');
             }}
           >
-            <Sepia
-              amount={0.4}
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-            />
+            <Sepia amount={2} image={propsImage()} />
+            {propsTitles('M6')}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Browni');
+            }}
+          >
+            <Browni image={propsImage()} />
+            {propsTitles('M7')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Tint');
+            }}
+          >
+            <Tint amount={0.2} image={propsImage()} />
+            {propsTitles('M8')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Invert');
+            }}
+          >
+            <Invert image={propsImage()} firstColor={'#FFE580'} secondColor={'pink'} />
+            {propsTitles('M9')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Technicolor');
+            }}
+          >
+            <Technicolor image={propsImage()} />
+            {propsTitles('M10')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossCool');
+            }}
+          >
+            <Emboss image={<Cool image={propsImage()} />} />
+            {propsTitles('M11')}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossAchromatopsia');
+            }}
+          >
+            <Emboss image={<Achromatopsia image={propsImage()} />} />
+            {propsTitles('M12')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossPolaroid');
+            }}
+          >
+            <Emboss image={<Polaroid image={propsImage()} />} />
+            {propsTitles('M13')}
           </TouchableOpacity>
         </ScrollView>
       </>
