@@ -307,7 +307,6 @@ class CarouselWrapper extends Component<Props, State> {
       if (!success) {
         this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
         this.pressLock = false;
-
         return;
       }
       this.startTime = Date.now();
