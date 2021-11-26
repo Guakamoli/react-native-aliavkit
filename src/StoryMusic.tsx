@@ -42,7 +42,7 @@ const StoryMusic = (props) => {
       console.log('初始化', songData[0]);
       playMusic(songData[0]);
       setCheckedData(songData[0]);
-      getmusicInfo(songData[0]);
+      // getmusicInfo(songData[0]);
       !setMusicState && props.setMusic(true);
     }
   }, [songData]);
@@ -67,7 +67,8 @@ const StoryMusic = (props) => {
     }
 
     const songa = await AVService.playMusic(song.songID);
-    getMusicOn(song);
+    getMusicOn(songa);
+    getmusicInfo(songa);
     console.log('---- 返回值: ', songa);
     // getmusicInfo(song)
   };
@@ -75,6 +76,7 @@ const StoryMusic = (props) => {
     console.log('暂停音乐', song);
 
     await AVService.pauseMusic(song.songID);
+    getmusicInfo({});
   };
 
   const getSong = async ({ name = 'all-music', page = 1, pageSize = 5 }) => {
@@ -112,7 +114,7 @@ const StoryMusic = (props) => {
           playMusic(songData[slideIndex]);
           setTimeout(() => {
             !setMusicState && props.setMusic(true);
-            getmusicInfo(songData[slideIndex]);
+            // getmusicInfo(songData[slideIndex]);
             setCheckedData(songData[slideIndex]);
             setCurrentIndex(slideIndex);
           }, 300);
@@ -127,9 +129,9 @@ const StoryMusic = (props) => {
                   pauseMusic(item);
                   props.setMusic(false);
                   setCheckedData({});
-                  getmusicInfo({});
+                  // getmusicInfo({});
                 } else {
-                  getmusicInfo(item);
+                  // getmusicInfo(item);
                   setCheckedData(item);
                   playMusic(item);
                   !setMusicState && props.setMusic(true);
@@ -256,11 +258,11 @@ const StoryMusic = (props) => {
               if (!setMusicState) {
                 playMusic(songData[currentIndex]);
                 setCheckedData(songData[currentIndex]);
-                getmusicInfo(songData[currentIndex]);
+                // getmusicInfo(songData[currentIndex]);
               } else {
                 pauseMusic(songData[currentIndex]);
                 setCheckedData({});
-                getmusicInfo({});
+                // getmusicInfo({});
               }
             }}
           >
