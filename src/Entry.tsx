@@ -109,8 +109,8 @@ const Entry = (props) => {
             navigation.replace('FeedsPost');
           }}
           // 拿到上传数据
-          getUploadFile={(data, successCallBack = () => {}) => {
-            sendfile(data, successCallBack);
+          getUploadFile={(data) => {
+            sendfile(data);
           }}
           haptics={haptics}
           cameraFlipImage={cameraFlipPng}
