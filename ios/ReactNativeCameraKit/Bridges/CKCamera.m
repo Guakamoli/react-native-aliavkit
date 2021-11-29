@@ -102,9 +102,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -120,7 +120,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 [self addSubview:self.cameraAction.cameraPreview];
             }
             [self.cameraAction startPreview];
-            [self.cameraAction deletePreviousEffectPaster];
+//            [self.cameraAction deletePreviousEffectPaster];
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
@@ -131,9 +131,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
