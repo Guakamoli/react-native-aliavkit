@@ -264,9 +264,9 @@
 
 - (void)stopPreview
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
-        [self clearBeautyEngine];
-    }
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
+//        [self clearBeautyEngine];
+//    }
     [_recorder stopPreview];
 }
 
@@ -282,9 +282,10 @@
     (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
     if (cameraPosition != self.recorder.cameraPosition) {
         //previous front，now back then clear
-        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
-            [[BeautyEngineManager shareManager] clear];
-        }
+//        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
+//            [self clearBeautyEngine];
+//        }
+        
         [self.recorder switchCameraPosition];
     }
 }
@@ -473,9 +474,9 @@
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
-        return CMSampleBufferGetImageBuffer(sampleBuffer);
-    }
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
+//        return CMSampleBufferGetImageBuffer(sampleBuffer);
+//    }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
     CGFloat beautyWhite = self.normalBeautyLevel * 0.01 * 2.0f;
