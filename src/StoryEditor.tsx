@@ -70,7 +70,7 @@ type State = {
   startExportVideo: Boolean;
 
   musicOpen: Boolean;
-  // musicInfo: any;
+  // musicInfo: any
 };
 
 export default class StoryEditor extends Component<Props, State> {
@@ -164,7 +164,7 @@ export default class StoryEditor extends Component<Props, State> {
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       // console.log(Platform.OS === 'android');
-      // VideoEditor.release();
+      //  this.camera.release();
     } else {
       RNEditViewManager.stop();
     }
@@ -226,7 +226,6 @@ export default class StoryEditor extends Component<Props, State> {
               : this.props.videomusicIcon
             : this.props.musicRevampImage,
         onPress: () => {
-          //TODO  story 拍摄图片最终导出的是视频，不需要背景音乐嘛？
           if (this.props.fileType == 'video') {
             this.setState({ musicOpen: !musicOpen });
           }

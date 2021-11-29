@@ -287,7 +287,6 @@ class PostContent extends Component {
             <ImageCropper
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
-              //TODO
               videoPaused={this.state.videoPaused}
               srcSize={{
                 width: imageItem.width,
@@ -610,7 +609,6 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    // this.getPhotos();
     this.getPhotoFromCache();
   }
   shouldComponentUpdate(nextProps, nextState) {
