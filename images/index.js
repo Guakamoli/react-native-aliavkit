@@ -38,5 +38,7 @@ const ImageMap = {
     postvolumePng: require('./postVolume.png'),
     postnoVolumeImage: require('./postNoVolume.png'),
     errorAlertIconPng: require('./errorAlertIcon.png'),
+    postnoVolumeImage: require('./postNoVolume.png')
+
 }
 export default ImageMap
