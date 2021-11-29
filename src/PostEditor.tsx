@@ -139,7 +139,7 @@ const PostEditor = (props) => {
   const scrollAniRef = useRef(new Animated.Value(10)).current;
   const aniRef = useRef(null);
   const toast = useRef();
-
+  const toastAnim = useRef(new Animated.Value(1)).current;
   const [imgfilterName, setImgFilterName] = useState('');
   const stopRef = useRef(false);
   const startRef = useRef(false);
@@ -221,6 +221,14 @@ const PostEditor = (props) => {
     setmultipleSandBoxData([params?.trimVideoData]);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
+    Animated.timing(
+      // 随时间变化而执行动画
+      toastAnim, // 动画中的变量值
+      {
+        toValue: 0, // 透明度最终变为1，即完全不透明
+        duration: 3000, // 让动画持续一段时间
+      },
+    ).start();
   }, [props.params]);
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
@@ -603,6 +611,22 @@ const PostEditor = (props) => {
       </View>
     );
   };
+  // 裁剪弹框
+  const cropToast = () => {
+    return (
+      <Animated.View
+        style={[
+          styles.toastBox,
+          {
+            opacity: toastAnim,
+          },
+        ]}
+      >
+        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>请修剪视频,视频时长不能超过5分钟。</Text>
+        <View style={styles.toastShow}></View>
+      </Animated.View>
+    );
+  };
   // 切换底部功能
   const switchProps = () => {
     let switchProps;
@@ -624,6 +648,7 @@ const PostEditor = (props) => {
           bottom: 43,
         }}
       >
+        {videoTime / 1000 > 300 && cropToast()}
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
@@ -938,6 +963,33 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fff',
     lineHeight: 24,
+  },
+  toastShow: {
+    width: 0,
+    height: 0,
+    borderWidth: 10,
+    borderTopColor: 'rgba(255,255,255,0.85)',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 48,
+    right: 40,
+  },
+  toastBox: {
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    position: 'absolute',
+    width: 295,
+    height: 48,
+    bottom: 30,
+    left: (width - 295) / 2,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   },
 });
 
