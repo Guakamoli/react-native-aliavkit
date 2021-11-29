@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated } from 'react-native';
+// TODO
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, Platform } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
@@ -70,78 +71,85 @@ const Entry = (props) => {
   );
   return (
     <>
-      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-        <PostUpload
-          // onRef={this.onRef}
-          {...props}
-          goback={goBack}
-          goStory={() => {
-            props.navigation.replace('FeedsStory');
-          }}
-          goPostEditor={(data) => {
-            props.navigation.navigate('FeedsPostEditor', { ...data });
-          }}
-          type={type}
-          setType={(type) => {
-            dispatch(setType(type));
-          }}
-          multipleBtnImage={multipleBtnPng}
-          startMultipleBtnImage={startMultipleBtnPng}
-          postCameraImage={postCameraPng}
-          changeSizeImage={changeSizePng}
-          closePng={closePng}
-          cameraModule={true}
-          noVolumeImage={noVolumePng}
-          volumeImage={volumePng}
-        />
-      </View>
-      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
-        <CameraScreen
-          actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
-          // 退出操作
-          {...props}
-          goback={goBack}
-          type={type}
-          setType={(type) => {
-            dispatch(setType(type));
-          }}
-          goPost={() => {
-            navigation.replace('FeedsPost');
-          }}
-          // 拿到上传数据
-          getUploadFile={(data, successCallBack = () => {}) => {
-            sendfile(data, successCallBack);
-          }}
-          haptics={haptics}
-          cameraFlipImage={cameraFlipPng}
-          captureButtonImage={captureButtonPng}
-          closeImage={closePng}
-          musicImage={musicPng}
-          beautifyImage={beautifyPng}
-          beautyAdjustImag={beautyAdjustPng}
-          AaImage={AaPng}
-          filterImage={filterPng}
-          musicRevampImage={musicRevampPng}
-          giveUpImage={giveUpPng}
-          noVolumeImage={noVolumePng}
-          tailorImage={tailorPng}
-          volumeImage={volumePng}
-          cameraModule={true}
-          musicDynamicGif={musicDynamicGif}
-          musicIconPng={musicIconPng}
-          musicIcongray={musicIcongray}
-          videomusicIcon={videomusicIconPng}
-          musicSearch={musicSearchPng}
-          selectBeautify={selectBeautifyPng}
-          noResultPng={noResultPng}
-          cameraModule={true}
-        />
-      </View>
+      {/* TODP 安卓 初始化拍摄期 */}
+      {['post', 'edit'].indexOf(type) > -1 ? (
+        <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
+          <PostUpload
+            // onRef={this.onRef}
+            {...props}
+            goback={goBack}
+            goStory={() => {
+              props.navigation.replace('FeedsStory');
+            }}
+            goPostEditor={(data) => {
+              props.navigation.navigate('FeedsPostEditor', { ...data });
+            }}
+            type={type}
+            setType={(type) => {
+              dispatch(setType(type));
+            }}
+            multipleBtnImage={multipleBtnPng}
+            startMultipleBtnImage={startMultipleBtnPng}
+            postCameraImage={postCameraPng}
+            changeSizeImage={changeSizePng}
+            closePng={closePng}
+            cameraModule={true}
+            noVolumeImage={noVolumePng}
+            volumeImage={volumePng}
+          />
+        </View>
+      ) : (
+        <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
+          <CameraScreen
+            actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
+            // 退出操作
+            {...props}
+            goback={goBack}
+            type={type}
+            setType={(type) => {
+              dispatch(setType(type));
+            }}
+            goPost={() => {
+              navigation.replace('FeedsPost');
+            }}
+            // 拿到上传数据
+            getUploadFile={(data) => {
+              sendfile(data);
+            }}
+            haptics={haptics}
+            cameraFlipImage={cameraFlipPng}
+            captureButtonImage={captureButtonPng}
+            closeImage={closePng}
+            musicImage={musicPng}
+            beautifyImage={beautifyPng}
+            beautyAdjustImag={beautyAdjustPng}
+            AaImage={AaPng}
+            filterImage={filterPng}
+            musicRevampImage={musicRevampPng}
+            giveUpImage={giveUpPng}
+            noVolumeImage={noVolumePng}
+            tailorImage={tailorPng}
+            volumeImage={volumePng}
+            cameraModule={true}
+            musicDynamicGif={musicDynamicGif}
+            musicIconPng={musicIconPng}
+            musicIcongray={musicIcongray}
+            videomusicIcon={videomusicIconPng}
+            musicSearch={musicSearchPng}
+            selectBeautify={selectBeautifyPng}
+            noResultPng={noResultPng}
+            cameraModule={true}
+          />
+        </View>
+      )}
       <Animated.View
         style={[
           styles.tools,
           { bottom: props.insets.bottom },
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
+          // TODO
+          Platform.OS === 'android' && { opacity: types.findIndex((i) => i.type === type) > -1 ? 1 : 0 },
+
           {
             transform: [{ translateX: transX }],
           },
