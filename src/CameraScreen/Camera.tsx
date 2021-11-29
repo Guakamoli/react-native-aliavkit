@@ -171,7 +171,7 @@ class RenderCamera extends Component {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
       showToast: false,
     };
-    this.fadeAnim = new Animated.Value(1);
+    // this.fadeAnim = new Animated.Value(1);
   }
   handleAppStateChange = (e) => {
     if (this.props.isDrawerOpen && this.props.type === 'story') {
@@ -232,19 +232,19 @@ class RenderCamera extends Component {
     if (stateUpdated) {
       return true;
     }
-    if (this.fadeAnim && !this.state.showToast) {
-      this.setState({
-        showToast: true,
-      });
-      Animated.timing(
-        // 随时间变化而执行动画
-        this.fadeAnim, // 动画中的变量值
-        {
-          toValue: 0, // 透明度最终变为1，即完全不透明
-          duration: 4000, // 让动画持续一段时间
-        },
-      ).start();
-    }
+    // if (this.fadeAnim && !this.state.showToast) {
+    //   this.setState({
+    //     showToast: true,
+    //   });
+    //   Animated.timing(
+    //     // 随时间变化而执行动画
+    //     this.fadeAnim, // 动画中的变量值
+    //     {
+    //       toValue: 0, // 透明度最终变为1，即完全不透明
+    //       duration: 4000, // 让动画持续一段时间
+    //     },
+    //   ).start();
+    // }
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
       if (!showCamera) {
@@ -308,7 +308,7 @@ class RenderCamera extends Component {
                 onReadCode={() => {}}
                 onRecordingProgress={() => {}}
               />
-              {this.state.showToast && (
+              {/* {this.state.showToast && (
                 <Animated.View
                   style={[
                     styles.toastBox,
@@ -322,7 +322,7 @@ class RenderCamera extends Component {
                   </Text>
                   <View style={styles.toast}></View>
                 </Animated.View>
-              )}
+              )} */}
             </View>
           ) : null}
         </View>
