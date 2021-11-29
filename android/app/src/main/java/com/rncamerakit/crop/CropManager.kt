@@ -449,9 +449,8 @@ class CropManager {
                                 (rect.right*scale).toInt(),
                                 (rect.bottom*scale).toInt()
                             )
-                            bitmap.recycle()
-
                             BitmapUtils.saveBitmap(cropBitmap, videoFramePath)
+                            bitmap.recycle()
                             if (!TextUtils.isEmpty(videoFramePath)) {
                                 continuation.resume(videoFramePath)
                             } else {
