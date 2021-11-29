@@ -104,7 +104,7 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 
         initKitCamera();
 
-        initVideo(this);
+//        initVideo(this);
     }
 
     private void initKitCamera() {
