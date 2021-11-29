@@ -29,6 +29,8 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 
+import ImageMap from '../../images';
+const { postFileSelectPng } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 let clickItemLock = false;
@@ -284,7 +286,6 @@ class PostContent extends Component {
             <ImageCropper
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
-              //TODO
               videoPaused={this.state.videoPaused}
               srcSize={{
                 width: imageItem.width,
@@ -407,7 +408,7 @@ class GridItemCover extends Component {
               Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
             ]}
           >
-            <View
+            {/* <View
               style={{
                 width: 18,
                 height: 18,
@@ -418,7 +419,20 @@ class GridItemCover extends Component {
                 alignItems: 'center',
                 display: this.state.active ? 'flex' : 'none',
               }}
-            ></View>
+            ></View> */}
+            <Image
+              source={postFileSelectPng}
+              style={{
+                width: 18,
+                height: 18,
+                // borderRadius: 20,
+                zIndex: 99,
+                // backgroundColor: '#836BFF',
+                // justifyContent: 'center',
+                // alignItems: 'center',
+                display: this.state.active ? 'flex' : 'none',
+              }}
+            />
           </View>
           <Animated.View
             style={[
@@ -577,7 +591,6 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    // this.getPhotos();
     this.getPhotoFromCache();
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -861,7 +874,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '600',
     color: '#836BFF',
     lineHeight: 21,
   },

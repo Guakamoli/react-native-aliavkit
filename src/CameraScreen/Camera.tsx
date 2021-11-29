@@ -14,11 +14,13 @@ import {
   Easing,
   Pressable,
   StatusBar,
+  AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
 import AVService from '../AVService';
+import CameraRoll from '@react-native-community/cameraroll';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -168,19 +170,40 @@ class RenderCamera extends Component {
     super(props);
     this.state = {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
+      showToast: false,
     };
+    this.fadeAnim = new Animated.Value(1);
   }
-  //TODO
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        this.setState({
+          showCamera: false,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      } else {
+        this.setState({
+          showCamera: true,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      }
+    }
+  };
   componentDidMount() {
-    console.log('拍摄初始化');
+    AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
-    console.log('拍摄销毁');
     if (Platform.OS === 'android') {
       //TODO
       this.props.camera.current?.release();
     }
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
+
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
@@ -189,6 +212,19 @@ class RenderCamera extends Component {
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       return true;
+    }
+    if (this.fadeAnim && !this.state.showToast) {
+      this.setState({
+        showToast: true,
+      });
+      Animated.timing(
+        // 随时间变化而执行动画
+        this.fadeAnim, // 动画中的变量值
+        {
+          toValue: 0, // 透明度最终变为1，即完全不透明
+          duration: 4000, // 让动画持续一段时间
+        },
+      ).start();
     }
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
@@ -245,19 +281,36 @@ class RenderCamera extends Component {
           }}
         >
           {this.state.showCamera ? (
-            <Camera
-              ref={(cam) => (this.props.camera.current = cam)}
-              cameraStyle={{ height: CameraFixHeight, width }}
-              flashMode={FLASH_MODE_AUTO}
-              cameraType={this.props.cameraType}
-              saveToCameraRoll={false}
-              focusMode={'on'}
-              normalBeautyLevel={this.props.normalBeautyLevel * 10}
-              facePasterInfo={this.props.facePasterInfo}
-              torchMode={'off'}
-              onReadCode={() => {}}
-              onRecordingProgress={() => {}}
-            />
+            <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
+              <Camera
+                ref={(cam) => (this.props.camera.current = cam)}
+                cameraStyle={{ height: CameraFixHeight, width }}
+                flashMode={FLASH_MODE_AUTO}
+                cameraType={this.props.cameraType}
+                saveToCameraRoll={false}
+                focusMode={'on'}
+                normalBeautyLevel={this.props.normalBeautyLevel * 10}
+                facePasterInfo={this.props.facePasterInfo}
+                torchMode={'off'}
+                onReadCode={() => {}}
+                onRecordingProgress={() => {}}
+              />
+              {this.state.showToast && (
+                <Animated.View
+                  style={[
+                    styles.toastBox,
+                    {
+                      opacity: this.fadeAnim,
+                    },
+                  ]}
+                >
+                  <Text style={{ textAlign: 'center', fontSize: 14, color: '#000', lineHeight: 40, fontWeight: '500' }}>
+                    点击拍照,长按拍视频
+                  </Text>
+                  <View style={styles.toast}></View>
+                </Animated.View>
+              )}
+            </View>
           ) : null}
         </View>
       </View>
@@ -497,6 +550,31 @@ const styles = StyleSheet.create({
 
   propStyle: {
     backgroundColor: '#334',
+
     opacity: 0.8,
+  },
+  toastBox: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: 20,
+    width: 200,
+    height: 40,
+    zIndex: 18,
+    left: (width - 200) / 2,
+    bottom: 120,
+  },
+  toast: {
+    width: 0,
+    height: 0,
+    borderWidth: 8,
+    borderTopColor: 'rgba(255,255,255,0.85)',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 40,
+    left: 100 - 4,
   },
 });
