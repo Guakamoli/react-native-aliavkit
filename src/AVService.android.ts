@@ -51,11 +51,11 @@ export default class AVService {
     return await RNEditorKitModule.saveMediaStore(sourcePath, sourceType);
   }
 
-  static async playMusic(songID: string) {
+  static async playMusic(songID) {
     return await RNEditorKitModule.playMusic(songID);
   }
 
-  static async pauseMusic(songID: string) {
+  static async pauseMusic(songID) {
     console.info('pauseMusic', songID);
     return await RNEditorKitModule.stopMusic(songID);
   }

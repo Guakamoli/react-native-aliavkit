@@ -114,6 +114,7 @@ export default class StoryEditorTest extends Component<Props, State> {
   }
   async pauseMusic(song) {
     console.info('暂停音乐', song);
+    console.info('暂停音乐test', song.songID);
     await AVService.pauseMusic(song.songID);
   }
   //  发布快拍   导出视频  丢出数据
