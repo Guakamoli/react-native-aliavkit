@@ -56,6 +56,7 @@ export default class AVService {
   }
 
   static async pauseMusic(songID: string) {
+    console.info('pauseMusic', songID);
     return await RNEditorKitModule.stopMusic(songID);
   }
 
