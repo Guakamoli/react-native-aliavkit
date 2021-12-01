@@ -28,6 +28,7 @@ import ImageCropper from '../react-native-simple-image-cropper/src';
 import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
+import { Button } from 'react-native-elements';
 
 import ImageMap from '../../images';
 const { postFileSelectPng } = ImageMap;
@@ -127,6 +128,24 @@ const PostFileUploadHead = React.memo((props) => {
     >
       <TouchableOpacity>
         <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
+        <View style={{ backgroundColor: 'red' }}>
+          <Button
+            buttonStyle={{
+              backgroundColor: 'transparent',
+            }}
+            loadingStyle={{
+              width: 55,
+              height: 45,
+              backgroundColor: 'transparent',
+            }}
+            style={{ backgroundColor: 'transparent' }}
+            containerStyle={{
+              backgroundColor: 'transparent',
+            }}
+            loading
+            loadingProps={{ size: 'large' }}
+          />
+        </View>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
