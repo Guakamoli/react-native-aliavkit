@@ -101,7 +101,7 @@ static RNStorageManager *_instance = nil;
 
 - (RNMusicInfo *)getCachedSongByID:(NSString *)cacheID
 {
-    return [_musicSearchCache valueForKey:cacheID];
+    return [_musicSearchCache objectForKey:cacheID];
 }
 
 - (NSString *)cacheID:(RNMusicInfo *)song

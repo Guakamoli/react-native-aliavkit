@@ -72,8 +72,8 @@ RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue];
-    CGFloat endTime = [[options valueForKey:@"endTime"] floatValue];
+    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
+    CGFloat endTime = [[options objectForKey:@"endTime"] floatValue];
     [self.editView trimVideoFromTime:startTime toTime:endTime];
 }
 

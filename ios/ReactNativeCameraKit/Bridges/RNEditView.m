@@ -324,11 +324,17 @@ AliyunCropDelegate
 {
     if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
         CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
-        self.mediaConfig.outputSize = outputSize;
-        CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
-        self.mediaConfig.minDuration = minDuration;
-        CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
-        self.mediaConfig.maxDuration = maxDuration;
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.mediaConfig.outputSize = outputSize;
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.mediaConfig.maxDuration = maxDuration;
+        }
         _mediaInfo = mediaInfo;
     }
 }
@@ -336,8 +342,8 @@ AliyunCropDelegate
 - (void)setEditStyle:(NSDictionary *)editStyle
 {
     if (_editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
-        _editWidth = [[editStyle valueForKey:@"width"] floatValue];
-        _editHeight = [[editStyle valueForKey:@"height"] floatValue];
+        _editWidth = [[editStyle objectForKey:@"width"] floatValue];
+        _editHeight = [[editStyle objectForKey:@"height"] floatValue];
     }
 }
 
@@ -444,7 +450,7 @@ AliyunCropDelegate
     
     if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
         AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-        model.path = [musicInfo valueForKey:@"localPath"];
+        model.path = [musicInfo objectForKey:@"localPath"];
         model.startTime = 0;
         
         AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];

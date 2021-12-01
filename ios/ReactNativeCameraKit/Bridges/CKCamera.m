@@ -151,11 +151,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)setupDefault
 {
     CGSize outputSize = [RCTConvert CGSize:_mediaInfo[@"outputSize"]];
-    self.cameraAction.mediaConfig.outputSize = outputSize;
-    CGFloat minDuration = [RCTConvert CGFloat:_mediaInfo[@"minDuration"]];
-    self.cameraAction.mediaConfig.minDuration = minDuration;
-    CGFloat maxDuration = [RCTConvert CGFloat:_mediaInfo[@"maxDuration"]];
-    self.cameraAction.mediaConfig.maxDuration = maxDuration;
+    if (outputSize.width != 0 && outputSize.height != 0 ) {
+        self.cameraAction.mediaConfig.outputSize = outputSize;
+    }
+    if ([_mediaInfo objectForKey:@"minDuration"]) {
+        CGFloat minDuration = [RCTConvert CGFloat:_mediaInfo[@"minDuration"]];
+        self.cameraAction.mediaConfig.minDuration = minDuration;
+    }
+    if ([_mediaInfo objectForKey:@"maxDuration"]) {
+        CGFloat maxDuration = [RCTConvert CGFloat:_mediaInfo[@"maxDuration"]];
+        self.cameraAction.mediaConfig.maxDuration = maxDuration;
+    }
     
     self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
     [self changeCamera:_cameraType];
@@ -190,11 +196,17 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
         CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
-        self.cameraAction.mediaConfig.outputSize = outputSize;
-        CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
-        self.cameraAction.mediaConfig.minDuration = minDuration;
-        CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
-        self.cameraAction.mediaConfig.maxDuration = maxDuration;
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.cameraAction.mediaConfig.outputSize = outputSize;            
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.cameraAction.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.cameraAction.mediaConfig.maxDuration = maxDuration;
+        }
         _mediaInfo = mediaInfo;
     }
 }
@@ -202,8 +214,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)setCameraStyle:(NSDictionary *)cameraStyle
 {
     if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
-        CGFloat previewWidth = [[cameraStyle valueForKey:@"width"] floatValue];
-        CGFloat previewHeight = [[cameraStyle valueForKey:@"height"] floatValue];
+        CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
+        CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
         self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
     }
 }
@@ -295,7 +307,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:options];
     
     //handle for local resource
-    NSString *bundlePath = [options valueForKey:@"bundlePath"];
+    NSString *bundlePath = [options objectForKey:@"bundlePath"];
     if (bundlePath) {
         info = [[AliyunPasterInfo alloc] initWithBundleFile:bundlePath];
     }
