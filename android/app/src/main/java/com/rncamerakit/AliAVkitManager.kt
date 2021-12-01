@@ -16,7 +16,9 @@ import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.sys.AlivcSdkCore
 import com.liulishuo.filedownloader.FileDownloader
 import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.font.FontManager
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class AliAVkitManager {
 
@@ -31,15 +33,19 @@ class AliAVkitManager {
                 //提前解压
                 RecordCommon.copyAll(context)
                 EditorCommon.copyAll(context, View(context))
-//                uiThread {
-//                }
+                uiThread {
+                    FontManager.instance.initFontJson()
+                }
             }
         }
 
         private var mLogPath: String? = null
         private fun initVideo(application: Application) {
             QupaiHttpFinal.getInstance().initOkHttpFinal()
+
             DownloaderManager.getInstance().init(application)
+//            DownloaderManager.getInstance().dbController
+
             AlivcSdkCore.register(application.applicationContext)
             if (BuildConfig.DEBUG) {
                 AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogWarn)

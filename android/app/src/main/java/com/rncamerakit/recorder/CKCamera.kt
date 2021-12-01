@@ -19,6 +19,7 @@ import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
+import com.rncamerakit.font.FontManager
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
@@ -260,6 +261,8 @@ class CKCamera(
         initRecorder()
         initFocusView()
         this.isInit = true;
+
+        FontManager.instance.downloadAllFont(mContext)
     }
 
 }

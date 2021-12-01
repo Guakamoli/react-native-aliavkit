@@ -65,8 +65,8 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
             }
         }
 
-        val md5Value = SPUtils.getInstance().getString(DownloadUtils.spKey)
-        if (TextUtils.isEmpty(md5Value)) {
+        val musicAll = MusicFileInfoDao.instance.queryAll()
+        if (musicAll == null || musicAll.isEmpty()) {
             DownloadUtils.getMusicJsonInfo {
                 val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
                 promise.resolve(GsonBuilder().create().toJson(list))

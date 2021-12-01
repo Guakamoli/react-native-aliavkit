@@ -113,26 +113,30 @@ class DownloadUtils {
             getMusicJsonInfo(null)
         }
 
-        val spKey = "MUSIC_JSON_FILE_MD5_KEY"
+        private const val spKey = "MUSIC_JSON_FILE_MD5_KEY"
 
         fun getMusicJsonInfo(callback: Callback?) {
             doAsync {
                 val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
                 val md5Text = MD5Utils.getMD5(text)
 
+                var baseInfo: MusicFileBaseInfo?=null
+
                 val md5Value = SPUtils.getInstance().getString(spKey)
                 if (md5Text != md5Value) {
-                    val baseInfo: MusicFileBaseInfo =
-                        GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
-                    MusicFileInfoDao.instance.insertList(baseInfo.songs)
+                    baseInfo = GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                    MusicFileInfoDao.instance.insertList(baseInfo?.songs)
                     SPUtils.getInstance().put(spKey, md5Text)
                 }
                 uiThread {
+//                    if (md5Text != md5Value) {
+//                        val baseInfo: MusicFileBaseInfo =GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+//                        MusicFileInfoDao.instance.insertList(baseInfo.songs)
+//                        SPUtils.getInstance().put(spKey, md5Text)
+//                        callback?.invoke(baseInfo.songs)
+//                    }
                     if (md5Text != md5Value) {
-                        val baseInfo: MusicFileBaseInfo =GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
-                        MusicFileInfoDao.instance.insertList(baseInfo.songs)
-                        SPUtils.getInstance().put(spKey, md5Text)
-                        callback?.invoke(baseInfo.songs)
+                        callback?.invoke(baseInfo?.songs)
                     }
                 }
             }
