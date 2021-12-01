@@ -316,25 +316,32 @@ PostContent = connect(PostContentMapStateToProps)(PostContent);
 class GridItemCover extends Component {
   constructor(props) {
     super(props);
-    this.animteRef = new Animated.Value(this.props.index === 0 ? 0.5 : 0);
     this.state = {
-      active: this.props.index === 0,
+      active: false,
     };
-    if (this.props.index === 0) {
-      prevClickCallBack = () => {
-        this.setState({ active: false });
-        this.animteRef.setValue(0);
-      };
+    this.animteRef = new Animated.Value(0);
+    if (this.props.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1) {
+      this.state.active = true;
+      this.animteRef = new Animated.Value(0.5);
     }
   }
+
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
       return true;
     }
+    if (nextProps.multipleData !== this.props.multipleData) {
+      const active = nextProps.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1;
+      this.setState({
+        active,
+      });
+
+      this.animteRef.setValue(active ? 0.5 : 0);
+      return false;
+    }
     if (nextState.active !== this.state.active) {
       return true;
     }
-
     return false;
   }
   clickItem = async () => {
@@ -355,20 +362,20 @@ class GridItemCover extends Component {
     } else {
       this.props.setMultipleData([itemCopy]);
     }
-    prevClickCallBack?.();
-    prevClickCallBack = () => {
-      this.setState({ active: false });
-      this.animteRef.setValue(0);
-    };
+    // prevClickCallBack?.();
+    // prevClickCallBack = () => {
+    //   this.setState({ active: false });
+    //   this.animteRef.setValue(0);
+    // };
 
-    if (this.props.selectMultiple) {
-      this.animteRef.setValue(this.state.active ? 0 : 0.5);
-    } else {
-      this.animteRef.setValue(0.5);
-    }
-    this.setState({
-      active: !this.state.active,
-    });
+    // if (this.props.selectMultiple) {
+    //   this.animteRef.setValue(this.state.active ? 0 : 0.5);
+    // } else {
+    //   this.animteRef.setValue(0.5);
+    // }
+    // this.setState({
+    //   active: !this.state.active,
+    // });
     // setTimeout(() => {
     //   clickItemLock = false
     // }, 60);
@@ -453,7 +460,7 @@ class GridItemCover extends Component {
 
 const GIWMapStateToProps = (state) => ({
   selectMultiple: state.shootPost.selectMultiple,
-  // multipleData: state.shootPost.multipleData,
+  multipleData: state.shootPost.multipleData,
 });
 const GIWMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
@@ -473,7 +480,7 @@ class GridItem extends Component {
     const { type, image } = item;
     return (
       <View>
-        <GridItemCover {...this.props} />
+        <GridItemCover {...this.props} key={item.image.uri} />
         <Image
           style={[
             {
@@ -550,7 +557,17 @@ class PostFileUpload extends Component {
           photos.push(node);
         }
         let firstData = photos[0];
-        if (!multipleData[0]) {
+
+        let selectedValid = false;
+        if (multipleData[0]) {
+          let myAssetId = multipleData[0]?.image?.uri.slice(5);
+          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+
+          if (localUri) {
+            selectedValid = true;
+          }
+        }
+        if (!selectedValid) {
           this.props.setMultipleData([firstData]);
         }
 
@@ -625,9 +642,23 @@ class PostFileUpload extends Component {
       if (photos) {
         const firstData = photos[0];
         if (!firstData) return;
-        if (!multipleData[0]) {
+        let selectedValid = false;
+        if (multipleData[0]) {
+          console.info(multipleData[0]?.image?.uri, 'multipleData[0]?.image?.uri');
+          let myAssetId = multipleData[0]?.image?.uri.slice(5);
+          console.info('kaishi');
+          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+          console.info('kaishi22');
+
+          console.info(localUri, 'localUrilocalUrilocalUri');
+          if (localUri) {
+            selectedValid = true;
+          }
+        }
+        if (!selectedValid) {
           this.props.setMultipleData([firstData]);
         }
+
         this.setState({
           CameraRollList: photos,
           multipleData: [firstData],
@@ -663,7 +694,7 @@ class PostFileUpload extends Component {
             removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
             renderItem={(props) => {
-              return <GridItem {...props} getVideFile={this.getVideFile} />;
+              return <GridItem {...props} getVideFile={this.getVideFile} key={props?.item?.image?.uri} />;
             }}
           />
         </View>
@@ -732,7 +763,6 @@ export default class CameraScreen extends Component<Props, State> {
         }
       } else {
         const cropData = result;
-        console.info('cropDatacropDatacropDatacropDatacropData', cropData, cropDataRow);
         trimVideoData = await AVService.crop({
           source: imageItem.uri,
           cropOffsetX: cropData.offset.x,
