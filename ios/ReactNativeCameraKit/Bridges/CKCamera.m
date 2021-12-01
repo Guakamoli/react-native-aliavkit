@@ -89,6 +89,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
 @property (nonatomic, strong) NSDictionary *cameraStyle;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
 @end
 
 @implementation CKCamera
@@ -149,6 +150,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setupDefault
 {
+    CGSize outputSize = [RCTConvert CGSize:_mediaInfo[@"outputSize"]];
+    self.cameraAction.mediaConfig.outputSize = outputSize;
+    CGFloat minDuration = [RCTConvert CGFloat:_mediaInfo[@"minDuration"]];
+    self.cameraAction.mediaConfig.minDuration = minDuration;
+    CGFloat maxDuration = [RCTConvert CGFloat:_mediaInfo[@"maxDuration"]];
+    self.cameraAction.mediaConfig.maxDuration = maxDuration;
+    
     self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
     [self changeCamera:_cameraType];
     if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
@@ -171,6 +179,25 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        self.cameraAction.mediaConfig.outputSize = outputSize;
+        CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+        self.cameraAction.mediaConfig.minDuration = minDuration;
+        CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+        self.cameraAction.mediaConfig.maxDuration = maxDuration;
+        _mediaInfo = mediaInfo;
+    }
+}
 
 - (void)setCameraStyle:(NSDictionary *)cameraStyle
 {

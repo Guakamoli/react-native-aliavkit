@@ -75,6 +75,7 @@ AliyunCropDelegate
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
 @property (nonatomic, strong) NSDictionary *editStyle;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
 
 @end
 
@@ -312,6 +313,25 @@ AliyunCropDelegate
 }
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        self.mediaConfig.outputSize = outputSize;
+        CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+        self.mediaConfig.minDuration = minDuration;
+        CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+        self.mediaConfig.maxDuration = maxDuration;
+        _mediaInfo = mediaInfo;
+    }
+}
 
 - (void)setEditStyle:(NSDictionary *)editStyle
 {

@@ -34,6 +34,8 @@ RCT_EXPORT_VIEW_PROPERTY(videoMute, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(musicInfo, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(onPlayProgress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(editStyle, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
+
 
 RCT_EXPORT_METHOD(play)
 {
