@@ -6932,6 +6932,11 @@ react-native-svg@^12.1.1:
     css-select "^2.1.0"
     css-tree "^1.0.0-alpha.39"
 
+react-native-toast-message@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/react-native-toast-message/-/react-native-toast-message-2.0.2.tgz#68f2396735e2f4ca9e290ca6a63d03d601a4a140"
+  integrity sha512-jjHRgK4o388WTfikoJ2D/EWtnrXKOW8YvpSBMENRG/QwK9C6SUWZ2zas/lpP634IMUbS1VuKwtQqpNXoJIAHwg==
+
 react-native-trimmer@Guakamoli/react-native-trimmer#kameoappCamera:
   version "1.1.2-patch2"
   resolved "https://codeload.github.com/Guakamoli/react-native-trimmer/tar.gz/a766e025ae64c33bde9e572ea5eb327a9f4bd945"

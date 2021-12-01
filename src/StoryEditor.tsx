@@ -409,8 +409,8 @@ export default class StoryEditor extends Component<Props, State> {
       <>
         <Toast
           ref={this.myRef}
-          position='center'
-          positionValue={70}
+          position='top'
+          positionValue={height * 0.4}
           fadeInDuration={750}
           fadeOutDuration={1000}
           opacity={0.8}
@@ -421,6 +421,7 @@ export default class StoryEditor extends Component<Props, State> {
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen ? (
             <StoryMusic
+              {...this.props}
               musicDynamicGif={this.props.musicDynamicGif}
               musicIconPng={this.props.musicIconPng}
               musicSearch={this.props.musicSearch}

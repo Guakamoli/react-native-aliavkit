@@ -43,6 +43,7 @@ import {
 } from 'react-native-image-filter-kit';
 import ImageMap from '../images';
 const { postNoVolumePng, postvolumePng, postnoVolumeImage } = ImageMap;
+import { Button } from 'react-native-elements';
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -175,8 +176,27 @@ const PostEditor = (props) => {
     } else {
       // 裁剪视频
       // console.info(toast.current, 'asasasas');
-      toast.current.show('正在导出, 请不要离开', 0);
+      // toast.current.show('正在导出, 请不要离开', 0);
+      toast.current.show(
+        <Button
+          buttonStyle={{
+            backgroundColor: 'transparent',
+          }}
+          loadingStyle={{
+            width: 55,
+            height: 45,
+            backgroundColor: 'transparent',
+          }}
+          style={{ backgroundColor: 'transparent' }}
+          containerStyle={{
+            backgroundColor: 'transparent',
+          }}
+          loading
+          loadingProps={{ size: 'large' }}
+        />,
 
+        0,
+      );
       //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.trimVideo({
@@ -928,7 +948,14 @@ const PostEditor = (props) => {
   return (
     //TODO
     <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
-      <Toast ref={toast} position='top' positionValue={300} fadeInDuration={1050} fadeOutDuration={800} opacity={0.8} />
+      <Toast
+        ref={toast}
+        position='top'
+        positionValue={height * 0.4}
+        fadeInDuration={1050}
+        fadeOutDuration={800}
+        opacity={0.8}
+      />
       <PostHead
         {...props}
         continueEdit={continueEdit}

@@ -852,7 +852,7 @@ export default class CameraScreen extends Component<Props, State> {
         <Toast
           ref={this.myRef}
           position='top'
-          positionValue={300}
+          positionValue={height * 0.4}
           fadeInDuration={1050}
           fadeOutDuration={800}
           opacity={0.8}
