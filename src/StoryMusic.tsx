@@ -13,13 +13,22 @@ import {
 
 import Carousel from 'react-native-snap-carousel';
 import AVService from './AVService';
+import { Button } from 'react-native-elements';
 import ImageMap from '../images';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');
 const StoryMusic = (props) => {
-  const { musicDynamicGif, musicIconPng, getmusicInfo, musicSearch, musicIcongray, setMusicState, getMusicOn } = props;
-
+  const {
+    musicDynamicGif,
+    musicIconPng,
+    getmusicInfo,
+    musicSearch,
+    musicIcongray,
+    setMusicState,
+    getMusicOn,
+    connected,
+  } = props;
   const [musicChoice, setMmusicChoice] = useState(false);
   const [checkedData, setCheckedData] = useState();
   const [musicSearchValue, setMusicSearchValue] = useState('');
@@ -29,8 +38,10 @@ const StoryMusic = (props) => {
 
   useEffect(() => {
     console.log(23);
-
-    getSong({});
+    // 判断当前是否有网络 没有不去获取音乐
+    if (connected) {
+      getSong({});
+    }
     return () => {
       console.log('音乐销毁');
       console.log('音乐销毁', songData, checkedData);
@@ -39,7 +50,6 @@ const StoryMusic = (props) => {
 
   useEffect(() => {
     if (songData.length > 0) {
-      console.log('初始化', songData[0]);
       playMusic(songData[0]);
       setCheckedData(songData[0]);
       // getmusicInfo(songData[0]);
@@ -60,7 +70,7 @@ const StoryMusic = (props) => {
     [musicSearchValue],
   );
   const playMusic = async (song) => {
-    console.log('播放音乐', song);
+    console.info('播放音乐', song);
     // = await AVService.playMusic(song.songID);
     if (!song) {
       return;
@@ -73,8 +83,10 @@ const StoryMusic = (props) => {
     // getmusicInfo(song)
   };
   const pauseMusic = async (song) => {
-    console.log('暂停音乐', song);
-
+    console.info('暂停音乐', song);
+    if (!song) {
+      return;
+    }
     await AVService.pauseMusic(song.songID);
     getmusicInfo({});
   };
@@ -94,8 +106,35 @@ const StoryMusic = (props) => {
       setSongData(song);
     }
   };
-
+  const loading = () => {
+    return (
+      <Button
+        buttonStyle={{
+          backgroundColor: 'transparent',
+        }}
+        loadingStyle={{
+          width: 35,
+          height: 35,
+          backgroundColor: 'transparent',
+        }}
+        style={{ backgroundColor: 'transparent' }}
+        containerStyle={{
+          backgroundColor: 'transparent',
+        }}
+        loading
+        loadingProps={{ size: 'large' }}
+      />
+    );
+  };
   const musicCarousel = () => {
+    if (songData.length < 1) {
+      return (
+        <View style={styles.noNetworkBox}>
+          <View style={[styles.musicCarouselBox]}>{loading()}</View>
+        </View>
+      );
+    }
+
     return (
       <Carousel
         data={songData}
@@ -185,10 +224,10 @@ const StoryMusic = (props) => {
             onChange={onLengthHandle}
             style={[styles.musicFindSearchInput]}
             value={musicSearchValue}
-            //  placeholder={`${t('commentPlaceholder')}`}
             selectionColor='#895EFF'
           />
         </View>
+        {songData.length < 1 && <View style={styles.noNetworkBox}>{loading()}</View>}
         <View style={styles.musicFindContentBox}>
           <FlatList
             data={songData}
@@ -324,6 +363,11 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     padding: 14,
   },
+  noNetworkBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
   musicCarouselContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -374,7 +418,6 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   musicFindSearchInput: {
-    paddingHorizontal: 15,
     width: '100%',
     borderRadius: 14,
   },

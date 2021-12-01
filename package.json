@@ -6,7 +6,7 @@
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
-    "version": "1.2.23",
+    "version": "1.2.24",
     "description": "A high performance, fully featured, rock solid camera library for React Native applications",
     "nativePackage": true,
     "react-native": "src/index",
@@ -54,16 +54,17 @@
         "react": "16.11.0",
         "react-native": "*",
         "react-native-easy-toast": "^2.0.0",
+        "react-native-elements": "^3.4.2",
         "react-native-gesture-handler": "^1.10.3",
         "react-native-progress": "^5.0.0",
         "react-native-reanimated": "1.9.0",
+        "react-native-safe-area-context": "^3.3.2",
         "react-native-snap-carousel": "^3.9.1",
         "react-native-svg": "^12.1.1",
+        "react-native-vector-icons": "^9.0.0",
         "react-native-video": "^5.1.1",
         "react-test-renderer": "16.6.0",
-        "react-native-safe-area-context": "^3.3.2",
-        "react-native-elements": "^3.4.2",
-        "react-native-vector-icons": "^9.0.0",
+        "react-native-toast-message": "^2.0.2",
         "typescript": "^4.1.2"
     },
     "peerDependencies": {
@@ -76,16 +77,17 @@
         "react": "*",
         "react-native": "*",
         "react-native-easy-toast": "^2.0.0",
+        "react-native-elements": "^3.4.2",
         "react-native-gesture-handler": "^1.10.3",
         "react-native-progress": "^5.0.0",
         "react-native-reanimated": "1.9.0",
+        "react-native-safe-area-context": "^3.3.2",
         "react-native-snap-carousel": "^3.9.1",
         "react-native-svg": "^12.1.1",
+        "react-native-vector-icons": "^9.0.0",
+        "react-native-toast-message": "^2.0.2",
         "react-native-video": "^5.1.1",
         "react-redux": "7.2.4",
-        "react-native-safe-area-context": "^3.3.2",
-        "react-native-elements": "^3.4.2",
-        "react-native-vector-icons": "^9.0.0",
         "redux": "4.1.0"
     }
 }

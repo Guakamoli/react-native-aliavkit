@@ -419,6 +419,10 @@ class CameraScreen extends Component<Props, State> {
       });
       return false;
     }
+    if (nextProps.connected !== this.props.connected && !nextProps.connected) {
+      this.myRef?.current?.show?.('无法在你的设备使用此贴纸！', 2000);
+      return true;
+    }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       // this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
@@ -610,6 +614,7 @@ class CameraScreen extends Component<Props, State> {
 
         {this.state.ShootSuccess ? (
           <StoryEditor
+            {...this.props}
             myRef={this.myRef}
             rephotograph={() => {
               this.props.setType('story');
