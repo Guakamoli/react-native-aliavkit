@@ -175,6 +175,11 @@ const PostEditor = (props) => {
     } else {
       // 裁剪视频
       console.info(toast.current, 'asasasas');
+
+      // toast.current.show('正在导出, 请不要离开', 0);
+      if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
+        return onExportVideo({ outputPath: multipleSandBoxData[0], exportProgress: 1 });
+      }
       toast.current.show(
         <Button
           buttonStyle={{
@@ -365,19 +370,22 @@ const PostEditor = (props) => {
       height: videoHeight,
     };
     const videoBoxStyle = {
-      width: videoBoxWidth,
-      height: videoBoxHeight,
+      width: windowWidth,
+      height: windowWidth,
     };
     return (
       <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'black',
-          width: width,
-          height: width,
-          overflow: 'hidden',
-        }}
+        style={[
+          {
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'black',
+            width: width,
+            height: width,
+            overflow: 'hidden',
+          },
+          videoBoxStyle,
+        ]}
       >
         <View
           // style={{
@@ -389,7 +397,7 @@ const PostEditor = (props) => {
           //     },
           //   ],
           // }}
-          style={videoBoxStyle}
+          style={videoStyle}
         >
           <VideoEditor
             // editWidth={width1}
