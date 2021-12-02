@@ -269,21 +269,22 @@ const PostEditor = (props) => {
   const onExportVideo = async (event) => {
     try {
       if (event.exportProgress === 1) {
-        const cropData = props.params.cropDataResult;
+        // const cropData = props.params.cropDataResult;
         let outputPath = event.outputPath;
-        const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
-        const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
-        let preOutputPath = outputPath;
-        outputPath = await AVService.crop({
-          source: `file://${outputPath}`,
-          cropOffsetX: cropData.offset.x,
-          cropOffsetY: cropData.offset.y * Hscale,
-          cropWidth: cropData.size.width * Wscale,
-          cropHeight: cropData.size.height * Wscale,
-          duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
-        });
+        // const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+        // const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
+        // let preOutputPath = outputPath;
+        // outputPath = await AVService.crop({
+        //   source: `file://${outputPath}`,
+        //   cropOffsetX: cropData.offset.x,
+        //   cropOffsetY: cropData.offset.y * Hscale,
+        //   cropWidth: cropData.size.width * Wscale,
+        //   cropHeight: cropData.size.height * Wscale,
+        //   duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
+        // });
+        // CameraRoll.deletePhotos([preOutputPath, ...coverList]);
 
-        CameraRoll.deletePhotos([preOutputPath, ...coverList]);
+        CameraRoll.deletePhotos(coverList);
         let uploadFile = [];
         //
         let type = outputPath.split('.');
@@ -311,6 +312,8 @@ const PostEditor = (props) => {
 
     const width1 = props.params.cropDataRow.fittedSize.width;
     const height1 = props.params.cropDataRow.fittedSize.height;
+    const srcWidth = props.params.cropDataRow.srcSize.width;
+    const srcHeight = props.params.cropDataRow.srcSize.height;
     return (
       <View
         style={{
@@ -336,6 +339,9 @@ const PostEditor = (props) => {
           <VideoEditor
             // editWidth={width1}
             // editHeight={height1}
+            mediaInfo={{
+              outputSize: { width: srcWidth, height: srcHeight },
+            }}
             editStyle={{
               width: width1,
               height: height1,
