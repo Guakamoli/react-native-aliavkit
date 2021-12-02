@@ -333,6 +333,41 @@ const PostEditor = (props) => {
     const height1 = props.params.cropDataRow.fittedSize.height;
     const srcWidth = props.params.cropDataRow.srcSize.width;
     const srcHeight = props.params.cropDataRow.srcSize.height;
+    const rowData = props.params.cropDataRow.srcSize;
+    // 这里裁减策略修改为超出一定比例的时候自动裁切
+    const windowWidth = width;
+
+    let videoBoxWidth = windowWidth;
+    let videoBoxHeight = windowWidth;
+    let videoWidth = windowWidth;
+    let videoHeight = windowWidth;
+    // 只处理小于和大于的情况
+    const wHRatio = rowData.width / rowData.height;
+    if (wHRatio > 2) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / 2;
+      videoHeight = windowWidth / 2;
+      videoWidth = videoHeight * wHRatio;
+    } else if (wHRatio < 4 / 5) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = (windowWidth / 4) * 5;
+      videoWidth = windowWidth;
+      videoHeight = videoWidth / wHRatio;
+    } else {
+      // 宽小于高但是没有超出限制,以屏幕宽乘以比例为主
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / wHRatio;
+      videoWidth = windowWidth;
+      videoHeight = windowWidth / wHRatio;
+    }
+    const videoStyle = {
+      width: videoWidth,
+      height: videoHeight,
+    };
+    const videoBoxStyle = {
+      width: videoBoxWidth,
+      height: videoBoxHeight,
+    };
     return (
       <View
         style={{
@@ -345,15 +380,16 @@ const PostEditor = (props) => {
         }}
       >
         <View
-          style={{
-            width: width1,
-            height: height1,
-            transform: [
-              {
-                translateY: top,
-              },
-            ],
-          }}
+          // style={{
+          //   width: width1,
+          //   height: height1,
+          //   transform: [
+          //     {
+          //       translateY: top,
+          //     },
+          //   ],
+          // }}
+          style={videoBoxStyle}
         >
           <VideoEditor
             // editWidth={width1}
@@ -361,10 +397,7 @@ const PostEditor = (props) => {
             mediaInfo={{
               outputSize: { width: srcWidth, height: srcHeight },
             }}
-            editStyle={{
-              width: width1,
-              height: height1,
-            }}
+            editStyle={videoStyle}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
             videoPath={multipleSandBoxData[0]}

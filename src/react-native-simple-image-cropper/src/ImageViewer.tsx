@@ -1,11 +1,12 @@
 import React, { Component, ReactNode, RefObject } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View , Dimensions} from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import Animated, { Easing, lessOrEq } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 import Video from 'react-native-video';
-
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = windowWidth //这个值根据实际的尺寸
 interface IProps {
   image: string;
   areaWidth: number;
@@ -389,6 +390,7 @@ class ImageViewer extends Component<IProps> {
       videoFile,
       minScale,
       videoPaused,
+      srcSize,
     } = this.props;
     const imageSrc = {
       uri: image,
@@ -450,7 +452,40 @@ class ImageViewer extends Component<IProps> {
         ],
       },
     ];
+    const rowData = srcSize
+    // 这里裁减策略修改为超出一定比例的时候自动裁切
+    let videoBoxWidth = windowWidth
+    let videoBoxHeight = windowWidth
+    let videoWidth = windowWidth
+    let videoHeight = windowWidth
+    // 只处理小于和大于的情况
+    const wHRatio = rowData.width / rowData.height
+    if (wHRatio > 2) {
+      videoBoxWidth = windowWidth
+      videoBoxHeight = windowWidth / 2
+      videoHeight = windowWidth / 2
+      videoWidth = videoHeight * wHRatio
 
+    } else if (wHRatio < 4 / 5) {
+      videoBoxWidth = windowWidth
+      videoBoxHeight = windowWidth / 4 * 5
+      videoWidth = windowWidth
+      videoHeight = videoWidth / wHRatio
+    } else {
+      // 宽小于高但是没有超出限制,以屏幕宽乘以比例为主
+      videoBoxWidth = windowWidth
+      videoBoxHeight = windowWidth / wHRatio
+      videoWidth = windowWidth
+      videoHeight = windowWidth / wHRatio
+    }
+    const videoStyle = {
+      width: videoWidth,
+      height: videoHeight
+    }
+    const videoBoxStyle = {
+      width: videoBoxWidth,
+      height: videoBoxHeight
+    }
     return (
       <>
         <Animated.Code>
@@ -479,22 +514,31 @@ class ImageViewer extends Component<IProps> {
                 >
                   <Animated.View style={imageWrapperStyles} collapsable={false}>
                     {videoFile ? (
-                      <Animated.View style={imageStyles}>
+                      // <Animated.View style={imageStyles}>
+                      //   <Video
+                      //     paused={videoPaused}
+                      //     repeat={true}
+                      //     muted={true}
+                      //     source={{ uri: videoFile }}
+                      //     style={{
+                      //       width: imageWidth,
+                      //       height: imageHeight,
+                      //     }}
+                      //   />
+                      // </Animated.View>
+                        <Animated.View style={videoBoxStyle}>
                         <Video
                           paused={videoPaused}
                           repeat={true}
                           muted={true}
                           source={{ uri: videoFile }}
-                          style={{
-                            width: imageWidth,
-                            height: imageHeight,
-                          }}
+                          style={videoStyle}
                         />
                       </Animated.View>
                     ) : (
                       <Animated.Image style={imageStyles} source={imageSrc} />
                     )}
-                    {showCover ? (
+                    {showCover && !videoFile ? (
                       <Animated.View style={overlayContainerStyle}>
                         <Animated.View style={{ height: '100%', width: '100%' }}>
                           <Animated.View
