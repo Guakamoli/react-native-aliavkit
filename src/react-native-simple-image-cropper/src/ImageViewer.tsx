@@ -1,12 +1,12 @@
 import React, { Component, ReactNode, RefObject } from 'react';
-import { StyleSheet, View , Dimensions} from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import Animated, { Easing, lessOrEq } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 import Video from 'react-native-video';
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = windowWidth //这个值根据实际的尺寸
+const windowHeight = windowWidth; //这个值根据实际的尺寸
 interface IProps {
   image: string;
   areaWidth: number;
@@ -17,7 +17,7 @@ interface IProps {
   onMove: ({ positionX, positionY, scale }: IImageViewerData) => void;
   containerColor?: string;
   videoFile?: string;
-  disablePin?: boolean,
+  disablePin?: boolean;
   imageBackdropColor?: string;
   overlay?: ReactNode;
 }
@@ -110,7 +110,7 @@ class ImageViewer extends Component<IProps> {
     this.translateX = new Value(0);
     this.translateY = new Value(0);
     this.scale = new Value(minScale);
-    this.enableXRef = new Value(this.props.disablePin? 0: 1)
+    this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,
       easing: Easing.linear,
@@ -218,8 +218,7 @@ class ImageViewer extends Component<IProps> {
         }) =>
           block([
             cond(eq(state, State.ACTIVE), [
-           
-              set(this.translateX,  this.props.disablePin? offsetX :add(divide(translationX, this.scale), offsetX)),
+              set(this.translateX, this.props.disablePin ? offsetX : add(divide(translationX, this.scale), offsetX)),
               set(this.translateY, add(divide(translationY, this.scale), offsetY)),
 
               set(maxX, horizontalMax),
@@ -238,7 +237,11 @@ class ImageViewer extends Component<IProps> {
               ),
 
               cond(
-                and( greaterOrEq(this.enableXRef, 1),lessThan(this.translateX, negMaxX), greaterOrEq(this.scale, new Value(minScale))),
+                and(
+                  greaterOrEq(this.enableXRef, 1),
+                  lessThan(this.translateX, negMaxX),
+                  greaterOrEq(this.scale, new Value(minScale)),
+                ),
                 [
                   set(
                     this.translateX,
@@ -249,16 +252,23 @@ class ImageViewer extends Component<IProps> {
                     }),
                   ),
                 ],
-                cond(and(greaterOrEq(this.enableXRef, 1), greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
-                  set(
-                    this.translateX,
-                    timing({
-                      from: this.translateX,
-                      to: maxX,
-                      ...timingDefaultParams,
-                    }),
+                cond(
+                  and(
+                    greaterOrEq(this.enableXRef, 1),
+                    greaterThan(this.translateX, maxX),
+                    greaterOrEq(this.scale, new Value(minScale)),
                   ),
-                ]),
+                  [
+                    set(
+                      this.translateX,
+                      timing({
+                        from: this.translateX,
+                        to: maxX,
+                        ...timingDefaultParams,
+                      }),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -360,13 +370,11 @@ class ImageViewer extends Component<IProps> {
   //   return true
   // }
   componentDidUpdate(prevProps: IProps) {
-    const { propsScale , disablePin} = this.props;
+    const { propsScale, disablePin } = this.props;
 
     if (propsScale && prevProps.propsScale !== propsScale) {
       this.scale.setValue(propsScale);
     }
-  
-
   }
   handleMove = (args: readonly number[]): void => {
     const { onMove } = this.props;
@@ -452,40 +460,39 @@ class ImageViewer extends Component<IProps> {
         ],
       },
     ];
-    const rowData = srcSize
+    const rowData = srcSize;
     // 这里裁减策略修改为超出一定比例的时候自动裁切
-    let videoBoxWidth = windowWidth
-    let videoBoxHeight = windowWidth
-    let videoWidth = windowWidth
-    let videoHeight = windowWidth
+    let videoBoxWidth = windowWidth;
+    let videoBoxHeight = windowWidth;
+    let videoWidth = windowWidth;
+    let videoHeight = windowWidth;
     // 只处理小于和大于的情况
-    const wHRatio = rowData.width / rowData.height
+    const wHRatio = rowData.width / rowData.height;
     if (wHRatio > 2) {
-      videoBoxWidth = windowWidth
-      videoBoxHeight = windowWidth / 2
-      videoHeight = windowWidth / 2
-      videoWidth = videoHeight * wHRatio
-
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / 2;
+      videoHeight = windowWidth / 2;
+      videoWidth = videoHeight * wHRatio;
     } else if (wHRatio < 4 / 5) {
-      videoBoxWidth = windowWidth
-      videoBoxHeight = windowWidth / 4 * 5
-      videoWidth = windowWidth
-      videoHeight = videoWidth / wHRatio
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = (windowWidth / 4) * 5;
+      videoWidth = windowWidth;
+      videoHeight = videoWidth / wHRatio;
     } else {
       // 宽小于高但是没有超出限制,以屏幕宽乘以比例为主
-      videoBoxWidth = windowWidth
-      videoBoxHeight = windowWidth / wHRatio
-      videoWidth = windowWidth
-      videoHeight = windowWidth / wHRatio
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / wHRatio;
+      videoWidth = windowWidth;
+      videoHeight = windowWidth / wHRatio;
     }
     const videoStyle = {
       width: videoWidth,
-      height: videoHeight
-    }
+      height: videoHeight,
+    };
     const videoBoxStyle = {
-      width: videoBoxWidth,
-      height: videoBoxHeight
-    }
+      width: windowWidth,
+      height: windowWidth,
+    };
     return (
       <>
         <Animated.Code>
@@ -499,7 +506,6 @@ class ImageViewer extends Component<IProps> {
           minPointers={1}
           maxPointers={2}
           avgTouches
-          
           onGestureEvent={this.onPanGestureEvent}
           onHandlerStateChange={this.onPanGestureEvent}
         >
@@ -526,13 +532,13 @@ class ImageViewer extends Component<IProps> {
                       //     }}
                       //   />
                       // </Animated.View>
-                        <Animated.View style={videoBoxStyle}>
+                      <Animated.View style={[videoBoxStyle, { justifyContent: 'center', alignItems: 'center' }]}>
                         <Video
                           paused={videoPaused}
                           repeat={true}
                           muted={true}
                           source={{ uri: videoFile }}
-                          style={videoStyle}
+                          style={[videoStyle]}
                         />
                       </Animated.View>
                     ) : (
