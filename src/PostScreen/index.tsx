@@ -31,7 +31,7 @@ import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
 
 import ImageMap from '../../images';
-const { postFileSelectPng } = ImageMap;
+const { postFileSelectPng, errorAlertIconPng } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 let clickItemLock = false;
@@ -128,24 +128,6 @@ const PostFileUploadHead = React.memo((props) => {
     >
       <TouchableOpacity>
         <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
-        <View style={{ backgroundColor: 'red' }}>
-          <Button
-            buttonStyle={{
-              backgroundColor: 'transparent',
-            }}
-            loadingStyle={{
-              width: 55,
-              height: 45,
-              backgroundColor: 'transparent',
-            }}
-            style={{ backgroundColor: 'transparent' }}
-            containerStyle={{
-              backgroundColor: 'transparent',
-            }}
-            loading
-            loadingProps={{ size: 'large' }}
-          />
-        </View>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
@@ -694,10 +676,11 @@ export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
   editor: any;
-
+  messageRef: any;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.messageRef = React.createRef();
     this.appState = '';
     this.cropData = {};
     this.state = {
@@ -777,6 +760,25 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() {}
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.connected !== this.props.connected && !nextProps.connected) {
+      this.messageRef?.current?.show(
+        <View
+          style={{
+            width: width * 0.9,
+            height: 30,
+            borderRadius: 9,
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            flexDirection: 'row',
+          }}
+        >
+          <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
+        </View>,
+        2000,
+      );
+      return true;
+    }
     if (nextState.postEditorParams !== this.state.postEditorParams) {
       return true;
     }
@@ -806,6 +808,14 @@ export default class CameraScreen extends Component<Props, State> {
           ref={this.myRef}
           position='top'
           positionValue={height * 0.4}
+          fadeInDuration={1050}
+          fadeOutDuration={800}
+          opacity={0.8}
+        />
+        <Toast
+          ref={this.messageRef}
+          position='top'
+          positionValue={height * 0.8}
           fadeInDuration={1050}
           fadeOutDuration={800}
           opacity={0.8}
