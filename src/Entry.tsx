@@ -137,7 +137,7 @@ const Entry = (props) => {
           cameraModule={true}
         />
       </View>
-      <Animated.View
+      {/* <Animated.View
         style={[
           styles.tools,
           { bottom: props.insets.bottom },
@@ -159,7 +159,7 @@ const Entry = (props) => {
             </TouchableOpacity>
           );
         })}
-      </Animated.View>
+      </Animated.View> */}
     </>
     // </View>
   );

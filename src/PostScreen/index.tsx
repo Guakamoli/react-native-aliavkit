@@ -132,7 +132,7 @@ const PostFileUploadHead = React.memo((props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
 
-        <Image style={styles.multipleBtnImage} source={props.postCameraImage} resizeMode='contain' />
+        {/* <Image style={styles.multipleBtnImage} source={props.postCameraImage} resizeMode='contain' /> */}
       </View>
     </View>
   );
