@@ -167,7 +167,7 @@ const Entry = (props) => {
             </TouchableOpacity>
           );
         })}
-      </Animated.View>
+      </Animated.View> */}
     </>
     // </View>
   );
