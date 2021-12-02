@@ -262,7 +262,6 @@ class CKCamera(
         initFocusView()
         this.isInit = true;
 
-        FontManager.instance.downloadAllFont(mContext)
     }
 
 }

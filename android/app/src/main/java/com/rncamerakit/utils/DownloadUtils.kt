@@ -3,8 +3,13 @@ package com.rncamerakit.utils
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.text.TextUtils
+import android.util.Log
 import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.common.utils.MD5Utils
+import com.aliyun.svideo.downloader.DownloaderManager
+import com.aliyun.svideo.downloader.FileDownloaderCallback
+import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.Callback
@@ -12,17 +17,33 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloader
+import com.liulishuo.filedownloader.util.FileDownloadUtils
 import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.font.FontManager
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.net.URL
+import kotlin.coroutines.resume
 
 class DownloadUtils {
     companion object {
+
+        /**
+         * 下载字体
+         */
+        fun downloadFont(context: Context, model: FileDownloaderModel, callback: FileDownloaderCallback?) {
+            //下载完后的解压路径
+            val fontPath = FontManager.getFonPath(context, model.name, model.id)
+            model.path = fontPath.absolutePath
+            //下载文件的路径，重新设置一次
+            FileDownloadUtils.setDefaultSaveRootPath(FontManager.getFontDir(context).absolutePath)
+            val task = DownloaderManager.getInstance().addTask(model, model.url)
+            DownloaderManager.getInstance().startTask(task.taskId, callback)
+        }
 
         fun downloadMusic(
             context: ReactContext,
@@ -120,7 +141,7 @@ class DownloadUtils {
                 val text = URL("https://static.paiyaapp.com/music/songs.json").readText()
                 val md5Text = MD5Utils.getMD5(text)
 
-                var baseInfo: MusicFileBaseInfo?=null
+                var baseInfo: MusicFileBaseInfo? = null
 
                 val md5Value = SPUtils.getInstance().getString(spKey)
                 if (md5Text != md5Value) {

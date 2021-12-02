@@ -14,6 +14,7 @@ import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.ColorFilterManager
+import com.rncamerakit.font.FontManager
 import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
@@ -278,6 +279,15 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
                 promise.resolve(true)
             }
         }
+    }
+
+    /**
+     * 获取所有字体
+     */
+    @ReactMethod
+    fun getFontList(promise: Promise) {
+        val fonts = FontManager.instance.getDownloadFontList()
+        promise.resolve( GsonBuilder().create().toJson(fonts))
     }
 
     @ReactMethod

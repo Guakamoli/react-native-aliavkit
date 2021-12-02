@@ -12,6 +12,11 @@ import java.util.Map;
 
 public class FileDownloaderModel implements Serializable {
 
+    /**
+     * 是否下载到了本地 0：否  1：是
+     */
+    public int isDbContain = 0;
+
     public final static String TASK_ID = "task_id";//主键
     public final static String ID = "id";//组id
     public final static String NAME = "name";//资源名称
@@ -44,9 +49,9 @@ public class FileDownloaderModel implements Serializable {
      * 字体
      */
     public final static String CNNAME = "cnname";
-//    public final static String LEVEL = "level";
+    //    public final static String LEVEL = "level";
     public final static String CATEGORY = "category";
-//    public final static String MD5 = "md5";
+    //    public final static String MD5 = "md5";
     public final static String BANNER = "banner";
     public final static String ICON = "icon";
 //    public final static String SORT = "sort";
@@ -457,7 +462,7 @@ public class FileDownloaderModel implements Serializable {
         }
         for (Map.Entry<String, String> entry : extFieldMap.entrySet()) {
             String key = entry.getKey();
-            if ( key == null ) {
+            if (key == null) {
                 continue;
             }
 
@@ -468,7 +473,7 @@ public class FileDownloaderModel implements Serializable {
     }
 
     public void putExtField(String key, String value) {
-        if ( key == null ) {
+        if (key == null) {
             return;
         }
         if (value == null) {
@@ -491,7 +496,7 @@ public class FileDownloaderModel implements Serializable {
         }
         for (Map.Entry<String, String> entry : extFieldMap.entrySet()) {
             String key = entry.getKey();
-            if ( key == null ) {
+            if (key == null) {
                 continue;
             }
             String value = cursor.getString(cursor.getColumnIndex(key));

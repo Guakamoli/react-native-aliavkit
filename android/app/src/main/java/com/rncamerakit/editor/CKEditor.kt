@@ -3,7 +3,6 @@ package com.rncamerakit.editor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
@@ -14,6 +13,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
+import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
 import com.aliyun.svideo.editor.view.EditorVideHelper
@@ -31,6 +31,8 @@ import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.editor.manager.*
+import com.rncamerakit.font.FontManager
+import com.rncamerakit.font.IFontCallback
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.*
@@ -77,15 +79,14 @@ class CKEditor(val reactContext: ThemedReactContext) :
     //滤镜管理
     private var mColorFilterManager: ColorFilterManager? = null
 
-//    //贴图、文字控制类
-//    private var mAliyunPasterManager: AliyunPasterManager? = null
+//    //贴图底层渲染接口，添加贴图到底层渲染
+//    private var mAliyunPasterRender: AliyunPasterRender? = null
+//    //字幕管理
+//    private var mCaptionManager: CaptionManager? = null
 
-    //贴图底层渲染接口，添加贴图到底层渲染
-    private var mAliyunPasterRender: AliyunPasterRender? = null
-
-    //字幕管理
-    private var mCaptionManager: CaptionManager? = null
-//    private var mCaptionManager2: CaptionManager2? = null
+    //贴图、文字控制类
+    private var mAliyunPasterManager: AliyunPasterManager? = null
+    private var mCaptionManager2: CaptionManager2? = null
 
     //视频合成
     private var mComposeManager: ComposeManager? = null
@@ -134,24 +135,27 @@ class CKEditor(val reactContext: ThemedReactContext) :
         initVideoContainer()
         initSurfaceView()
 
-//        //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
-//        mAliyunPasterManager = mAliyunIEditor?.createPasterManager()
-//        mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
-//        mAliyunPasterManager?.setOnPasterRestoreListener(OnPasterRestored {
-//
-//        })
-//        mCaptionManager2 = CaptionManager2(reactContext, mAliyunPasterManager)
+        //该代码块中的操作必须在AliyunIEditor.init之前调用，否则会出现动图、动效滤镜的UI恢复回调不执行，开发者将无法恢复动图、动效滤镜UI
+        mAliyunPasterManager = mAliyunIEditor?.createPasterManager()
+        mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+        mAliyunPasterManager?.setOnPasterRestoreListener(OnPasterRestored {
 
-        mAliyunPasterRender = mAliyunIEditor?.pasterRender
-        mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
-        //动图恢复回调
-        mAliyunPasterRender?.setOnPasterResumeAndSave {
-
-        }
-        mCaptionManager = CaptionManager(reactContext, mAliyunPasterRender, mAliyunIEditor)
+        })
+        mCaptionManager2 = CaptionManager2(reactContext, mAliyunPasterManager, mAliyunIEditor)
 
 
         val ret = mAliyunIEditor?.init(mSurfaceView, mContext.applicationContext)
+
+
+//        //新字幕
+//        mAliyunPasterRender = mAliyunIEditor?.pasterRender
+//        mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
+//        //动图恢复回调
+//        mAliyunPasterRender?.setOnPasterResumeAndSave {
+//
+//        }
+//        mCaptionManager = CaptionManager(reactContext, mAliyunPasterRender, mAliyunIEditor)
+
         mAliyunIEditor?.setDisplayMode(VideoDisplayMode.FILL)
         mAliyunIEditor?.setVolume(50)
         mAliyunIEditor?.setFillBackgroundColor(Color.BLACK)
@@ -253,6 +257,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
      */
     fun exportVideo(promise: Promise?) {
 //        mCaptionManager?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！")
+//        mCaptionManager2?.addDefaultStyleCaption("添加视频的测试字幕，要长一点，\n再长一点，这下差不多够了吧！",mWidth,mHeight)
         if (mAliyunIEditor?.isPlaying == true) {
             mAliyunIEditor?.stop()
         }
@@ -429,9 +434,71 @@ class CKEditor(val reactContext: ThemedReactContext) :
             }
             mVideoContainer?.layoutParams = params
             mSurfaceView?.layoutParams = params
-//            mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
-            mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
+            mAliyunPasterManager?.setDisplaySize(mWidth, mHeight)
+//            mAliyunPasterRender?.setDisplaySize(mWidth, mHeight)
         }
+    }
+
+    fun clearCaptionInfo() {
+        mCaptionManager2?.removeCaption()
+    }
+
+    /**
+     * 设置字幕
+     */
+    fun setCaptionInfo(readableMap: ReadableMap) {
+        clearCaptionInfo()
+        // 添加 \ 修改字幕
+        val text = if (readableMap.hasKey("text")) readableMap.getString("text") else null
+        var rotate = if (readableMap.hasKey("rotate")) readableMap.getDouble("rotate") else 0.0
+
+        val scale = if (readableMap.hasKey("scale")) readableMap.getDouble("scale") else 1.0
+        val center = if (readableMap.hasKey("center")) readableMap.getMap("center") else null
+        var x = 0F
+        var y = 0F
+        if (center != null && center.toHashMap().size > 0) {
+            x = if (center.hasKey("x")) center.getDouble("x").toFloat() else 0F
+            y = if (center.hasKey("y")) center.getDouble("y").toFloat() else 0F
+        }
+        x = (mWidth/2).toFloat() + dip(x).toFloat()
+        y = (mHeight/2).toFloat() + dip(y).toFloat()
+        if (text != null && text != "" && scale > 0) {
+            mCaptionManager2?.addCaption(text, scale.toFloat(), rotate.toFloat(), x, y)
+            val source = Source(FontManager.FONT_PATH)
+            mCaptionManager2?.setFontPath(source)
+            mCaptionManager2?.apply()
+            Log.e("AAA", "设置字体：" + source.path)
+        }
+
+
+        //TODO 测试 随机设置一个字体，如果不存在则下载
+        val fonts = FontManager.instance.getDownloadFontList()
+        val randoms = (0 until fonts?.size!!).random()
+        FontManager.instance.setFont(context, fonts?.get(randoms), object : IFontCallback() {
+            override fun onFontSource(source: Source) {
+                super.onFontSource(source)
+                FontManager.FONT_PATH = source.path
+//                mCaptionManager2?.setFontPath(source)
+//                mCaptionManager2?.apply()
+            }
+        })
+        //TODO 测试 随机设置一个字体，如果不存在则下载
+    }
+
+
+    /**
+     * 设置字幕字体
+     */
+    fun setCaptionFont(fontModel: FileDownloaderModel) {
+        FontManager.instance.setFont(context, fontModel, object : IFontCallback() {
+            override fun onFontSource(source: Source) {
+                super.onFontSource(source)
+                FontManager.FONT_PATH = source.path
+                mCaptionManager2?.setFontPath(source)
+//                Log.e("AAA", "设置字体：" + source.path)
+                mCaptionManager2?.apply()
+            }
+        })
     }
 
     /**

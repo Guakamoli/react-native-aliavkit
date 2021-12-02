@@ -24,6 +24,7 @@ import StoryMusic from './StoryMusic';
 import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
+import GestureText from '../example/src/GestureText';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -71,6 +72,8 @@ type State = {
 
   musicOpen: Boolean;
   musicInfo: any;
+  showText: boolean
+  captionInfo: any
 };
 
 export default class StoryEditorTest extends Component<Props, State> {
@@ -101,6 +104,7 @@ export default class StoryEditorTest extends Component<Props, State> {
       musicOpen: false,
       musicInfo: {},
       setMusic: false,
+      showText: false,
     };
     this.onExportVideo = this.onExportVideo.bind(this);
   }
@@ -194,7 +198,7 @@ export default class StoryEditorTest extends Component<Props, State> {
   // 编辑头部按钮
   renderUpdateTop() {
     // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
-    const { showFilterLens, musicOpen } = this.state;
+    const { showFilterLens, musicOpen, showText } = this.state;
     const imglist = [
       // 'filter':
       {
@@ -227,7 +231,8 @@ export default class StoryEditorTest extends Component<Props, State> {
         },
       },
       // 'Aa':
-      { img: this.props.AaImage, onPress: () => {} },
+      { 'img': this.props.AaImage, 'onPress': () => { this.setState({ showText: !showText }); } }
+
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -274,7 +279,7 @@ export default class StoryEditorTest extends Component<Props, State> {
       const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
 
       return (
-        <View style={{ height: CameraFixHeight, borderRadius: 20, width: '100%', overflow: 'hidden' }}>
+        <View style={{ height: CameraFixHeight, borderRadius: 20, width:"100%",overflow: "hidden",position:'relative'}}>
           <VideoEditor
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
@@ -294,8 +299,19 @@ export default class StoryEditorTest extends Component<Props, State> {
             musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
             // TODO 安卓兼容
             onPlayProgress={() => {}}
+            captionInfo={this.state.showText ? this.state.captionInfo : {}}
             // source={"story"}
           />
+          {this.state.showText && (
+            <View style={{  zIndex: 200,width:"100%",height:CameraFixHeight,position:'absolute'}}>
+              <GestureText 
+                  onTextMove={(info) => {
+                    this.setState({ captionInfo: info });
+                    console.log(info);
+                  }}
+              />
+            </View>
+          )}
         </View>
       );
     };
