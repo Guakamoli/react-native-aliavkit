@@ -12,6 +12,7 @@ import {
   Animated,
   ScrollView,
   NativeEventEmitter,
+  Platform,
 } from 'react-native';
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -174,7 +175,6 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      console.info(toast.current, 'asasasas');
 
       // toast.current.show('正在导出, 请不要离开', 0);
       if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
@@ -200,11 +200,21 @@ const PostEditor = (props) => {
 
         0,
       );
-      RNEditViewManager.trimVideo({
-        videoPath: multipleSandBoxData[0],
-        startTime: trimmerLeftHandlePosition / 1000,
-        endTime: trimmerRightHandlePosition / 1000,
-      });
+      //TODO
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition / 1000,
+          endTime: trimmerRightHandlePosition / 1000,
+        });
+      } else {
+        const isTrim = await editor?.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition,
+          endTime: trimmerRightHandlePosition,
+        });
+        console.log('设置视频裁剪起止时间成功', isTrim);
+      }
 
       // 导出视频
       if (exportVideo) {
@@ -254,7 +264,12 @@ const PostEditor = (props) => {
     return () => {
       console.info('销毁了', subscription);
       AVService.removeThumbnaiImages();
-      RNEditViewManager.stop();
+      //TODO
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.stop();
+      } else {
+        editor?.release();
+      }
       props.params?.playVideo?.();
       managerEmitter.removeAllListeners('cropProgress');
     };
@@ -272,11 +287,19 @@ const PostEditor = (props) => {
         itemPerTime = videoTime / 8;
       }
 
-      coverData = await AVService.getThumbnails({
+      //TODO
+      const cropData = props.params.cropDataResult;
+      const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+      const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
+
+      let thumbnailsArgument = {
         videoPath: multipleSandBoxData[0],
         startTime: 0,
         itemPerTime: Math.floor(itemPerTime),
-      });
+      };
+      if (Platform.OS != 'ios') {
+      }
+      coverData = await AVService.getThumbnails(thumbnailsArgument);
 
       setcoverList(coverData);
       setcoverImage(coverData[0]);
@@ -312,12 +335,19 @@ const PostEditor = (props) => {
         let uploadFile = [];
         //
         let type = outputPath.split('.');
+        //TODO
+        let uploadCoverImage = '';
+        if (Platform.OS === 'ios') {
+          uploadCoverImage = coverImage ? `file://${encodeURI(coverImage)}` : '';
+        } else {
+          uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
+        }
         uploadFile.push({
           Type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
           size: 0,
           Name: outputPath,
-          coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
+          coverImage: uploadCoverImage,
         });
 
         props.getUploadFile(uploadFile);
@@ -408,7 +438,8 @@ const PostEditor = (props) => {
             editStyle={videoStyle}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
-            videoPath={multipleSandBoxData[0]}
+            //TODO
+            videoPath={multipleSandBoxData[0] ?? props.params.trimVideoData}
             saveToPhotoLibrary={false}
             startExportVideo={exportVideo}
             videoMute={videoMute}
@@ -444,15 +475,21 @@ const PostEditor = (props) => {
                   startRef.current = false;
 
                   aniRef.current.stop();
-                  RNEditViewManager.pause();
 
-                  RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
                   scrollAniRef.setValue(0);
-                  setTimeout(() => {
-                    stopRef.current = false;
-
-                    RNEditViewManager.play();
-                  }, 500);
+                  stopRef.current = false;
+                  //TODO
+                  if (Platform.OS === 'ios') {
+                    RNEditViewManager.pause();
+                    RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
+                    setTimeout(() => {
+                      RNEditViewManager.play();
+                    }, 500);
+                  } else {
+                    editor?.onSeek(trimmerLeftHandlePosition);
+                    //android 默认为循环播放
+                    // editor?.onStop()
+                  }
                   return;
                 }
               }
@@ -520,13 +557,21 @@ const PostEditor = (props) => {
         rightPosition = 2000;
       }
       scrollAniRef.setValue(0);
-      RNEditViewManager.seekToTime(leftPosition / 1000);
-      setTimeout(() => {
-        lockRef.current = false;
-        RNEditViewManager.play();
-        stopRef.current = false;
-        startRef.current = false;
-      }, 500);
+
+      //TODO
+
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.seekToTime(leftPosition / 1000);
+        setTimeout(() => {
+          lockRef.current = false;
+          RNEditViewManager.play();
+          stopRef.current = false;
+          startRef.current = false;
+        }, 500);
+      } else {
+        editor?.onSeek(leftPosition);
+      }
+
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
@@ -566,7 +611,11 @@ const PostEditor = (props) => {
 
               scrollAniRef.setValue(0);
 
-              RNEditViewManager.pause();
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {

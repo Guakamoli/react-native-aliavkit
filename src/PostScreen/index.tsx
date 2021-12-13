@@ -397,20 +397,24 @@ class GridItemCover extends Component {
         }}
       >
         <>
+          {/* TODO */}
           <View
-            style={{
-              borderRadius: 10,
-              borderWidth: 1,
-              width: 20,
-              height: 20,
-              borderColor: 'white',
-              overflow: 'hidden',
-              position: 'absolute',
-              zIndex: 99,
-              right: 5,
-              top: 5,
-              display: this.props.selectMultiple ? 'flex' : 'none',
-            }}
+            style={[
+              {
+                borderRadius: 10,
+                borderWidth: 2,
+                width: 20,
+                height: 20,
+                borderColor: 'white',
+                overflow: 'hidden',
+                position: 'absolute',
+                zIndex: 99,
+                right: 5,
+                top: 5,
+                display: this.props.selectMultiple ? 'flex' : 'none',
+              },
+              Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
+            ]}
           >
             {/* <View
               style={{
@@ -593,8 +597,14 @@ class PostFileUpload extends Component {
   };
   getVideFile = async (fileType, item) => {
     if (fileType !== 'video') return '';
-    let myAssetId = item?.image?.uri.slice(5);
-    let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+    //TODO
+    let localUri;
+    if (Platform.OS === 'ios') {
+      let myAssetId = item?.image?.uri.slice(5);
+      localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+    } else {
+      localUri = item?.image?.uri;
+    }
     return localUri;
   };
   componentDidMount() {
@@ -675,9 +685,10 @@ class PostFileUpload extends Component {
           ]}
         >
           <FlatGrid
-            itemDimension={photosItem}
+            //TODO android上  spacing={0} 时，页面隐藏会闪退
+            itemDimension={Platform.OS === 'android' ? photosItem - 4 : photosItem}
             data={this.state.CameraRollList}
-            spacing={0}
+            spacing={Platform.OS === 'android' ? 1 : 0}
             initialNumToRender={30}
             maxToRenderPerBatch={30}
             windowSize={3}
@@ -728,7 +739,9 @@ export default class CameraScreen extends Component<Props, State> {
     }
     try {
       const imageItem = multipleData[multipleData.length - 1].image;
-      const { type } = multipleData[multipleData.length - 1];
+      // TODO  安卓type 待文件类型
+      let type = multipleData[multipleData.length - 1]?.type;
+      Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
       let trimVideoData = null;
       const result = await ImageCropper.crop({
         ...cropDataRow,
@@ -743,9 +756,13 @@ export default class CameraScreen extends Component<Props, State> {
         },
       });
       if (type === 'video') {
-        trimVideoData = await AVService.saveToSandBox({
-          path: imageItem.uri,
-        });
+        if (Platform.OS !== 'android') {
+          trimVideoData = await AVService.saveToSandBox({
+            path: imageItem.uri,
+          });
+        } else {
+          trimVideoData = imageItem.uri;
+        }
       } else {
         const cropData = result;
         trimVideoData = await AVService.crop({

@@ -13,6 +13,9 @@ import {
   FlatList,
   Easing,
   Pressable,
+  StatusBar,
+  AppState,
+  StatusBar,
   AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -221,6 +224,10 @@ class RenderCamera extends Component {
     AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
+    if (Platform.OS === 'android') {
+      //TODO
+      this.props.camera.current?.release();
+    }
     AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
@@ -281,12 +288,17 @@ class RenderCamera extends Component {
     return false;
   }
   renderCamera = () => {
-    const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+    //TODO
+    const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
+
+    const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
         <View
           style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          // style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {
             setTimeout(() => {
               AVService.enableHapticIfExist();
