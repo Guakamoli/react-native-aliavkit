@@ -25,4 +25,7 @@ target 'CameraKitExample' do
 #  post_install do |installer|
 #    flipper_post_install(installer)
 #  end
+pod 'AFNetworking', :modular_headers => true
+pod 'FMDB',:modular_headers => true
+pod 'JSONModel',:modular_headers => true
 end

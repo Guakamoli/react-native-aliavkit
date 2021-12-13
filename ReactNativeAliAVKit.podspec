@@ -13,7 +13,10 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "10.0"
 
   s.source       = { :git => "https://github.com/Guakamoli/react-native-aliavkit", :tag => "v#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m,mm}"
+  s.source_files  = [
+  "ios/**/*.{h,m,mm,swift}",
+  "ios/**/ReactNativeAliAVKit-Bridging-Header.h",
+  ]
   
   s.resource = 'ios/ReactNativeCameraKit/Resources/ShortVideoResource/*'
   
@@ -25,9 +28,9 @@ Pod::Spec.new do |s|
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
   s.dependency 'Queen', '1.4.0-official-pro'
-  s.dependency 'AFNetworking'
-  s.dependency 'FMDB'
-  s.dependency 'JSONModel'
+#  s.dependency 'AFNetworking'
+#  s.dependency 'FMDB'
+#  s.dependency 'JSONModel'
   s.dependency 'SSZipArchive'
   
 end
