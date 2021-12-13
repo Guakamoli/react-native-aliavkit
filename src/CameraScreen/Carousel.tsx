@@ -232,7 +232,6 @@ class RenderChildren extends Component {
             this.props.longPress();
           }}
           // 长按结束
-
           onPressOut={async () => {
             this.props.stopAnimate();
           }}
