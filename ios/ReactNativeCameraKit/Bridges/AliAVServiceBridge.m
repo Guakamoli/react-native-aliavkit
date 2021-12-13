@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *sourcePath = [options valueForKey:@"sourcePath"];
+    NSString *sourcePath = [options objectForKey:@"sourcePath"];
     if (!sourcePath || [sourcePath isEqualToString:@""]) {
         reject(@"404", @"sourcePath is null", nil);
         return;
@@ -84,7 +84,7 @@ RCT_EXPORT_METHOD(saveResourceToPhotoLibrary:(NSDictionary*)options
     } else {
         pathURL = [NSURL fileURLWithPath:sourcePath];
     }
-    NSString *typeStr = [options valueForKey:@"resourceType"];
+    NSString *typeStr = [options objectForKey:@"resourceType"];
     if (!typeStr || [typeStr isEqualToString:@""]) {
         reject(@"404", @"no specyfic resource type", nil);
         return;
@@ -276,15 +276,15 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *source = [options valueForKey:@"source"];
+    NSString *source = [options objectForKey:@"source"];
     if (!source || [source isEqualToString:@""]) {
         reject(@"",@"source must contain a path value",nil);
         return;
     }
-    CGFloat cropOffsetX = [[options valueForKey:@"cropOffsetX"] floatValue];
-    CGFloat cropOffsetY = [[options valueForKey:@"cropOffsetY"] floatValue];
-    CGFloat cropWidth = [[options valueForKey:@"cropWidth"] floatValue];
-    CGFloat cropHeight = [[options valueForKey:@"cropHeight"] floatValue];
+    CGFloat cropOffsetX = [[options objectForKey:@"cropOffsetX"] floatValue];
+    CGFloat cropOffsetY = [[options objectForKey:@"cropOffsetY"] floatValue];
+    CGFloat cropWidth = [[options objectForKey:@"cropWidth"] floatValue];
+    CGFloat cropHeight = [[options objectForKey:@"cropHeight"] floatValue];
     
     
     if (cropWidth == 0.0 ) {
@@ -301,7 +301,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)options
     
     if ([source hasPrefix:@"file://"]) {
         if ([source hasSuffix:@".mp4"]) {
-            CGFloat duration = [[options valueForKey:@"duration"] floatValue];
+            CGFloat duration = [[options objectForKey:@"duration"] floatValue];
             if (!duration) {
                 reject(@"",@"duration can't be zero",nil);
                 return;
@@ -512,7 +512,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *path = [options valueForKey:@"path"];
+    NSString *path = [options objectForKey:@"path"];
     if (!path) {
         reject(@"",@"no path param",nil);
         return;
@@ -647,18 +647,18 @@ static NSString * ThumnailDirectory() {
 
 - (void)generateImages:(NSDictionary *)options handler:(void(^)(NSArray *))complete
 {
-    NSString *videoPath = [options valueForKey:@"videoPath"];
+    NSString *videoPath = [options objectForKey:@"videoPath"];
     if (!videoPath || [videoPath isEqualToString:@""]) {
         return;
     }
     AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:videoPath];
     CGFloat duration = [parser getVideoDuration];
-    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue];
+    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
     if (startTime >= duration) {
         return;
     }
     
-    NSInteger itemPerTime = [[options valueForKey:@"itemPerTime"] integerValue]; //ms
+    NSInteger itemPerTime = [[options objectForKey:@"itemPerTime"] integerValue]; //ms
     if (itemPerTime == 0) {
         itemPerTime = 1000;
     }

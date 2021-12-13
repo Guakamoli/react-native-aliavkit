@@ -254,6 +254,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       scale,
       disablePin,
       videoPaused,
+      srcSize,
     } = this.props;
 
     const areaWidth = cropAreaWidth!;
@@ -272,6 +273,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             videoFile={videoFile}
             imageHeight={imageHeight}
             minScale={scale}
+            srcSize={srcSize}
             onMove={this.handleMove}
             containerColor={containerColor}
             imageBackdropColor={areaColor}

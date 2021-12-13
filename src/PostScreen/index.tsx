@@ -28,7 +28,10 @@ import ImageCropper from '../react-native-simple-image-cropper/src';
 import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
+import { Button } from 'react-native-elements';
 
+import ImageMap from '../../images';
+const { postFileSelectPng, errorAlertIconPng } = ImageMap;
 const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 let clickItemLock = false;
@@ -129,7 +132,7 @@ const PostFileUploadHead = React.memo((props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
 
-        <Image style={styles.multipleBtnImage} source={props.postCameraImage} resizeMode='contain' />
+        {/* <Image style={styles.multipleBtnImage} source={props.postCameraImage} resizeMode='contain' /> */}
       </View>
     </View>
   );
@@ -314,25 +317,32 @@ PostContent = connect(PostContentMapStateToProps)(PostContent);
 class GridItemCover extends Component {
   constructor(props) {
     super(props);
-    this.animteRef = new Animated.Value(this.props.index === 0 ? 0.5 : 0);
     this.state = {
-      active: this.props.index === 0,
+      active: false,
     };
-    if (this.props.index === 0) {
-      prevClickCallBack = () => {
-        this.setState({ active: false });
-        this.animteRef.setValue(0);
-      };
+    this.animteRef = new Animated.Value(0);
+    if (this.props.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1) {
+      this.state.active = true;
+      this.animteRef = new Animated.Value(0.5);
     }
   }
+
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
       return true;
     }
+    if (nextProps.multipleData !== this.props.multipleData) {
+      const active = nextProps.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1;
+      this.setState({
+        active,
+      });
+
+      this.animteRef.setValue(active ? 0.5 : 0);
+      return false;
+    }
     if (nextState.active !== this.state.active) {
       return true;
     }
-
     return false;
   }
   clickItem = async () => {
@@ -353,20 +363,20 @@ class GridItemCover extends Component {
     } else {
       this.props.setMultipleData([itemCopy]);
     }
-    prevClickCallBack?.();
-    prevClickCallBack = () => {
-      this.setState({ active: false });
-      this.animteRef.setValue(0);
-    };
+    // prevClickCallBack?.();
+    // prevClickCallBack = () => {
+    //   this.setState({ active: false });
+    //   this.animteRef.setValue(0);
+    // };
 
-    if (this.props.selectMultiple) {
-      this.animteRef.setValue(this.state.active ? 0 : 0.5);
-    } else {
-      this.animteRef.setValue(0.5);
-    }
-    this.setState({
-      active: !this.state.active,
-    });
+    // if (this.props.selectMultiple) {
+    //   this.animteRef.setValue(this.state.active ? 0 : 0.5);
+    // } else {
+    //   this.animteRef.setValue(0.5);
+    // }
+    // this.setState({
+    //   active: !this.state.active,
+    // });
     // setTimeout(() => {
     //   clickItemLock = false
     // }, 60);
@@ -390,7 +400,7 @@ class GridItemCover extends Component {
           <View
             style={{
               borderRadius: 10,
-              borderWidth: 2,
+              borderWidth: 1,
               width: 20,
               height: 20,
               borderColor: 'white',
@@ -402,7 +412,7 @@ class GridItemCover extends Component {
               display: this.props.selectMultiple ? 'flex' : 'none',
             }}
           >
-            <View
+            {/* <View
               style={{
                 width: 18,
                 height: 18,
@@ -413,7 +423,20 @@ class GridItemCover extends Component {
                 alignItems: 'center',
                 display: this.state.active ? 'flex' : 'none',
               }}
-            ></View>
+            ></View> */}
+            <Image
+              source={postFileSelectPng}
+              style={{
+                width: 18,
+                height: 18,
+                // borderRadius: 20,
+                zIndex: 99,
+                // backgroundColor: '#836BFF',
+                // justifyContent: 'center',
+                // alignItems: 'center',
+                display: this.state.active ? 'flex' : 'none',
+              }}
+            />
           </View>
           <Animated.View
             style={[
@@ -434,7 +457,7 @@ class GridItemCover extends Component {
 
 const GIWMapStateToProps = (state) => ({
   selectMultiple: state.shootPost.selectMultiple,
-  // multipleData: state.shootPost.multipleData,
+  multipleData: state.shootPost.multipleData,
 });
 const GIWMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
@@ -454,7 +477,7 @@ class GridItem extends Component {
     const { type, image } = item;
     return (
       <View>
-        <GridItemCover {...this.props} />
+        <GridItemCover {...this.props} key={item.image.uri} />
         <Image
           style={[
             {
@@ -531,7 +554,17 @@ class PostFileUpload extends Component {
           photos.push(node);
         }
         let firstData = photos[0];
-        if (!multipleData[0]) {
+
+        let selectedValid = false;
+        if (multipleData[0]) {
+          let myAssetId = multipleData[0]?.image?.uri.slice(5);
+          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+
+          if (localUri) {
+            selectedValid = true;
+          }
+        }
+        if (!selectedValid) {
           this.props.setMultipleData([firstData]);
         }
 
@@ -600,9 +633,23 @@ class PostFileUpload extends Component {
       if (photos) {
         const firstData = photos[0];
         if (!firstData) return;
-        if (!multipleData[0]) {
+        let selectedValid = false;
+        if (multipleData[0]) {
+          console.info(multipleData[0]?.image?.uri, 'multipleData[0]?.image?.uri');
+          let myAssetId = multipleData[0]?.image?.uri.slice(5);
+          console.info('kaishi');
+          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+          console.info('kaishi22');
+
+          console.info(localUri, 'localUrilocalUrilocalUri');
+          if (localUri) {
+            selectedValid = true;
+          }
+        }
+        if (!selectedValid) {
           this.props.setMultipleData([firstData]);
         }
+
         this.setState({
           CameraRollList: photos,
           multipleData: [firstData],
@@ -637,7 +684,7 @@ class PostFileUpload extends Component {
             removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
             renderItem={(props) => {
-              return <GridItem {...props} getVideFile={this.getVideFile} />;
+              return <GridItem {...props} getVideFile={this.getVideFile} key={props?.item?.image?.uri} />;
             }}
           />
         </View>
@@ -660,10 +707,11 @@ export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
   editor: any;
-
+  messageRef: any;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.messageRef = React.createRef();
     this.appState = '';
     this.cropData = {};
     this.state = {
@@ -681,7 +729,7 @@ export default class CameraScreen extends Component<Props, State> {
     try {
       const imageItem = multipleData[multipleData.length - 1].image;
       const { type } = multipleData[multipleData.length - 1];
-      let trimVideoData = null
+      let trimVideoData = null;
       const result = await ImageCropper.crop({
         ...cropDataRow,
         imageUri: imageItem.uri,
@@ -699,15 +747,13 @@ export default class CameraScreen extends Component<Props, State> {
           path: imageItem.uri,
         });
       } else {
-        const cropData = result
-        console.info('cropDatacropDatacropDatacropDatacropData', cropData, cropDataRow)
+        const cropData = result;
         trimVideoData = await AVService.crop({
           source: imageItem.uri,
           cropOffsetX: cropData.offset.x,
           cropOffsetY: cropData.offset.y,
           cropWidth: cropData.size.width,
           cropHeight: cropData.size.height,
-         
         });
       }
       // this.setState({ videoPaused: true });
@@ -717,8 +763,8 @@ export default class CameraScreen extends Component<Props, State> {
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-        if(type === 'video' && Math.ceil(imageItem.playableDuration) >300 ){
-           this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
+        if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+          this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
         }
         this.setState({
           postEditorParams: {
@@ -744,6 +790,25 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() {}
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.connected !== this.props.connected && !nextProps.connected) {
+      this.messageRef?.current?.show(
+        <View
+          style={{
+            width: width * 0.9,
+            height: 30,
+            borderRadius: 9,
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            flexDirection: 'row',
+          }}
+        >
+          <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
+        </View>,
+        2000,
+      );
+      return true;
+    }
     if (nextState.postEditorParams !== this.state.postEditorParams) {
       return true;
     }
@@ -762,7 +827,7 @@ export default class CameraScreen extends Component<Props, State> {
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
-    } 
+    }
   }
   render() {
     return (
@@ -772,7 +837,15 @@ export default class CameraScreen extends Component<Props, State> {
         <Toast
           ref={this.myRef}
           position='top'
-          positionValue={300}
+          positionValue={height * 0.4}
+          fadeInDuration={1050}
+          fadeOutDuration={800}
+          opacity={0.8}
+        />
+        <Toast
+          ref={this.messageRef}
+          position='top'
+          positionValue={height * 0.8}
           fadeInDuration={1050}
           fadeOutDuration={800}
           opacity={0.8}
@@ -843,8 +916,8 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontSize: 15,
-    fontWeight: '400',
-    color: '#fff',
+    fontWeight: '600',
+    color: '#836BFF',
     lineHeight: 21,
   },
   textCenter: {

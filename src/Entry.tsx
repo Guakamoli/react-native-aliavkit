@@ -70,98 +70,96 @@ const Entry = (props) => {
   );
   return (
     <>
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 1)' }}>
-        <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-          <PostUpload
-            // onRef={this.onRef}
-            {...props}
-            goback={goBack}
-            goStory={() => {
-              props.navigation.replace('FeedsStory');
-            }}
-            goPostEditor={(data) => {
-              props.navigation.navigate('FeedsPostEditor', { ...data });
-            }}
-            type={type}
-            setType={(type) => {
-              dispatch(setType(type));
-            }}
-            multipleBtnImage={multipleBtnPng}
-            startMultipleBtnImage={startMultipleBtnPng}
-            postCameraImage={postCameraPng}
-            changeSizeImage={changeSizePng}
-            closePng={closePng}
-            cameraModule={true}
-            noVolumeImage={noVolumePng}
-            volumeImage={volumePng}
-          />
-        </View>
-        <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
-          <CameraScreen
-            actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
-            // 退出操作
-            {...props}
-            goback={goBack}
-            type={type}
-            setType={(type) => {
-              dispatch(setType(type));
-            }}
-            goPost={() => {
-              navigation.replace('FeedsPost');
-            }}
-            // 拿到上传数据
-            getUploadFile={(data) => {
-              sendfile(data);
-            }}
-            haptics={haptics}
-            cameraFlipImage={cameraFlipPng}
-            captureButtonImage={captureButtonPng}
-            closeImage={closePng}
-            musicImage={musicPng}
-            beautifyImage={beautifyPng}
-            beautyAdjustImag={beautyAdjustPng}
-            AaImage={AaPng}
-            filterImage={filterPng}
-            musicRevampImage={musicRevampPng}
-            giveUpImage={giveUpPng}
-            noVolumeImage={noVolumePng}
-            tailorImage={tailorPng}
-            volumeImage={volumePng}
-            cameraModule={true}
-            musicDynamicGif={musicDynamicGif}
-            musicIconPng={musicIconPng}
-            musicIcongray={musicIcongray}
-            videomusicIcon={videomusicIconPng}
-            musicSearch={musicSearchPng}
-            selectBeautify={selectBeautifyPng}
-            noResultPng={noResultPng}
-            cameraModule={true}
-          />
-        </View>
-        <Animated.View
-          style={[
-            styles.tools,
-            { bottom: props.insets.bottom },
-            { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
-            {
-              transform: [{ translateX: transX }],
-            },
-          ]}
-        >
-          {types.map((i) => {
-            return (
-              <TouchableOpacity
-                key={i.type}
-                onPress={() => {
-                  changeType(i);
-                }}
-              >
-                <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </Animated.View>
-      </SafeAreaView>
+      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
+        <PostUpload
+          // onRef={this.onRef}
+          {...props}
+          goback={goBack}
+          goStory={() => {
+            props.navigation.replace('FeedsStory');
+          }}
+          goPostEditor={(data) => {
+            props.navigation.navigate('FeedsPostEditor', { ...data });
+          }}
+          type={type}
+          setType={(type) => {
+            dispatch(setType(type));
+          }}
+          multipleBtnImage={multipleBtnPng}
+          startMultipleBtnImage={startMultipleBtnPng}
+          postCameraImage={postCameraPng}
+          changeSizeImage={changeSizePng}
+          closePng={closePng}
+          cameraModule={true}
+          noVolumeImage={noVolumePng}
+          volumeImage={volumePng}
+        />
+      </View>
+      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
+        <CameraScreen
+          actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
+          // 退出操作
+          {...props}
+          goback={goBack}
+          type={type}
+          setType={(type) => {
+            dispatch(setType(type));
+          }}
+          goPost={() => {
+            navigation.replace('FeedsPost');
+          }}
+          // 拿到上传数据
+          getUploadFile={(data) => {
+            sendfile(data);
+          }}
+          haptics={haptics}
+          cameraFlipImage={cameraFlipPng}
+          captureButtonImage={captureButtonPng}
+          closeImage={closePng}
+          musicImage={musicPng}
+          beautifyImage={beautifyPng}
+          beautyAdjustImag={beautyAdjustPng}
+          AaImage={AaPng}
+          filterImage={filterPng}
+          musicRevampImage={musicRevampPng}
+          giveUpImage={giveUpPng}
+          noVolumeImage={noVolumePng}
+          tailorImage={tailorPng}
+          volumeImage={volumePng}
+          cameraModule={true}
+          musicDynamicGif={musicDynamicGif}
+          musicIconPng={musicIconPng}
+          musicIcongray={musicIcongray}
+          videomusicIcon={videomusicIconPng}
+          musicSearch={musicSearchPng}
+          selectBeautify={selectBeautifyPng}
+          noResultPng={noResultPng}
+          cameraModule={true}
+        />
+      </View>
+      {/* <Animated.View
+        style={[
+          styles.tools,
+          { bottom: props.insets.bottom },
+          { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
+          {
+            transform: [{ translateX: transX }],
+          },
+        ]}
+      >
+        {types.map((i) => {
+          return (
+            <TouchableOpacity
+              key={i.type}
+              onPress={() => {
+                changeType(i);
+              }}
+            >
+              <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </Animated.View> */}
     </>
     // </View>
   );

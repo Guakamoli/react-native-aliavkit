@@ -50,6 +50,8 @@ RCT_EXPORT_VIEW_PROPERTY(onPlayProgress, RCTBubblingEventBlock)
  }
  */
 RCT_EXPORT_VIEW_PROPERTY(editStyle, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
+
 
 /*
  文字信息
@@ -107,8 +109,8 @@ RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    CGFloat startTime = [[options valueForKey:@"startTime"] floatValue];
-    CGFloat endTime = [[options valueForKey:@"endTime"] floatValue];
+    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
+    CGFloat endTime = [[options objectForKey:@"endTime"] floatValue];
     [self.editView trimVideoFromTime:startTime toTime:endTime];
 }
 

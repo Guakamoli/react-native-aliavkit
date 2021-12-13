@@ -89,6 +89,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
 @property (nonatomic, strong) NSDictionary *cameraStyle;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
 @end
 
 @implementation CKCamera
@@ -102,9 +103,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -120,7 +121,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 [self addSubview:self.cameraAction.cameraPreview];
             }
             [self.cameraAction startPreview];
-            [self.cameraAction deletePreviousEffectPaster];
+//            [self.cameraAction deletePreviousEffectPaster];
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
@@ -131,9 +132,9 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -149,6 +150,19 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setupDefault
 {
+    CGSize outputSize = [RCTConvert CGSize:_mediaInfo[@"outputSize"]];
+    if (outputSize.width != 0 && outputSize.height != 0 ) {
+        self.cameraAction.mediaConfig.outputSize = outputSize;
+    }
+    if ([_mediaInfo objectForKey:@"minDuration"]) {
+        CGFloat minDuration = [RCTConvert CGFloat:_mediaInfo[@"minDuration"]];
+        self.cameraAction.mediaConfig.minDuration = minDuration;
+    }
+    if ([_mediaInfo objectForKey:@"maxDuration"]) {
+        CGFloat maxDuration = [RCTConvert CGFloat:_mediaInfo[@"maxDuration"]];
+        self.cameraAction.mediaConfig.maxDuration = maxDuration;
+    }
+    
     self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
     [self changeCamera:_cameraType];
     if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
@@ -171,12 +185,37 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.cameraAction.mediaConfig.outputSize = outputSize;            
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.cameraAction.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.cameraAction.mediaConfig.maxDuration = maxDuration;
+        }
+        _mediaInfo = mediaInfo;
+    }
+}
 
 - (void)setCameraStyle:(NSDictionary *)cameraStyle
 {
     if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
-        CGFloat previewWidth = [[cameraStyle valueForKey:@"width"] floatValue];
-        CGFloat previewHeight = [[cameraStyle valueForKey:@"height"] floatValue];
+        CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
+        CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
         self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
     }
 }
@@ -268,7 +307,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:options];
     
     //handle for local resource
-    NSString *bundlePath = [options valueForKey:@"bundlePath"];
+    NSString *bundlePath = [options objectForKey:@"bundlePath"];
     if (bundlePath) {
         info = [[AliyunPasterInfo alloc] initWithBundleFile:bundlePath];
     }

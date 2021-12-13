@@ -70,8 +70,10 @@ AliyunCropDelegate
 @property (nonatomic, copy) NSDictionary *musicInfo;
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
+
 @property (nonatomic, copy) NSDictionary *editStyle;
 @property (nonatomic, copy) NSDictionary *captionInfo;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
 
 @end
 
@@ -82,7 +84,7 @@ AliyunCropDelegate
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
         _mediaConfig.minDuration = 0.5f;
-        _mediaConfig.maxDuration = 30.f;
+        _mediaConfig.maxDuration = 600.f; //10 min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
@@ -343,6 +345,31 @@ AliyunCropDelegate
 
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.mediaConfig.outputSize = outputSize;
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.mediaConfig.maxDuration = maxDuration;
+        }
+        _mediaInfo = mediaInfo;
+    }
+}
 
 //captionInfo == @{}， remove
 - (void)setCaptionInfo:(NSDictionary *)captionInfo
@@ -367,9 +394,9 @@ AliyunCropDelegate
 
 - (void)setEditStyle:(NSDictionary *)editStyle
 {
-    if (editStyle && _editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
-        _editWidth = [[editStyle valueForKey:@"width"] floatValue];
-        _editHeight = [[editStyle valueForKey:@"height"] floatValue];
+    if (_editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
+        _editWidth = [[editStyle objectForKey:@"width"] floatValue];
+        _editHeight = [[editStyle objectForKey:@"height"] floatValue];
     }
     _editStyle = editStyle;
 }
@@ -477,7 +504,7 @@ AliyunCropDelegate
     
     if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
         AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-        model.path = [musicInfo valueForKey:@"localPath"];
+        model.path = [musicInfo objectForKey:@"localPath"];
         model.startTime = 0;
         
         AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];
