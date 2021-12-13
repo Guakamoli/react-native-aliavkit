@@ -18,6 +18,7 @@ const Camera = React.forwardRef((props, ref) => {
       return await RNCameraKitModule.startRecording(findNodeHandle(nativeRef.current));
     },
     stopRecording: async (options = {}) => {
+      console.log('android api stopRecording');
       return await RNCameraKitModule.stopRecording(findNodeHandle(nativeRef.current));
     },
     requestDeviceCameraAuthorization: async () => {
@@ -62,7 +63,9 @@ const Camera = React.forwardRef((props, ref) => {
 
     //释放资源，退出页面时调用
     release: async () => {
-      return await RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      // TODO
+      // console.log("camera release");
+      RNCameraKitModule.release();
     },
   }));
 
@@ -80,7 +83,7 @@ const Camera = React.forwardRef((props, ref) => {
       console.log("downloadMusic", progress);
     });
     return () => {
-      // RNCameraKitModule.release(findNodeHandle(nativeRef.current));
+      RNCameraKitModule.release();
       subscription.remove();
       downloadPaster.remove();
       downloadMusic.remove();
