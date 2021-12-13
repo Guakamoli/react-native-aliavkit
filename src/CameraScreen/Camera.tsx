@@ -15,7 +15,6 @@ import {
   Pressable,
   StatusBar,
   AppState,
-  StatusBar,
   AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
