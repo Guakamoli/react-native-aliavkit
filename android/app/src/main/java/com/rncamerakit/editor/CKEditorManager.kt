@@ -3,19 +3,23 @@ package com.rncamerakit.editor
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
+import com.aliyun.svideo.base.http.EffectService
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
+import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.rncamerakit.db.MusicFileBean
-import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.font.FontManager
 import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.utils.DownloadUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
+import org.jetbrains.anko.dip
 
 class CKEditorManager : SimpleViewManager<CKEditor>() {
+
 
     private var mWidth = 0
     private var mHeight = 0
@@ -24,12 +28,6 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
 
     override fun getName(): String {
         return "CKEditorManager"
-    }
-
-    override fun onDropViewInstance(view: CKEditor) {
-        super.onDropViewInstance(view)
-        MusicFileInfoDao.instance.closeDB()
-        Log.e("AAA", "onDropViewInstance")
     }
 
     @DelicateCoroutinesApi
@@ -54,7 +52,10 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
 //        }
     }
 
-
+    override fun onDropViewInstance(view: CKEditor) {
+        super.onDropViewInstance(view)
+        Log.e("AAA", "onDropViewInstance")
+    }
 
     //设置Editor宽高
     @ReactProp(name = "editStyle")
@@ -174,6 +175,58 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             view.setMusicInfo(bean)
         }
 
+    }
+
+
+    //设置字幕
+    @ReactProp(name = "captionInfo")
+    fun setCaptionInfo(view: CKEditor, readableMap: ReadableMap?) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            readableMap.let {  view.setCaptionInfo(it) }
+        } else {
+            //清除字幕
+            view.clearCaptionInfo()
+        }
+    }
+
+    //设置字幕字体
+    @ReactProp(name = "captionFont")
+    fun setCaptionFont(view: CKEditor, readableMap: ReadableMap?) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            val taskId = if (readableMap.hasKey("taskId")) readableMap.getInt("taskId") else 0
+            val id = if (readableMap.hasKey("id")) readableMap.getInt("id") else 0
+            val name = if (readableMap.hasKey("name")) readableMap.getString("name") else null
+            val nameEn = if (readableMap.hasKey("nameEn")) readableMap.getString("nameEn") else null
+            val url = if (readableMap.hasKey("url")) readableMap.getString("url") else null
+            val path = if (readableMap.hasKey("path")) readableMap.getString("path") else null
+            val isunzip = if (readableMap.hasKey("isunzip")) readableMap.getInt("isunzip") else 0
+
+            val icon = if (readableMap.hasKey("icon")) readableMap.getString("icon") else null
+            val level = if (readableMap.hasKey("level")) readableMap.getInt("level") else 0
+            val sort = if (readableMap.hasKey("sort")) readableMap.getInt("sort") else 0
+            val md5 = if (readableMap.hasKey("md5")) readableMap.getString("md5") else null
+            val banner = if (readableMap.hasKey("banner")) readableMap.getString("banner") else null
+
+            val model = FileDownloaderModel()
+
+            model.taskId = taskId
+            model.id = id
+            model.name = name
+            model.nameEn = nameEn
+            model.url = url
+            model.path = path
+            model.setIsunzip(isunzip)
+
+            model.effectType = EffectService.EFFECT_TEXT
+
+            model.icon = icon
+            model.level = level
+            model.sort = sort
+            model.md5 = md5
+            model.banner = banner
+
+            view.setCaptionFont(model)
+        }
     }
 
 }
