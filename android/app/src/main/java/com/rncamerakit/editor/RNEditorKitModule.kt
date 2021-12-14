@@ -2,18 +2,25 @@ package com.rncamerakit.editor
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
+import android.util.ArrayMap
 import android.util.Log
+import com.aliyun.svideo.base.http.EffectService
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.downloader.FileDownloaderCallback
+import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.liulishuo.filedownloader.BaseDownloadTask
+import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.manager.ColorFilterManager
+import com.rncamerakit.font.FontManager
 import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
@@ -22,6 +29,7 @@ import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import org.json.JSONObject
 import java.net.FileNameMap
 import java.net.URLConnection
 import java.util.ArrayList
@@ -65,8 +73,8 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
             }
         }
 
-        val md5Value = SPUtils.getInstance().getString(DownloadUtils.spKey)
-        if (TextUtils.isEmpty(md5Value)) {
+        val musicAll = MusicFileInfoDao.instance.queryAll()
+        if (musicAll == null || musicAll.isEmpty()) {
             DownloadUtils.getMusicJsonInfo {
                 val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
                 promise.resolve(GsonBuilder().create().toJson(list))
@@ -278,6 +286,34 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
                 promise.resolve(true)
             }
         }
+    }
+
+    /**
+     * 获取所有字体
+     */
+    @ReactMethod
+    fun getFontList(promise: Promise) {
+        val fonts = FontManager.instance.getDownloadFontList()
+        promise.resolve(GsonBuilder().create().toJson(fonts))
+    }
+
+    /**
+     * 下载字体
+     */
+    @ReactMethod
+    fun downloadFont(options: ReadableMap, promise: Promise) {
+        val bundle = Arguments.toBundle(options)
+        var model = FileDownloaderModel()
+        val jsonObject = GsonBuilder().create().toJsonTree(model).asJsonObject
+        bundle?.keySet()?.let { set ->
+            set.forEach {
+                jsonObject.add(it,GsonBuilder().create().toJsonTree(bundle.get(it)))
+            }
+        }
+        model = GsonManage.fromJson(jsonObject,FileDownloaderModel::class.java)
+        model.isunzip = 1
+        model.effectType = EffectService.EFFECT_TEXT
+        FontManager.instance.downloadFont(reactContext.applicationContext, model, promise)
     }
 
     @ReactMethod
