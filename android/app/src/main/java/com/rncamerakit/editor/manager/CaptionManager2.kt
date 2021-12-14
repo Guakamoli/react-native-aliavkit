@@ -1,8 +1,7 @@
 package com.rncamerakit.editor.manager
 
+import android.graphics.Color
 import android.graphics.PointF
-import android.text.TextUtils
-import android.util.Log
 import com.aliyun.svideosdk.common.AliyunColor
 import com.aliyun.svideosdk.common.AliyunTypeface
 import com.aliyun.svideosdk.common.struct.project.Source
@@ -13,7 +12,8 @@ import com.facebook.react.uimanager.ThemedReactContext
 
 class CaptionManager2(
     private val mContext: ThemedReactContext,
-    private val mPasterManager: AliyunPasterManager?
+    private val mPasterManager: AliyunPasterManager?,
+    private val mAliyunIEditor: AliyunIEditor?
 ) {
 
     private var mCaptionController: AliyunPasterControllerCompoundCaption? = null
@@ -157,6 +157,13 @@ class CaptionManager2(
         mCaptionController?.shadowOffset = PointF(x, y)
     }
 
+
+    fun setFontPath(fontSource: Source?) {
+        if(fontSource!=null){
+            mCaptionController?.setFontPath(fontSource)
+        }
+    }
+
     /**
      * 确认添加字幕
      */
@@ -174,34 +181,54 @@ class CaptionManager2(
         mPasterManager?.remove(mCaptionController)
     }
 
-    /**
-     * 添加一个默认样式的视频字幕
-     *
-     * @param text
-     */
-    fun addDefaultStyleCaption(text: String?, aliyunIEditor: AliyunIEditor?, width: Int, height: Int) {
-        if (TextUtils.isEmpty(text) || aliyunIEditor == null) {
-            return
+
+    fun addCaption(text: String, scale: Float, rotate: Float, x: Float, y: Float) {
+        var endTime = mAliyunIEditor?.duration
+        if (endTime == null) {
+            endTime = 30*1000*1000L
         }
-        //视频时长 us
-        val endTime = aliyunIEditor.duration
         addCaptionWithStartTime(text, null, null, 0, endTime)
-
-        setPosition((width/2).toFloat(), (height/2).toFloat())
-        setRotate(45F)
-        //android 默认字体大小 25sp
-        setScale(1F)
-        setFontTypeface(AliyunTypeface.BOLD_ITALIC)
-        setTextAlignment(4)// AlignHCenter = 4;
-        setColor(AliyunColor(255, 0, 0, 255))
-        setBackgroundColor(AliyunColor(0, 0, 0, 99))
-        setOutlineColor(AliyunColor(0, 0, 255, 255))
-        setOutlineWidth(10F)
-        setShadowColor(AliyunColor(0, 255, 0, 255))
-        setShadowOffset(10F, 10F)
-
+        setScale(scale)
+        setRotate(-rotate)
+        setPosition(x, y)
+        setColor(AliyunColor(Color.WHITE))
+        setBackgroundColor(AliyunColor(Color.BLACK))
         apply()
+//        mAliyunIEditor?.saveEffectToLocal()
+//        mAliyunIEditor?.applySourceChange()
     }
+
+//    /**
+//     * 添加一个默认样式的视频字幕
+//     *
+//     * @param text
+//     */
+//    fun addDefaultStyleCaption(text: String, width: Int, height: Int) {
+//        if (TextUtils.isEmpty(text)) {
+//            return
+//        }
+//        //视频时长 us
+//        var endTime = mAliyunIEditor?.duration
+//        if (endTime == null) {
+//            endTime = 30*1000*1000L
+//        }
+//        addCaptionWithStartTime(text, null, null, 0, endTime)
+//
+//        setPosition((width/2).toFloat(), (height/2).toFloat())
+//        setRotate(45F)
+//        //android 默认字体大小 25sp
+//        setScale(1F)
+//        setFontTypeface(AliyunTypeface.BOLD_ITALIC)
+//        setTextAlignment(4)// AlignHCenter = 4;
+//        setColor(AliyunColor(Color.WHITE))
+//        setBackgroundColor(AliyunColor(Color.BLACK))
+//        setOutlineColor(AliyunColor(Color.RED))
+//        setOutlineWidth(10F)
+//        setShadowColor(AliyunColor(Color.GREEN))
+//        setShadowOffset(10F, 10F)
+//
+//        apply()
+//    }
 
 
 }

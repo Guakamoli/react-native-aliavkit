@@ -14,32 +14,58 @@ import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.sys.AlivcSdkCore
+import com.blankj.utilcode.util.SPUtils
 import com.liulishuo.filedownloader.FileDownloader
 import com.rncamerakit.db.MusicFileInfoDao
+import com.rncamerakit.font.FontManager
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class AliAVkitManager {
 
     companion object {
         @JvmStatic
         fun init(context: Application) {
+
+
+
             initVideo(context);
             MusicFileInfoDao.instance.init(context)
             //下载管理
             FileDownloader.setupOnApplicationOnCreate(context)
+
+            FontManager.instance.init(context)
+
+
+//            //TODO
+//            SPUtils.getInstance().put(FontManager.FONT_SP_KEY, "")
+//            //清空字体库数据
+//            val fonts = FontManager.instance.getDownloadFontList()
+//            fonts?.forEach { font ->
+//                font?.let {
+//                    DownloaderManager.getInstance().dbController.deleteTask(it.taskId)
+//                }
+//            }
+//            //TODO
+
             doAsync {
                 //提前解压
                 RecordCommon.copyAll(context)
                 EditorCommon.copyAll(context, View(context))
-//                uiThread {
-//                }
+                uiThread {
+                    //提前下载字体库json数据,将json数据保存到本地数据库
+                    FontManager.instance.initFontJson()
+                }
             }
         }
 
         private var mLogPath: String? = null
         private fun initVideo(application: Application) {
             QupaiHttpFinal.getInstance().initOkHttpFinal()
+
             DownloaderManager.getInstance().init(application)
+//            DownloaderManager.getInstance().dbController
+
             AlivcSdkCore.register(application.applicationContext)
             if (BuildConfig.DEBUG) {
                 AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogWarn)
