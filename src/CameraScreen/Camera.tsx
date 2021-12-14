@@ -15,7 +15,6 @@ import {
   Pressable,
   StatusBar,
   AppState,
-  AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';

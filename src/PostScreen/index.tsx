@@ -193,9 +193,15 @@ class PostContent extends Component {
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.multipleData !== this.props.multipleData) {
-      this.setState({
-        videoPaused: true,
-      });
+      if(!!nextProps.multipleData[0]&& nextProps.multipleData[0]?.type == 'image'){
+        this.setState({
+          videoPaused: true,
+        });
+      }else{
+        this.setState({
+          videoPaused: false,
+        });
+      }
       return true;
     }
     if (nextState.cropScale !== this.state.cropScale) {
