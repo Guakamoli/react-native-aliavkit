@@ -58,63 +58,44 @@ export default class Editor extends Component<Props, State> {
 
   //获取滤镜列表
   getColorFilterList = async () => {
-    let colorFilterList = await RNEditorKitModule.getColorFilterList(findNodeHandle(this.nativeRef.current));
+    let colorFilterList = await RNEditorKitModule.getColorFilterList();
     return JSON.parse(colorFilterList)
   };
 
 
-  //播放、继续播放
-  onPlay = async () => {
-    let play = await RNEditorKitModule.play(findNodeHandle(this.nativeRef.current));
-    console.log("replay", play);
-  };
-
-
-  //暂停播放
-  onPause = async () => {
-    let pause = await RNEditorKitModule.pause(findNodeHandle(this.nativeRef.current));
-    console.log("onPause", pause);
-  };
-
-  //停止播放
-  onStop = async () => {
-    let stop = await RNEditorKitModule.stop(findNodeHandle(this.nativeRef.current));
-    console.log("onStop", stop);
-  };
-
-  //定位播放
-  onSeek = async (time) => {
-    // * seek到某个时间点   @param time 时间，单位：毫秒
-    let seek = await RNEditorKitModule.seek(time, findNodeHandle(this.nativeRef.current));
-    console.log("onSeek", seek);
-  };
-
   //获取视频封面    @param time 时间，单位：毫秒
   onVideoCover = async (time) => {
-    let videoCover = await RNEditorKitModule.videoCover(time, findNodeHandle(this.nativeRef.current));
-    console.log("onVideoCover", videoCover);
+    let videoCover = await RNEditorKitModule.videoCover(time);
+    return videoCover
   };
 
 
   //视频裁剪，时间裁剪，传入开始结束时间,成功后会播放裁剪后的视频
-  videoTrim = async () => {
-    let trimParam = {
-      'startTime': 3000,
-      'endTime': 8000,
-    }
-    let videoTrim = await RNEditorKitModule.videoTrim(trimParam, findNodeHandle(this.nativeRef.current));
-    console.log("videoTrim", videoTrim);
+  trimVideo = async (trimParams) => {
+    // let trimParam = {
+    //   'startTime': startTime * 1000,
+    //   'endTime': endTime * 1000,
+    // }
+    let videoTrim = await RNEditorKitModule.trimVideo(trimParams);
+    return videoTrim
+    // console.log("videoTrim", videoTrim, trimParams);
   };
 
+
+  release = async () => {
+    // console.log("Video release");
+    RNEditorKitModule.release();
+  };
 
 
   async componentDidMount() {
 
     let list = await this.getMusicList("", 2, 10);
-    console.log("getMusicList", list);
+    // console.log("getMusicList", list);
     //播放回调
-    this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (duration) => {
-      // console.log("startVideoEditor", duration);
+    this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
+      // console.log("startVideoEditor", params);
+      this.props.onPlayProgress({ nativeEvent: params });
     });
 
     // //视频裁剪进度
@@ -125,7 +106,7 @@ export default class Editor extends Component<Props, State> {
     //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
       // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
-      // console.log("startVideoCompose", param);
+      console.log("视频合成中...", param);
       this.props.onExportVideo(param);
     });
 
@@ -136,7 +117,6 @@ export default class Editor extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    RNEditorKitModule.release(findNodeHandle(this.nativeRef.current));
     if (this.startVideoPlayListener != null) {
       this.startVideoPlayListener.remove();
     }
@@ -150,20 +130,24 @@ export default class Editor extends Component<Props, State> {
     if (this.downloadMusicListener != null) {
       this.downloadMusicListener.remove();
     }
+    // TODO post 销毁
+    // if(this.props.source != 'story'){
+    //   console.log('post 销毁');
+      
+     RNEditorKitModule.release();
+    // }
 
   }
 
   render() {
     return (
-      <View style={styles.cameraContainer}>
-        <NativeEditor
-          ref={this.nativeRef}
-          style={{ minWidth: 100, minHeight: 100 }}
-          {...this.props}
-        // startExportVideo = {this.props.startExportVideo}
-
-        />
-      </View>
+      <NativeEditor
+        style={{ minWidth: 100, minHeight: 100 }}
+        {...this.props}
+        // editLayout={{width:props.editWidth,height:props.CameraFixHeight}}
+        ref={this.nativeRef}
+      // startExportVideo = {this.props.startExportVideo}
+      />
     );
   }
 
@@ -171,13 +155,11 @@ export default class Editor extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   cameraContainer: {
-    flex: 1,
-    backgroundColor: 'red',
+
   },
 
   composeVideo: {
     flex: 1,
-    backgroundColor: 'red',
   },
   captureButtonContainer: {
     flex: 1,
