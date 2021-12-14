@@ -13,7 +13,10 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "10.0"
 
   s.source       = { :git => "https://github.com/Guakamoli/react-native-aliavkit", :tag => "v#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m,mm}"
+  s.source_files  = [
+  "ios/**/*.{h,m,mm,swift}",
+  "ios/**/ReactNativeAliAVKit-Bridging-Header.h",
+  ]
   
   s.resource = 'ios/ReactNativeCameraKit/Resources/ShortVideoResource/*'
   
@@ -21,13 +24,13 @@ Pod::Spec.new do |s|
   
   # 柯南SDK-短视频SDK依赖的数据埋点
   s.dependency 'AlivcConan', '1.0.5'
-  s.dependency 'AliyunVideoSDKPro', '3.26.0'
+  s.dependency 'AliyunVideoSDKPro', '3.27.0'
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
   s.dependency 'Queen', '1.4.0-official-pro'
-  s.dependency 'AFNetworking'
-  s.dependency 'FMDB'
-  s.dependency 'JSONModel'
+#  s.dependency 'AFNetworking'
+#  s.dependency 'FMDB'
+#  s.dependency 'JSONModel'
   s.dependency 'SSZipArchive'
   
 end

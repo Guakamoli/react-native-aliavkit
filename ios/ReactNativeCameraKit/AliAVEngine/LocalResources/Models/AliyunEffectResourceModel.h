@@ -19,6 +19,8 @@ typedef NS_ENUM(NSInteger, AliyunEffectType){
     AliyunEffectTypeMusic = 5,
     AliyunEffectTypeCaption = 6,
     AliyunEffectTypeSpecialFilter = 7,
+    AliyunEffectTypeTransition = 8,
+    AliyunEffectTypeTransitionLutFilter = 9,
 };
 
 
@@ -85,6 +87,11 @@ typedef enum : NSUInteger {
 @property (nonatomic, copy) NSString *sort;
 @property (nonatomic, copy) NSArray <AliyunEffectMvInfo > *mvList;
 @property (nonatomic, copy) NSArray <AliyunEffectPasterInfo > *pasterList;
+
+//specialEffect
+@property (nonatomic,copy) NSString *iconUrl;
+@property (nonatomic,copy) NSString *resourceUrl;
+@property (nonatomic,copy) NSString *previewUrl;
 
 
 //

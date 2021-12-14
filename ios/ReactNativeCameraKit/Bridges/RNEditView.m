@@ -74,6 +74,7 @@ AliyunCropDelegate
 @property (nonatomic, copy) NSDictionary *editStyle;
 @property (nonatomic, copy) NSDictionary *captionInfo;
 @property (nonatomic, copy) NSDictionary *mediaInfo;
+@property (nonatomic, copy) NSDictionary *fontInfo;
 
 @end
 
@@ -345,6 +346,18 @@ AliyunCropDelegate
 
 
 #pragma mark - Setter
+
+- (void)setFontInfo:(NSDictionary *)fontInfo
+{
+    if (fontInfo && _fontInfo != fontInfo) {
+        if (_currentCaptionController) {
+            AliyunCaptionSticker *captionSticker = _currentCaptionController.model;
+            captionSticker.fontName = [fontInfo objectForKey:@"fontName"];
+            captionSticker.faceType = [fontInfo objectForKey:@"faceType"] ? : AliyunCaptionStickerFaceTypeNormal;
+        }
+    }
+}
+
 /*
  {
    "outputSize": { "width": 1080, "height": 1920 },

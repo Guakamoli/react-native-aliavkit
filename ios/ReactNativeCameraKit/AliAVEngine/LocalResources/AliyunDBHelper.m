@@ -358,6 +358,69 @@
  
 }
 
+/**
+ 只查询特效资源包查询
+ @param success 成功
+ @param failure 失败
+ */
+- (void)querySpecailEffectPackage:(void(^)(NSArray *resourceArray))success
+              faliure:(void(^)(NSError *error))failure{
+    
+    NSMutableArray *resourceArray = [[NSMutableArray alloc] init];
+    // 1.执行查询语句
+    [self.databaseQueue inDatabase:^(FMDatabase *db) {
+        if ([db open]) {
+            FMResultSet *resultSet = [db executeQuery:@"SELECT * FROM table_allresources WHERE effectType = 7 and icon !=  ?",@"icon"];
+            // 2.遍历结果
+            while ([resultSet next]) {
+                NSInteger tid = [resultSet intForColumn:@"tid"];
+                if (tid <= 0) {
+                    success(resourceArray);
+                    return;
+                }
+                
+                AliyunEffectResourceModel *model = [[AliyunEffectResourceModel alloc] init];
+                
+                model.effectType  = [resultSet intForColumn:@"effectType"];
+                model.filterType = [resultSet intForColumn:@"filterType"];
+                model.eid         = [resultSet intForColumn:@"id"];
+                model.level       = [resultSet intForColumn:@"level"];
+                model.isNew       = [resultSet intForColumn:@"isNew"];
+                model.name        = [resultSet stringForColumn:@"name"];
+                model.cnName      = [resultSet stringForColumn:@"cnName"];
+                model.key         = [resultSet stringForColumn:@"key"];
+                model.url         = [resultSet stringForColumn:@"url"];
+                model.md5         = [resultSet stringForColumn:@"md5"];
+                model.banner      = [resultSet stringForColumn:@"banner"];
+                model.icon        = [resultSet stringForColumn:@"icon"];
+                model.edescription= [resultSet stringForColumn:@"description"];
+                model.preview     = [resultSet stringForColumn:@"preview"];
+                model.tag         = [resultSet stringForColumn:@"tag"];
+                model.cat         = [resultSet stringForColumn:@"cat"];
+                model.previewPic  = [resultSet stringForColumn:@"previewPic"];
+                model.previewMp4  = [resultSet stringForColumn:@"previewMp4"];
+                model.preview     = [resultSet stringForColumn:@"preview"];
+                model.duration    = [resultSet stringForColumn:@"duration"];
+                model.type        = [resultSet stringForColumn:@"type"];
+                model.sort        = [resultSet stringForColumn:@"sort"];
+                model.resourcePath= [resultSet stringForColumn:@"resourcePath"];
+                
+                
+//                AliyunEffectInfo *infoModel = [[AliyunEffectModelTransManager manager] transEffectInfoModelWithResourceModel:model];
+                [resourceArray addObject:model];
+            }
+            
+            success(resourceArray);
+            
+        } else {
+            NSError *error = [NSError errorWithDomain:@"com.qusdk" code:0 userInfo:@{@"errorInfo":@"数据库打开失败"}];
+            failure(error);
+        }
+        
+    }];
+ 
+}
+
 #pragma mark - 文件路径
 - (NSString *)databaseFilePath {
     

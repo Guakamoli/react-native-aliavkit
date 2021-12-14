@@ -77,6 +77,14 @@ static NSString *localeLanguageCode = nil;
     return fullPath;
 }
 
+//将特效iconurl字段映射为icon字段
+- (NSString *)icon{
+    if (!_icon && _iconUrl) {
+        _icon = _iconUrl;
+    }
+    return _icon;
+}
+
 -(NSString *)storageDirectory {
     
     return [[self class] storageDirectoryWithEffectType:self.effectType];
@@ -103,6 +111,12 @@ static NSString *localeLanguageCode = nil;
             break;
         case AliyunEffectTypeCaption:
             path = @"subtitleRes";
+            break;
+        case AliyunEffectTypeSpecialFilter:
+            path = @"specialFilterRes";
+            break;
+        case AliyunEffectTypeTransition:
+            path = @"transitionRes";
             break;
         default:
             break;

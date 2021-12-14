@@ -1,6 +1,6 @@
 import React from 'react';
 import { NativeModules } from 'react-native';
-const { AliAVServiceBridge, RNMusicService } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNFontService } = NativeModules;
 
 type MusicRequestType = {
   name: string;
@@ -63,5 +63,15 @@ export default class AVService {
 
   static async clearResources({ tmp, record, composition }) {
     return await AliAVServiceBridge.clearResources({ tmp, record, composition });
+  }
+
+  static async fetchFontList() {
+    console.log('----- fetchFontList');
+    return await RNFontService.fetchFontList();
+  }
+
+  static async downloadFont(fontId:number) {
+    console.log('----- downloadFont');
+    return await RNFontService.downloadFont(fontId);
   }
 }

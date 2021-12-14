@@ -72,7 +72,12 @@ RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
  */
 RCT_EXPORT_VIEW_PROPERTY(captionInfo, NSDictionary)
 
-
+RCT_CUSTOM_VIEW_PROPERTY(fontInfo, NSDictionary, RNEditView)
+{
+    if (json) {
+        
+    }
+}
 
 RCT_EXPORT_METHOD(play)
 {

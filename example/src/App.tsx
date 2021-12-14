@@ -35,6 +35,10 @@ function HomeScreen(props) {
     navigation.goBack()
 
   }
+
+  
+
+
   return (
 
     <>
