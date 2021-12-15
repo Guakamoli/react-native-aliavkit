@@ -40,9 +40,10 @@ import {
   Cool,
   Invert,
   Emboss,
+  cleanExtractedImagesCache,
 } from 'react-native-image-filter-kit';
 import ImageMap from '../images';
-const { postNoVolumePng, postvolumePng, postnoVolumeImage } = ImageMap;
+const { postNoVolumePng, postvolumePng, postnoVolumeImage, postaddPhotoBtnPng } = ImageMap;
 import { Button } from 'react-native-elements';
 
 // let a  = require('../images/postEditorNoMute.png');
@@ -147,6 +148,7 @@ const PostEditor = (props) => {
   const lockRef = useRef(false);
   const continueRef = useRef(false);
   const [photoFile, setPhotoFile] = useState('');
+  const [photosDataIndex, setPhotosDataIndex] = useState([]);
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
@@ -156,16 +158,22 @@ const PostEditor = (props) => {
 
     if (fileType === 'image') {
       try {
-        const path = photoFile;
+        // console.info('photoFilephotoFile', photosDataIndex);
+        // return
+        // const path = photoFile[0];
         let uploadFile = [];
-        uploadFile.push({
-          Type: `image/png`,
-          path: path,
-          size: 0,
-          Name: path,
-          coverImage: path,
+        uploadFile = photoFile.map((item) => {
+          return {
+            Type: `image/png`,
+            path: item,
+            size: 0,
+            Name: item,
+            coverImage: item,
+          };
         });
+        console.info('uploadFileuploadFile', uploadFile);
         props.getUploadFile(uploadFile);
+        uploadFile = [];
         props.goback();
       } catch (e) {
         console.info(e, '错误');
@@ -241,7 +249,8 @@ const PostEditor = (props) => {
     const { params } = props;
 
     if (!params) return null;
-    setmultipleSandBoxData([params?.trimVideoData]);
+    console.info('--------------multipleSandBoxData', params?.trimVideoData);
+    setmultipleSandBoxData(params?.trimVideoData);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
     Animated.timing(
@@ -255,6 +264,8 @@ const PostEditor = (props) => {
   }, [props.params]);
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    //清除图片滤镜缓存文件
+    cleanExtractedImagesCache();
     const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
@@ -263,6 +274,7 @@ const PostEditor = (props) => {
     });
     return () => {
       console.info('销毁了', subscription);
+
       AVService.removeThumbnaiImages();
       //TODO
       if (Platform.OS === 'ios') {
@@ -363,12 +375,12 @@ const PostEditor = (props) => {
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
     const top = props.params.cropDataRow.positionY;
-
-    const width1 = props.params.cropDataRow.fittedSize.width;
-    const height1 = props.params.cropDataRow.fittedSize.height;
-    const srcWidth = props.params.cropDataRow.srcSize.width;
-    const srcHeight = props.params.cropDataRow.srcSize.height;
-    const rowData = props.params.cropDataRow.srcSize;
+    console.info('props.params.trimVideoData', props.params.cropDataKey[0]);
+    const width1 = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].fittedSize.width;
+    const height1 = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].fittedSize.height;
+    const srcWidth = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize.width;
+    const srcHeight = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize.height;
+    const rowData = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize;
     // 这里裁减策略修改为超出一定比例的时候自动裁切
     const windowWidth = width;
 
@@ -719,7 +731,7 @@ const PostEditor = (props) => {
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
-              style={{ width: 50, height: 50, paddingTop: 35 }}
+              style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}
               key={index}
               onPress={() => {
                 setselectBottomModel(item);
@@ -738,26 +750,21 @@ const PostEditor = (props) => {
     const top = props.params.cropDataRow.positionY;
     const scale = props.params.cropDataRow.scale;
 
-    const Extractor = (imgFilter) => {
+    const Extractor = (imgFilter, imgfile, isSingle = false) => {
       // const width =props.params.cropDataRow.fittedSize.width
       // const height =props.params.cropDataRow.fittedSize.height
+      console.info(imgfile);
       const ImageComponent = (
-        <Image
-          style={{
-            width: width,
-            height: width,
-            // transform:[
-            // {
-            //   scale:scale
-            // },
-            //    {translateX:left},
-
-            //     {translateY:top},
-
-            //   ]
-          }}
-          source={{ uri: multipleSandBoxData[0] }}
-        />
+        <>
+          <Image
+            style={{
+              width: isSingle ? width : 319,
+              height: isSingle ? width : 319,
+              marginRight: 8,
+            }}
+            source={{ uri: imgfile }}
+          />
+        </>
       );
       switch (imgFilter) {
         case 'Sepia2': {
@@ -821,26 +828,74 @@ const PostEditor = (props) => {
     const propsTitles = (title) => {
       return <Text style={{ color: 'white', fontSize: 16, marginLeft: 40 }}>{title}</Text>;
     };
+    const saveFilterImage = (nativeEvent, item, flag = false) => {
+      setPhotoFile(nativeEvent.uri);
+      if (flag) {
+        setPhotoFile([nativeEvent.uri]);
+      } else {
+        // 判断是否已经选中过
+        if (photosDataIndex.indexOf(item) != -1) {
+          let dataIndex = photosDataIndex.indexOf(item);
+          let list = [...photoFile];
+          list[dataIndex] = nativeEvent.uri;
+          setPhotoFile(list);
+        } else {
+          let dataIndex = [...photosDataIndex];
+          dataIndex.push(item);
+          setPhotosDataIndex(dataIndex);
+
+          let list = [...photoFile];
+          list.push(nativeEvent.uri);
+          setPhotoFile(list);
+        }
+      }
+    };
     return (
       <>
         <View style={{ width: width, height: width, overflow: 'hidden' }}>
-          <View
-            style={
-              {
-                // overflow: 'hidden',
-                // alignItems: 'center',
-                // justifyContent: 'center',
-              }
-            }
-          >
-            <Grayscale
-              amount={0}
-              onExtractImage={({ nativeEvent }) => {
-                setPhotoFile(nativeEvent.uri);
-              }}
-              extractImageEnabled={true}
-              image={Extractor(imgfilterName)}
-            ></Grayscale>
+          <View>
+            {multipleSandBoxData.length == 1 && (
+              <Grayscale
+                amount={0}
+                onExtractImage={({ nativeEvent }) => {
+                  saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
+                }}
+                extractImageEnabled={true}
+                image={Extractor(imgfilterName, multipleSandBoxData[0], true)}
+              ></Grayscale>
+            )}
+            {multipleSandBoxData.length > 1 && (
+              <FlatList
+                style={[{ marginTop: 40 }, !(multipleSandBoxData.length > 1) && { display: 'none' }]}
+                horizontal={true}
+                data={multipleSandBoxData}
+                renderItem={({ item, index }) => {
+                  return (
+                    <Grayscale
+                      amount={0}
+                      onExtractImage={({ nativeEvent }) => {
+                        saveFilterImage(nativeEvent, item);
+                      }}
+                      extractImageEnabled={true}
+                      image={Extractor(imgfilterName, item)}
+                    ></Grayscale>
+                  );
+                }}
+                ListFooterComponent={() => {
+                  return (
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
+                      <Pressable
+                        onPress={() => {
+                          props.goback();
+                        }}
+                      >
+                        <Image source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }}></Image>
+                      </Pressable>
+                    </View>
+                  );
+                }}
+              />
+            )}
           </View>
         </View>
         <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
@@ -857,9 +912,11 @@ const PostEditor = (props) => {
                 marginRight: 5,
                 marginBottom: 5,
                 marginTop: 20,
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
-              <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+              <Image style={{ width: 44, height: 44 }} source={postNoVolumePng} />
             </View>
             {propsTitles('M1')}
           </TouchableOpacity>
@@ -1025,6 +1082,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8E8E8E',
     fontWeight: '500',
+    lineHeight: 20,
   },
   continueText: {
     fontSize: 15,
