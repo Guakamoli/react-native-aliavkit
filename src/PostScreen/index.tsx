@@ -436,7 +436,7 @@ class GridItemCover extends Component {
         console.info('至少悬着一个2');
       }
       if (datalist.length >= 10) {
-        this.props.toastRef.current.show('最多只能选择10张照片', 2000);
+        this.props.toastRef.current.show('最多选择十张图片', 2000);
         // 无效 注意
         return;
       }
@@ -491,10 +491,10 @@ class GridItemCover extends Component {
           <View
             style={[
               {
-                borderRadius: 10,
+                borderRadius: 22,
                 borderWidth: 1,
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 borderColor: 'white',
                 overflow: 'hidden',
                 position: 'absolute',
@@ -509,9 +509,9 @@ class GridItemCover extends Component {
             <Image
               source={postFileSelectPng}
               style={{
-                width: 18,
-                height: 18,
-                borderRadius: 18,
+                width: 20,
+                height: 20,
+                // borderRadius: 20,
                 zIndex: 99,
                 backgroundColor: '#836BFF',
                 justifyContent: 'center',
@@ -522,19 +522,21 @@ class GridItemCover extends Component {
 
             <View
               style={{
-                width: 18,
-                height: 18,
+                width: 20,
+                height: 20,
                 // borderRadius: 20,
                 zIndex: 99,
                 backgroundColor: '#836BFF',
 
                 justifyContent: 'center',
-                alignItems: 'center',
+                // alignItems: 'center',
 
                 display: this.state.active && fileSelectType == 'image' ? 'flex' : 'none',
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 13 }}> {this.state.selectIndex}</Text>
+              <Text style={{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }}>
+                {this.state.selectIndex}
+              </Text>
             </View>
           </View>
           <Animated.View
@@ -933,13 +935,15 @@ export default class CameraScreen extends Component<Props, State> {
 
         this.setState({
           postEditorParams: {
+            // 数据
             trimVideoData: resultData,
             videoduration: videoTime,
             trimmerRight: trimmerRightHandlePosition,
             fileType,
             cropDataRow: cropDataRow,
             cropDataResult: result,
-            cropDataKey: multipleData,
+            // 原始数据
+            originalData: multipleData,
           },
           videoPaused: true,
           page: 'eidt',

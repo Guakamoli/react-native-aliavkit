@@ -161,14 +161,19 @@ const PostEditor = (props) => {
         // console.info('photoFilephotoFile', photosDataIndex);
         // return
         // const path = photoFile[0];
+
         let uploadFile = [];
-        uploadFile = photoFile.map((item) => {
+        uploadFile = photoFile.map((item, index) => {
+          // 图片的宽高
+          let imageData = props.params.originalData[index]?.image;
           return {
-            Type: `image/png`,
+            type: `image/png`,
             path: item,
             size: 0,
-            Name: item,
+            name: item,
             coverImage: item,
+            width: imageData.width,
+            height: imageData.height,
           };
         });
         console.info('uploadFileuploadFile', uploadFile);
@@ -183,6 +188,7 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
+      console.info(toast.current, 'asasasas');
 
       // toast.current.show('正在导出, 请不要离开', 0);
       if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
@@ -300,9 +306,9 @@ const PostEditor = (props) => {
       }
 
       //TODO
-      const cropData = props.params.cropDataResult;
-      const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
-      const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
+      // const cropData = props.params.cropDataResult;
+      // const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+      // const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
 
       let thumbnailsArgument = {
         videoPath: multipleSandBoxData[0],
@@ -326,6 +332,7 @@ const PostEditor = (props) => {
   }, [multipleSandBoxData]);
 
   const onExportVideo = async (event) => {
+    console.info('-------exportProgress', event.exportProgress);
     try {
       if (event.exportProgress === 1) {
         // const cropData = props.params.cropDataResult;
@@ -343,6 +350,8 @@ const PostEditor = (props) => {
         // });
         // CameraRoll.deletePhotos([preOutputPath, ...coverList]);
 
+        let videoData = props.params.originalData[0]?.image;
+
         CameraRoll.deletePhotos(coverList);
         let uploadFile = [];
         //
@@ -355,11 +364,13 @@ const PostEditor = (props) => {
           uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
         }
         uploadFile.push({
-          Type: `${fileType}/${type[type.length - 1]}`,
+          type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
           size: 0,
-          Name: outputPath,
+          name: outputPath,
           coverImage: uploadCoverImage,
+          width: videoData.width,
+          height: videoData.height,
         });
 
         props.getUploadFile(uploadFile);
@@ -375,12 +386,13 @@ const PostEditor = (props) => {
   const postEditorViewData = () => {
     const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
     const top = props.params.cropDataRow.positionY;
-    console.info('props.params.trimVideoData', props.params.cropDataKey[0]);
-    const width1 = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].fittedSize.width;
-    const height1 = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].fittedSize.height;
-    const srcWidth = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize.width;
-    const srcHeight = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize.height;
-    const rowData = props.params.cropDataRow[props.params.cropDataKey[0].image.uri].srcSize;
+    let cropDataRowkey = props.params.originalData[0].image.uri;
+    console.info('props.params.trimVideoData', props.params.originalData[0]);
+    const width1 = props.params.cropDataRow[cropDataRowkey].fittedSize.width;
+    const height1 = props.params.cropDataRow[cropDataRowkey].fittedSize.height;
+    const srcWidth = props.params.cropDataRow[cropDataRowkey].srcSize.width;
+    const srcHeight = props.params.cropDataRow[cropDataRowkey].srcSize.height;
+    const rowData = props.params.cropDataRow[cropDataRowkey].srcSize;
     // 这里裁减策略修改为超出一定比例的时候自动裁切
     const windowWidth = width;
 
@@ -450,8 +462,7 @@ const PostEditor = (props) => {
             editStyle={videoStyle}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
-            //TODO
-            videoPath={multipleSandBoxData[0] ?? props.params.trimVideoData}
+            videoPath={multipleSandBoxData[0]}
             saveToPhotoLibrary={false}
             startExportVideo={exportVideo}
             videoMute={videoMute}
