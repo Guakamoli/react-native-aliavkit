@@ -85,7 +85,8 @@ let trimVideoData = null;
 let cropData = {};
 let cropDataRow = {};
 let getPhotosNum = 40;
-
+let isMax = false;
+let end_cursor;
 class MultipleSelectButton extends Component {
   pressMultiple = () => {
     // 点击在这里修改数值
@@ -545,17 +546,22 @@ class PostFileUpload extends Component {
     }
     return t;
   };
-  getPhotos = () => {
+  getPhotos = (getMore = false) => {
     //获取照片
     clickItemLock = false;
-    let getPhotos = CameraRoll.getPhotos({
+    let getPhotosProps = {
       first: getPhotosNum,
       assetType: 'All',
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
-    });
+    };
+    let getPhotos = CameraRoll.getPhotos(getPhotosProps);
     const { AsyncStorage } = this.props;
     getPhotos.then(
       async (data) => {
+        if (getPhotosNum > data.edges.length) {
+          isMax = true;
+        }
+        // end_cursor =  data?.page_info?.end_cursor
         var edges = data.edges;
         var photos = [];
         for (var i in edges) {
@@ -713,6 +719,9 @@ class PostFileUpload extends Component {
             }}
             onEndReachedThreshold={0.5}
             onEndReached={() => {
+              if (isMax) {
+                return;
+              }
               getPhotosNum += 12;
               this.getPhotos();
             }}
