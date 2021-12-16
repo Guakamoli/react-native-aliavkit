@@ -84,6 +84,7 @@ let trimVideoData = null;
 
 let cropData = {};
 let cropDataRow = {};
+let getPhotosNum = 40;
 
 class MultipleSelectButton extends Component {
   pressMultiple = () => {
@@ -193,11 +194,11 @@ class PostContent extends Component {
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.multipleData !== this.props.multipleData) {
-      if(!!nextProps.multipleData[0]&& nextProps.multipleData[0]?.type == 'image'){
+      if (!!nextProps.multipleData[0] && nextProps.multipleData[0]?.type == 'image') {
         this.setState({
           videoPaused: true,
         });
-      }else{
+      } else {
         this.setState({
           videoPaused: false,
         });
@@ -408,7 +409,7 @@ class GridItemCover extends Component {
             style={[
               {
                 borderRadius: 10,
-                borderWidth: 2,
+                borderWidth: 1,
                 width: 20,
                 height: 20,
                 borderColor: 'white',
@@ -548,7 +549,7 @@ class PostFileUpload extends Component {
     //获取照片
     clickItemLock = false;
     let getPhotos = CameraRoll.getPhotos({
-      first: 100,
+      first: getPhotosNum,
       assetType: 'All',
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
     });
@@ -701,7 +702,19 @@ class PostFileUpload extends Component {
             removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
             renderItem={(props) => {
-              return <GridItem {...props} getVideFile={this.getVideFile} key={props?.item?.image?.uri} />;
+              return (
+                <GridItem
+                  {...props}
+                  getVideFile={this.getVideFile}
+                  toastRef={this.props.toastRef}
+                  key={props?.item?.image?.uri}
+                />
+              );
+            }}
+            onEndReachedThreshold={0.5}
+            onEndReached={() => {
+              getPhotosNum += 12;
+              this.getPhotos();
             }}
           />
         </View>
