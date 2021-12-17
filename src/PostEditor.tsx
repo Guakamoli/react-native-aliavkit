@@ -23,6 +23,9 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
+
+import TextEffect from './components/text/TextEffect';
+
 import {
   Grayscale,
   Temperature,
@@ -40,6 +43,8 @@ import {
   Cool,
   Invert,
   Emboss,
+  SrcOverComposition,
+  TextImage,
 } from 'react-native-image-filter-kit';
 import ImageMap from '../images';
 const { postNoVolumePng, postvolumePng, postnoVolumeImage } = ImageMap;
@@ -72,7 +77,6 @@ const PostHead = React.memo((props) => {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 9,
       }}
     >
       <Pressable
@@ -700,7 +704,7 @@ const PostEditor = (props) => {
     if (fileType !== 'image') {
       switchProps = ['滤镜', '修剪'];
     } else {
-      switchProps = ['滤镜'];
+      switchProps = ['滤镜', '文字'];
     }
 
     return (
@@ -719,13 +723,14 @@ const PostEditor = (props) => {
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
-              style={{ width: 50, height: 50, paddingTop: 35 }}
+              style={{ height: 50 }}
               key={index}
               onPress={() => {
+                console.log("selectBottomModel", item);
                 setselectBottomModel(item);
               }}
             >
-              <Text style={[styles.postSwitchProps, selectBottomModel === item && { color: '#fff' }]}>{item}</Text>
+              <Text style={[styles.postSwitchProps, selectBottomModel === item ? { color: '#fff' } : { color: '#8E8E8E' }, { fontSize: 16, marginTop: 'auto', marginBottom: 'auto' }]}>{item}</Text>
             </TouchableOpacity>
           );
         })}
@@ -746,20 +751,112 @@ const PostEditor = (props) => {
           style={{
             width: width,
             height: width,
-            // transform:[
-            // {
-            //   scale:scale
-            // },
-            //    {translateX:left},
-
-            //     {translateY:top},
-
-            //   ]
+            // transform: [ {
+            //     scale: 1
+            //   },
+            //   { translateX: -100 },
+            //   { translateY: -100 },
+            // ]
           }}
           source={{ uri: multipleSandBoxData[0] }}
         />
       );
+
+
+      var textStyles = [
+        {
+          text: "呵呵呵呵呵呵\n哈哈哈",
+          textAlign: "right",
+          color: "#FFFF00",
+          backgroundColor: "#0000ff",
+          fontSize: 20,
+          fontName: "sd",
+          x: -50,
+          y: 50,
+          scale: 2,
+          rotate: 0,
+        },
+        {
+          text: "垂直垂直垂直\n竖直竖直",
+          textAlign: "right",
+          color: "#FF00FF",
+          backgroundColor: "#0000ff",
+          fontSize: 40,
+          fontName: "sd",
+          x: 0,
+          y: 0,
+          scale: 1,
+          rotate: 1.57,
+        },
+        {
+          text: "反斜反斜反斜反斜\n反斜反斜",
+          textAlign: "right",
+          color: "#6600FF",
+          backgroundColor: "#0000ff",
+          fontSize: 30,
+          fontName: "sd",
+          x: 100,
+          y: 100,
+          scale: 1.0,
+          rotate: 0.8,
+        },
+        {
+          text: "斜的斜的斜的斜的\n斜的斜的斜的",
+          textAlign: "right",
+          color: "#FF6600",
+          backgroundColor: "#0000ff",
+          fontSize: 30,
+          fontName: "sd",
+          x: 100,
+          y: -100,
+          scale: 1.0,
+          rotate: -0.8,
+        }
+      ]
+
+      const getTextComponent = (dst: any, textStyle: any) => {
+        const srcImage = (
+          <TextImage
+            text={textStyle.text}
+            fontName={textStyle.fontName}
+            fontSize={textStyle.fontSize * textStyle.scale}
+            color={textStyle.color} />
+        )
+        const tx = textStyle.x / width + 0.5;
+        const ty = textStyle.y / width + 0.5;
+        return <SrcOverComposition
+          resizeCanvasTo={'dstImage'}
+          dstImage={dst}
+          srcTransform={{
+            //srcImage 中心点在屏幕内的位置 0.5 0.5 为屏幕中间
+            translate: { x: tx, y: ty },
+            scale: 'COVER',
+            rotate: textStyle.rotate
+          }}
+          srcImage={srcImage}
+          extractImageEnabled={true}
+          onExtractImage={({ nativeEvent }) => {
+            console.log("save phont", nativeEvent.uri);
+            CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+          }}
+        />
+      }
+
+
+      const TextComponent = () => {
+        var dstView = ImageComponent;
+        textStyles.forEach((item, index) => {
+          dstView = getTextComponent(dstView, item);
+        });
+        return dstView;
+      }
+
       switch (imgFilter) {
+
+        case 'TEXT': {
+          return TextComponent();
+        }
+
         case 'Sepia2': {
           return <Sepia image={ImageComponent} amount={2} />;
         }
@@ -836,6 +933,10 @@ const PostEditor = (props) => {
             <Grayscale
               amount={0}
               onExtractImage={({ nativeEvent }) => {
+
+                // console.log("save phont", nativeEvent.uri);
+                // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+
                 setPhotoFile(nativeEvent.uri);
               }}
               extractImageEnabled={true}
@@ -843,7 +944,29 @@ const PostEditor = (props) => {
             ></Grayscale>
           </View>
         </View>
-        <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+        {selectBottomModel === '滤镜' && <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('TEXT');
+            }}
+          >
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                marginRight: 5,
+                marginBottom: 5,
+                marginTop: 20,
+              }}
+            >
+              <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+            </View>
+            {propsTitles('TEXT')}
+          </TouchableOpacity>
+
+
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('');
@@ -966,13 +1089,14 @@ const PostEditor = (props) => {
             <Emboss image={<Polaroid image={propsImage()} />} />
             {propsTitles('M13')}
           </TouchableOpacity>
-        </ScrollView>
+        </ScrollView>}
       </>
     );
   };
   if (fileType == 'image') {
     return (
       <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
+
         <PostHead
           {...props}
           continueEdit={continueEdit}
@@ -981,8 +1105,16 @@ const PostEditor = (props) => {
           continueRef={continueRef}
         />
 
-        {result()}
-        {switchProps()}
+        {(selectBottomModel === '滤镜' || selectBottomModel === '文字') && result()}
+        {/* {selectBottomModel === '文字' && fontPage()} */}
+        {selectBottomModel === '文字' && (
+          <TextEffect
+            {...props}
+            width={width}
+            height={width}
+          />
+        )}
+        {fileType === 'image' && switchProps()}
       </View>
     );
   }
@@ -1015,6 +1147,18 @@ const PostEditor = (props) => {
     </View>
   );
 };
+
+/**
+ * 文字设置
+ */
+const fontPage = () => {
+  return (
+    //TODO
+    <View style={{ backgroundColor: 'rgba(255,0,178,0.5)', position: 'absolute', height: '100%', left: 0, right: 0 }}>
+
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   closeIcon: {

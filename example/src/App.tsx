@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Button, SafeAreaView ,StatusBar} from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,7 +19,6 @@ import { Provider } from 'react-redux';
 
 import ImageMap from '../../images/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 function HomeScreen(props) {
   const { server, user, item, navigation, initType } = props;
   const insets = useSafeAreaInsets()
@@ -36,16 +35,18 @@ function HomeScreen(props) {
 
   }
   return (
+    <SafeAreaView style={{flex: 1,}}>
+      <View style={{ backgroundColor:'#000'}}>
+       <StatusBar backgroundColor="blue" hidden = {true}/>
+        <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
+          insets={insets}
+          getUploadFile={(data) => {
+            navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
+          }}>
+        </Entry>
+      </View>
+    </SafeAreaView>
 
-    <>
-      <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
-       insets={insets}
-        getUploadFile={(data) => {
-          navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
-        }}></Entry>
-
-    </>
-    // </View>
   );
   return (
     <View style={{ flex: 1 }}>
