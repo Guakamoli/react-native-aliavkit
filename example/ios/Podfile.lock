@@ -313,9 +313,7 @@ PODS:
   - ReactNativeAliAVKit (1.2.27):
     - AFNetworking
     - AlivcConan (= 1.0.5)
-    - AliyunVideoSDKPro (= 3.26.0)
-    - FMDB
-    - JSONModel
+    - AliyunVideoSDKPro (= 3.27.0)
     - Queen (= 1.4.0-official-pro)
     - React-Core
     - SSZipArchive
@@ -339,10 +337,13 @@ PODS:
   - Yoga (1.14.0)
 
 DEPENDENCIES:
+  - AFNetworking
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
+  - FMDB
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - JSONModel
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -482,13 +483,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
-  AliyunOSSiOS: 7bc7ca588207ce536c1dffe732c3d4fe342e23cf
-  AliyunVideoSDKPro: 7637db7cfa6999399d0ac323ffb245668fadf989
+  AliyunOSSiOS: b8f1dfc229cd9abf68c8ee0cb245c2d66e00dd96
+  AliyunVideoSDKPro: 13247e67df7ed864254b4c2ad679df8a80e17a30
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 3aabbcf576d965fac12809f3478aba42a58b8b8e
+  FBReactNativeSpec: 76f780d900d991d4f8e4eac3c4c459bb5f6d903e
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
@@ -522,7 +523,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: 4d0dc44ab30dc8aa977458d8eaa94e7448b4f7aa
+  ReactNativeAliAVKit: f22f3eac8a58fa4f527ea017f2031eee8d916707
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
@@ -533,6 +534,6 @@ SPEC CHECKSUMS:
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 39c4adf7efbc998daeaf6b4810a293477ba80e1a
+PODFILE CHECKSUM: 5411a6ac8aca10a7ba0c31f13fa6959313fc2a8b
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.2

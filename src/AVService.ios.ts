@@ -1,6 +1,6 @@
 import React from 'react';
 import { NativeModules } from 'react-native';
-const { AliAVServiceBridge, RNMusicService } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNFontService } = NativeModules;
 
 type MusicRequestType = {
   name: string;
@@ -65,48 +65,13 @@ export default class AVService {
     return await AliAVServiceBridge.clearResources({ tmp, record, composition });
   }
 
-
-  //获取所有字体
-  static async getFontList() {
-    // 安卓端返回： List<FileDownloaderModel>
-    // [
-    //   {  "id": 52,
-    //      "taskId": -380016714, // taskId: 安卓端用来创建下载任务的id
-    //      "name": "趣.憧憬",
-    //      "banner": "https://alivc-demo-vod.aliyuncs.com/image/default/BD4E71CE644043019E89A5737A79AC51-6-2.jpg",
-    //      "icon": "https://alivc-demo-vod.aliyuncs.com/image/default/C1F83D29D3B64C3C87CF7E3BDEF3B08F-6-2.jpg", 
-    //      "isDbContain": 1,  //是否下载到本地 0 未下载；1 已下载。  非必要，如果没有，则用 path 字段是否为空来判断
-    //      "path": "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/downloads/fonts/52-趣.憧憬/font.ttf", 
-    //      "url": "https://alivc-demo-vod.aliyuncs.com/video/material/B12F02D94A184481A9DE629ECFCD8C0D-7-4.mat",
-    //      "isunzip": 1,
-    //      "effectType": 1,
-    //      ...
-    //   },
-    //   ...
-    // ]
+  static async fetchFontList() {
+    console.log('----- fetchFontList');
+    return await RNFontService.fetchFontList();
   }
 
-
-  /**
-   * 下载字体
-   * @param font  上面 getFontList 函数返回的字体对象：FileDownloaderModel
-   * @returns 
-   */
-  static async downloadFont(font) {
-    // 返回：FileDownloaderModel
-    //   {  "id": 52,
-    //      "taskId": -380016714, // taskId: 安卓端用来创建下载任务的id
-    //      "name": "趣.憧憬",
-    //      "banner": "https://alivc-demo-vod.aliyuncs.com/image/default/BD4E71CE644043019E89A5737A79AC51-6-2.jpg",
-    //      "icon": "https://alivc-demo-vod.aliyuncs.com/image/default/C1F83D29D3B64C3C87CF7E3BDEF3B08F-6-2.jpg", 
-    //      "isDbContain": 1,  //是否下载到本地 0 未下载；1 已下载。  非必要，如果没有，则用 path 字段是否为空来判断
-    //      "path": "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/downloads/fonts/52-趣.憧憬/font.ttf", 
-    //      "url": "https://alivc-demo-vod.aliyuncs.com/video/material/B12F02D94A184481A9DE629ECFCD8C0D-7-4.mat",
-    //      "isunzip": 1,
-    //      "effectType": 1,
-    //      ...
-    //   }
-
-    
+  static async downloadFont(fontId:number) {
+    console.log('----- downloadFont');
+    return await RNFontService.downloadFont(fontId);
   }
 }

@@ -314,7 +314,6 @@ class CameraScreen extends Component<Props, State> {
         image: _.get(this.props, 'flashImages.off'),
       },
     ];
-
     this.rt = null;
     this.cameraBox = { current: null };
     this.state = {
@@ -629,6 +628,9 @@ class CameraScreen extends Component<Props, State> {
                 this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
                 this.props.setType('story');
               }, 1000);
+            }}
+            textEditor={() => {
+              console.log('textEditor');
             }}
             insets={this.props.insets}
             setType={this.props.setType}

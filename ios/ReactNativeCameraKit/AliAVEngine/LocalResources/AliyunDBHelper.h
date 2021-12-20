@@ -122,4 +122,7 @@
                                     success:(void(^)(NSArray *infoModelArray))success
                                     failure:(void(^)(NSError *error))failure;
 
+- (void)querySpecailEffectPackage:(void(^)(NSArray *resourceArray))success
+                          faliure:(void(^)(NSError *error))failure;
+
 @end

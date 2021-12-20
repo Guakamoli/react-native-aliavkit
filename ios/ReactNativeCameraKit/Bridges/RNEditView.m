@@ -7,14 +7,8 @@
 
 #import "RNEditView.h"
 
-#import <AliyunVideoSDKPro/AliyunImporter.h>
-#import <AliyunVideoSDKPro/AliyunEditor.h>
-#import <AliyunVideoSDKPro/AliyunPasterManager.h>
-#import <AliyunVideoSDKPro/AliyunErrorCode.h>
-#import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
-#import <AliyunVideoSDKPro/AliyunCrop.h>
-#import <AliyunVideoSDKPro/AliyunNativeParser.h>
-
+@import AliyunVideoSDKPro;
+@import Photos;
 #import "RNEditViewManager.h"
 #import "AliyunMediaConfig.h"
 #import "AliyunEffectPrestoreManager.h"
@@ -24,7 +18,6 @@
 #import "AliyunDBHelper.h"
 #import "AliyunEffectMvGroup.h"
 #import "AliyunEffectResourceModel.h"
-#import <Photos/Photos.h>
 #import "AliyunTimelineMediaInfo.h"
 #import "AliyunCompositionInfo.h"
 #import "AliyunAlbumModel.h"
@@ -33,6 +26,9 @@
 #import "RNMusicInfo.h"
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+
+#import "UIView+OPLayout.h"
+#import "AVCaptionModel.h"
 
 typedef void(^TransCode_blk_t)(CGFloat);
 
@@ -49,11 +45,11 @@ AliyunCropDelegate
     BOOL _isPresented;
     CGFloat _editWidth;
     CGFloat _editHeight;
+    AliyunCaptionStickerController *_currentCaptionController;
 }
 @property(nonatomic, assign) CGSize inputOutputSize;
 @property(nonatomic, assign) CGSize outputSize;
 
-@property(nonatomic, strong) AliyunPasterManager *pasterManager;
 @property(nonatomic, strong) AliyunEditZoneView *editZoneView;
 @property(nonatomic, strong) AliyunEditor *editor;
 @property(nonatomic, weak) id<AliyunIPlayer> player;
@@ -74,8 +70,11 @@ AliyunCropDelegate
 @property (nonatomic, copy) NSDictionary *musicInfo;
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
-@property (nonatomic, strong) NSDictionary *editStyle;
+
+@property (nonatomic, copy) NSDictionary *editStyle;
+@property (nonatomic, copy) NSDictionary *captionInfo;
 @property (nonatomic, copy) NSDictionary *mediaInfo;
+@property (nonatomic, copy) NSDictionary *fontInfo;
 
 @end
 
@@ -303,16 +302,62 @@ AliyunCropDelegate
     self.editZoneView = [[AliyunEditZoneView alloc] initWithFrame:self.preview.bounds];
     self.editZoneView.delegate = (id)self;
     [self.preview addSubview:self.editZoneView];
-    
-    // setup pasterManager
-    self.pasterManager = [self.editor getPasterManager];
-    self.pasterManager.displaySize = self.editZoneView.bounds.size;
-    self.pasterManager.outputSize = _outputSize;
-    self.pasterManager.previewRenderSize = [self.editor getPreviewRenderSize];
-    self.pasterManager.delegate = (id)self;
 }
 
+/*
+ fontName: string;
+ fontStyle: string; // normal | italic | bold
+ color: string;      //文字颜色
+ textAlignment: string; //left, center, right
+ backgroundColor: string; //背景颜色
+ */
+- (void)addNewCaption:(AVCaptionModel *)captionInfo
+{
+
+    CGFloat duration = captionInfo.duration ? : [self.player getDuration];
+    AliyunCaptionStickerController *captionController = [[self.editor getStickerManager] addCaptionText:captionInfo.text
+                                                                                             bubblePath:nil
+                                                                                              startTime:captionInfo.startTime
+                                                                                               duration:duration];
+    _currentCaptionController = captionController;
+    AliyunCaptionSticker *captionSticker = (AliyunCaptionSticker *)captionController.model;
+    captionSticker.center = captionInfo.center;
+    captionSticker.rotation = captionInfo.radians;
+    captionSticker.scale = captionInfo.scale;
+    captionSticker.fontName = captionInfo.fontName;
+    captionSticker.faceType = captionInfo.fontStyle;
+    captionSticker.color = captionInfo.textColor;
+    captionSticker.backgroundColor = captionInfo.backgroundColor;
+    captionSticker.textAlignment = captionInfo.textAlignment;
+}
+
+- (void)updateCaptionModelWith:(AVCaptionModel *)captionInfo
+{
+    AliyunCaptionSticker *captionSticker = _currentCaptionController.model;
+    captionSticker.center = captionInfo.center;
+    captionSticker.rotation = captionInfo.radians;
+    captionSticker.scale = captionInfo.scale;
+    captionSticker.fontName = captionInfo.fontName;
+    captionSticker.faceType = captionInfo.fontStyle;
+    captionSticker.color = captionInfo.textColor;
+    captionSticker.backgroundColor = captionInfo.backgroundColor;
+    captionSticker.textAlignment = captionInfo.textAlignment;
+}
+
+
 #pragma mark - Setter
+
+- (void)setFontInfo:(NSDictionary *)fontInfo
+{
+    if (fontInfo && _fontInfo != fontInfo) {
+        if (_currentCaptionController) {
+            AliyunCaptionSticker *captionSticker = _currentCaptionController.model;
+            captionSticker.fontName = [fontInfo objectForKey:@"fontName"];
+            captionSticker.faceType = [fontInfo objectForKey:@"faceType"] ? : AliyunCaptionStickerFaceTypeNormal;
+        }
+    }
+}
+
 /*
  {
    "outputSize": { "width": 1080, "height": 1920 },
@@ -339,12 +384,34 @@ AliyunCropDelegate
     }
 }
 
+//captionInfo == @{}， remove
+- (void)setCaptionInfo:(NSDictionary *)captionInfo
+{
+    if (captionInfo && _captionInfo != captionInfo) {
+        if (![captionInfo isEqualToDictionary:@{}]) {
+            AVCaptionModel *model = [[AVCaptionModel alloc] initWithCaptionInfo:captionInfo];
+            if (_currentCaptionController) {
+                [self updateCaptionModelWith:model];
+            } else {
+                [self addNewCaption:model];
+            }
+        } else {
+            if (_currentCaptionController) {
+                [[self.editor getStickerManager] remove:_currentCaptionController];
+                _currentCaptionController = nil;
+            }
+        }
+    }
+    _captionInfo = captionInfo;
+}
+
 - (void)setEditStyle:(NSDictionary *)editStyle
 {
     if (_editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
         _editWidth = [[editStyle objectForKey:@"width"] floatValue];
         _editHeight = [[editStyle objectForKey:@"height"] floatValue];
     }
+    _editStyle = editStyle;
 }
 
 - (void)setImagePath:(NSString *)imagePath
