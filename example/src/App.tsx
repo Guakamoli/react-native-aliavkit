@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button, SafeAreaView ,StatusBar} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Button, SafeAreaView, StatusBar } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,7 +19,10 @@ import { Provider } from 'react-redux';
 
 import ImageMap from '../../images/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TextInput } from 'react-native-gesture-handler';
 function HomeScreen(props) {
+  const [textAlign, setTextAlign] = React.useState('center');
+  const [text, setText] = React.useState('');
   const { server, user, item, navigation, initType } = props;
   const insets = useSafeAreaInsets()
   const sendfile = async (data) => {
@@ -34,10 +37,41 @@ function HomeScreen(props) {
     navigation.goBack()
 
   }
+
+
+  function setTextAligns(align) {
+    console.log("align", align);
+    setTextAlign(align);
+   if (align == 'left') {
+      setText("初始显示初始显示初始显示初始显示 ");
+    } else if (align === 'right') {
+      setText(" 初始显示初始显示初始显示初始显示 ");
+    } else {
+      setText(" 初始显示初始显示初始显示初始显示");
+    }
+  }
+
   return (
-    <SafeAreaView style={{flex: 1,}}>
-      <View style={{ backgroundColor:'#000'}}>
-       <StatusBar backgroundColor="blue" hidden = {true}/>
+    <SafeAreaView style={{ flex: 1, }}>
+      <View style={{ backgroundColor: '#000', height: "100%" }}>
+        {/* <StatusBar backgroundColor="blue" hidden={true} />
+        <TextInput
+          value={text}
+          // key={textAlign}
+          textAlign={textAlign}
+          style={{ width: '100%', color: textAlign === 'left' ? 'white' : 'red', fontSize: textAlign === 'left' ? 30 : 30}}
+          multiline={true}
+        />
+        <TouchableOpacity style={styles.button} onPress={() => { setTextAligns('left') }}>
+          <Text style={styles.buttonText}>left</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => { setTextAligns('center') }}>
+          <Text style={styles.buttonText}>center</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => { setTextAligns('right') }}>
+          <Text style={styles.buttonText}>right</Text>
+        </TouchableOpacity> */}
+
         <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
           insets={insets}
           getUploadFile={(data) => {

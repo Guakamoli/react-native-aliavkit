@@ -33,14 +33,15 @@ import { rgba } from 'react-native-image-filter-kit';
 
 type CaptionInfo = {
     text: string;
-    // fontName: string;
+    fontName: string;
     // fontStyle: string; // normal | italic | bold
-    // color: string;      //文字颜色
-    // textAlignment: string; //left, center, right
-    // backgroundColor: string; //背景颜色
+    color: string;      //文字颜色
+    textAlignment: string; //left, center, right
+    backgroundColor: string; //背景颜色
     // startTime: number;
     // duration: number;
-    center: { x: number; y: number };
+    x:number;
+    y:number;
     rotate: number;
     scale: number;
 };
@@ -48,8 +49,15 @@ type CaptionInfo = {
 
 
 type GestureTextProps = {
+    with: number;
+    height: number;
     textAlign?: any;
+    textColor?: any;
+    textBackgroundColor?: any;
+    textFontName?:any;
     editable?: any;
+    isTextEdit?:any;
+    lastTextEdit?:any;
     minDist?: number;
     boxStyle?: StyleProp<ViewStyle>;
     onTextMove: (info: CaptionInfo) => void;
@@ -82,7 +90,6 @@ export default class GestureText extends Component<GestureTextProps, GestureText
     private inputRef: any;
 
     private lastEditable: any;
-
     private onPanGestureEvent: (event: PanGestureHandlerGestureEvent) => void;
 
     constructor(props: GestureTextProps) {
@@ -91,6 +98,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         this.translateY = new Animated.Value(0);
         this.lastOffset = { x: 0, y: 0 };
         this.inputRef = null
+
         this.onPanGestureEvent = Animated.event(
             [
                 {
@@ -120,7 +128,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         this.onRotateGestureEvent = Animated.event([{ nativeEvent: { rotation: this.rotate } }], { useNativeDriver: true });
 
         this.state = {
-            text: '测试字幕',
+            text: 'test caption test caption test caption test caption',
         };
 
         this.lastEditable = true;
@@ -131,17 +139,14 @@ export default class GestureText extends Component<GestureTextProps, GestureText
             Keyboard.dismiss();
             this.lastOffset.x += event.nativeEvent.translationX;
             this.lastOffset.y += event.nativeEvent.translationY;
+
+
             this.translateX.setOffset(this.lastOffset.x);
             this.translateX.setValue(0);
             this.translateY.setOffset(this.lastOffset.y);
             this.translateY.setValue(0);
-            console.log('-----: lastOffset.x:', this.lastOffset.x, 'lastOffset.y :', this.lastOffset.y);
-            this.props.onTextMove({
-                text: this.state.text,
-                center: { x: this.lastOffset.x, y: this.lastOffset.y },
-                rotate: this.lastRotate,
-                scale: this.lastScale,
-            });
+            // console.log('-----: lastOffset.x:', this.lastOffset.x, 'lastOffset.y :', this.lastOffset.y);
+            this.onSetTextInfo();
         }
     };
 
@@ -151,13 +156,8 @@ export default class GestureText extends Component<GestureTextProps, GestureText
             this.lastRotate += event.nativeEvent.rotation;
             this.rotate.setOffset(this.lastRotate);
             this.rotate.setValue(0);
-            console.log('-----: rotate', this.lastRotate);
-            this.props.onTextMove({
-                text: this.state.text,
-                center: { x: this.lastOffset.x, y: this.lastOffset.y },
-                rotate: this.lastRotate,
-                scale: this.lastScale,
-            });
+            // console.log('-----: rotate', this.lastRotate);
+            this.onSetTextInfo();
         }
     };
     private onPinchHandlerStateChange = (event: PinchGestureHandlerStateChangeEvent) => {
@@ -166,69 +166,89 @@ export default class GestureText extends Component<GestureTextProps, GestureText
             this.lastScale *= event.nativeEvent.scale;
             this.baseScale.setValue(this.lastScale);
             this.pinchScale.setValue(1);
-            console.log('-----: pinch scale: ', this.lastScale);
-            this.props.onTextMove({
-                text: this.state.text,
-                center: { x: this.lastOffset.x, y: this.lastOffset.y },
-                rotate: this.lastRotate,
-                scale: this.lastScale,
-            });
+            this.onSetTextInfo();
         }
     };
 
+    onSetTextInfo= () => {
+        this.props.onTextMove({
+            text: this.state.text,
+            color: this.props.textColor || 'white',
+            backgroundColor: this.props.textBackgroundColor || 'transparent',
+            fontName:this.props.textFontName || '',
+            textAlignment: this.props.textAlign|| 'center',
+            x: this.lastOffset.x,
+            y: this.lastOffset.y,
+            rotate: this.lastRotate,
+            scale: this.lastScale,
+        });
+    }
+
     //
     onTextSingleTap = () => {
-        console.log("onTextSingleTap")
+        // console.log("onTextSingleTap")
     }
 
     onTextDoubleTap = () => {
-        console.log("onTextDoubleTap")
+        // console.log("onTextDoubleTap")
         this.props.onEditEnable(true);
         setTimeout(() => {
             this.inputRef.focus()
-
             this.translateX.setOffset(0);
             this.translateY.setOffset(0);
             this.rotate.setOffset(0);
             this.baseScale.setValue(1);
-
         }, 100);
     }
+
 
     /**
      * 更新组件，调用render。在 shouldComponentUpdate 返回 ture 才会执行
      * 首次加载不会调用
      */
     componentDidUpdate(nextProps, nextState) {
-        console.log("更新后 componentDidUpdate")
-        if (!!this.lastEditable && !this.props.editable) {
+        if (this.props.isTextEdit&& (!!this.lastEditable && !this.props.editable)) {
             this.translateX.setOffset(this.lastOffset.x);
             this.translateY.setOffset(this.lastOffset.y);
             this.rotate.setOffset(this.lastRotate);
             this.baseScale.setValue(this.lastScale);
+        }
+        if(this.props.isTextEdit && !!this.lastEditable && !this.props.editable){
+            console.log("点击了完成");
+             this.onSetTextInfo();
+        }
+
+        if( !this.props.lastTextEdit && !!this.props.isTextEdit){
+            this.onTextDoubleTap();
         }
         this.lastEditable = this.props.editable
     }
 
     renderText() {
         return (
-            <View style={styles.textInputBox}>
+            <View style={[styles.textInputBox, (!this.props.isTextEdit || !this.props.editable) && { backgroundColor: 'transparent' }]} >
                 <TextInput
-                    key={this.props.textAlign}
+                    // key={this.props.textAlign + this.props.textColor}
                     ref={(ref) => {
                         this.inputRef = ref
                     }}
-                    style={[styles.textInput, { fontSize: 25.0 * this.lastScale, color: 'white' }]}
+                    style={[styles.textInput, {
+                        fontSize: 25.0,
+                        color: this.props.textColor || 'white',
+                        backgroundColor: this.props.textBackgroundColor || 'transparent'
+                    }]}
+                    placeholderTextColor={this.props.textColor || 'white'}
+                    selectionColor={this.props.textColor || '836BFF'}
                     value={this.state.text}
                     textAlign={this.props.textAlign}
                     editable={this.props.editable}
-                    autoFocus={this.props.editable}
+                    autoFocus={this.props.isTextEdit&&this.props.editable}
                     multiline={true}
-                    selectionColor='#836BFF'
-                    onChangeText={(text) => this.setState({ text })}
+
+                    onChangeText={(text) => { this.setState({ text }) }}
                 />
                 {!this.props.editable && <Text style={styles.text} />}
-            </View>
+            </View >
         );
     }
 
@@ -239,14 +259,14 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                 <PanGestureHandler
                     {...this.props}
                     ref={this.panRef}
-                    enabled={!this.props.editable}
+                    enabled={this.props.isTextEdit && !this.props.editable}
                     onGestureEvent={this.onPanGestureEvent}
                     onHandlerStateChange={this.onPanHandlerStateChange}
                     minDist={this.props.minDist}>
                     <Animated.View style={styles.wrapperRotation}>
                         <RotationGestureHandler
                             ref={this.rotationRef}
-                            enabled={!this.props.editable}
+                            enabled={this.props.isTextEdit && !this.props.editable}
                             simultaneousHandlers={this.pinchRef}
                             onGestureEvent={this.onRotateGestureEvent}
                             onHandlerStateChange={this.onRotateHandlerStateChange}>
@@ -257,7 +277,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                                             this.onTextSingleTap()
                                         }
                                     }}
-                                    enabled={!this.props.editable}
+                                    enabled={this.props.isTextEdit && !this.props.editable}
                                     waitFor={this.doubleTapRef}>
                                     <TapGestureHandler
                                         ref={this.doubleTapRef}
@@ -266,12 +286,12 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                                                 this.onTextDoubleTap()
                                             }
                                         }}
-                                        enabled={!this.props.editable}
+                                        enabled={this.props.isTextEdit && !this.props.editable}
                                         numberOfTaps={2}>
                                         <Animated.View style={styles.wrapperPinch}>
                                             <PinchGestureHandler
                                                 ref={this.pinchRef}
-                                                enabled={!this.props.editable}
+                                                enabled={this.props.isTextEdit && !this.props.editable}
                                                 simultaneousHandlers={this.rotationRef}
                                                 onGestureEvent={this.onPinchGestureEvent}
                                                 onHandlerStateChange={this.onPinchHandlerStateChange} >
@@ -326,15 +346,15 @@ const styles = StyleSheet.create({
     textInputBox: {
         backgroundColor: 'rgba(51, 51, 51, 0.4)',
         borderRadius: 3,
-        paddingTop: 1,
-        paddingBottom: 3,
-        paddingLeft: 10,
-        paddingRight: 10,
         position: 'relative',
+        overflow: 'hidden'
     },
     textInput: {
         fontSize: 18,
         color: '#fff',
+        paddingStart: 8,
+        paddingEnd: 10,
+        paddingBottom: 3,
     },
     text: {
         position: 'absolute',

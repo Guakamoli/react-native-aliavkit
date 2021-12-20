@@ -254,6 +254,7 @@ const PostEditor = (props) => {
       {
         toValue: 0, // 透明度最终变为1，即完全不透明
         duration: 3000, // 让动画持续一段时间
+        useNativeDriver: true,
       },
     ).start();
   }, [props.params]);
@@ -638,9 +639,10 @@ const PostEditor = (props) => {
             trackHeight={50}
           >
             <View style={{ flexDirection: 'row' }}>
-              {coverList.map((i) => {
+              {coverList.map((i, index) => {
                 return (
                   <Image
+                    key={index}
                     source={{ uri: i }}
                     style={{ width: cropWidth / coverList.length, height: 50 }}
                     resizeMode={'cover'}
@@ -726,7 +728,6 @@ const PostEditor = (props) => {
               style={{ height: 50 }}
               key={index}
               onPress={() => {
-                console.log("selectBottomModel", item);
                 setselectBottomModel(item);
               }}
             >
@@ -944,6 +945,15 @@ const PostEditor = (props) => {
             ></Grayscale>
           </View>
         </View>
+
+        <TextEffect
+          {...props}
+          isTextEdit={selectBottomModel === '文字'}
+          continueEdit={continueEdit}
+          width={width}
+          height={width}
+        />
+
         {selectBottomModel === '滤镜' && <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
 
           <TouchableOpacity
@@ -1107,13 +1117,15 @@ const PostEditor = (props) => {
 
         {(selectBottomModel === '滤镜' || selectBottomModel === '文字') && result()}
         {/* {selectBottomModel === '文字' && fontPage()} */}
-        {selectBottomModel === '文字' && (
+        {/* {(selectBottomModel === '滤镜' || selectBottomModel === '文字') && (
           <TextEffect
             {...props}
+            isEditor={selectBottomModel === '文字'}
+            continueEdit={continueEdit}
             width={width}
             height={width}
           />
-        )}
+        )} */}
         {fileType === 'image' && switchProps()}
       </View>
     );

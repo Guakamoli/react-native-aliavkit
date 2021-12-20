@@ -1,4 +1,4 @@
-import ImageMarker from "react-native-image-marker"
+// import ImageMarker from "react-native-image-marker"
 
 
 

@@ -32,7 +32,7 @@ const TextEffect = (props) => {
     const textColorArray = ["#F9FAFB", "#F8AA99", "#FFC580", "#FFEA8A", "#BBE5B3", "#B6ECEB", "#B4E0FA", "#B3BCF5", "#E3D0FF", "#F4775C", "#FFA133", "#EDC200", "#50B83C", "#47C1BF", "#007ACE", "#5C6AC4", "#9C6ADE", "#637381", "#F15533", "#FF8A00", "#9C6F19", "#108043", "#00848E", "#084E8A", "#202E78", "#50248F", "#212B36", "#E55130", "#F28300", "#573B00", "#173630", "#003136", "#00152A", "#000639", "#230051"];
 
 
-    console.log(TAG, "render：")
+    const [captionInfo, setCaptionInfo] = React.useState(null);
 
     //文字对齐方式 0、1、2  = left center  right
     const [textAlignPosition, setTextAlignPosition] = React.useState(2);
@@ -44,11 +44,19 @@ const TextEffect = (props) => {
     //点击完成设置成 false：收起输入框、启用文字手势、文字移动到设置的位置
     const [editable, setEditable] = React.useState(true);
 
+    const [textFontPostion, setTextFontPostion] = React.useState(0);
+    const [textColor, setTextColor] = React.useState("white");
+    const [textBackgroundColor, setTextBackgroundColor] = React.useState("transparent");
+    const [textFontName, setTextFontName] = React.useState("");
+
     const [keyboard, setKeyboard] = React.useState(false);
+
+    const [lastTextEdit, setLastTextEdit] = React.useState(false);
 
     //TODO
     // React.useReducer
     const rer = React.useRef(null);
+
 
     React.useEffect(() => {
         console.log(TAG, "初始化:", props.route.params)
@@ -76,6 +84,13 @@ const TextEffect = (props) => {
         console.log(TAG, "加载完成")
     }, [rer]);
 
+    //记录上一次的事件 false：滤镜  true：文字
+    React.useEffect(() => {
+        if (!lastTextEdit && !!props.isTextEdit) {
+            setEditable(true)
+        }
+        setLastTextEdit(props.isTextEdit)
+    }, [props.isTextEdit]);
 
     const onTextAlign = () => {
         const position = (textAlignPosition + 1) % 3;
@@ -95,11 +110,39 @@ const TextEffect = (props) => {
     }
 
     /**
+     * 字体选择
+     */
+    function onTextFontEffcet(item, index) {
+        setTextFontPostion(index);
+    }
+
+    /**
      * 设置文字颜色背景
      * textEffectPostion： 1：文字颜色选择；2：文字背景选择
      */
     function onTextColorEffcet(itemColor) {
+        if (textEffectPostion === 1) {
+            setTextColor(itemColor);
+            if (textBackgroundColor == itemColor) {
+                setTextBackgroundColor("transparent");
+            }
+        } else if (textEffectPostion === 2) {
+            setTextBackgroundColor(itemColor);
+            if (textColor == itemColor) {
+                setTextColor("white");
+            }
+        }
+    }
 
+    /**
+     * 清除文字、文字背景 颜色
+     */
+    const onCleanColor = () => {
+        if (textEffectPostion === 1) {
+            setTextColor("white");
+        } else if (textEffectPostion === 2) {
+            setTextBackgroundColor("transparent");
+        }
     }
 
     const renderHead = () => (
@@ -121,17 +164,35 @@ const TextEffect = (props) => {
                     <TouchableOpacity onPress={onCompleteText}>
                         <Text style={styles.completeText}>完成</Text>
                     </TouchableOpacity> :
-                    <View style={styles.completeText}></View>
-            }
+                    <View style={styles.completeText}></View>}
+        </View>
+    );
+
+    const renderHead2 = () => (
+        <View style={styles.headContainer}>
+            <TouchableOpacity style={{ height: 30, width: 40, paddingHorizontal: 12, justifyContent: 'center', }} onPress={() => props.goback()}>
+                <Image source={require('../../../images/backArrow.png')} resizeMode='contain' />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => props.continueEdit()}>
+                <Text style={styles.completeText}>继续</Text>
+            </TouchableOpacity>
         </View>
     );
 
     const renderGestureText = () => (
         <GestureText
+            isTextEdit={props.isTextEdit}
+            lastTextEdit={lastTextEdit}
+            width={props.width}
+            height={props.height}
             textAlign={textAlign}
+            textColor={textColor}
+            textBackgroundColor={textBackgroundColor}
+            textFontName={textFontName}
             editable={editable}
             onTextMove={(info) => {
-                console.log(info);
+                console.log("onTextMove", info);
+                setCaptionInfo(info)
             }}
             onEditEnable={(isEnable) => {
                 //双击进入编辑
@@ -143,32 +204,55 @@ const TextEffect = (props) => {
 
     const bottomEffectList = () => {
         return (
-            <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "position" : "position"} keyboardVerticalOffset={100}>
-                <ScrollView horizontal={true} contentContainerStyle={styles.bottomEffectListContainer} showsHorizontalScrollIndicator={false}>
-                    {textEffectPostion == 0 ?
-                        textColorArray.map((itemColor) => {
-                            return (
-                                < View style={[styles.fontEffcetItemContainer, { backgroundColor: itemColor || 'white' }]} />
-                            );
-                        })
-                        :
-                        textColorArray.map((itemColor) => {
-                            return (
-                                <TouchableOpacity onPress={() => onTextColorEffcet(itemColor)}>
-                                    <View style={[styles.colorEffcetItemContainer, { backgroundColor: itemColor || 'white' }]} />
-                                </TouchableOpacity>
-                            );
-                        })}
-                </ScrollView>
-            </KeyboardAvoidingView >)
+            <View style={{ position: 'absolute', bottom: 20 }}>
+                <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "position" : "position"} keyboardVerticalOffset={100} style={{ marginEnd: textEffectPostion !== 0 ? 48 : 0 }}>
+                    <ScrollView horizontal={true} contentContainerStyle={styles.bottomEffectListContainer} showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps={'handled'}>
+                        {textEffectPostion == 0 ?
+                            textColorArray.map((item, index) => {
+                                return (
+                                    <TouchableOpacity onPress={() => onTextFontEffcet(item, index)} key={index}>
+                                        <View style={[styles.fontEffcetItemContainer, {
+                                            // borderWidth: textFontPostion === index ? 1 : 1, 
+                                            borderColor: textFontPostion === index ? 'white' : 'rgba(255,255,255,0.3)'
+                                        }]}>
+                                            <Text style={[styles.textFontName, {
+                                                fontWeight: textFontPostion === index ? '500' : '400',
+                                                // paddingStart: textFontPostion === index ? 15 : 16,
+                                                // paddingEnd: textFontPostion === index ? 15 : 16,
+                                            }]}>{index > 0 ? "字体" : "系统"}</Text>
+                                            {index > 0 && <Image style={styles.textFontDownload} source={require('../../../images/ic_text_font_download.png')}></Image>}
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })
+                            :
+                            textColorArray.map((itemColor,index) => {
+                                return (
+                                    <TouchableOpacity onPress={() => onTextColorEffcet(itemColor)} key={index}>
+                                        <View style={[styles.colorEffcetItemContainer, {
+                                            backgroundColor: itemColor || 'white',
+                                            borderWidth: ((textEffectPostion === 1 && textColor === itemColor) || (textEffectPostion === 2 && textBackgroundColor === itemColor)) ? 3 : 1
+                                        }]} />
+                                    </TouchableOpacity>
+                                );
+                            })}
+                    </ScrollView>
+                </KeyboardAvoidingView >
+                {textEffectPostion !== 0 &&
+                    <TouchableOpacity onPress={onCleanColor}>
+                        <View style={styles.cleanTextColorContainer}>
+                            <Image style={styles.cleanTextColor} source={require('../../../images/ic_text_color_cancel.png')} />
+                        </View>
+                    </TouchableOpacity>}
+            </View>)
     }
-
     return (
+
         <View ref={rer} style={styles.container}>
-            {renderHead()}
-            <View style={{ width: props.width, height: props.height, backgroundColor: editable ? 'rgba(0, 0, 0, 0.58)' : 'transparent' }}>
-                {renderGestureText()}
-                {editable && bottomEffectList()}
+            {(props.isTextEdit && editable) ? renderHead() : renderHead2()}
+            <View style={{ width: props.width, height: props.height, backgroundColor: props.isTextEdit && editable ? 'rgba(0, 0, 0, 0.58)' : 'transparent' }}>
+                {(props.isTextEdit || captionInfo != null) && renderGestureText()}
+                {(props.isTextEdit && editable) && bottomEffectList()}
             </View>
 
         </View>
@@ -187,6 +271,7 @@ const styles = StyleSheet.create({
     },
     headContainer: {
         height: 44,
+        width: '100%',
         backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -195,8 +280,9 @@ const styles = StyleSheet.create({
     completeText: {
         height: 44,
         width: 56,
-        // backgroundColor:'white',
+        justifyContent: 'center',
         textAlign: 'center',
+        alignItems: 'center',
         lineHeight: 44,
         color: '#836BFF',
         fontSize: 15,
@@ -222,13 +308,30 @@ const styles = StyleSheet.create({
     bottomEffectListContainer: {
         alignItems: 'center',
         paddingRight: 12,
+        paddingLeft: 5,
     },
     fontEffcetItemContainer: {
-        width: 26,
+        position: 'relative',
         height: 26,
+        borderRadius: 4,
         marginStart: 1,
+        marginStart: 9,
         borderWidth: 1,
+        justifyContent: 'center',
         borderColor: 'white',
+    },
+    textFontName: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        paddingStart: 16,
+        paddingEnd: 16,
+    },
+    textFontDownload: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 12,
+        height: 12,
     },
     colorEffcetItemContainer: {
         width: 26,
@@ -237,7 +340,23 @@ const styles = StyleSheet.create({
         borderRadius: 13,
         borderWidth: 1,
         borderColor: 'white',
-    }
+    },
+    // cleanTextColorContainer: {
+    //     width: 48,
+    //     height: 58,
+    //     bottom: -20,
+    //     position: 'absolute',
+    //     right: 0,
+    //     justifyContent:'center',
+    // },
+    cleanTextColor: {
+        width: 28,
+        height: 28,
+        position: 'absolute',
+        bottom: -1,
+        right: 13,
+    },
+
 });
 
 
