@@ -248,6 +248,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     }}
                     style={[styles.textInput, {
                         fontSize: 25.0,
+                        fontFamily:this.props.textFontName || 'PingFang SC',
                         color: this.props.textColor || 'white',
                         backgroundColor: this.props.textBackgroundColor || 'transparent'
                     }]}

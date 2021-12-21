@@ -135,9 +135,8 @@ const TextEffect = (props) => {
      */
     async function onTextFontEffcet(item, index) {
         setTextFontPostion(index);
-        console.log("fontName",item.fontName);
-      
         if (!!item.isDbContain) {
+            // console.log("fontName",item.fontName);
             setTextFontName(!!item.fontName?item.fontName:null);
         } else {
             const fontInfo = await onDownlaodFont(item, index);
