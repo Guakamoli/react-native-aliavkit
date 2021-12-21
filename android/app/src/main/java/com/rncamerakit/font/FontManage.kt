@@ -110,7 +110,7 @@ class FontManager {
         }
     }
 
-    fun getFileDownloaderModel(fontForm: FontForm): FileDownloaderModel {
+    private fun getFileDownloaderModel(fontForm: FontForm): FileDownloaderModel {
         val model = FileDownloaderModel()
         model.effectType = EFFECT_TYPE
         model.name = fontForm.name

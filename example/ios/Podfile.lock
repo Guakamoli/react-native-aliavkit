@@ -18,7 +18,7 @@ PODS:
     - AlivcConan/AlivcConan (= 1.0.5)
   - AlivcConan/AlivcConan (1.0.5)
   - AliyunOSSiOS (2.10.11)
-  - AliyunVideoSDKPro (3.26.0):
+  - AliyunVideoSDKPro (3.27.0):
     - QuCore-ThirdParty (~> 4.3.1)
   - Bolts/Tasks (1.9.0)
   - boost-for-react-native (1.63.0)
@@ -311,7 +311,6 @@ PODS:
     - React-jsi (= 0.64.2)
     - React-perflogger (= 0.64.2)
   - ReactNativeAliAVKit (1.2.27):
-    - AFNetworking
     - AlivcConan (= 1.0.5)
     - AliyunVideoSDKPro (= 3.27.0)
     - Queen (= 1.4.0-official-pro)
@@ -483,13 +482,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
-  AliyunOSSiOS: b8f1dfc229cd9abf68c8ee0cb245c2d66e00dd96
+  AliyunOSSiOS: 7bc7ca588207ce536c1dffe732c3d4fe342e23cf
   AliyunVideoSDKPro: 13247e67df7ed864254b4c2ad679df8a80e17a30
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 76f780d900d991d4f8e4eac3c4c459bb5f6d903e
+  FBReactNativeSpec: 3aabbcf576d965fac12809f3478aba42a58b8b8e
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
@@ -534,6 +533,6 @@ SPEC CHECKSUMS:
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: 5411a6ac8aca10a7ba0c31f13fa6959313fc2a8b
+PODFILE CHECKSUM: dbab9d954630b567fcf69ad6d553fd6962372d38
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.10.2

@@ -16,6 +16,8 @@ import {
     Alert
 } from 'react-native';
 
+import AVService from '../../AVService.ios';
+
 import {
     State,
     PanGestureHandler,
@@ -40,8 +42,8 @@ type CaptionInfo = {
     backgroundColor: string; //背景颜色
     // startTime: number;
     // duration: number;
-    x:number;
-    y:number;
+    x: number;
+    y: number;
     rotate: number;
     scale: number;
 };
@@ -54,10 +56,10 @@ type GestureTextProps = {
     textAlign?: any;
     textColor?: any;
     textBackgroundColor?: any;
-    textFontName?:any;
+    textFontName?: any;
     editable?: any;
-    isTextEdit?:any;
-    lastTextEdit?:any;
+    isTextEdit?: any;
+    lastTextEdit?: any;
     minDist?: number;
     boxStyle?: StyleProp<ViewStyle>;
     onTextMove: (info: CaptionInfo) => void;
@@ -132,6 +134,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         };
 
         this.lastEditable = true;
+
     }
 
     private onPanHandlerStateChange = (event: PanGestureHandlerStateChangeEvent) => {
@@ -170,13 +173,13 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         }
     };
 
-    onSetTextInfo= () => {
+    onSetTextInfo = () => {
         this.props.onTextMove({
             text: this.state.text,
             color: this.props.textColor || 'white',
             backgroundColor: this.props.textBackgroundColor || 'transparent',
-            fontName:this.props.textFontName || '',
-            textAlignment: this.props.textAlign|| 'center',
+            fontName: this.props.textFontName || '',
+            textAlignment: this.props.textAlign || 'center',
             x: this.lastOffset.x,
             y: this.lastOffset.y,
             rotate: this.lastRotate,
@@ -184,11 +187,12 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         });
     }
 
-    //
+    //单击
     onTextSingleTap = () => {
         // console.log("onTextSingleTap")
     }
 
+    //双击
     onTextDoubleTap = () => {
         // console.log("onTextDoubleTap")
         this.props.onEditEnable(true);
@@ -201,24 +205,44 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         }, 100);
     }
 
+    onGetFontList = async () => {
+        // console.log("onTextSingleTap")
+        const fontList = await AVService.fetchFontList();
+        console.log("fontList", fontList);
+
+        const fontInfo = await AVService.downloadFont(fontList[3].id);
+
+        console.log("fontInfo", fontInfo);
+    }
+
+    /**
+   * 在第一次绘制 render() 之后，这里去做网络渲染等等工作
+   */
+    componentDidMount() {
+        console.log("第一次render加载完成")
+        this.onGetFontList();
+    }
+
+
 
     /**
      * 更新组件，调用render。在 shouldComponentUpdate 返回 ture 才会执行
      * 首次加载不会调用
      */
     componentDidUpdate(nextProps, nextState) {
-        if (this.props.isTextEdit&& (!!this.lastEditable && !this.props.editable)) {
+        if (this.props.isTextEdit && (!!this.lastEditable && !this.props.editable)) {
+            //退出编辑状态，添加字幕变成可拖动
+            console.log("点击了完成");
             this.translateX.setOffset(this.lastOffset.x);
             this.translateY.setOffset(this.lastOffset.y);
             this.rotate.setOffset(this.lastRotate);
             this.baseScale.setValue(this.lastScale);
-        }
-        if(this.props.isTextEdit && !!this.lastEditable && !this.props.editable){
-            console.log("点击了完成");
-             this.onSetTextInfo();
+            this.onSetTextInfo();
         }
 
-        if( !this.props.lastTextEdit && !!this.props.isTextEdit){
+        if (!this.props.lastTextEdit && !!this.props.isTextEdit) {
+            console.log("进入文字编辑");
+            //将文字框移动到初始位置，并且展开软键盘
             this.onTextDoubleTap();
         }
         this.lastEditable = this.props.editable
@@ -242,7 +266,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     value={this.state.text}
                     textAlign={this.props.textAlign}
                     editable={this.props.editable}
-                    autoFocus={this.props.isTextEdit&&this.props.editable}
+                    autoFocus={this.props.isTextEdit && this.props.editable}
                     multiline={true}
 
                     onChangeText={(text) => { this.setState({ text }) }}

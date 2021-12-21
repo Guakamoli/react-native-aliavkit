@@ -1,6 +1,8 @@
 import React from 'react';
-import { NativeModules } from 'react-native';
+import { NativeModules ,  NativeEventEmitter,} from 'react-native';
 const { AliAVServiceBridge, RNMusicService, RNFontService } = NativeModules;
+
+const calendarManagerEmitter = new NativeEventEmitter(RNFontService);
 
 type MusicRequestType = {
   name: string;
@@ -24,9 +26,9 @@ export default class AVService {
   }
 
   /*
-  如果是视频，则需要监听cropProgress事件，
-  如果是图片，则不需要监听，只需要await path即可
-*/
+   *果是视频，则需要监听cropProgress事件，
+   *如果是图片，则不需要监听，只需要await path即可
+   */
   static async crop({ source, duration, cropOffsetX, cropOffsetY, cropWidth, cropHeight }) {
     return await AliAVServiceBridge.crop({ source, duration, cropOffsetX, cropOffsetY, cropWidth, cropHeight });
   }
@@ -72,6 +74,14 @@ export default class AVService {
 
   static async downloadFont(fontId:number) {
     console.log('----- downloadFont');
+    this.downloadFontProgress()
     return await RNFontService.downloadFont(fontId);
+  }
+
+  static async downloadFontProgress(){
+    const subscription = calendarManagerEmitter.addListener(
+      'onFontDownloadProgress',
+      (src) => console.log("downloadFontProgress",src)
+    );
   }
 }
