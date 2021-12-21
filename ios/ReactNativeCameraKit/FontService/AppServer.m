@@ -16,7 +16,18 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 + (void)getRequestPath:(NSString *)path parameters:(NSDictionary *)parameters
 completionHandler:(void (^)(NSURLResponse *response, NSDictionary *responseObject,  NSError * error))completionHandler
 {
-    AliyunHttpClient *httpClient = [[AliyunHttpClient alloc] initWithBaseUrl:kAlivcQuUrlString];
+    [self getRequestBaseURL:kAlivcQuUrlString
+                       path:path
+                 parameters:parameters
+          completionHandler:completionHandler];
+}
+
++ (void)getRequestBaseURL:(NSString *)baseURL
+                     path:(NSString *)path
+               parameters:(NSDictionary *)parameters
+completionHandler:(void (^)(NSURLResponse *response, NSDictionary *responseObject,  NSError * error))completionHandler
+{
+    AliyunHttpClient *httpClient = [[AliyunHttpClient alloc] initWithBaseUrl:baseURL];
     [httpClient GET:path parameters:parameters completionHandler:completionHandler];
 }
 

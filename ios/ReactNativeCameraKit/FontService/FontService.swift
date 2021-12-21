@@ -36,10 +36,16 @@ class FontService: RCTEventEmitter {
     private var fontModel: AliyunEffectResourceModel?
     private var dbManager: AliyunDBHelper?
     private var hasListeners = false
+    private var fontInfos: [FontInfo] = []
     
     @objc(fetchFontList:rejecter:)
     func fetchFontList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        fontInfos.removeAll()
         fetchFontResource { infos in
+            self.fontInfos.append(contentsOf: infos)
+            let db = AliyunDBHelper()
+            db.openResourceDBSuccess(nil, failure: nil)
+            
             let dicts = infos.map{
                 [
                     "banner":$0.banner,
@@ -52,7 +58,28 @@ class FontService: RCTEventEmitter {
                     "url":$0.url
                 ]
             }
-            resolve(dicts)
+            let fontInfos = dicts
+                .map{
+                    let model = try? AliyunEffectResourceModel(dictionary:$0)
+                    model?.effectType = .font
+                    return model
+                }
+                .compactMap({$0})
+                .map{
+                    [
+                        "banner":$0.banner ?? "",
+                        "icon":$0.icon ?? "",
+                        "id":$0.eid,
+                        "level":$0.level,
+                        "name":$0.name ?? "",
+                        "sort":$0.sort ?? "",
+                        "type":$0.type ?? "",
+                        "url":$0.url ?? "",
+                        "isDbContain":db.queryOneResourse(with: $0)
+                    ]
+                }
+            db.closeDB()
+            resolve(fontInfos)
         }
     }
     
@@ -70,25 +97,39 @@ class FontService: RCTEventEmitter {
             return
         }
         
-        requestFont(with: idValue) { data in
-            guard let fontModel = try? AliyunEffectResourceModel(dictionary:data) else {
-                return;
-            }
-            fontModel.effectType = .font
-            self.fontModel = fontModel
-            
-            let isSave = self.dbManager?.queryOneResourse(with: fontModel) ?? false
-            
-            guard !isSave else {
-                print("字体已下载")
-                resolve(data)
-                return;
-            }
-            self.downloadFont(with: fontModel)
-            resolve(data)
-        } failure: { err in
+        guard let info = self.fontInfos.filter({$0.id == idValue}).first else {return}
+        var data = [
+            "banner":info.banner,
+            "icon":info.icon,
+            "id":info.id,
+            "level":info.level,
+            "name":info.name,
+            "sort":info.sort,
+            "type":info.type,
+            "url":info.url
+        ] as [String : Any]
+        
+        guard let fontModel = try? AliyunEffectResourceModel(dictionary:data) else {
             reject("","",nil)
+            return;
         }
+        fontModel.effectType = .font
+        self.fontModel = fontModel
+        
+        let isSave = self.dbManager?.queryOneResourse(with: fontModel) ?? false
+        
+        guard !isSave else {
+            print("字体已下载")
+            data["isDbContain"] = true
+            data["resourcePath"] = fontModel.resourcePath;
+            resolve(data)
+            return;
+        }
+        self.downloadFont(with: fontModel)
+        data["isDbContain"] = true
+        data["resourcePath"] = fontModel.resourcePath;
+        
+        resolve(data)
     }
     
     override func startObserving() {
@@ -111,19 +152,6 @@ class FontService: RCTEventEmitter {
 }
 
 extension FontService {
-    
-    private func requestFont(with fontID: Int,
-                             success:@escaping ([AnyHashable : Any]?)->Void,
-                             failure:@escaping (Error)->Void) {
-        AppServer.getRequestPath("/resource/getFont", parameters: ["fontId":fontID]) { response, responseObject, error in
-            if error == nil {
-                success(responseObject?["data"] as? [AnyHashable : Any])
-            } else {
-                failure(error!)
-            }
-        }
-    }
-    
     private func downloadFont(with fontInfo: AliyunEffectResourceModel) {
         let fileName = "\(fontInfo.eid)-\(fontInfo.name ??  "")"
         let destination = fontResourceURL.appendingPathComponent("\(fileName)-tmp").path
@@ -143,7 +171,6 @@ extension FontService {
             }
             self.unzipFile(from: filePathURL!, to: zipPathURL)
         }
-        
     }
     
     private func unzipFile(from filPathURL: URL, to destinationURL: URL) {
@@ -194,24 +221,33 @@ extension FontService {
     
     private func fetchFontResource(_ complete: @escaping ([FontInfo])->Void) {
         guard let url = Server.font.resourceURL() else { return }
+        let jsonFilePathURL = fontResourceURL.appendingPathComponent(url.lastPathComponent);
+        let isJsonFileExist = FileManager.default.fileExists(atPath: jsonFilePathURL.path)
+        if isJsonFileExist {
+            guard let infos = self.parseJSONData(with: jsonFilePathURL) else { return }
+            complete(infos);
+            return
+        }
+        
         let req = URLRequest(url: url)
         let task = URLSession.shared.downloadTask(with: req) { locationURL, response, err in
-            guard let res = response else { return }
-            
-            let destURL = self.fontResourceURL.appendingPathComponent(res.suggestedFilename!)
-            
-            try? FileManager.default.moveItem(at: locationURL!, to: destURL)
-            
-            guard let data = try? Data.init(contentsOf: destURL) else{
-                return
-            }
-            guard let json = try? JSONDecoder().decode([FontInfo].self, from: data) else {
-                return
-            }
-            complete(json)
+            guard let _ = response else { return }
+            try? FileManager.default.moveItem(at: locationURL!, to: jsonFilePathURL)
+            guard let infos = self.parseJSONData(with: jsonFilePathURL) else { return }
+            complete(infos)
         }
         
         task.resume()
+    }
+    
+    private func parseJSONData(with url: URL) -> [FontInfo]? {
+        guard let data = try? Data.init(contentsOf: url) else {
+            return nil
+        }
+        guard let infos = try? JSONDecoder().decode([FontInfo].self, from: data) else {
+            return nil
+        }
+        return infos
     }
     
     private var fontResourceURL: URL {
@@ -220,7 +256,6 @@ extension FontService {
         if !FileManager.default.fileExists(atPath: fontURL.path) {
             try? FileManager.default.createDirectory(at: fontURL, withIntermediateDirectories: true, attributes: nil)
         }
-        print("--------: \(fontURL.path)")
         return fontURL
     }
 }
