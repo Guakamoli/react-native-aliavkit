@@ -324,9 +324,9 @@ const PostEditor = (props) => {
       let videoData = props.params.originalData[0]?.image;
 
       const FirstcoverData = await AVService.getThumbnails({     width: videoData.width,
-        height: videoData.height, ...thumbnailsArgument});
-
-      setcoverImage(FirstcoverData);
+        height: videoData.height, ...thumbnailsArgument, needCover: true});
+        console.info(FirstcoverData, 'FirstcoverData')
+      setcoverImage(FirstcoverData[0]);
     } catch (e) {
       console.info(e);
     }

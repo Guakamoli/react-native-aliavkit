@@ -663,22 +663,37 @@ static NSString * ThumnailDirectory() {
     if (itemPerTime == 0) {
         itemPerTime = 1000;
     }
+    
     CGSize imageSize = [RCTConvert CGSize:options[@"imageSize"]];
     if (!imageSize.width || !imageSize.height) {
         imageSize = CGSizeMake(200, 200);
     }
+    
     //for test only
 //    videoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
 //    AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:videoPath];
 //    CGFloat duration = [parser getVideoDuration];
 //    CGFloat startTime = 0.0;
 //    NSInteger itemPerTime = 1000; //ms
-    [self thumbnailFromVideoPath:videoPath
-                     itemPerTime:itemPerTime
-                       startTime:startTime
-                        duration:duration
-             generatorOutputSize:imageSize
-                        complete:complete];
+    BOOL needCover = [RCTConvert BOOL:options[@"needCover"]];
+    
+    if (needCover) {
+        CGFloat time = startTime == 0 ? 0.1 : startTime;
+        NSArray *arr = @[[NSValue valueWithCMTime:CMTimeMakeWithSeconds(time, 1000)]];
+        [self generateImagesForTimes:arr
+                           videoPath:videoPath
+                         maximumSize:imageSize
+                             success:^(NSArray * paths) {
+            complete(paths);
+        }];
+    } else {
+        [self thumbnailFromVideoPath:videoPath
+                         itemPerTime:itemPerTime
+                           startTime:startTime
+                            duration:duration
+                 generatorOutputSize:imageSize
+                            complete:complete];
+    }
 }
 
 - (void)thumbnailFromVideoPath:(NSString *)videoPath
@@ -716,7 +731,7 @@ static NSString * ThumnailDirectory() {
         
         if (result == AVAssetImageGeneratorSucceeded) {
             UIImage *img = [[UIImage alloc] initWithCGImage:image];
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 NSString *path = [self saveImgToSandBox:img withIndex:++index];
                 if (path) {
                     [pathArr addObject:path];
@@ -729,7 +744,39 @@ static NSString * ThumnailDirectory() {
     }];
 }
 
+- (void)generateImagesForTimes:(NSArray *)array
+                     videoPath:(NSString *)videoPath
+                   maximumSize:(CGSize)outputSize
+                       success:(void(^)(NSArray * paths))success
+{
+    NSURL *url = [[NSURL alloc] initFileURLWithPath:videoPath];
+    AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:url options:nil];
+    AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:urlAsset];
+    imageGenerator.appliesPreferredTrackTransform = YES;
+    imageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
+    imageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
+    imageGenerator.maximumSize = outputSize;
+    [imageGenerator generateCGImagesAsynchronouslyForTimes:array
+                                         completionHandler:^(CMTime requestedTime, CGImageRef  _Nullable image, CMTime actualTime, AVAssetImageGeneratorResult result, NSError * _Nullable error) {
+        
+        if (result == AVAssetImageGeneratorSucceeded) {
+            UIImage *img = [[UIImage alloc] initWithCGImage:image];
+            NSString *uiud = [[[NSUUID UUID] UUIDString] stringByAppendingPathExtension:@".png"];
+            NSString *path = [self saveImgToSandBox:img withName:uiud];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                success(@[path]);
+            });
+        }
+    }];
+}
+
 - (NSString *)saveImgToSandBox:(UIImage *)image withIndex:(int)index
+{
+    NSString *imageName = [NSString stringWithFormat:@"%03d.png", index];
+    return [self saveImgToSandBox:image withName:imageName];
+}
+
+- (NSString *)saveImgToSandBox:(UIImage *)image withName:(NSString *)name
 {
     NSString *fileDirectoryPath = ThumnailDirectory();
     NSFileManager *fm = [NSFileManager defaultManager];
@@ -740,8 +787,7 @@ static NSString * ThumnailDirectory() {
     }
     
     NSData *imgData = UIImagePNGRepresentation(image);
-    NSString *imageName = [NSString stringWithFormat:@"%03d.png", index];
-    NSString *imgPath = [fileDirectoryPath stringByAppendingPathComponent:imageName];
+    NSString *imgPath = [fileDirectoryPath stringByAppendingPathComponent:name];
     BOOL suc = [imgData writeToFile:imgPath atomically:YES];
     if (suc) {
         return imgPath;
