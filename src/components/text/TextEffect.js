@@ -7,6 +7,7 @@ import {
 
 import GestureText from './GestureText';
 
+import AVService from '../../AVService';
 
 const TAG = "TextEffect"
 
@@ -47,6 +48,8 @@ const TextEffect = (props) => {
     const [textFontPostion, setTextFontPostion] = React.useState(0);
     const [textColor, setTextColor] = React.useState("white");
     const [textBackgroundColor, setTextBackgroundColor] = React.useState("transparent");
+
+    const [textFontList, setTextFontList] = React.useState([]);
     const [textFontName, setTextFontName] = React.useState("");
 
     const [keyboard, setKeyboard] = React.useState(false);
@@ -81,8 +84,9 @@ const TextEffect = (props) => {
         if (!rer.current) {
             return;
         }
-        console.log(TAG, "加载完成")
+        onGetFontList()
     }, [rer]);
+
 
     //记录上一次的事件 false：滤镜  true：文字
     React.useEffect(() => {
@@ -109,11 +113,36 @@ const TextEffect = (props) => {
         setEditable(false)
     }
 
+    //获取字体列表
+    const onGetFontList = async () => {
+        const fontList = await AVService.fetchFontList();
+        fontList.forEach((item, index) => {
+            console.log("isDbContain:", item.isDbContain, "path:", item.path);
+        });
+        // console.log("fontList", fontList);
+        const systemFont = { name: "系统", path: "", isDbContain: 1 };
+        fontList.unshift(systemFont);
+        setTextFontList(fontList);
+    }
+
+    //下载字体
+    const onDownlaodFont = async (fontItem, index) => {
+        return await AVService.downloadFont(fontItem);
+    }
+
     /**
      * 字体选择
      */
-    function onTextFontEffcet(item, index) {
+    async function onTextFontEffcet(item, index) {
         setTextFontPostion(index);
+        setTextFontName(item.path);
+        if (!!item.isDbContain) {
+            // setTextFontPostion(index);
+        } else {
+            const fontInfo = await onDownlaodFont(item, index);
+            const fontList = textFontList.splice(index, 1, fontInfo);
+            setTextFontList(fontList);
+        }
     }
 
     /**
@@ -208,25 +237,22 @@ const TextEffect = (props) => {
                 <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "position" : "position"} keyboardVerticalOffset={100} style={{ marginEnd: textEffectPostion !== 0 ? 48 : 0 }}>
                     <ScrollView horizontal={true} contentContainerStyle={styles.bottomEffectListContainer} showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps={'handled'}>
                         {textEffectPostion == 0 ?
-                            textColorArray.map((item, index) => {
+                            textFontList.map((item, index) => {
                                 return (
                                     <TouchableOpacity onPress={() => onTextFontEffcet(item, index)} key={index}>
+
                                         <View style={[styles.fontEffcetItemContainer, {
                                             // borderWidth: textFontPostion === index ? 1 : 1, 
                                             borderColor: textFontPostion === index ? 'white' : 'rgba(255,255,255,0.3)'
                                         }]}>
-                                            <Text style={[styles.textFontName, {
-                                                fontWeight: textFontPostion === index ? '500' : '400',
-                                                // paddingStart: textFontPostion === index ? 15 : 16,
-                                                // paddingEnd: textFontPostion === index ? 15 : 16,
-                                            }]}>{index > 0 ? "字体" : "系统"}</Text>
-                                            {index > 0 && <Image style={styles.textFontDownload} source={require('../../../images/ic_text_font_download.png')}></Image>}
+                                            <Text style={[styles.textFontName, { fontWeight: textFontPostion === index ? '500' : '400', fontFamily: item.parh }]}>{item.name}</Text>
+                                            {!item.isDbContain && <Image style={styles.textFontDownload} source={require('../../../images/ic_text_font_download.png')}></Image>}
                                         </View>
                                     </TouchableOpacity>
                                 );
                             })
                             :
-                            textColorArray.map((itemColor,index) => {
+                            textColorArray.map((itemColor, index) => {
                                 return (
                                     <TouchableOpacity onPress={() => onTextColorEffcet(itemColor)} key={index}>
                                         <View style={[styles.colorEffcetItemContainer, {
@@ -323,8 +349,8 @@ const styles = StyleSheet.create({
     textFontName: {
         fontSize: 14,
         color: '#FFFFFF',
-        paddingStart: 16,
-        paddingEnd: 16,
+        paddingStart: 15,
+        paddingEnd: 15,
     },
     textFontDownload: {
         position: 'absolute',

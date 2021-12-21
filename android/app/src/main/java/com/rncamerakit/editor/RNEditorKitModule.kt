@@ -294,6 +294,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun getFontList(promise: Promise) {
         val fonts = FontManager.instance.getDownloadFontList()
+//        promise.resolve(Arguments.makeNativeArray(fonts))
         promise.resolve(GsonBuilder().create().toJson(fonts))
     }
 
@@ -307,10 +308,10 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
         val jsonObject = GsonBuilder().create().toJsonTree(model).asJsonObject
         bundle?.keySet()?.let { set ->
             set.forEach {
-                jsonObject.add(it,GsonBuilder().create().toJsonTree(bundle.get(it)))
+                jsonObject.add(it, GsonBuilder().create().toJsonTree(bundle.get(it)))
             }
         }
-        model = GsonManage.fromJson(jsonObject,FileDownloaderModel::class.java)
+        model = GsonManage.fromJson(jsonObject, FileDownloaderModel::class.java)
         model.isunzip = 1
         model.effectType = EffectService.EFFECT_TEXT
         FontManager.instance.downloadFont(reactContext.applicationContext, model, promise)

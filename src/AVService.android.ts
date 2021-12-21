@@ -96,7 +96,7 @@ export default class AVService {
   }
 
   //获取所有字体
-  static async getFontList() {
+  static async fetchFontList() {
     // 安卓端返回： List<FileDownloaderModel>
     // [
     //   {  "id": 52,
@@ -123,7 +123,7 @@ export default class AVService {
    * @param font  上面 getFontList 函数返回的字体对象：FileDownloaderModel
    * @returns 
    */
-  static async downloadFont(font) {
+  static async downloadFont(font:any) {
     // 返回：FileDownloaderModel
     //   {  "id": 52,
     //      "taskId": -380016714, // taskId: 安卓端用来创建下载任务的id
@@ -143,13 +143,13 @@ export default class AVService {
   }
 
 
-  static async   downloadFontTest(){
-      // //TODO
-    let fontList = await AVService.getFontList();
-    console.log("所有字体：","+"+fontList.length);
-    for(let i=0;i<fontList.length;i++){
-      let fontInfo = await AVService.downloadFont(fontList[i]);
-      console.log("下载成功的字体",fontInfo);
-    }
-  }
+  // static async   downloadFontTest(){
+  //     // //TODO
+  //   let fontList = await AVService.fetchFontList();
+  //   console.log("所有字体：","+"+fontList.length);
+  //   for(let i=0;i<fontList.length;i++){
+  //     let fontInfo = await AVService.downloadFont(fontList[i]);
+  //     console.log("下载成功的字体",fontInfo);
+  //   }
+  // }
 }

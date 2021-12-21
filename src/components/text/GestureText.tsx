@@ -16,7 +16,7 @@ import {
     Alert
 } from 'react-native';
 
-import AVService from '../../AVService.ios';
+
 
 import {
     State,
@@ -205,22 +205,12 @@ export default class GestureText extends Component<GestureTextProps, GestureText
         }, 100);
     }
 
-    onGetFontList = async () => {
-        // console.log("onTextSingleTap")
-        const fontList = await AVService.fetchFontList();
-        console.log("fontList", fontList);
-
-        const fontInfo = await AVService.downloadFont(fontList[3].id);
-
-        console.log("fontInfo", fontInfo);
-    }
 
     /**
    * 在第一次绘制 render() 之后，这里去做网络渲染等等工作
    */
     componentDidMount() {
         console.log("第一次render加载完成")
-        this.onGetFontList();
     }
 
 

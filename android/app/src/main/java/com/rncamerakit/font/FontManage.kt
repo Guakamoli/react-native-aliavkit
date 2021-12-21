@@ -171,15 +171,16 @@ class FontManager {
         if (fileDownloaderModels == null) {
             fileDownloaderModels = java.util.ArrayList()
         }
-        val fileDownloaderModel = FileDownloaderModel()
-        fileDownloaderModel.icon = CaptionConfig.SYSTEM_FONT
-        fileDownloaderModel.url = CaptionConfig.SYSTEM_FONT
-        fileDownloaderModel.path = CaptionConfig.SYSTEM_FONT
-        fileDownloaderModels.add(0, fileDownloaderModel)
+//        val fileDownloaderModel = FileDownloaderModel()
+//        fileDownloaderModel.icon = CaptionConfig.SYSTEM_FONT
+//        fileDownloaderModel.url = CaptionConfig.SYSTEM_FONT
+//        fileDownloaderModel.path = CaptionConfig.SYSTEM_FONT
+//        fileDownloaderModels.add(0, fileDownloaderModel)
         fileDownloaderModels.forEach {
             if (isDownloadFontByUrl(it.url)) {
                 it.isDbContain = 1
             }
+            it.path = "file://" + it.path + "/font.ttf"
         }
         return fileDownloaderModels
     }
