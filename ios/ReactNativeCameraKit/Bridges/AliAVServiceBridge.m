@@ -19,6 +19,7 @@
 #import <AliyunVideoSDKPro/AliyunNativeParser.h>
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+#import <React/RCTConvert.h>
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -662,7 +663,10 @@ static NSString * ThumnailDirectory() {
     if (itemPerTime == 0) {
         itemPerTime = 1000;
     }
-    
+    CGSize imageSize = [RCTConvert CGSize:options[@"imageSize"]];
+    if (!imageSize.width || !imageSize.height) {
+        imageSize = CGSizeMake(200, 200);
+    }
     //for test only
 //    videoPath = [[NSUserDefaults standardUserDefaults] objectForKey:@"videoSavePath"];
 //    AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:videoPath];
@@ -673,7 +677,7 @@ static NSString * ThumnailDirectory() {
                      itemPerTime:itemPerTime
                        startTime:startTime
                         duration:duration
-             generatorOutputSize:CGSizeMake(200, 200)
+             generatorOutputSize:imageSize
                         complete:complete];
 }
 
@@ -684,7 +688,7 @@ static NSString * ThumnailDirectory() {
            generatorOutputSize:(CGSize)outputSize
                       complete:(void (^)(NSArray *))complete
 {
-    [self removeImages];
+//    [self removeImages];
     CMTime startTime = beginTime == 0 ? kCMTimeZero : CMTimeMakeWithSeconds(beginTime, 1000);
     NSMutableArray *array = [NSMutableArray array];
     CMTime addTime = CMTimeMakeWithSeconds(itemPerTime/1000.0, 1000);
