@@ -281,7 +281,7 @@ const PostEditor = (props) => {
     return () => {
       console.info('销毁了', subscription);
 
-      AVService.removeThumbnaiImages();
+      // AVService.removeThumbnaiImages();
       //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.stop();
@@ -314,13 +314,19 @@ const PostEditor = (props) => {
         videoPath: multipleSandBoxData[0],
         startTime: 0,
         itemPerTime: Math.floor(itemPerTime),
+        
       };
       if (Platform.OS != 'ios') {
       }
       coverData = await AVService.getThumbnails(thumbnailsArgument);
 
       setcoverList(coverData);
-      setcoverImage(coverData[0]);
+      let videoData = props.params.originalData[0]?.image;
+
+      const FirstcoverData = await AVService.getThumbnails({     width: videoData.width,
+        height: videoData.height, ...thumbnailsArgument, needCover: true});
+        console.info(FirstcoverData, 'FirstcoverData')
+      setcoverImage(FirstcoverData[0]);
     } catch (e) {
       console.info(e);
     }
@@ -363,6 +369,7 @@ const PostEditor = (props) => {
         } else {
           uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
         }
+        console.info(uploadCoverImage, ' uploadCoverImage', coverImage)
         uploadFile.push({
           type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
