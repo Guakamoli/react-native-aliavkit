@@ -16,8 +16,15 @@ public class FileDownloaderModel implements Serializable {
      * 是否下载到了本地 0：否  1：是
      */
     public int isDbContain = 0;
+    public String  fontName;
 
+    public String getFontName() {
+        return fontName;
+    }
 
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
 
     public final static String TASK_ID = "task_id";//主键
     public final static String ID = "id";//组id
@@ -521,6 +528,9 @@ public class FileDownloaderModel implements Serializable {
     public void setIsDbContain(int isDbContain) {
         this.isDbContain = isDbContain;
     }
+
+
+
 
     public int getIsunzip() {
         return isunzip;

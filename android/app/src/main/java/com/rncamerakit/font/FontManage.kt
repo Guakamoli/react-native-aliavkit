@@ -1,6 +1,7 @@
 package com.rncamerakit.font
 
 import android.content.Context
+import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.base.Form.FontForm
@@ -15,6 +16,7 @@ import com.aliyun.svideo.editor.util.AlivcResUtil
 import com.aliyun.svideosdk.common.struct.project.Source
 import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.Promise
+import com.facebook.react.views.text.ReactFontManager
 import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.GsonManage
@@ -177,10 +179,13 @@ class FontManager {
 //        fileDownloaderModel.path = CaptionConfig.SYSTEM_FONT
 //        fileDownloaderModels.add(0, fileDownloaderModel)
         fileDownloaderModels.forEach {
+            it.path = it.path + "/font.ttf"
             if (isDownloadFontByUrl(it.url)) {
                 it.isDbContain = 1
+                it.fontName = "AliCustomFont"+it.id
+                val typeface: Typeface = Typeface.createFromFile(File(it.path))
+                ReactFontManager.getInstance().setTypeface(it.fontName, typeface.style, typeface)
             }
-            it.path = "file://" + it.path + "/font.ttf"
         }
         return fileDownloaderModels
     }
@@ -188,7 +193,7 @@ class FontManager {
     /**
      * 通过URL判断该文件是否下载到了本地
      */
-    fun isDownloadFontByUrl(url: String?): Boolean {
+    private fun isDownloadFontByUrl(url: String?): Boolean {
         if (url == null) {
             return false
         }
@@ -211,14 +216,14 @@ class FontManager {
         } else {
             val path = DownloaderManager.getInstance().dbController.getPathByUrl(model.url)
             if (path != null && path.isNotEmpty()) {
-                val fontSource = Source(path + "/font.ttf")
+                val fontSource = Source("$path/font.ttf")
                 fontSource.url = AlivcResUtil.getCloudResUri(AlivcResUtil.TYPE_FONT, model.id.toString())
                 callback?.onFontSource(fontSource)
             } else {
                 DownloadUtils.downloadFont(context, model, object : FileDownloaderCallback() {
                     override fun onFinish(downloadId: Int, path: String) {
                         super.onFinish(downloadId, path)
-                        val fontSource = Source(path + "/font.ttf")
+                        val fontSource = Source("$path/font.ttf")
                         fontSource.url = AlivcResUtil.getCloudResUri(AlivcResUtil.TYPE_FONT, model.id.toString())
                         callback?.onFontSource(fontSource)
                     }
@@ -252,6 +257,10 @@ class FontManager {
 //                val fontSource = Source("$path/font.ttf")
 //                fontSource.url = AlivcResUtil.getCloudResUri(AlivcResUtil.TYPE_FONT, model.id.toString())
                 model.path = "$path/font.ttf"
+                model.isDbContain = 1
+                model.fontName = "AliCustomFont"+model.id
+                val typeface: Typeface = Typeface.createFromFile(File(model.path))
+                ReactFontManager.getInstance().setTypeface(model.fontName, typeface.style, typeface)
                 promise?.resolve(GsonBuilder().create().toJson(model))
             }
 

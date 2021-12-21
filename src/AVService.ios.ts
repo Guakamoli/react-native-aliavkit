@@ -72,10 +72,10 @@ export default class AVService {
     return await RNFontService.fetchFontList();
   }
 
-  static async downloadFont(fontId:number) {
+  static async downloadFont(font:any) {
     console.log('----- downloadFont');
     this.downloadFontProgress()
-    return await RNFontService.downloadFont(fontId);
+    return await RNFontService.downloadFont(font.id);
   }
 
   static async downloadFontProgress(){

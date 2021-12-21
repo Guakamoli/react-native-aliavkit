@@ -116,12 +116,12 @@ const TextEffect = (props) => {
     //获取字体列表
     const onGetFontList = async () => {
         const fontList = await AVService.fetchFontList();
-        fontList.forEach((item, index) => {
-            console.log("isDbContain:", item.isDbContain, "path:", item.path);
-        });
-        // console.log("fontList", fontList);
-        const systemFont = { name: "系统", path: "", isDbContain: 1 };
+        // fontList.forEach((item, index) => {
+        //     console.log("fontItem:", item.name, item.fontName);
+        // });
+        const systemFont = { name: "系统", path: "", isDbContain: true };
         fontList.unshift(systemFont);
+
         setTextFontList(fontList);
     }
 
@@ -135,13 +135,17 @@ const TextEffect = (props) => {
      */
     async function onTextFontEffcet(item, index) {
         setTextFontPostion(index);
-        setTextFontName(item.path);
+        console.log("fontName",item.fontName);
+      
         if (!!item.isDbContain) {
-            // setTextFontPostion(index);
+            setTextFontName(!!item.fontName?item.fontName:null);
         } else {
             const fontInfo = await onDownlaodFont(item, index);
-            const fontList = textFontList.splice(index, 1, fontInfo);
-            setTextFontList(fontList);
+            setTextFontName(!!fontInfo.fontName?fontInfo.fontName:null);
+            // console.log("downloadFont", fontInfo, index);
+            const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
+            textFontListCopy[index] = fontInfo;
+            setTextFontList(textFontListCopy);
         }
     }
 
@@ -232,6 +236,7 @@ const TextEffect = (props) => {
     );
 
     const bottomEffectList = () => {
+
         return (
             <View style={{ position: 'absolute', bottom: 20 }}>
                 <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "position" : "position"} keyboardVerticalOffset={100} style={{ marginEnd: textEffectPostion !== 0 ? 48 : 0 }}>
@@ -245,8 +250,8 @@ const TextEffect = (props) => {
                                             // borderWidth: textFontPostion === index ? 1 : 1, 
                                             borderColor: textFontPostion === index ? 'white' : 'rgba(255,255,255,0.3)'
                                         }]}>
-                                            <Text style={[styles.textFontName, { fontWeight: textFontPostion === index ? '500' : '400', fontFamily: item.parh }]}>{item.name}</Text>
-                                            {!item.isDbContain && <Image style={styles.textFontDownload} source={require('../../../images/ic_text_font_download.png')}></Image>}
+                                            <Text style={[styles.textFontName, { fontWeight: textFontPostion === index ? '500' : '400', fontFamily: item.fontName }]}>{item.name}</Text>
+                                            {!item.isDbContain && <Image style={[styles.textFontDownload]} source={require('../../../images/ic_text_font_download.png')}></Image>}
                                         </View>
                                     </TouchableOpacity>
                                 );
