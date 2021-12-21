@@ -8,8 +8,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setType } from './actions/container';
 const { width, height } = Dimensions.get('window');
 
-import AVService from './AVService';
-
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {
@@ -37,7 +35,7 @@ const Entry = (props) => {
   const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
   const dispatch = useDispatch();
   const type = useSelector((state) => {
-    return 'story';
+    return state.shootContainer.type;
   });
   const changeFlagLock = React.useRef(false);
   const lockFlag = React.useRef(false);
@@ -52,18 +50,10 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-
-  React.useEffect(async () => {
-    const infos = await AVService.fetchFontList();
-    console.log('------- fetchFontList:', infos);
-  },[]);
-
   React.useEffect(() => {
     if (changeFlagLock.current) return;
     transX.setValue(type === 'post' ? 30 : -30);
   }, [type]);
-
-
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;

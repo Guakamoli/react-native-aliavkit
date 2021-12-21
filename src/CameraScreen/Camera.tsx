@@ -14,7 +14,6 @@ import {
   Easing,
   Pressable,
   AppState,
-  SafeAreaView
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
@@ -169,60 +168,60 @@ class RenderCamera extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showCamera: true,
+      showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
       showToast: false,
     };
     // this.fadeAnim = new Animated.Value(1);
   }
-  // handleAppStateChange = (e) => {
-  //   if (this.props.isDrawerOpen && this.props.type === 'story') {
-  //     if (e.match(/inactive|background/)) {
-  //       this.setState({
-  //         showCamera: false,
-  //       });
-  //       setTimeout(() => {
-  //         AVService.enableHapticIfExist();
-  //       }, 2000);
-  //     } else {
-  //       this.setState({
-  //         showCamera: true,
-  //       });
-  //       setTimeout(() => {
-  //         AVService.enableHapticIfExist();
-  //       }, 2000);
-  //     }
-  //   }
-  // };
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        this.setState({
+          showCamera: false,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      } else {
+        this.setState({
+          showCamera: true,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      }
+    }
+  };
   componentDidMount() {
-    // AppState.addEventListener('change', this.handleAppStateChange);
+    AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
-    // AppState.removeEventListener('change', this.handleAppStateChange);
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
-  // handleAppStateChange = (e) => {
-  //   if (this.props.isDrawerOpen && this.props.type === 'story') {
-  //     if (e.match(/inactive|background/)) {
-  //       this.setState({
-  //         showCamera: false,
-  //       });
-  //       setTimeout(() => {
-  //         AVService.enableHapticIfExist();
-  //       }, 2000);
-  //     } else {
-  //       this.setState({
-  //         showCamera: true,
-  //       });
-  //       setTimeout(() => {
-  //         AVService.enableHapticIfExist();
-  //       }, 2000);
-  //     }
-  //   }
-  // };
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        this.setState({
+          showCamera: false,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      } else {
+        this.setState({
+          showCamera: true,
+        });
+        setTimeout(() => {
+          AVService.enableHapticIfExist();
+        }, 2000);
+      }
+    }
+  };
   componentDidMount() {
-    // AppState.addEventListener('change', this.handleAppStateChange);
+    AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
-    // AppState.removeEventListener('change', this.handleAppStateChange);
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
@@ -246,71 +245,70 @@ class RenderCamera extends Component {
     //     },
     //   ).start();
     // }
-    // if (nextProps.type !== this.props.type) {
-    //   const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
-    //   if (!showCamera) {
-    //     this.props.camera.current?.cameraStopPreview?.();
-    //   }
-    //   this.setState({
-    //     showCamera,
-    //   });
+    if (nextProps.type !== this.props.type) {
+      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
+      this.setState({
+        showCamera,
+      });
 
-    //   setTimeout(() => {
-    //     AVService.enableHapticIfExist();
-    //   }, 2000);
+      setTimeout(() => {
+        AVService.enableHapticIfExist();
+      }, 2000);
 
-    //   return true;
-    // }
-    // if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-    //   const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
-    //   if (!showCamera) {
-    //     this.props.camera.current?.cameraStopPreview?.();
-    //   }
-    //   this.setState(
-    //     {
-    //       showCamera,
-    //     },
-    //     () => {
-    //       setTimeout(() => {
-    //         AVService.enableHapticIfExist();
-    //       }, 2000);
-    //     },
-    //   );
+      return false;
+    }
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
+      this.setState(
+        {
+          showCamera,
+        },
+        () => {
+          setTimeout(() => {
+            AVService.enableHapticIfExist();
+          }, 2000);
+        },
+      );
 
-    //   return false;
-    // }
-    return true;
+      return false;
+    }
+    return false;
   }
   renderCamera = () => {
     const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
     return (
-      
-        <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
-          <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
-          <View
-            style={{ position: 'absolute', zIndex: 1, width: '100%' }}
-            onLayout={() => {
-              setTimeout(() => {
-                AVService.enableHapticIfExist();
-              }, 0);
-            }}
-          >
-            {this.state.showCamera ? (
-              <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
-                <Camera
-                  ref={(cam) => (this.props.camera.current = cam)}
-                  cameraStyle={{ height: CameraFixHeight, width }}
-                  flashMode={FLASH_MODE_AUTO}
-                  cameraType={this.props.cameraType}
-                  saveToCameraRoll={false}
-                  focusMode={'on'}
-                  normalBeautyLevel={this.props.normalBeautyLevel * 10}
-                  facePasterInfo={this.props.facePasterInfo}
-                  torchMode={'off'}
-                  onReadCode={() => {}}
-                  onRecordingProgress={() => {}}
-                />
-                {/* {this.state.showToast && (
+      <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
+        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
+        <View
+          style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          onLayout={() => {
+            setTimeout(() => {
+              AVService.enableHapticIfExist();
+            }, 0);
+          }}
+        >
+          {this.state.showCamera ? (
+            <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
+              <Camera
+                ref={(cam) => (this.props.camera.current = cam)}
+                cameraStyle={{ height: CameraFixHeight, width }}
+                flashMode={FLASH_MODE_AUTO}
+                cameraType={this.props.cameraType}
+                saveToCameraRoll={false}
+                focusMode={'on'}
+                normalBeautyLevel={this.props.normalBeautyLevel * 10}
+                facePasterInfo={this.props.facePasterInfo}
+                torchMode={'off'}
+                onReadCode={() => {}}
+                onRecordingProgress={() => {}}
+              />
+              {/* {this.state.showToast && (
                 <Animated.View
                   style={[
                     styles.toastBox,
@@ -325,16 +323,15 @@ class RenderCamera extends Component {
                   <View style={styles.toast}></View>
                 </Animated.View>
               )} */}
-              </View>
-            ) : null}
-          </View>
+            </View>
+          ) : null}
         </View>
-      
+      </View>
     );
   };
   render() {
     return (
-      <SafeAreaView style={{ flex: 1, color: '#000' }}>
+      <View>
         <Pressable
           onPress={() => {
             this.props.setShowBeautify();
@@ -343,7 +340,7 @@ class RenderCamera extends Component {
           <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
         </Pressable>
-      </SafeAreaView>
+      </View>
     );
   }
 }
