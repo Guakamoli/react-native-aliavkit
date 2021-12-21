@@ -164,8 +164,15 @@ export default class StoryEditor extends Component<Props, State> {
       }
     }
   };
+
+  fetchFontList = async () => {
+    const infos = await AVService.downloadFont(56);
+    console.log('------- downloadFont:', infos);
+  };
+
   componentDidMount() {
     this.getFilters();
+    this.fetchFontList();
   }
   componentWillUnmount() {
     if (Platform.OS === 'android') {
@@ -244,7 +251,6 @@ export default class StoryEditor extends Component<Props, State> {
           this.setState({ showText: !showText });
         },
       },
-
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -331,21 +337,24 @@ export default class StoryEditor extends Component<Props, State> {
         </View>
       );
     };
+
     return (
-      <View style={[styles.cameraContainer]}>
-        <TouchableOpacity
-          onPress={() => {
-            // 关闭音乐 暂停音乐
-            this.setState({ showFilterLens: false, musicOpen: false });
-            // !this.state.showFilterLens
-          }}
-          activeOpacity={1}
-          disabled={this.state.showBeautify}
-        >
-          {VideoEditors()}
-          {this.renderUpdateTop()}
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={{ flex: 1, color: '#000' }}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            onPress={() => {
+              // 关闭音乐 暂停音乐
+              this.setState({ showFilterLens: false, musicOpen: false });
+              // !this.state.showFilterLens
+            }}
+            activeOpacity={1}
+            disabled={this.state.showBeautify}
+          >
+            {VideoEditors()}
+            {this.renderUpdateTop()}
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -473,23 +482,23 @@ const styles = StyleSheet.create({
   },
 
   cameraContainer: {
-    // ...Platform.select({
-    //   android: {
-    //     position: 'absolute',
-    //     top: 0,
-    //     left: 0,
-    //     width,
-    //     height,
-    //   },
-    //   default: {
-    //     flex: 1,
-    //     width,
-    //     height,
-    //     // height:400,
-    //     flexDirection: 'column',
-    //     backgroundColor:"black"
-    //   },
-    // }),
+    ...Platform.select({
+      android: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width,
+        height,
+      },
+      default: {
+        flex: 1,
+        width,
+        height,
+        // height:400,
+        flexDirection: 'column',
+        backgroundColor:"black"
+      },
+    }),
   },
   bottomButton: {
     flex: 1,

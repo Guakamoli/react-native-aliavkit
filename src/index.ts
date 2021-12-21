@@ -19,5 +19,4 @@ export const Orientation = {
 
 export default CameraKit;
 
-
 export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry };
