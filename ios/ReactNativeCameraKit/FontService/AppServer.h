@@ -11,6 +11,17 @@
 
 @interface AppServer : NSObject
 
+
+/// get请求
+/// @param baseURL baseURL 字符串
+/// @param path 请求路径
+/// @param parameters 参数
+/// @param completionHandler 完成回调
++ (void)getRequestBaseURL:(NSString *)baseURL
+                     path:(NSString *)path
+               parameters:(NSDictionary *)parameters
+        completionHandler:(void (^)(NSURLResponse *response, NSDictionary *responseObject,  NSError * error))completionHandler;
+
 /// get请求
 /// @param path 请求路径
 /// @param parameters 参数
