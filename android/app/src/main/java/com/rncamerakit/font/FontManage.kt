@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.Log
+import androidx.core.content.res.ResourcesCompat
 import com.aliyun.svideo.base.Form.FontForm
 import com.aliyun.svideo.base.http.EffectService
 import com.aliyun.svideo.common.utils.FileUtils
@@ -26,6 +27,8 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.net.URL
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.coroutines.resume
 
 class FontManager {
@@ -34,6 +37,7 @@ class FontManager {
     }
 
     private var mContext: Context? = null
+    private var mCustomTypefaceCache: MutableMap<String, String> = HashMap()
     fun init(context: Context) {
         mContext = context
     }
@@ -183,13 +187,19 @@ class FontManager {
             if (isDownloadFontByUrl(it.url)) {
                 it.isDbContain = 1
                 it.fontName = "AliCustomFont"+it.id
-                val typeface: Typeface = Typeface.createFromFile(File(it.path))
-                ReactFontManager.getInstance().setTypeface(it.fontName, typeface.style, typeface)
+                var typefaceTag: String? = null
+                if (mCustomTypefaceCache.containsKey(it.fontName)) {
+                    typefaceTag = mCustomTypefaceCache[it.fontName]
+                }
+                if(typefaceTag == null){
+                    val typeface = Typeface.createFromFile(File(it.path))
+                    ReactFontManager.getInstance().setTypeface(it.fontName, typeface.style, typeface)
+                    mCustomTypefaceCache[it.fontName] = it.fontName
+                }
             }
         }
         return fileDownloaderModels
     }
-
     /**
      * 通过URL判断该文件是否下载到了本地
      */
