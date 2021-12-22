@@ -4,28 +4,13 @@ import {
 
 import {
     Grayscale,
-    Temperature,
-    Sepia,
-    Warm,
-    Vintage,
-    Tint,
-    Technicolor,
-    Tritanopia,
-    Browni,
-    Achromatopsia,
-    Deuteranomaly,
-    Tritanomaly,
-    Polaroid,
-    Cool,
-    Invert,
-    Emboss,
     SrcOverComposition,
     TextImage,
 } from 'react-native-image-filter-kit';
 
 import CameraRoll from '@react-native-community/cameraroll';
 
-export default class TextMarker {
+export default class AddTextMarker {
 
 
     constructor(width, height) {

@@ -9,6 +9,9 @@ import GestureText from './GestureText';
 
 import AVService from '../../AVService';
 
+import AddTextMarker from './AddTextMarker';
+
+
 const TAG = "TextEffect"
 
 
@@ -116,9 +119,9 @@ const TextEffect = (props) => {
     //获取字体列表
     const onGetFontList = async () => {
         const fontList = await AVService.fetchFontList();
-        // fontList.forEach((item, index) => {
-        //     console.log("fontItem:", item.name, item.fontName);
-        // });
+        fontList.forEach((item, index) => {
+            console.log("fontItem:", item);
+        });
         const systemFont = { name: "系统", path: "", isDbContain: true };
         fontList.unshift(systemFont);
 
@@ -141,7 +144,7 @@ const TextEffect = (props) => {
         } else {
             const fontInfo = await onDownlaodFont(item, index);
             setTextFontName(!!fontInfo.fontName?fontInfo.fontName:null);
-            // console.log("downloadFont", fontInfo, index);
+            console.log("downloadFont", fontInfo, index);
             const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
             textFontListCopy[index] = fontInfo;
             setTextFontList(textFontListCopy);
@@ -177,6 +180,16 @@ const TextEffect = (props) => {
         }
     }
 
+
+    /**
+     * 继续  () => props.continueEdit()
+     */
+    const onContinueEdit = () => {
+        const addTextMarker = new AddTextMarker(props.width,props.height);
+        addTextMarker.composePhoto(props.photoFile);
+        
+    }
+
     const renderHead = () => (
         <View style={styles.headContainer}>
             <View style={styles.completeText}></View>
@@ -205,7 +218,7 @@ const TextEffect = (props) => {
             <TouchableOpacity style={{ height: 30, width: 40, paddingHorizontal: 12, justifyContent: 'center', }} onPress={() => props.goback()}>
                 <Image source={require('../../../images/backArrow.png')} resizeMode='contain' />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => props.continueEdit()}>
+            <TouchableOpacity onPress={onContinueEdit}>
                 <Text style={styles.completeText}>继续</Text>
             </TouchableOpacity>
         </View>

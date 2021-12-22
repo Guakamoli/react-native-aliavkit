@@ -126,13 +126,15 @@ class FontService: RCTEventEmitter {
             resolve(savedData)
             return;
         }
-        self.downloadFont(with: fontModel)
-        guard let downloadedData = self.fetchFontResource(idValue, data: data) else {
-            reject("","注册字体失败",nil)
-            return;
+        self.downloadFont(with: fontModel) {
+            guard let downloadedData = self.fetchFontResource(idValue, data: data) else {
+                reject("","注册字体失败",nil)
+                return;
+            }
+            print(self.fontModel!.fontName!)
+            resolve(downloadedData)
         }
-        print(self.fontModel!.fontName!)
-        resolve(downloadedData)
+        
     }
     
     override func startObserving() {
@@ -155,7 +157,7 @@ class FontService: RCTEventEmitter {
 }
 
 extension FontService {
-    private func downloadFont(with fontInfo: AliyunEffectResourceModel) {
+    private func downloadFont(with fontInfo: AliyunEffectResourceModel, completion: @escaping ()->Void) {
         let fileName = "\(fontInfo.eid)-\(fontInfo.name ??  "")"
         let destination = fontResourceURL.appendingPathComponent("\(fileName)-tmp").path
         
@@ -172,11 +174,11 @@ extension FontService {
             guard error == nil else {
                 return
             }
-            self.unzipFile(from: filePathURL!, to: zipPathURL)
+            self.unzipFile(from: filePathURL!, to: zipPathURL,complete: completion)
         }
     }
     
-    private func unzipFile(from filPathURL: URL, to destinationURL: URL) {
+    private func unzipFile(from filPathURL: URL, to destinationURL: URL, complete:@escaping ()->Void) {
         let unzipSuccess = SSZipArchive.unzipFile(atPath: filPathURL.path,
                                                   toDestination: destinationURL.path)
         
@@ -219,6 +221,7 @@ extension FontService {
         
         self.dbManager?.insertData(with: self.fontModel)
         self.dbManager?.closeDB()
+        complete()
     }
     
     private func fetchFontResource(_ effctId: Int, data:[String:Any]) -> [String: Any]? {
@@ -279,7 +282,7 @@ extension FontService {
         guard !fontInfo.fontName.isEmpty else {
             return nil;
         }
-        if UIFont(name: fontInfo.fontName, size: 10) != nil {
+        if UIFont(name: fontInfo.fontName, size: 10) != nil, fontInfo.fontPath != nil {
             return fontInfo
         }
         guard var fontPath = fontInfo.resourcePath,
