@@ -823,7 +823,7 @@ const PostEditor = (props) => {
             fontSize={textStyle.fontSize * textStyle.scale}
             color={textStyle.color}
             textAlign={textStyle.textAlign}
-            backgroundColor={"#6641ff"}
+            backgroundColor={textStyle.backgroundColor}
           />
         )
         const tx = textStyle.x / width + 0.5;
@@ -839,10 +839,6 @@ const PostEditor = (props) => {
           }}
           srcImage={srcImage}
           extractImageEnabled={true}
-          onExtractImage={({ nativeEvent }) => {
-            console.log("save phont", nativeEvent.uri);
-            CameraRoll.save(nativeEvent.uri, { type: 'photo' })
-          }}
         />
       }
 
@@ -938,7 +934,7 @@ const PostEditor = (props) => {
               amount={0}
               onExtractImage={({ nativeEvent }) => {
 
-                // console.log("save phont", nativeEvent.uri);
+                console.log("save phont", nativeEvent.uri);
                 // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
 
                 setPhotoFile(nativeEvent.uri);

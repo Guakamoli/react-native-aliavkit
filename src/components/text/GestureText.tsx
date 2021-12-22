@@ -35,11 +35,12 @@ import { rgba } from 'react-native-image-filter-kit';
 
 type CaptionInfo = {
     text: string;
-    fontName: string;
-    // fontStyle: string; // normal | italic | bold
+    textAlign: string; //left, center, right
     color: string;      //文字颜色
-    textAlignment: string; //left, center, right
     backgroundColor: string; //背景颜色
+    fontName: string;
+    fontSize: number;
+    // fontStyle: string; // normal | italic | bold
     // startTime: number;
     // duration: number;
     x: number;
@@ -92,6 +93,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
     private inputRef: any;
 
     private lastEditable: any;
+    private inputLines: any;
     private onPanGestureEvent: (event: PanGestureHandlerGestureEvent) => void;
 
     constructor(props: GestureTextProps) {
@@ -135,6 +137,8 @@ export default class GestureText extends Component<GestureTextProps, GestureText
 
         this.lastEditable = true;
 
+        this.inputLines = []
+
     }
 
     private onPanHandlerStateChange = (event: PanGestureHandlerStateChangeEvent) => {
@@ -174,12 +178,24 @@ export default class GestureText extends Component<GestureTextProps, GestureText
     };
 
     onSetTextInfo = () => {
+
+        var text:any = null;
+        this.inputLines.forEach((item:any, index:number) => {
+            if(text ==null){
+                text = item.text
+            }else{
+                text += "\n"
+                text += item.text
+            }
+        });
+        // console.log("inputLines:",text);
         this.props.onTextMove({
-            text: this.state.text,
-            color: this.props.textColor || 'white',
-            backgroundColor: this.props.textBackgroundColor || 'transparent',
-            fontName: this.props.textFontName || '',
-            textAlignment: this.props.textAlign || 'center',
+            text: text,
+            textAlign: this.props.textAlign || 'center',
+            color: this.props.textColor || '#fff',
+            backgroundColor: this.props.textBackgroundColor || 'rgba(0,0,0,0)',
+            fontName: this.props.textFontName || 'PingFangSC-Medium',
+            fontSize: 25,
             x: this.lastOffset.x,
             y: this.lastOffset.y,
             rotate: this.lastRotate,
@@ -240,15 +256,29 @@ export default class GestureText extends Component<GestureTextProps, GestureText
 
     renderText() {
         return (
-            <View style={[styles.textInputBox, (!this.props.isTextEdit || !this.props.editable) && { backgroundColor: 'transparent' }]} >
+            <View style={[styles.textInputBox, (!this.props.isTextEdit || !this.props.editable) && { backgroundColor: 'transparent' },{position:'relative'}]} >
+                <Text
+                    onTextLayout={(event) => {
+                        let lines = event.nativeEvent.lines
+                        this.inputLines = lines
+                    }}
+                    style={[styles.textInput, {
+                        fontSize: 25.0,
+                        opacity:0,
+                        position:'absolute',
+                        fontFamily: this.props.textFontName || 'PingFangSC-Medium',
+                        textAlign:this.props.textAlign
+                    }
+                    ]}
+                >{this.state.text}
+                </Text>
                 <TextInput
-                    // key={this.props.textAlign + this.props.textColor}
                     ref={(ref) => {
                         this.inputRef = ref
                     }}
                     style={[styles.textInput, {
                         fontSize: 25.0,
-                        fontFamily:this.props.textFontName || 'PingFang SC',
+                        fontFamily: this.props.textFontName || 'PingFangSC-Medium',
                         color: this.props.textColor || 'white',
                         backgroundColor: this.props.textBackgroundColor || 'transparent'
                     }]}
@@ -259,7 +289,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     editable={this.props.editable}
                     autoFocus={this.props.isTextEdit && this.props.editable}
                     multiline={true}
-                    maxLength = {100}
+                    maxLength={100}
                     onChangeText={(text) => { this.setState({ text }) }}
                 />
                 {!this.props.editable && <Text style={styles.text} />}

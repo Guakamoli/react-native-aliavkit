@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-    StyleSheet, View, Text, Button, TouchableOpacity, Pressable, Image, KeyboardAvoidingView, Keyboard, ScrollView
+    StyleSheet, View, Text, Button, TouchableOpacity, Pressable, Image, KeyboardAvoidingView, Keyboard, ScrollView,Platform,
 } from 'react-native'
 
 
@@ -10,6 +10,12 @@ import GestureText from './GestureText';
 import AVService from '../../AVService';
 
 import AddTextMarker from './AddTextMarker';
+import CameraRoll from '@react-native-community/cameraroll';
+import {
+    Grayscale,
+    SrcOverComposition,
+    TextImage,
+} from 'react-native-image-filter-kit';
 
 
 const TAG = "TextEffect"
@@ -58,6 +64,8 @@ const TextEffect = (props) => {
     const [keyboard, setKeyboard] = React.useState(false);
 
     const [lastTextEdit, setLastTextEdit] = React.useState(false);
+
+    const [continueEdit, setContinueEdit] = React.useState(false);
 
     //TODO
     // React.useReducer
@@ -119,12 +127,8 @@ const TextEffect = (props) => {
     //获取字体列表
     const onGetFontList = async () => {
         const fontList = await AVService.fetchFontList();
-        fontList.forEach((item, index) => {
-            console.log("fontItem:", item);
-        });
-        const systemFont = { name: "系统", path: "", isDbContain: true };
+        const systemFont = { name: "系统", fontName: "PingFangSC-Medium", isDbContain: true };
         fontList.unshift(systemFont);
-
         setTextFontList(fontList);
     }
 
@@ -138,12 +142,20 @@ const TextEffect = (props) => {
      */
     async function onTextFontEffcet(item, index) {
         setTextFontPostion(index);
+        if(Platform.OS === 'ios'){
+            const fontInfo = await onDownlaodFont(item, index);
+            setTextFontName(!!fontInfo.fontName ? fontInfo.fontName : null);
+            const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
+            textFontListCopy[index] = fontInfo;
+            setTextFontList(textFontListCopy);
+            return
+        }
         if (!!item.isDbContain) {
             // console.log("fontName",item.fontName);
-            setTextFontName(!!item.fontName?item.fontName:null);
+            setTextFontName(!!item.fontName ? item.fontName : null);
         } else {
             const fontInfo = await onDownlaodFont(item, index);
-            setTextFontName(!!fontInfo.fontName?fontInfo.fontName:null);
+            setTextFontName(!!fontInfo.fontName ? fontInfo.fontName : null);
             console.log("downloadFont", fontInfo, index);
             const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
             textFontListCopy[index] = fontInfo;
@@ -180,14 +192,58 @@ const TextEffect = (props) => {
         }
     }
 
-
     /**
      * 继续  () => props.continueEdit()
      */
     const onContinueEdit = () => {
-        const addTextMarker = new AddTextMarker(props.width,props.height);
-        addTextMarker.composePhoto(props.photoFile);
-        
+        setContinueEdit(true);
+    }
+
+    const dstImageView = () => {
+        return (
+            <Image
+                style={{
+                    width: props.width,
+                    height: props.height,
+                }}
+                source={{ uri: props.photoFile }}
+            />
+        )
+    }
+
+    const getTextComponent = (dst, textStyle) => {
+        const srcImage = (
+            <TextImage
+                text={textStyle.text}
+                fontName={textStyle.fontName}
+                fontSize={textStyle.fontSize * textStyle.scale}
+                color={textStyle.color}
+                textAlign={textStyle.textAlign}
+                backgroundColor={textStyle.backgroundColor}
+            />
+        )
+        const tx = 0.5 + textStyle.x / props.width;
+        const ty = 0.5 - textStyle.y / props.height;
+
+        console.log(props.width, props.height);
+
+        return <SrcOverComposition
+            resizeCanvasTo={'dstImage'}
+            dstImage={dst}
+            srcTransform={{
+                //srcImage 中心点在屏幕内的位置 0.5 0.5 为屏幕中间
+                translate: { x: tx, y: ty },
+                scale: 'COVER',
+                rotate: textStyle.rotate
+            }}
+            srcImage={srcImage}
+        />
+    }
+
+    const TextComponent = () => {
+        var dstView = dstImageView();
+        dstView = getTextComponent(dstView, captionInfo);
+        return dstView;
     }
 
     const renderHead = () => (
@@ -236,7 +292,7 @@ const TextEffect = (props) => {
             textFontName={textFontName}
             editable={editable}
             onTextMove={(info) => {
-                console.log("onTextMove", info);
+                // console.log("onTextMove", info);
                 setCaptionInfo(info)
             }}
             onEditEnable={(isEnable) => {
@@ -290,14 +346,25 @@ const TextEffect = (props) => {
             </View>)
     }
     return (
-
         <View ref={rer} style={styles.container}>
             {(props.isTextEdit && editable) ? renderHead() : renderHead2()}
-            <View style={{ width: props.width, height: props.height, backgroundColor: props.isTextEdit && editable ? 'rgba(0, 0, 0, 0.58)' : 'transparent' }}>
-                {(props.isTextEdit || captionInfo != null) && renderGestureText()}
-                {(props.isTextEdit && editable) && bottomEffectList()}
-            </View>
-
+            {continueEdit ?
+                <View style={{ width: props.width, height: props.height }}>
+                    <Grayscale
+                        image={TextComponent()}
+                        amount={0}
+                        onExtractImage={({ nativeEvent }) => {
+                            console.log("save phont", nativeEvent.uri);
+                            CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+                        }}
+                        extractImageEnabled={true}
+                    />
+                </View> :
+                <View style={{ width: props.width, height: props.height, backgroundColor: props.isTextEdit && editable ? 'rgba(0, 0, 0, 0.58)' : 'transparent' }}>
+                    {(props.isTextEdit || captionInfo != null) && renderGestureText()}
+                    {(props.isTextEdit && editable) && bottomEffectList()}
+                </View>
+            }
         </View>
     );
 }
@@ -315,7 +382,7 @@ const styles = StyleSheet.create({
     headContainer: {
         height: 44,
         width: '100%',
-        backgroundColor: '#f00',
+        backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
