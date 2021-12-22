@@ -13,7 +13,7 @@
 RCT_EXTERN_METHOD(fetchFontList:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject);
 
-RCT_EXTERN_METHOD(downloadFont:(nonnull NSNumber *)fontID
+RCT_EXTERN_METHOD(setFont:(nonnull NSNumber *)fontID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject);
 @end

@@ -20,4 +20,6 @@
  */
 @property (nonatomic, copy) NSString *fontName;
 
+@property (nonatomic, copy) NSString *fontPath;
+
 @end

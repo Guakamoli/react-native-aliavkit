@@ -41,7 +41,7 @@ class FontService: RCTEventEmitter {
     @objc(fetchFontList:rejecter:)
     func fetchFontList(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         fontInfos.removeAll()
-        fetchFontResource { infos in
+        fetchFontListResource { infos in
             self.fontInfos.append(contentsOf: infos)
             let db = AliyunDBHelper()
             db.openResourceDBSuccess(nil, failure: nil)
@@ -83,10 +83,10 @@ class FontService: RCTEventEmitter {
         }
     }
     
-    @objc(downloadFont:resolver:rejecter:)
-    func downloadFont(fontID: NSNumber,
-                      resolve: @escaping RCTPromiseResolveBlock,
-                      reject: @escaping RCTPromiseRejectBlock) {
+    @objc(setFont:resolver:rejecter:)
+    func setFont(fontID: NSNumber,
+                 resolve: @escaping RCTPromiseResolveBlock,
+                 reject: @escaping RCTPromiseRejectBlock) {
         
         let idValue = fontID.intValue
         self.dbManager = AliyunDBHelper()
@@ -98,7 +98,7 @@ class FontService: RCTEventEmitter {
         }
         
         guard let info = self.fontInfos.filter({$0.id == idValue}).first else {return}
-        var data = [
+        let data = [
             "banner":info.banner,
             "icon":info.icon,
             "id":info.id,
@@ -116,20 +116,23 @@ class FontService: RCTEventEmitter {
         fontModel.effectType = .font
         self.fontModel = fontModel
         
-        let isSave = self.dbManager?.queryOneResourse(with: fontModel) ?? false
-        
-        guard !isSave else {
-            print("字体已下载")
-            data["isDbContain"] = true
-            data["resourcePath"] = fontModel.resourcePath;
-            resolve(data)
+        let isFontSaved = self.dbManager?.queryOneResourse(with: fontModel) ?? false
+        guard !isFontSaved else {
+            guard let savedData = self.fetchFontResource(idValue, data: data) else {
+                reject("","注册字体失败",nil)
+                return;
+            }
+            self.sendEvent(withName: "onFontDownloadProgress", body: ["progress": 1.0])
+            resolve(savedData)
             return;
         }
         self.downloadFont(with: fontModel)
-        data["isDbContain"] = true
-        data["resourcePath"] = fontModel.resourcePath;
-        
-        resolve(data)
+        guard let downloadedData = self.fetchFontResource(idValue, data: data) else {
+            reject("","注册字体失败",nil)
+            return;
+        }
+        print(self.fontModel!.fontName!)
+        resolve(downloadedData)
     }
     
     override func startObserving() {
@@ -162,7 +165,7 @@ extension FontService {
                            toDestinationPath: destination) { progressObj in
             if self.hasListeners {
                 let fraction = progressObj?.fractionCompleted ?? 0.0
-                print("------ downloadFont:\(fraction)")
+//                print("------ downloadFont:\(fraction)")
                 self.sendEvent(withName: "onFontDownloadProgress", body: ["progress": fraction])
             }
         } completionHandler: { filePathURL, error in
@@ -218,8 +221,21 @@ extension FontService {
         self.dbManager?.closeDB()
     }
     
+    private func fetchFontResource(_ effctId: Int, data:[String:Any]) -> [String: Any]? {
+        var newData = data
+        guard let fontInfo = self.dbManager?.queryEffectInfo(withEffectType: 1, effctId: effctId) as? AliyunEffectFontInfo else {
+            return nil
+        }
+        guard let fullFontInfo = self.registeFont(fontInfo) else {
+            return nil
+        }
+        newData["isDbContain"] = true
+        newData["path"] = fullFontInfo.fontPath
+        newData["fontName"] = fullFontInfo.fontName
+        return newData
+    }
     
-    private func fetchFontResource(_ complete: @escaping ([FontInfo])->Void) {
+    private func fetchFontListResource(_ complete: @escaping ([FontInfo])->Void) {
         guard let url = Server.font.resourceURL() else { return }
         let jsonFilePathURL = fontResourceURL.appendingPathComponent(url.lastPathComponent);
         let isJsonFileExist = FileManager.default.fileExists(atPath: jsonFilePathURL.path)
@@ -258,4 +274,37 @@ extension FontService {
         }
         return fontURL
     }
+    
+    private func registeFont(_ fontInfo: AliyunEffectFontInfo) -> AliyunEffectFontInfo? {
+        guard !fontInfo.fontName.isEmpty else {
+            return nil;
+        }
+        if UIFont(name: fontInfo.fontName, size: 10) != nil {
+            return fontInfo
+        }
+        guard var fontPath = fontInfo.resourcePath,
+              !fontPath.isEmpty else { return nil }
+        
+        let homeURL = URL(fileURLWithPath: NSHomeDirectory())
+        fontPath = homeURL.appendingPathComponent(fontPath).appendingPathComponent("font.ttf").path
+        
+        if !FileManager.default.fileExists(atPath: fontPath) {
+            fontPath = AliyunEffectFontManager.shared().findFontPath(withName: fontInfo.fontName)
+        }
+        if !FileManager.default.fileExists(atPath: fontPath) {
+            return nil
+        }
+        guard let registerFontName = AliyunEffectFontManager.shared().registerFont(withFontPath: fontPath),
+              !registerFontName.isEmpty else { return nil }
+        
+        guard let _ = UIFont(name: registerFontName, size: 10) else {
+            return nil
+        }
+        
+        fontInfo.fontName = registerFontName
+        fontInfo.fontPath = fontPath;
+        return fontInfo
+    }
+    
+    
 }
