@@ -745,7 +745,7 @@ const PostEditor = (props) => {
     const scale = props.params.cropDataRow.scale;
 
     const Extractor = (imgFilter) => {
-      // const width =props.params.cropDataRow.fittedSize.width
+      // const width =props.params.cropDataRow.fittedSize.width1
       // const height =props.params.cropDataRow.fittedSize.height
       const ImageComponent = (
         <Image
@@ -779,7 +779,7 @@ const PostEditor = (props) => {
         },
         {
           text: "垂直垂直垂直\n竖直竖直",
-          textAlign: "right",
+          textAlign: "left",
           color: "#FF00FF",
           backgroundColor: "#0000ff",
           fontSize: 40,
@@ -803,7 +803,7 @@ const PostEditor = (props) => {
         },
         {
           text: "斜的斜的斜的斜的\n斜的斜的斜的",
-          textAlign: "right",
+          textAlign: "left",
           color: "#FF6600",
           backgroundColor: "#0000ff",
           fontSize: 30,
@@ -821,7 +821,10 @@ const PostEditor = (props) => {
             text={textStyle.text}
             fontName={textStyle.fontName}
             fontSize={textStyle.fontSize * textStyle.scale}
-            color={textStyle.color} />
+            color={textStyle.color}
+            textAlign={textStyle.textAlign}
+            backgroundColor={"#6641ff"}
+          />
         )
         const tx = textStyle.x / width + 0.5;
         const ty = textStyle.y / width + 0.5;
@@ -952,6 +955,7 @@ const PostEditor = (props) => {
           continueEdit={continueEdit}
           width={width}
           height={width}
+          photoFile={photoFile}
         />
 
         {selectBottomModel === '滤镜' && <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>

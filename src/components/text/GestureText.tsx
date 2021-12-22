@@ -259,7 +259,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     editable={this.props.editable}
                     autoFocus={this.props.isTextEdit && this.props.editable}
                     multiline={true}
-
+                    maxLength = {100}
                     onChangeText={(text) => { this.setState({ text }) }}
                 />
                 {!this.props.editable && <Text style={styles.text} />}

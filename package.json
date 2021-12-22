@@ -25,7 +25,7 @@
         "@react-native-community/async-storage": "1.12.1",
         "@react-native-community/image-editor": "^2.3.0",
         "@react-navigation/native-stack": "^6.2.5",
-        "react-native-image-filter-kit": "^0.8.0",
+        "react-native-image-filter-kit": "Guakamoli/react-native-image-filter-kit#kameoapp",
         "react-native-simple-image-cropper": "^3.2.1",
         "react-native-super-grid": "^4.1.3",
         "react-native-trimmer": "Guakamoli/react-native-trimmer#kameoappCamera",

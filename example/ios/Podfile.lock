@@ -236,7 +236,7 @@ PODS:
   - react-native-image-editor (2.3.0):
     - React
     - React-RCTImage
-  - react-native-image-filter-kit (0.8.0):
+  - react-native-image-filter-kit (0.8.1):
     - Bolts/Tasks (= 1.9.0)
     - React
   - react-native-safe-area-context (3.3.2):
@@ -507,7 +507,7 @@ SPEC CHECKSUMS:
   React-jsinspector: cc614ec18a9ca96fd275100c16d74d62ee11f0ae
   react-native-cameraroll: ff8da290f88d08d6c90151e3a58bfca5c24a044c
   react-native-image-editor: 9361a215c3991cafbe5e7f28cbbad6e72c9c2705
-  react-native-image-filter-kit: d79137549eb44f8215b7f2be5e77213f605e2c92
+  react-native-image-filter-kit: 55c33ecbbd7e035d4b7cab269c93568aaca35108
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
   React-perflogger: 25373e382fed75ce768a443822f07098a15ab737

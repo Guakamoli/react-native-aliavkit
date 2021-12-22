@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     headContainer: {
         height: 44,
         width: '100%',
-        backgroundColor: '#000',
+        backgroundColor: '#f00',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
