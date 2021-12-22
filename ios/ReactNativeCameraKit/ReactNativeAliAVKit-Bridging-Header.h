@@ -12,3 +12,4 @@
 #import "AliyunEffectFontManager.h"
 #import "AliyunEffectResourceModel.h"
 #import "AliyunDBHelper.h"
+#import "AliyunEffectFontManager.h"
