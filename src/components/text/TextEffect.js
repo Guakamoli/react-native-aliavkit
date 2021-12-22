@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-    StyleSheet, View, Text, Button, TouchableOpacity, Pressable, Image, KeyboardAvoidingView, Keyboard, ScrollView,Platform,
+    StyleSheet, View, Text, Button, TouchableOpacity, Pressable, Image, KeyboardAvoidingView, Keyboard, ScrollView, Platform,
 } from 'react-native'
 
 
@@ -142,12 +142,16 @@ const TextEffect = (props) => {
      */
     async function onTextFontEffcet(item, index) {
         setTextFontPostion(index);
-        if(Platform.OS === 'ios'){
-            const fontInfo = await onDownlaodFont(item, index);
-            setTextFontName(!!fontInfo.fontName ? fontInfo.fontName : null);
-            const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
-            textFontListCopy[index] = fontInfo;
-            setTextFontList(textFontListCopy);
+        if (Platform.OS === 'ios') {
+            if (!!item.fontName) {
+                setTextFontName(item.fontName);
+            } else {
+                const fontInfo = await onDownlaodFont(item, index);
+                setTextFontName(!!fontInfo.fontName ? fontInfo.fontName : null);
+                const textFontListCopy = JSON.parse(JSON.stringify(textFontList))
+                textFontListCopy[index] = fontInfo;
+                setTextFontList(textFontListCopy);
+            }
             return
         }
         if (!!item.isDbContain) {
@@ -356,6 +360,7 @@ const TextEffect = (props) => {
                         onExtractImage={({ nativeEvent }) => {
                             console.log("save phont", nativeEvent.uri);
                             CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+                            props.continueEdit(nativeEvent.uri)
                         }}
                         extractImageEnabled={true}
                     />

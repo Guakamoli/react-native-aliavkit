@@ -948,9 +948,12 @@ const PostEditor = (props) => {
         <TextEffect
           {...props}
           isTextEdit={selectBottomModel === '文字'}
-          continueEdit={continueEdit}
           width={width}
           height={width}
+          continueEdit={(uri: any) => {
+            setPhotoFile(uri);
+            continueEdit()
+          }}
           photoFile={photoFile}
         />
 

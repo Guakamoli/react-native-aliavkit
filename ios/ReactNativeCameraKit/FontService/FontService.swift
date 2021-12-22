@@ -295,7 +295,11 @@ extension FontService {
             fontPath = AliyunEffectFontManager.shared().findFontPath(withName: fontInfo.fontName)
         }
         if !FileManager.default.fileExists(atPath: fontPath) {
-            return nil
+            let fontPathNew = uppercasedPathExtension(fontPath)
+            if !FileManager.default.fileExists(atPath: fontPathNew) {
+                return nil
+            }
+            fontPath = fontPathNew
         }
         guard let registerFontName = AliyunEffectFontManager.shared().registerFont(withFontPath: fontPath),
               !registerFontName.isEmpty else { return nil }
@@ -309,5 +313,15 @@ extension FontService {
         return fontInfo
     }
     
-    
+    private func uppercasedPathExtension(_ fontPath: String) -> String {
+        let pathURL = URL(fileURLWithPath: fontPath)
+        let ext = pathURL.pathExtension
+        let upperEXT = ext.uppercased()
+        var fontPathNew = pathURL.path
+        fontPathNew.removeLast(ext.count)
+        fontPathNew.append(upperEXT)
+        return fontPathNew
+    }
 }
+
+
