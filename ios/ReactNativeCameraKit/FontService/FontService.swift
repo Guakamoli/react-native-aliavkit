@@ -221,6 +221,7 @@ extension FontService {
         
         self.dbManager?.insertData(with: self.fontModel)
         self.dbManager?.closeDB()
+        complete()
     }
     
     private func fetchFontResource(_ effctId: Int, data:[String:Any]) -> [String: Any]? {
@@ -281,7 +282,7 @@ extension FontService {
         guard !fontInfo.fontName.isEmpty else {
             return nil;
         }
-        if UIFont(name: fontInfo.fontName, size: 10) != nil {
+        if UIFont(name: fontInfo.fontName, size: 10) != nil, fontInfo.fontPath != nil {
             return fontInfo
         }
         guard var fontPath = fontInfo.resourcePath,

@@ -14,6 +14,7 @@ import {
   Easing,
   Pressable,
   AppState,
+  SafeAreaView,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
@@ -168,60 +169,60 @@ class RenderCamera extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
+      showCamera: true,
       showToast: false,
     };
     // this.fadeAnim = new Animated.Value(1);
   }
-  handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
-    }
-  };
+  // handleAppStateChange = (e) => {
+  //   if (this.props.isDrawerOpen && this.props.type === 'story') {
+  //     if (e.match(/inactive|background/)) {
+  //       this.setState({
+  //         showCamera: false,
+  //       });
+  //       setTimeout(() => {
+  //         AVService.enableHapticIfExist();
+  //       }, 2000);
+  //     } else {
+  //       this.setState({
+  //         showCamera: true,
+  //       });
+  //       setTimeout(() => {
+  //         AVService.enableHapticIfExist();
+  //       }, 2000);
+  //     }
+  //   }
+  // };
   componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
+    // AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    // AppState.removeEventListener('change', this.handleAppStateChange);
   }
-  handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
-    }
-  };
+  // handleAppStateChange = (e) => {
+  //   if (this.props.isDrawerOpen && this.props.type === 'story') {
+  //     if (e.match(/inactive|background/)) {
+  //       this.setState({
+  //         showCamera: false,
+  //       });
+  //       setTimeout(() => {
+  //         AVService.enableHapticIfExist();
+  //       }, 2000);
+  //     } else {
+  //       this.setState({
+  //         showCamera: true,
+  //       });
+  //       setTimeout(() => {
+  //         AVService.enableHapticIfExist();
+  //       }, 2000);
+  //     }
+  //   }
+  // };
   componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
+    // AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    // AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
@@ -245,40 +246,40 @@ class RenderCamera extends Component {
     //     },
     //   ).start();
     // }
-    if (nextProps.type !== this.props.type) {
-      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
-      if (!showCamera) {
-        this.props.camera.current?.cameraStopPreview?.();
-      }
-      this.setState({
-        showCamera,
-      });
+    // if (nextProps.type !== this.props.type) {
+    //   const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
+    //   if (!showCamera) {
+    //     this.props.camera.current?.cameraStopPreview?.();
+    //   }
+    //   this.setState({
+    //     showCamera,
+    //   });
 
-      setTimeout(() => {
-        AVService.enableHapticIfExist();
-      }, 2000);
+    //   setTimeout(() => {
+    //     AVService.enableHapticIfExist();
+    //   }, 2000);
 
-      return false;
-    }
-    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
-      if (!showCamera) {
-        this.props.camera.current?.cameraStopPreview?.();
-      }
-      this.setState(
-        {
-          showCamera,
-        },
-        () => {
-          setTimeout(() => {
-            AVService.enableHapticIfExist();
-          }, 2000);
-        },
-      );
+    //   return true;
+    // }
+    // if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+    //   const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
+    //   if (!showCamera) {
+    //     this.props.camera.current?.cameraStopPreview?.();
+    //   }
+    //   this.setState(
+    //     {
+    //       showCamera,
+    //     },
+    //     () => {
+    //       setTimeout(() => {
+    //         AVService.enableHapticIfExist();
+    //       }, 2000);
+    //     },
+    //   );
 
-      return false;
-    }
-    return false;
+    //   return false;
+    // }
+    return true;
   }
   renderCamera = () => {
     const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
@@ -331,7 +332,7 @@ class RenderCamera extends Component {
   };
   render() {
     return (
-      <View>
+      <SafeAreaView style={{ flex: 1, color: '#000' }}>
         <Pressable
           onPress={() => {
             this.props.setShowBeautify();
@@ -340,7 +341,7 @@ class RenderCamera extends Component {
           <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
         </Pressable>
-      </View>
+      </SafeAreaView>
     );
   }
 }
