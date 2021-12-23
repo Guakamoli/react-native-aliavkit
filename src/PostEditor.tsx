@@ -43,8 +43,10 @@ import {
   cleanExtractedImagesCache,
 } from 'react-native-image-filter-kit';
 import ImageMap from '../images';
-const { postNoVolumePng, postvolumePng, postnoVolumeImage, postaddPhotoBtnPng } = ImageMap;
+const { postNoVolumePng, postvolumePng, postnoVolumeImage, postaddPhotoBtnPng, postEditPausePng } = ImageMap;
 import { Button } from 'react-native-elements';
+import { connect } from 'react-redux';
+import { setSelectMultiple, setMultipleData } from './actions/post';
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -65,6 +67,14 @@ const PostHead = React.memo((props) => {
     continueEdit,
     continueRef,
   } = props;
+  const successEdit = () => {
+    // 取消多选 采用最后一个
+    if (props.selectMultiple) {
+      let endSelectData = props.multipleData[props.multipleData.length - 1];
+      props.setMultipleData([endSelectData]);
+    }
+    props.setSelectMultiple();
+  };
   return (
     <View
       style={{
@@ -102,7 +112,9 @@ const PostHead = React.memo((props) => {
       ) : null}
 
       <Pressable
-        onPress={continueEdit}
+        onPress={() => {
+          continueEdit(), successEdit();
+        }}
         style={{
           height: 30,
           paddingHorizontal: 12,
@@ -112,6 +124,34 @@ const PostHead = React.memo((props) => {
         }}
       >
         <Text style={styles.continueText}>继续</Text>
+      </Pressable>
+    </View>
+  );
+});
+const PostHeadMapStateToProps = (state) => ({
+  selectMultiple: state.shootPost.selectMultiple,
+  multipleData: state.shootPost.multipleData,
+});
+const GIWMapDispatchToProps = (dispatch) => ({
+  setSelectMultiple: () => dispatch(setSelectMultiple()),
+  setMultipleData: (params) => {
+    multipleData = params;
+    console.info('打印', params.length);
+    dispatch(setMultipleData(params));
+  },
+});
+const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
+// const addPhoto = React.memo((props) => {
+const addPhoto = React.memo(() => {
+  console.info('---ListFooterComponent重绘了');
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
+      <Pressable
+        onPress={() => {
+          props.goback();
+        }}
+      >
+        <Image source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }}></Image>
       </Pressable>
     </View>
   );
@@ -149,6 +189,7 @@ const PostEditor = (props) => {
   const continueRef = useRef(false);
   const [photoFile, setPhotoFile] = useState('');
   const [photosDataIndex, setPhotosDataIndex] = useState([]);
+  const [videoPause, setVideoPause] = useState(false);
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
@@ -314,7 +355,6 @@ const PostEditor = (props) => {
         videoPath: multipleSandBoxData[0],
         startTime: 0,
         itemPerTime: Math.floor(itemPerTime),
-        
       };
       if (Platform.OS != 'ios') {
       }
@@ -323,9 +363,13 @@ const PostEditor = (props) => {
       setcoverList(coverData);
       let videoData = props.params.originalData[0]?.image;
 
-      const FirstcoverData = await AVService.getThumbnails({     width: videoData.width,
-        height: videoData.height, ...thumbnailsArgument, needCover: true});
-        console.info(FirstcoverData, 'FirstcoverData')
+      const FirstcoverData = await AVService.getThumbnails({
+        width: videoData.width,
+        height: videoData.height,
+        ...thumbnailsArgument,
+        needCover: true,
+      });
+      console.info(FirstcoverData, 'FirstcoverData');
       setcoverImage(FirstcoverData[0]);
     } catch (e) {
       console.info(e);
@@ -369,7 +413,7 @@ const PostEditor = (props) => {
         } else {
           uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
         }
-        console.info(uploadCoverImage, ' uploadCoverImage', coverImage)
+        console.info(uploadCoverImage, ' uploadCoverImage', coverImage);
         uploadFile.push({
           type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
@@ -448,7 +492,7 @@ const PostEditor = (props) => {
           videoBoxStyle,
         ]}
       >
-        <View
+        <TouchableOpacity
           // style={{
           //   width: width1,
           //   height: height1,
@@ -458,8 +502,27 @@ const PostEditor = (props) => {
           //     },
           //   ],
           // }}
-          style={videoStyle}
+          activeOpacity={1}
+          style={[videoStyle, { position: 'relative' }]}
+          onPress={() => {
+            console.info('131313');
+            if (Platform.OS === 'ios') {
+              if (!videoPause) {
+                RNEditViewManager.pause();
+              } else {
+                RNEditViewManager.play();
+              }
+              setVideoPause(!videoPause);
+            }
+          }}
         >
+          <Image
+            style={[
+              { width: 45, height: 50, top: width / 2 + 120, left: width / 2 - 45, position: 'absolute', zIndex: 99 },
+              videoPause != true && { display: 'none' },
+            ]}
+            source={postEditPausePng}
+          />
           <VideoEditor
             // editWidth={width1}
             // editHeight={height1}
@@ -525,7 +588,7 @@ const PostEditor = (props) => {
               }
             }}
           />
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -745,7 +808,7 @@ const PostEditor = (props) => {
           bottom: 43,
         }}
       >
-        {videoTime / 1000 > 300 && cropToast()}
+        {/* {videoTime / 1000 > 300 && cropToast()} */}
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
@@ -899,19 +962,7 @@ const PostEditor = (props) => {
                     ></Grayscale>
                   );
                 }}
-                ListFooterComponent={() => {
-                  return (
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
-                      <Pressable
-                        onPress={() => {
-                          props.goback();
-                        }}
-                      >
-                        <Image source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }}></Image>
-                      </Pressable>
-                    </View>
-                  );
-                }}
+                ListFooterComponent={addPhoto}
               />
             )}
           </View>
@@ -1048,7 +1099,7 @@ const PostEditor = (props) => {
   if (fileType == 'image') {
     return (
       <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
-        <PostHead
+        <PostHeadWrap
           {...props}
           continueEdit={continueEdit}
           videoMute={videoMute}

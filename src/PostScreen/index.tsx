@@ -146,51 +146,6 @@ const PostFileUploadHead = React.memo((props) => {
   );
 });
 
-const PostHead = React.memo((props) => {
-  const { postEditor, goback } = props;
-  const closePng = require('../../images/postClose.png');
-  return (
-    <View
-      style={{
-        height: 44,
-        backgroundColor: '#000',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: 9,
-      }}
-    >
-      <Pressable
-        onPress={async () => {
-          goback();
-        }}
-        style={{
-          height: 30,
-          width: 50,
-          paddingHorizontal: 12,
-
-          justifyContent: 'center',
-        }}
-      >
-        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
-      </Pressable>
-      <Text style={styles.textCenter}>新作品</Text>
-
-      <Pressable
-        onPress={postEditor}
-        style={{
-          height: 30,
-          paddingHorizontal: 12,
-
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Text style={styles.continueText}>继续</Text>
-      </Pressable>
-    </View>
-  );
-});
 class PostContent extends Component {
   constructor(props) {
     super(props);
@@ -399,6 +354,10 @@ class GridItemCover extends Component {
       return;
     }
 
+    //    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+    if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
+      return this.props.toastRef.current.show('视频时长不能超过5分钟', 1000);
+    }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
       const localUri = await this.props.getVideFile(fileType, item);
@@ -426,7 +385,6 @@ class GridItemCover extends Component {
             isrepetition = true;
             console.info('datalist.length', datalist.length);
             if (datalist.length == 1) {
-              this.props.toastRef.current.show('最少选择一张图片', 2000);
               throw new Error('LoopTerminates');
             }
             datalist.splice(index, 1);
@@ -436,7 +394,7 @@ class GridItemCover extends Component {
         console.info('至少悬着一个2');
       }
       if (datalist.length >= 10) {
-        this.props.toastRef.current.show('最多选择十张图片', 2000);
+        this.props.toastRef.current.show('最多选择十张图片', 1000);
         // 无效 注意
         return;
       }
@@ -468,7 +426,7 @@ class GridItemCover extends Component {
 
     const { type } = item;
 
-    let fileSelectType = multipleData[multipleData.length - 1].type;
+    let fileSelectType = multipleData[multipleData.length - 1]?.type ?? '';
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
     let filtTypeSame = fileSelectType != fileType && selectMultiple;
     return (
@@ -534,7 +492,7 @@ class GridItemCover extends Component {
                 display: this.state.active && fileSelectType == 'image' ? 'flex' : 'none',
               }}
             >
-              <Text style={{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }}>
+              <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
                 {this.state.selectIndex}
               </Text>
             </View>
@@ -610,7 +568,70 @@ class GridItem extends Component {
     );
   }
 }
+const PostHead = React.memo((props) => {
+  const { postEditor, goback, multipleData, setSelectMultiple } = props;
+  console.info('propsprops', multipleData);
+  const closePng = require('../../images/postClose.png');
+  const pressMultiple = () => {
+    // 点击在这里修改数值
+    // 取消多选 采用最后一个
+    if (props.selectMultiple) {
+      let endSelectData = props.multipleData[props.multipleData.length - 1];
+      props.setMultipleData([endSelectData]);
+    }
+    props.setSelectMultiple();
+  };
+  return (
+    <View
+      style={{
+        height: 44,
+        backgroundColor: '#000',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingBottom: 9,
+      }}
+    >
+      <Pressable
+        onPress={async () => {
+          goback();
+          // pressMultiple();
+        }}
+        style={{
+          height: 30,
+          width: 50,
+          paddingHorizontal: 12,
 
+          justifyContent: 'center',
+        }}
+      >
+        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
+      </Pressable>
+      <Text style={styles.textCenter}>新作品</Text>
+
+      <Pressable
+        onPress={postEditor}
+        style={{
+          height: 30,
+          paddingHorizontal: 12,
+
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+        }}
+      >
+        <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333' }]}>
+          继续
+        </Text>
+      </Pressable>
+    </View>
+  );
+});
+const PostHeadMapStateToProps = (state) => ({
+  selectMultiple: state.shootPost.selectMultiple,
+  multipleData: state.shootPost.multipleData,
+});
+
+const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
 class PostFileUpload extends Component {
   constructor(props) {
     super(props);
@@ -831,6 +852,7 @@ const PFUMapDispatchToProps = (dispatch) => ({
   },
 });
 PostFileUpload = connect(PFUMapStateToProps, PFUMapDispatchToProps)(PostFileUpload);
+
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
@@ -851,13 +873,17 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   };
   postEditor = async () => {
+    const imageItem = multipleData[multipleData.length - 1].image;
+    // TODO  安卓type 待文件类型
+    let type = multipleData[multipleData.length - 1]?.type;
     if (multipleData.length < 1) {
-      return this.myRef.current.show('请至少选择一个上传文件', 2000);
+      return this.myRef.current.show('请至少选择一个上传文件', 1000);
     }
+    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+      return this.myRef.current.show('视频时长不能超过5分钟', 1000);
+    }
+
     try {
-      const imageItem = multipleData[multipleData.length - 1].image;
-      // TODO  安卓type 待文件类型
-      let type = multipleData[multipleData.length - 1]?.type;
       Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
       let trimVideoData = null;
       let resultData = [];
@@ -929,9 +955,6 @@ export default class CameraScreen extends Component<Props, State> {
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-        if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
-          this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
-        }
 
         this.setState({
           postEditorParams: {
@@ -974,7 +997,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
           <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
         </View>,
-        2000,
+        1000,
       );
       return true;
     }
@@ -1020,7 +1043,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         <View style={{ display: this.state.page === 'main' ? 'flex' : 'none' }}>
-          <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor} />
+          <PostHeadWrap key={'PostHead'} {...this.props} postEditor={this.postEditor} />
           <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
 
