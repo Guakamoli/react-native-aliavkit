@@ -194,11 +194,12 @@ const PostEditor = (props) => {
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
-    if (continueRef.current) return;
-    continueRef.current = true;
+
     const cropData = props.params.cropDataResult;
 
     if (fileType === 'image') {
+      if (continueRef.current) return;
+      continueRef.current = true;
       try {
         // console.info('photoFilephotoFile', photosDataIndex);
         // return
@@ -230,8 +231,12 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      console.info(toast.current, 'asasasas');
-
+      console.info('coverImage.current', coverImage.current);
+      if (!coverImage.current) {
+        return;
+      }
+      if (continueRef.current) return;
+      continueRef.current = true;
       // toast.current.show('正在导出, 请不要离开', 0);
       if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
         return onExportVideo({ outputPath: multipleSandBoxData[0], exportProgress: 1 });
@@ -276,9 +281,7 @@ const PostEditor = (props) => {
       if (exportVideo) {
         return;
       }
-      if (!coverImage.current) {
-        return;
-      }
+ 
       aniRef.current.stop();
       setexportVideo(true);
     }
