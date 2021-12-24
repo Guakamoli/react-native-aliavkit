@@ -171,7 +171,8 @@ const PostEditor = (props) => {
   const [filterName, setfilterName] = useState(null);
   const [videoMute, setvideoMute] = useState(false);
   const [coverList, setcoverList] = useState([]);
-  const [coverImage, setcoverImage] = useState('');
+  // const [coverImage, setcoverImage] = useState('');
+  const coverImage = useRef(null);
   const [selectBottomModel, setselectBottomModel] = useState('滤镜');
   const [trimmerLeftHandlePosition, settrimmerLeftHandlePosition] = useState(0);
   const [trimmerRightHandlePosition, settrimmerRightHandlePosition] = useState(0);
@@ -193,11 +194,12 @@ const PostEditor = (props) => {
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
-    if (continueRef.current) return;
-    continueRef.current = true;
+
     const cropData = props.params.cropDataResult;
 
     if (fileType === 'image') {
+      if (continueRef.current) return;
+      continueRef.current = true;
       try {
         // console.info('photoFilephotoFile', photosDataIndex);
         // return
@@ -229,8 +231,12 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      console.info(toast.current, 'asasasas');
-
+      console.info('coverImage.current', coverImage.current);
+      if (!coverImage.current) {
+        return;
+      }
+      if (continueRef.current) return;
+      continueRef.current = true;
       // toast.current.show('正在导出, 请不要离开', 0);
       if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
         return onExportVideo({ outputPath: multipleSandBoxData[0], exportProgress: 1 });
@@ -275,6 +281,7 @@ const PostEditor = (props) => {
       if (exportVideo) {
         return;
       }
+ 
       aniRef.current.stop();
       setexportVideo(true);
     }
@@ -363,14 +370,10 @@ const PostEditor = (props) => {
       setcoverList(coverData);
       let videoData = props.params.originalData[0]?.image;
 
-      const FirstcoverData = await AVService.getThumbnails({
-        width: videoData.width,
-        height: videoData.height,
-        ...thumbnailsArgument,
-        needCover: true,
-      });
-      console.info(FirstcoverData, 'FirstcoverData');
-      setcoverImage(FirstcoverData[0]);
+      const FirstcoverData = await AVService.getThumbnails({     width: videoData.width,
+        height: videoData.height, ...thumbnailsArgument, needCover: true});
+        console.info(FirstcoverData, 'FirstcoverData')
+      coverImage.current = FirstcoverData[0]
     } catch (e) {
       console.info(e);
     }
@@ -409,11 +412,10 @@ const PostEditor = (props) => {
         //TODO
         let uploadCoverImage = '';
         if (Platform.OS === 'ios') {
-          uploadCoverImage = coverImage ? `file://${encodeURI(coverImage)}` : '';
+          uploadCoverImage = coverImage.current ? `file://${encodeURI(coverImage.current)}` : '';
         } else {
-          uploadCoverImage = coverImage ? `${encodeURI(coverImage)}` : '';
+          uploadCoverImage = coverImage.current ? `${encodeURI(coverImage.current)}` : '';
         }
-        console.info(uploadCoverImage, ' uploadCoverImage', coverImage);
         uploadFile.push({
           type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
@@ -756,7 +758,8 @@ const PostEditor = (props) => {
                 {/* 封面选择 */}
                 <TouchableOpacity
                   onPress={() => {
-                    setcoverImage(item);
+                    coverImage.current = item
+                    // setcoverImage(item);
                   }}
                 >
                   <Image

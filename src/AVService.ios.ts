@@ -50,8 +50,8 @@ export default class AVService {
     return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
 
-  static async getThumbnails({ videoPath, startTime, itemPerTime }) {
-    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime });
+  static async getThumbnails({ videoPath, startTime, itemPerTime, needCover }) {
+    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime, needCover});
   }
 
   static async removeThumbnaiImages() {
