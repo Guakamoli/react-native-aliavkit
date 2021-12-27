@@ -65,6 +65,7 @@ type GestureTextProps = {
     boxStyle?: StyleProp<ViewStyle>;
     onTextMove: (info: CaptionInfo) => void;
     onEditEnable: (isEnable: any) => void;
+    onCompleteText: () => void;
 };
 
 type GestureTextState = {
@@ -178,21 +179,20 @@ export default class GestureText extends Component<GestureTextProps, GestureText
     };
 
     onSetTextInfo = () => {
-
-        var text:any = null;
-        this.inputLines.forEach((item:any, index:number) => {
-            if(text ==null){
-                text = item.text
-            }else{
+        var text: any = null;
+        this.inputLines.forEach((item: any, index: number) => {
+            if (text == null) {
+                text = item.text.replace(/^\s*([\S\s]*?)\s*$/, '$1')
+            } else {
                 text += "\n"
-                text += item.text
+                text += item.text.replace(/^\s*([\S\s]*?)\s*$/, '$1')
             }
         });
         // console.log("inputLines:",text);
         this.props.onTextMove({
             text: text,
             textAlign: this.props.textAlign || 'center',
-            color: this.props.textColor || '#fff',
+            color: this.props.textColor || '#FEFFFE',
             backgroundColor: this.props.textBackgroundColor || 'rgba(0,0,0,0)',
             fontName: this.props.textFontName || 'PingFangSC-Medium',
             fontSize: 25,
@@ -205,7 +205,8 @@ export default class GestureText extends Component<GestureTextProps, GestureText
 
     //单击
     onTextSingleTap = () => {
-        // console.log("onTextSingleTap")
+        console.log("onTextSingleTap")
+        this.props.onCompleteText();
     }
 
     //双击
@@ -256,7 +257,7 @@ export default class GestureText extends Component<GestureTextProps, GestureText
 
     renderText() {
         return (
-            <View style={[styles.textInputBox, (!this.props.isTextEdit || !this.props.editable) && { backgroundColor: 'transparent' },{position:'relative'}]} >
+            <View style={[styles.textInputBox, (!this.props.isTextEdit || !this.props.editable) && { backgroundColor: 'transparent' }, { position: 'relative' }]} >
                 <Text
                     onTextLayout={(event) => {
                         let lines = event.nativeEvent.lines
@@ -264,10 +265,10 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     }}
                     style={[styles.textInput, {
                         fontSize: 25.0,
-                        opacity:0,
-                        position:'absolute',
+                        opacity: 0,
+                        position: 'absolute',
                         fontFamily: this.props.textFontName || 'PingFangSC-Medium',
-                        textAlign:this.props.textAlign
+                        textAlign: this.props.textAlign
                     }
                     ]}
                 >{this.state.text}
@@ -279,10 +280,10 @@ export default class GestureText extends Component<GestureTextProps, GestureText
                     style={[styles.textInput, {
                         fontSize: 25.0,
                         fontFamily: this.props.textFontName || 'PingFangSC-Medium',
-                        color: this.props.textColor || 'white',
+                        color: this.props.textColor || '#FEFFFE',
                         backgroundColor: this.props.textBackgroundColor || 'transparent'
                     }]}
-                    placeholderTextColor={this.props.textColor || 'white'}
+                    placeholderTextColor={this.props.textColor || '#FEFFFE'}
                     selectionColor={this.props.textColor || '836BFF'}
                     value={this.state.text}
                     textAlign={this.props.textAlign}
@@ -301,70 +302,81 @@ export default class GestureText extends Component<GestureTextProps, GestureText
     render() {
         return (
             <View style={styles.container}>
-                <PanGestureHandler
-                    {...this.props}
-                    ref={this.panRef}
-                    enabled={this.props.isTextEdit && !this.props.editable}
-                    onGestureEvent={this.onPanGestureEvent}
-                    onHandlerStateChange={this.onPanHandlerStateChange}
-                    minDist={this.props.minDist}>
-                    <Animated.View style={styles.wrapperRotation}>
-                        <RotationGestureHandler
-                            ref={this.rotationRef}
+                <TapGestureHandler
+                    onHandlerStateChange={({ nativeEvent }) => {
+                        if (nativeEvent.state === State.ACTIVE) {
+                            this.onTextSingleTap()
+                        }
+                    }}
+                    enabled={this.props.isTextEdit && this.props.editable}
+                    waitFor={this.doubleTapRef}>
+                    <Animated.View style={styles.container}>
+                        <PanGestureHandler
+                            {...this.props}
+                            ref={this.panRef}
                             enabled={this.props.isTextEdit && !this.props.editable}
-                            simultaneousHandlers={this.pinchRef}
-                            onGestureEvent={this.onRotateGestureEvent}
-                            onHandlerStateChange={this.onRotateHandlerStateChange}>
-                            <Animated.View style={styles.wrapperPinch}>
-                                <TapGestureHandler
-                                    onHandlerStateChange={({ nativeEvent }) => {
-                                        if (nativeEvent.state === State.ACTIVE) {
-                                            this.onTextSingleTap()
-                                        }
-                                    }}
+                            onGestureEvent={this.onPanGestureEvent}
+                            onHandlerStateChange={this.onPanHandlerStateChange}
+                            minDist={this.props.minDist}>
+                            <Animated.View style={styles.wrapperRotation}>
+                                <RotationGestureHandler
+                                    ref={this.rotationRef}
                                     enabled={this.props.isTextEdit && !this.props.editable}
-                                    waitFor={this.doubleTapRef}>
-                                    <TapGestureHandler
-                                        ref={this.doubleTapRef}
-                                        onHandlerStateChange={({ nativeEvent }) => {
-                                            if (nativeEvent.state === State.ACTIVE) {
-                                                this.onTextDoubleTap()
-                                            }
-                                        }}
-                                        enabled={this.props.isTextEdit && !this.props.editable}
-                                        numberOfTaps={2}>
-                                        <Animated.View style={styles.wrapperPinch}>
-                                            <PinchGestureHandler
-                                                ref={this.pinchRef}
+                                    simultaneousHandlers={this.pinchRef}
+                                    onGestureEvent={this.onRotateGestureEvent}
+                                    onHandlerStateChange={this.onRotateHandlerStateChange}>
+                                    <Animated.View style={styles.wrapperPinch}>
+                                        <TapGestureHandler
+                                            onHandlerStateChange={({ nativeEvent }) => {
+                                                // if (nativeEvent.state === State.ACTIVE) {
+                                                //     this.onTextSingleTap()
+                                                // }
+                                            }}
+                                            enabled={this.props.isTextEdit && !this.props.editable}
+                                            waitFor={this.doubleTapRef}>
+                                            <TapGestureHandler
+                                                ref={this.doubleTapRef}
+                                                onHandlerStateChange={({ nativeEvent }) => {
+                                                    if (nativeEvent.state === State.ACTIVE) {
+                                                        this.onTextDoubleTap()
+                                                    }
+                                                }}
                                                 enabled={this.props.isTextEdit && !this.props.editable}
-                                                simultaneousHandlers={this.rotationRef}
-                                                onGestureEvent={this.onPinchGestureEvent}
-                                                onHandlerStateChange={this.onPinchHandlerStateChange} >
-                                                <Animated.View
-                                                    style={[
-                                                        styles.box,
-                                                        {
-                                                            transform: [
-                                                                { translateX: this.translateX },
-                                                                { translateY: this.translateY },
-                                                                { scale: this.scale },
-                                                                { rotate: this.rotateStr },
-                                                            ],
-                                                        },
-                                                        this.props.boxStyle,
-                                                    ]}>
+                                                numberOfTaps={2}>
+                                                <Animated.View style={styles.wrapperPinch}>
+                                                    <PinchGestureHandler
+                                                        ref={this.pinchRef}
+                                                        enabled={this.props.isTextEdit && !this.props.editable}
+                                                        simultaneousHandlers={this.rotationRef}
+                                                        onGestureEvent={this.onPinchGestureEvent}
+                                                        onHandlerStateChange={this.onPinchHandlerStateChange} >
+                                                        <Animated.View
+                                                            style={[
+                                                                styles.box,
+                                                                {
+                                                                    transform: [
+                                                                        { translateX: this.translateX },
+                                                                        { translateY: this.translateY },
+                                                                        { scale: this.scale },
+                                                                        { rotate: this.rotateStr },
+                                                                    ],
+                                                                },
+                                                                this.props.boxStyle,
+                                                            ]}>
 
-                                                    {this.renderText()}
+                                                            {this.renderText()}
 
+                                                        </Animated.View>
+                                                    </PinchGestureHandler>
                                                 </Animated.View>
-                                            </PinchGestureHandler>
-                                        </Animated.View>
-                                    </TapGestureHandler>
-                                </TapGestureHandler>
+                                            </TapGestureHandler>
+                                        </TapGestureHandler>
+                                    </Animated.View>
+                                </RotationGestureHandler>
                             </Animated.View>
-                        </RotationGestureHandler>
+                        </PanGestureHandler>
                     </Animated.View>
-                </PanGestureHandler>
+                </TapGestureHandler>
             </View>
         );
     }

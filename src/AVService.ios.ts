@@ -74,14 +74,22 @@ export default class AVService {
 
   static async downloadFont(font:any) {
     console.log('----- downloadFont', font.name, font.id);
-    this.downloadFontProgress()
-    return await RNFontService.setFont(font.id);
+    // const listener = await this.downloadFontProgress();
+    const info = await RNFontService.setFont(font.id);
+    // listener?.remove();
+    return info;
   }
 
-  static async downloadFontProgress(){
+  static async downloadFontProgress(downloadProgress:any){
+    console.log('----- downloadFontProgress');
     const subscription = calendarManagerEmitter.addListener(
       'onFontDownloadProgress',
-      (src) => console.log("downloadFontProgress",src)
+      (src) => {
+        // console.log("downloadFontProgress",src);
+        downloadProgress(src.progress);
+      }
     );
+
+    return subscription;
   }
 }

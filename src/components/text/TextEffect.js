@@ -18,6 +18,8 @@ import {
 } from 'react-native-image-filter-kit';
 
 
+import * as Progress from 'react-native-progress';
+
 const TAG = "TextEffect"
 
 
@@ -39,7 +41,8 @@ const TextEffect = (props) => {
     ];
     const textAlignArrya = ['left', 'center', 'right']
 
-    const textColorArray = ["#F9FAFB", "#F8AA99", "#FFC580", "#FFEA8A", "#BBE5B3", "#B6ECEB", "#B4E0FA", "#B3BCF5", "#E3D0FF", "#F4775C", "#FFA133", "#EDC200", "#50B83C", "#47C1BF", "#007ACE", "#5C6AC4", "#9C6ADE", "#637381", "#F15533", "#FF8A00", "#9C6F19", "#108043", "#00848E", "#084E8A", "#202E78", "#50248F", "#212B36", "#E55130", "#F28300", "#573B00", "#173630", "#003136", "#00152A", "#000639", "#230051"];
+    // const textColorArray = ["#F9FAFB", "#F8AA99", "#FFC580", "#FFEA8A", "#BBE5B3", "#B6ECEB", "#B4E0FA", "#B3BCF5", "#E3D0FF", "#F4775C", "#FFA133", "#EDC200", "#50B83C", "#47C1BF", "#007ACE", "#5C6AC4", "#9C6ADE", "#637381", "#F15533", "#FF8A00", "#9C6F19", "#108043", "#00848E", "#084E8A", "#202E78", "#50248F", "#212B36", "#E55130", "#F28300", "#573B00", "#173630", "#003136", "#00152A", "#000639", "#230051"];
+    const textColorArray = ["#FEFFFE", "#000000", "#EA4040", "#FF933D", "#FFC840", "#FFFCDA", "#78C25E", "#78C8A6", "#3596F0", "#2444B3", "#5756D4", "#F7D7E9", "#A4895B", "#32523C", "#2F698D", "#92979E", "#333333"];
 
 
     const [captionInfo, setCaptionInfo] = React.useState(null);
@@ -61,11 +64,15 @@ const TextEffect = (props) => {
     const [textFontList, setTextFontList] = React.useState([]);
     const [textFontName, setTextFontName] = React.useState("");
 
+    const [textFontProgress, setTextFontProgress] = React.useState([]);
+
     const [keyboard, setKeyboard] = React.useState(false);
 
     const [lastTextEdit, setLastTextEdit] = React.useState(false);
 
     const [continueEdit, setContinueEdit] = React.useState(false);
+
+
 
     //TODO
     // React.useReducer
@@ -128,13 +135,40 @@ const TextEffect = (props) => {
     const onGetFontList = async () => {
         const fontList = await AVService.fetchFontList();
         const systemFont = { name: "系统", fontName: "PingFangSC-Medium", isDbContain: true };
+
         fontList.unshift(systemFont);
         setTextFontList(fontList);
+
+        setTextFontProgress(Array.from({ length: fontList.length }));
+
+        console.log("textFontProgress", textFontProgress);
+
+        fontList.forEach(async (item, index) => {
+            if (index > 0 && item.isDbContain) {
+                const fontInfo = await onDownlaodFont(item, index);
+                fontList[index] = fontInfo;
+                setTextFontList(fontListCopy);
+            }
+        });
     }
 
     //下载字体
     const onDownlaodFont = async (fontItem, index) => {
-        return await AVService.downloadFont(fontItem);
+        let listener = null;
+        if (index > 0 && !fontItem.isDbContain) {
+            listener = await AVService.downloadFontProgress((progress) => {
+                console.log("downloadFontProgress", progress);
+                const textFontProgressCopy = JSON.parse(JSON.stringify(textFontProgress))
+                textFontProgressCopy[index] = progress;
+                setTextFontProgress(textFontProgressCopy);
+            });
+        }
+        const fontInfo = await AVService.downloadFont(fontItem);
+        listener?.remove();
+        const textFontProgressCopy = JSON.parse(JSON.stringify(textFontProgress))
+        textFontProgressCopy[index] = null;
+        setTextFontProgress(textFontProgressCopy);
+        return fontInfo
     }
 
     /**
@@ -296,9 +330,10 @@ const TextEffect = (props) => {
             textFontName={textFontName}
             editable={editable}
             onTextMove={(info) => {
-                // console.log("onTextMove", info);
+                console.log("onTextMove", info);
                 setCaptionInfo(info)
             }}
+            onCompleteText={onCompleteText}
             onEditEnable={(isEnable) => {
                 //双击进入编辑
                 setEditable(isEnable)
@@ -317,13 +352,20 @@ const TextEffect = (props) => {
                             textFontList.map((item, index) => {
                                 return (
                                     <TouchableOpacity onPress={() => onTextFontEffcet(item, index)} key={index}>
-
                                         <View style={[styles.fontEffcetItemContainer, {
                                             // borderWidth: textFontPostion === index ? 1 : 1, 
                                             borderColor: textFontPostion === index ? 'white' : 'rgba(255,255,255,0.3)'
                                         }]}>
                                             <Text style={[styles.textFontName, { fontWeight: textFontPostion === index ? '500' : '400', fontFamily: item.fontName }]}>{item.name}</Text>
-                                            {!item.isDbContain && <Image style={[styles.textFontDownload]} source={require('../../../images/ic_text_font_download.png')}></Image>}
+                                            {!item.isDbContain &&
+                                                <View style={[styles.textFontDownload]}>
+                                                    {textFontProgress[index] ?
+                                                        <Progress.Circle style={[styles.textFontDownload]} size={12} progress={textFontProgress[index]} color={"rgba(255, 255, 255, 1)"}/>
+                                                        :
+                                                        <Image style={[styles.textFontDownload]} source={require('../../../images/ic_text_font_download.png')}></Image>
+                                                    }
+                                                </View>
+                                            }
                                         </View>
                                     </TouchableOpacity>
                                 );
@@ -360,7 +402,7 @@ const TextEffect = (props) => {
                         onExtractImage={({ nativeEvent }) => {
                             console.log("save phont", nativeEvent.uri);
                             CameraRoll.save(nativeEvent.uri, { type: 'photo' })
-                            props.continueEdit(nativeEvent.uri)
+                            props.onContinueEdit(nativeEvent.uri)
                         }}
                         extractImageEnabled={true}
                     />
@@ -391,6 +433,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        zIndex: 1000,
     },
     completeText: {
         height: 44,
@@ -416,8 +459,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     imageTools: {
-        width: 24,
-        height: 24,
+        width: 26,
+        height: 26,
     },
 
     bottomEffectListContainer: {

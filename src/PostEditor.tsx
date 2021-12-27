@@ -154,13 +154,16 @@ const PostEditor = (props) => {
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
+    console.log("continueEdit111", photoFile);
     if (continueRef.current) return;
     continueRef.current = true;
     const cropData = props.params.cropDataResult;
 
+
     if (fileType === 'image') {
       try {
         const path = photoFile;
+        console.log("导出上传",path);
         let uploadFile = [];
         uploadFile.push({
           Type: `image/png`,
@@ -706,6 +709,7 @@ const PostEditor = (props) => {
     if (fileType !== 'image') {
       switchProps = ['滤镜', '修剪'];
     } else {
+      //WUYQ
       switchProps = ['滤镜', '文字'];
     }
 
@@ -945,14 +949,16 @@ const PostEditor = (props) => {
           </View>
         </View>
 
+{/*       //WUYQ  */}
         <TextEffect
           {...props}
           isTextEdit={selectBottomModel === '文字'}
           width={width}
           height={width}
-          continueEdit={(uri: any) => {
+          onContinueEdit={(uri: any) => {
+            console.log("continueEdit222", uri);
             setPhotoFile(uri);
-            continueEdit()
+            continueEdit();
           }}
           photoFile={photoFile}
         />
@@ -1118,17 +1124,8 @@ const PostEditor = (props) => {
           continueRef={continueRef}
         />
 
+{/*       //WUYQ */}
         {(selectBottomModel === '滤镜' || selectBottomModel === '文字') && result()}
-        {/* {selectBottomModel === '文字' && fontPage()} */}
-        {/* {(selectBottomModel === '滤镜' || selectBottomModel === '文字') && (
-          <TextEffect
-            {...props}
-            isEditor={selectBottomModel === '文字'}
-            continueEdit={continueEdit}
-            width={width}
-            height={width}
-          />
-        )} */}
         {fileType === 'image' && switchProps()}
       </View>
     );
@@ -1163,17 +1160,6 @@ const PostEditor = (props) => {
   );
 };
 
-/**
- * 文字设置
- */
-const fontPage = () => {
-  return (
-    //TODO
-    <View style={{ backgroundColor: 'rgba(255,0,178,0.5)', position: 'absolute', height: '100%', left: 0, right: 0 }}>
-
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   closeIcon: {
