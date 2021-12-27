@@ -84,10 +84,17 @@ let trimVideoData = null;
 
 let cropData = {};
 let cropDataRow = {};
-
+let getPhotosNum = 40;
+let isMax = false;
+let end_cursor;
 class MultipleSelectButton extends Component {
   pressMultiple = () => {
     // 点击在这里修改数值
+    // 取消多选 采用最后一个
+    if (this.props.selectMultiple) {
+      let endSelectData = this.props.multipleData[this.props.multipleData.length - 1];
+      this.props.setMultipleData([endSelectData]);
+    }
     this.props.setSelectMultiple();
   };
   render() {
@@ -104,6 +111,7 @@ class MultipleSelectButton extends Component {
 }
 const MtbMapStateToProps = (state) => ({
   selectMultiple: state.shootPost.selectMultiple,
+  multipleData: state.shootPost.multipleData,
 });
 const MtbMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
@@ -138,51 +146,6 @@ const PostFileUploadHead = React.memo((props) => {
   );
 });
 
-const PostHead = React.memo((props) => {
-  const { postEditor, goback } = props;
-  const closePng = require('../../images/postClose.png');
-  return (
-    <View
-      style={{
-        height: 44,
-        backgroundColor: '#000',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: 9,
-      }}
-    >
-      <Pressable
-        onPress={async () => {
-          goback();
-        }}
-        style={{
-          height: 30,
-          width: 50,
-          paddingHorizontal: 12,
-
-          justifyContent: 'center',
-        }}
-      >
-        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
-      </Pressable>
-      <Text style={styles.textCenter}>新作品</Text>
-
-      <Pressable
-        onPress={postEditor}
-        style={{
-          height: 30,
-          paddingHorizontal: 12,
-
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-        }}
-      >
-        <Text style={styles.continueText}>继续</Text>
-      </Pressable>
-    </View>
-  );
-});
 class PostContent extends Component {
   constructor(props) {
     super(props);
@@ -193,11 +156,11 @@ class PostContent extends Component {
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.multipleData !== this.props.multipleData) {
-      if(!!nextProps.multipleData[0]&& nextProps.multipleData[0]?.type == 'image'){
+      if (!!nextProps.multipleData[0] && nextProps.multipleData[0]?.type == 'image') {
         this.setState({
           videoPaused: true,
         });
-      }else{
+      } else {
         this.setState({
           videoPaused: false,
         });
@@ -245,6 +208,7 @@ class PostContent extends Component {
   render() {
     if (!this.props.multipleData[0]) return null;
     const imageItem = this.props.multipleData[this.props.multipleData.length - 1].image;
+    console.info('-----', imageItem);
     const { cropScale } = this.state;
     if (!imageItem) return null;
     return (
@@ -306,7 +270,18 @@ class PostContent extends Component {
               scale={cropScale}
               areaOverlay={<View></View>}
               setCropperParams={(cropperParams) => {
-                cropDataRow = cropperParams;
+                if (imageItem?.videoFile) {
+                  console.info('是视频');
+                  console.info('00000-----cropperParams', cropDataRow);
+                  // cropDataRow?.imageItem?.videoFile = cropperParams
+                  // cropDataRow = {...cropDataRow,imageItem.videoFile:cropperParams}
+                } else {
+                  // cropDataRow?.imageItem?.uri = cropperParams
+                }
+                let newKey = imageItem.uri;
+                cropDataRow[newKey] = cropperParams;
+                // cropDataRow = cropperParams;
+                console.info('00000-----cropperParams', cropDataRow);
               }}
             />
           </View>
@@ -325,6 +300,7 @@ class GridItemCover extends Component {
     super(props);
     this.state = {
       active: false,
+      selectIndex: 1,
     };
     this.animteRef = new Animated.Value(0);
     if (this.props.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1) {
@@ -343,22 +319,45 @@ class GridItemCover extends Component {
         active,
       });
 
+      const selectIndex = nextProps.multipleData.findIndex((item) => item.image.uri === this.props.item.image.uri);
+
+      this.setState({ selectIndex: selectIndex + 1 });
+
       this.animteRef.setValue(active ? 0.5 : 0);
       return false;
     }
     if (nextState.active !== this.state.active) {
       return true;
     }
+    if (nextState.selectIndex !== this.state.selectIndex) {
+      return true;
+    }
+
     return false;
   }
   clickItem = async () => {
     // if (clickItemLock) return
     // clickItemLock = true
-    const { item } = this.props;
+    const { item, multipleData, selectMultiple } = this.props;
     const { type } = item;
-    cropDataRow = {};
+    if (!selectMultiple) {
+      cropDataRow = {};
+    }
+
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
+    let fileSelectType = multipleData[multipleData.length - 1].type;
     const itemCopy = { ...item };
+    //  已选的必须 一致
+
+    if (fileSelectType != fileType && selectMultiple) {
+      console.info('选择不一致 无效');
+      return;
+    }
+
+    //    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+    if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
+      return this.props.toastRef.current.show('视频时长不能超过5分钟', 1000);
+    }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
       const localUri = await this.props.getVideFile(fileType, item);
@@ -367,7 +366,42 @@ class GridItemCover extends Component {
       itemCopy.image.videoFile = localUri;
       this.props.setMultipleData([itemCopy]);
     } else {
-      this.props.setMultipleData([itemCopy]);
+      // 单选
+      console.info('222', !selectMultiple);
+      if (!selectMultiple) {
+        this.props.setMultipleData([itemCopy]);
+        return;
+      }
+      //
+
+      let datalist = [...multipleData];
+
+      // 遍历 判断是否已有
+      let isrepetition = false;
+      console.info('--------datalist', datalist);
+      try {
+        datalist.forEach((data, index) => {
+          if (data.image.uri == itemCopy.image.uri) {
+            isrepetition = true;
+            console.info('datalist.length', datalist.length);
+            if (datalist.length == 1) {
+              throw new Error('LoopTerminates');
+            }
+            datalist.splice(index, 1);
+          }
+        });
+      } catch (error) {
+        console.info('至少悬着一个2');
+      }
+      if (datalist.length >= 10) {
+        this.props.toastRef.current.show('最多选择十张图片', 1000);
+        // 无效 注意
+        return;
+      }
+      if (!isrepetition) {
+        datalist.push(itemCopy);
+      }
+      this.props.setMultipleData(datalist);
     }
     // prevClickCallBack?.();
     // prevClickCallBack = () => {
@@ -388,29 +422,37 @@ class GridItemCover extends Component {
     // }, 60);
   };
   render() {
-    const { item } = this.props;
+    const { item, multipleData, selectMultiple } = this.props;
+
     const { type } = item;
 
+    let fileSelectType = multipleData[multipleData.length - 1]?.type ?? '';
+    let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
+    let filtTypeSame = fileSelectType != fileType && selectMultiple;
     return (
       <TouchableOpacity
         onPress={this.clickItem}
         activeOpacity={1}
-        style={{
-          width: photosItem,
-          height: photosItem,
-          position: 'absolute',
-          zIndex: 1,
-        }}
+        disabled={filtTypeSame}
+        style={[
+          {
+            width: photosItem,
+            height: photosItem,
+            position: 'absolute',
+            zIndex: 1,
+          },
+          filtTypeSame && { backgroundColor: '#000', opacity: 0.5 },
+        ]}
       >
         <>
           {/* TODO */}
           <View
             style={[
               {
-                borderRadius: 10,
-                borderWidth: 2,
-                width: 20,
-                height: 20,
+                borderRadius: 22,
+                borderWidth: 1,
+                width: 22,
+                height: 22,
                 borderColor: 'white',
                 overflow: 'hidden',
                 position: 'absolute',
@@ -422,31 +464,38 @@ class GridItemCover extends Component {
               Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
             ]}
           >
-            {/* <View
+            <Image
+              source={postFileSelectPng}
               style={{
-                width: 18,
-                height: 18,
-                borderRadius: 20,
+                width: 20,
+                height: 20,
+                // borderRadius: 20,
                 zIndex: 99,
                 backgroundColor: '#836BFF',
                 justifyContent: 'center',
                 alignItems: 'center',
-                display: this.state.active ? 'flex' : 'none',
-              }}
-            ></View> */}
-            <Image
-              source={postFileSelectPng}
-              style={{
-                width: 18,
-                height: 18,
-                // borderRadius: 20,
-                zIndex: 99,
-                // backgroundColor: '#836BFF',
-                // justifyContent: 'center',
-                // alignItems: 'center',
-                display: this.state.active ? 'flex' : 'none',
+                display: this.state.active && fileSelectType == 'video' ? 'flex' : 'none',
               }}
             />
+
+            <View
+              style={{
+                width: 20,
+                height: 20,
+                // borderRadius: 20,
+                zIndex: 99,
+                backgroundColor: '#836BFF',
+
+                justifyContent: 'center',
+                // alignItems: 'center',
+
+                display: this.state.active && fileSelectType == 'image' ? 'flex' : 'none',
+              }}
+            >
+              <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
+                {this.state.selectIndex}
+              </Text>
+            </View>
           </View>
           <Animated.View
             style={[
@@ -473,7 +522,7 @@ const GIWMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
   setMultipleData: (params) => {
     multipleData = params;
-
+    console.info('打印', params.length);
     dispatch(setMultipleData(params));
   },
 });
@@ -519,7 +568,70 @@ class GridItem extends Component {
     );
   }
 }
+const PostHead = React.memo((props) => {
+  const { postEditor, goback, multipleData, setSelectMultiple } = props;
+  console.info('propsprops', multipleData);
+  const closePng = require('../../images/postClose.png');
+  const pressMultiple = () => {
+    // 点击在这里修改数值
+    // 取消多选 采用最后一个
+    if (props.selectMultiple) {
+      let endSelectData = props.multipleData[props.multipleData.length - 1];
+      props.setMultipleData([endSelectData]);
+    }
+    props.setSelectMultiple();
+  };
+  return (
+    <View
+      style={{
+        height: 44,
+        backgroundColor: '#000',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingBottom: 9,
+      }}
+    >
+      <Pressable
+        onPress={async () => {
+          goback();
+          // pressMultiple();
+        }}
+        style={{
+          height: 30,
+          width: 50,
+          paddingHorizontal: 12,
 
+          justifyContent: 'center',
+        }}
+      >
+        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
+      </Pressable>
+      <Text style={styles.textCenter}>新作品</Text>
+
+      <Pressable
+        onPress={postEditor}
+        style={{
+          height: 30,
+          paddingHorizontal: 12,
+
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+        }}
+      >
+        <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333' }]}>
+          继续
+        </Text>
+      </Pressable>
+    </View>
+  );
+});
+const PostHeadMapStateToProps = (state) => ({
+  selectMultiple: state.shootPost.selectMultiple,
+  multipleData: state.shootPost.multipleData,
+});
+
+const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
 class PostFileUpload extends Component {
   constructor(props) {
     super(props);
@@ -544,17 +656,22 @@ class PostFileUpload extends Component {
     }
     return t;
   };
-  getPhotos = () => {
+  getPhotos = (getMore = false) => {
     //获取照片
     clickItemLock = false;
-    let getPhotos = CameraRoll.getPhotos({
-      first: 100,
+    let getPhotosProps = {
+      first: getPhotosNum,
       assetType: 'All',
       include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
-    });
+    };
+    let getPhotos = CameraRoll.getPhotos(getPhotosProps);
     const { AsyncStorage } = this.props;
     getPhotos.then(
       async (data) => {
+        if (getPhotosNum > data.edges.length) {
+          isMax = true;
+        }
+        // end_cursor =  data?.page_info?.end_cursor
         var edges = data.edges;
         var photos = [];
         for (var i in edges) {
@@ -704,7 +821,22 @@ class PostFileUpload extends Component {
             removeClippedSubviews={true}
             itemContainerStyle={{ margin: 0 }}
             renderItem={(props) => {
-              return <GridItem {...props} getVideFile={this.getVideFile} key={props?.item?.image?.uri} />;
+              return (
+                <GridItem
+                  {...props}
+                  getVideFile={this.getVideFile}
+                  toastRef={this.props.toastRef}
+                  key={props?.item?.image?.uri}
+                />
+              );
+            }}
+            onEndReachedThreshold={0.5}
+            onEndReached={() => {
+              if (isMax) {
+                return;
+              }
+              getPhotosNum += 12;
+              this.getPhotos();
             }}
           />
         </View>
@@ -723,6 +855,7 @@ const PFUMapDispatchToProps = (dispatch) => ({
   },
 });
 PostFileUpload = connect(PFUMapStateToProps, PFUMapDispatchToProps)(PostFileUpload);
+
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
   myRef: any;
@@ -743,64 +876,100 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   };
   postEditor = async () => {
+    const imageItem = multipleData[multipleData.length - 1].image;
+    // TODO  安卓type 待文件类型
+    let type = multipleData[multipleData.length - 1]?.type;
     if (multipleData.length < 1) {
-      return this.myRef.current.show('请至少选择一个上传文件', 2000);
+      return this.myRef.current.show('请至少选择一个上传文件', 1000);
     }
+    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+      return this.myRef.current.show('视频时长不能超过5分钟', 1000);
+    }
+
     try {
-      const imageItem = multipleData[multipleData.length - 1].image;
-      // TODO  安卓type 待文件类型
-      let type = multipleData[multipleData.length - 1]?.type;
       Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
       let trimVideoData = null;
-      const result = await ImageCropper.crop({
-        ...cropDataRow,
-        imageUri: imageItem.uri,
-        cropSize: {
-          width: width,
-          height: width,
-        },
-        cropAreaSize: {
-          width: width,
-          height: width,
-        },
-      });
+      let resultData = [];
+
+      console.info('----cropDataRow', cropDataRow);
+      // const result = await ImageCropper.crop({
+      //   ...cropDataRow[imageItem?.uri],
+      //   imageUri: imageItem.uri,
+      //   cropSize: {
+      //     width: width,
+      //     height: width,
+      //   },
+      //   cropAreaSize: {
+      //     width: width,
+      //     height: width,
+      //   },
+      // });
+      // 循环选中的图片 取出裁剪数据
+      const result = await Promise.all(
+        multipleData.map(async (item) => {
+          return await ImageCropper.crop({
+            ...cropDataRow[item.image.uri],
+            imageUri: imageItem.uri,
+            cropSize: {
+              width: width,
+              height: width,
+            },
+            cropAreaSize: {
+              width: width,
+              height: width,
+            },
+          });
+        }),
+      );
+      console.info('resultsresultsresultsresults', result);
       if (type === 'video') {
         if (Platform.OS !== 'android') {
           trimVideoData = await AVService.saveToSandBox({
             path: imageItem.uri,
           });
+          resultData.push(trimVideoData);
         } else {
           trimVideoData = imageItem.uri;
         }
       } else {
         const cropData = result;
-        trimVideoData = await AVService.crop({
-          source: imageItem.uri,
-          cropOffsetX: cropData.offset.x,
-          cropOffsetY: cropData.offset.y,
-          cropWidth: cropData.size.width,
-          cropHeight: cropData.size.height,
-        });
+        let results = await Promise.all(
+          multipleData.map(async (item, index) => {
+            // 等待异步操作完成，返回执行结果
+            return await AVService.crop({
+              source: item.image.uri,
+              cropOffsetX: cropData[index].offset.x,
+              cropOffsetY: cropData[index].offset.y,
+              cropWidth: cropData[index].size.width,
+              cropHeight: cropData[index].size.height,
+            });
+          }),
+        );
+        console.info('------裁剪数据回调233', results);
+        resultData = results;
       }
+
+      console.info('-xx', resultData);
+
       // this.setState({ videoPaused: true });
-      if (trimVideoData) {
+      if (resultData.length > 0) {
         let trimmerRightHandlePosition =
           Math.ceil(imageItem.playableDuration) < 300 ? Math.ceil(imageItem.playableDuration) * 1000 : 300 * 1000;
         let fileType = imageItem.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
 
         let videoTime = Math.ceil(imageItem.playableDuration) * 1000 ?? 0;
-        if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
-          this.myRef.current.show('请修剪视频,视频时长不能超过5分钟', 2000);
-        }
+
         this.setState({
           postEditorParams: {
-            trimVideoData,
+            // 数据
+            trimVideoData: resultData,
             videoduration: videoTime,
             trimmerRight: trimmerRightHandlePosition,
             fileType,
             cropDataRow: cropDataRow,
             cropDataResult: result,
-            source: multipleData[0].image.uri,
+            // 原始数据
+            originalData: multipleData,
           },
           videoPaused: true,
           page: 'eidt',
@@ -831,7 +1000,7 @@ export default class CameraScreen extends Component<Props, State> {
           <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
           <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
         </View>,
-        2000,
+        1000,
       );
       return true;
     }
@@ -877,11 +1046,11 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         <View style={{ display: this.state.page === 'main' ? 'flex' : 'none' }}>
-          <PostHead key={'PostHead'} {...this.props} postEditor={this.postEditor} />
+          <PostHeadWrap key={'PostHead'} {...this.props} postEditor={this.postEditor} />
           <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
 
-          <PostFileUpload {...this.props} />
+          <PostFileUpload {...this.props} toastRef={this.myRef} />
         </View>
         {this.state.postEditorParams ? (
           <PostEditor
