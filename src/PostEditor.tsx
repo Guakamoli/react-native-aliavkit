@@ -72,8 +72,8 @@ const PostHead = React.memo((props) => {
     if (props.selectMultiple) {
       let endSelectData = props.multipleData[props.multipleData.length - 1];
       props.setMultipleData([endSelectData]);
+      props.setSelectMultiple();
     }
-    props.setSelectMultiple();
   };
   return (
     <View
@@ -113,7 +113,8 @@ const PostHead = React.memo((props) => {
 
       <Pressable
         onPress={() => {
-          continueEdit(), successEdit();
+          continueEdit();
+          successEdit();
         }}
         style={{
           height: 30,
@@ -141,14 +142,17 @@ const GIWMapDispatchToProps = (dispatch) => ({
   },
 });
 const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
-// const addPhoto = React.memo((props) => {
-const addPhoto = React.memo(() => {
+const AddPhoto = React.memo((props) => {
   console.info('---ListFooterComponent重绘了');
+  const {
+    params: { fileType = '' },
+    goback,
+  } = props;
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
       <Pressable
         onPress={() => {
-          props.goback();
+          goback();
         }}
       >
         <Image source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }}></Image>
@@ -194,7 +198,6 @@ const PostEditor = (props) => {
   const outputPathRef = useRef(null);
 
   const continueEdit = async () => {
-
     const cropData = props.params.cropDataResult;
 
     if (fileType === 'image') {
@@ -281,7 +284,7 @@ const PostEditor = (props) => {
       if (exportVideo) {
         return;
       }
- 
+
       aniRef.current.stop();
       setexportVideo(true);
     }
@@ -370,10 +373,14 @@ const PostEditor = (props) => {
       setcoverList(coverData);
       let videoData = props.params.originalData[0]?.image;
 
-      const FirstcoverData = await AVService.getThumbnails({     width: videoData.width,
-        height: videoData.height, ...thumbnailsArgument, needCover: true});
-        console.info(FirstcoverData, 'FirstcoverData')
-      coverImage.current = FirstcoverData[0]
+      const FirstcoverData = await AVService.getThumbnails({
+        width: videoData.width,
+        height: videoData.height,
+        ...thumbnailsArgument,
+        needCover: true,
+      });
+      console.info(FirstcoverData, 'FirstcoverData');
+      coverImage.current = FirstcoverData[0];
     } catch (e) {
       console.info(e);
     }
@@ -758,7 +765,7 @@ const PostEditor = (props) => {
                 {/* 封面选择 */}
                 <TouchableOpacity
                   onPress={() => {
-                    coverImage.current = item
+                    coverImage.current = item;
                     // setcoverImage(item);
                   }}
                 >
@@ -965,7 +972,9 @@ const PostEditor = (props) => {
                     ></Grayscale>
                   );
                 }}
-                ListFooterComponent={addPhoto}
+                ListFooterComponent={() => {
+                  return <AddPhoto {...props} />;
+                }}
               />
             )}
           </View>
@@ -1126,7 +1135,7 @@ const PostEditor = (props) => {
         fadeOutDuration={800}
         opacity={0.8}
       />
-      <PostHead
+      <PostHeadWrap
         {...props}
         continueEdit={continueEdit}
         continueRef={continueRef}
