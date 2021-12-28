@@ -23,6 +23,9 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
+
+import TextEffect from './components/text/TextEffect';
+
 import {
   Grayscale,
   Temperature,
@@ -188,7 +191,7 @@ const PostEditor = (props) => {
   const startRef = useRef(false);
   const lockRef = useRef(false);
   const continueRef = useRef(false);
-  const [photoFile, setPhotoFile] = useState('');
+  const [photoFile, setPhotoFile] = useState([]);
   const [photosDataIndex, setPhotosDataIndex] = useState([]);
   const [videoPause, setVideoPause] = useState(false);
   const outputPathRef = useRef(null);
@@ -796,7 +799,8 @@ const PostEditor = (props) => {
     if (fileType !== 'image') {
       switchProps = ['滤镜', '修剪'];
     } else {
-      switchProps = ['滤镜'];
+//     wuyq
+      switchProps = ['滤镜', '文字'];
     }
 
     return (
@@ -970,7 +974,21 @@ const PostEditor = (props) => {
             )}
           </View>
         </View>
-        <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+
+{/*  wuyq*/}
+        <TextEffect
+          {...props}
+          isTextEdit={selectBottomModel === '文字'}
+          width={width}
+          height={width}
+          onContinueEdit={(uriList: any) => {
+            setPhotoFile(uriList);
+            continueEdit();
+          }}
+          photoFile={photoFile}
+        />
+
+{selectBottomModel === '滤镜' && <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('');
@@ -1095,7 +1113,7 @@ const PostEditor = (props) => {
             <Emboss image={<Polaroid image={propsImage()} />} />
             {propsTitles('M13')}
           </TouchableOpacity>
-        </ScrollView>
+        </ScrollView>}
       </>
     );
   };

@@ -80,7 +80,8 @@ const TextEffect = (props) => {
 
 
     React.useEffect(() => {
-        console.log(TAG, "初始化:", props.route.params)
+        // props.photoFile
+        console.log(TAG, "初始化:")
         Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
         Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
         return () => {
@@ -244,7 +245,7 @@ const TextEffect = (props) => {
                     width: props.width,
                     height: props.height,
                 }}
-                source={{ uri: props.photoFile }}
+                source={{ uri: props?.photoFile[0] }}
             />
         )
     }

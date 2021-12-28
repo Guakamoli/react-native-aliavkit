@@ -333,6 +333,7 @@ class GridItemCover extends Component {
       return true;
     }
 
+    //WUYQ
     return false;
   }
   clickItem = async () => {
@@ -350,8 +351,13 @@ class GridItemCover extends Component {
     //  已选的必须 一致
 
     if (fileSelectType != fileType && selectMultiple) {
-      console.info('选择不一致 无效');
-      return;
+      console.info('选择类型不一致');
+      //WUYQ
+      //选择类型不一致，清空原数组重新赋值
+      multipleData.splice(0);
+      multipleData.push(item);
+      this.props.setMultipleData(multipleData);
+      // return;
     }
 
     //    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
@@ -430,18 +436,20 @@ class GridItemCover extends Component {
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
     let filtTypeSame = fileSelectType != fileType && selectMultiple;
     return (
+      // WUYQ
       <TouchableOpacity
         onPress={this.clickItem}
         activeOpacity={1}
-        disabled={filtTypeSame}
+        // disabled={filtTypeSame}
         style={[
           {
             width: photosItem,
             height: photosItem,
             position: 'absolute',
             zIndex: 1,
+//             backgroundColor: (filtTypeSame ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0)'),
           },
-          filtTypeSame && { backgroundColor: '#000', opacity: 0.5 },
+          // filtTypeSame && { backgroundColor: '#000', opacity: 0.5 },
         ]}
       >
         <>

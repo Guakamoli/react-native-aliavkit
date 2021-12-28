@@ -6861,8 +6861,8 @@ react-native-gesture-handler@^1.10.3:
     prop-types "^15.7.2"
 
 react-native-image-filter-kit@Guakamoli/react-native-image-filter-kit#kameoapp:
-  version "0.8.1"
-  resolved "https://codeload.github.com/Guakamoli/react-native-image-filter-kit/tar.gz/96890827686a0fb8e26aa98e15dc6e4818e14d24"
+  version "0.8.2"
+  resolved "https://codeload.github.com/Guakamoli/react-native-image-filter-kit/tar.gz/6b0401edcb36e1ea4947e6f1e553eb71cb291e30"
   dependencies:
     concat-color-matrices "^1.0.0"
     lodash.pick "^4.4.0"
