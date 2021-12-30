@@ -139,17 +139,13 @@ const GIWMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
   setMultipleData: (params) => {
     multipleData = params;
-    console.info('打印', params.length);
+
     dispatch(setMultipleData(params));
   },
 });
 const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
 const AddPhoto = React.memo((props) => {
-  console.info('---ListFooterComponent重绘了');
-  const {
-    params: { fileType = '' },
-    goback,
-  } = props;
+  const { goback } = props;
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
       <Pressable
@@ -162,6 +158,161 @@ const AddPhoto = React.memo((props) => {
     </View>
   );
 });
+
+class PhotoShow extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      photosDataIndex: [],
+      videoPaused: false,
+    };
+  }
+  // const [photosDataIndex, setPhotosDataIndex] = useState([]);
+  saveFilterImage = (nativeEvent, item, flag = false) => {
+    // ？？？？？
+    const { setPhotoFile, photoFile } = this.props;
+    const { photosDataIndex } = this.state;
+    // setPhotoFile(nativeEvent.uri);
+    if (flag) {
+      // 单张数组包裹
+      setPhotoFile([nativeEvent.uri]);
+    } else {
+      // 判断是否已经选中过 没有
+      if (photosDataIndex.indexOf(item) != -1) {
+        let dataIndex = photosDataIndex.indexOf(item);
+        let list = [...photoFile];
+        list[dataIndex] = nativeEvent.uri;
+        setPhotoFile(list);
+      } else {
+        let dataIndex = [...photosDataIndex];
+        dataIndex.push(item);
+        // setPhotosDataIndex(dataIndex);
+        // photosDataIndex =[...]
+        this.setState({ photosDataIndex: dataIndex });
+        let list = [...photoFile];
+        list.push(nativeEvent.uri);
+        setPhotoFile(list);
+      }
+    }
+  };
+  Extractor = (imgFilter, imgfile, isSingle = false) => {
+    // const width =props.params.cropDataRow.fittedSize.width
+    // const height =props.params.cropDataRow.fittedSize.height
+
+    const ImageComponent = (
+      <>
+        <Image
+          style={{
+            width: isSingle ? width : 319,
+            height: isSingle ? width : 319,
+            marginRight: 8,
+          }}
+          source={{ uri: imgfile }}
+        />
+      </>
+    );
+    switch (imgFilter) {
+      case 'Sepia2': {
+        return <Sepia image={ImageComponent} amount={2} />;
+      }
+      case 'Temperature': {
+        return <Temperature amount={0.5} image={ImageComponent} />;
+      }
+      case 'Sepia0.4': {
+        return <Sepia amount={0.4} image={ImageComponent} />;
+      }
+      case 'Warm': {
+        return <Warm image={ImageComponent} />;
+      }
+      case 'Browni': {
+        return <Browni image={ImageComponent} />;
+      }
+      case 'Tint': {
+        return <Tint amount={0.2} image={ImageComponent} />;
+      }
+      case 'Technicolor': {
+        return <Technicolor image={ImageComponent} />;
+      }
+      case 'Tritanomaly': {
+        return <Tritanomaly image={ImageComponent} />;
+      }
+      case 'Tritanopia': {
+        return <Tritanopia image={ImageComponent} />;
+      }
+      case 'Deuteranomaly': {
+        return <Deuteranomaly image={ImageComponent} />;
+      }
+      case 'Invert': {
+        return <Invert image={ImageComponent} firstColor={'#FFE580'} secondColor={'pink'} />;
+      }
+      case 'EmbossPolaroid': {
+        return <Emboss image={<Polaroid image={ImageComponent} />} />;
+      }
+      case 'EmbossCool': {
+        return <Emboss image={<Cool image={ImageComponent} />} />;
+      }
+      case 'EmbossAchromatopsia': {
+        return <Emboss image={<Achromatopsia image={ImageComponent} />} />;
+      }
+
+      default: {
+        return ImageComponent;
+      }
+    }
+  };
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.multipleSandBoxData !== this.props.multipleSandBoxData) {
+      return true;
+    }
+    if (nextProps.imgfilterName !== this.props.imgfilterName) {
+      return true;
+    }
+    return false;
+  }
+  render() {
+    const { multipleSandBoxData, imgfilterName, goback } = this.props;
+    console.info('renderrenderrender重绘');
+    return (
+      <View style={{ width: width, height: width, overflow: 'hidden' }}>
+        <View>
+          {multipleSandBoxData.length == 1 && (
+            <Grayscale
+              amount={0}
+              onExtractImage={({ nativeEvent }) => {
+                this.saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
+              }}
+              extractImageEnabled={true}
+              image={this.Extractor(imgfilterName, multipleSandBoxData[0], true)}
+            ></Grayscale>
+          )}
+          {multipleSandBoxData.length > 1 && (
+            <>
+              <FlatList
+                style={[{ marginTop: 40 }, !(multipleSandBoxData.length > 1) && { display: 'none' }]}
+                horizontal={true}
+                data={multipleSandBoxData}
+                renderItem={({ item, index }) => {
+                  return (
+                    <Grayscale
+                      amount={0}
+                      onExtractImage={({ nativeEvent }) => {
+                        this.saveFilterImage(nativeEvent, item);
+                      }}
+                      extractImageEnabled={true}
+                      image={this.Extractor(imgfilterName, item)}
+                    ></Grayscale>
+                  );
+                }}
+                ListFooterComponent={<AddPhoto {...this.props}> </AddPhoto>}
+              />
+            </>
+          )}
+        </View>
+      </View>
+    );
+  }
+}
 const PostEditor = (props) => {
   // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
@@ -197,7 +348,7 @@ const PostEditor = (props) => {
   const lockRef = useRef(false);
   const continueRef = useRef(false);
   const [photoFile, setPhotoFile] = useState('');
-  const [photosDataIndex, setPhotosDataIndex] = useState([]);
+
   const [videoPause, setVideoPause] = useState(false);
   const outputPathRef = useRef(null);
 
@@ -226,7 +377,6 @@ const PostEditor = (props) => {
             height: imageData.height,
           };
         });
-        console.info('uploadFileuploadFile', uploadFile);
         props.getUploadFile(uploadFile);
         uploadFile = [];
         props.goback();
@@ -238,7 +388,6 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      console.info('coverImage.current', coverImage.current);
       if (!coverImage.current) {
         return;
       }
@@ -491,6 +640,7 @@ const PostEditor = (props) => {
       width: windowWidth,
       height: windowWidth,
     };
+
     return (
       <View
         style={[
@@ -518,7 +668,6 @@ const PostEditor = (props) => {
           activeOpacity={1}
           style={[videoStyle, { position: 'relative' }]}
           onPress={() => {
-            console.info('131313');
             if (Platform.OS === 'ios') {
               if (!videoPause) {
                 RNEditViewManager.pause();
@@ -531,7 +680,14 @@ const PostEditor = (props) => {
         >
           <Image
             style={[
-              { width: 45, height: 50, top: width / 2 + 120, left: width / 2 - 45, position: 'absolute', zIndex: 99 },
+              {
+                width: 45,
+                height: 50,
+                top: (videoHeight - 50) / 2,
+                left: (videoWidth - 45) / 2,
+                position: 'absolute',
+                zIndex: 99,
+              },
               videoPause != true && { display: 'none' },
             ]}
             source={postEditPausePng}
@@ -880,7 +1036,7 @@ const PostEditor = (props) => {
           justifyContent: 'space-around',
           alignItems: 'flex-start',
           position: 'absolute',
-          bottom: 43,
+          bottom: props.insets.bottom,
         }}
       >
         {/* {videoTime / 1000 > 300 && cropToast()} */}
@@ -906,71 +1062,6 @@ const PostEditor = (props) => {
     const top = props.params.cropDataRow.positionY;
     const scale = props.params.cropDataRow.scale;
 
-    const Extractor = (imgFilter, imgfile, isSingle = false) => {
-      // const width =props.params.cropDataRow.fittedSize.width
-      // const height =props.params.cropDataRow.fittedSize.height
-      console.info(imgfile);
-      const ImageComponent = (
-        <>
-          <Image
-            style={{
-              width: isSingle ? width : 319,
-              height: isSingle ? width : 319,
-              marginRight: 8,
-            }}
-            source={{ uri: imgfile }}
-          />
-        </>
-      );
-      switch (imgFilter) {
-        case 'Sepia2': {
-          return <Sepia image={ImageComponent} amount={2} />;
-        }
-        case 'Temperature': {
-          return <Temperature amount={0.5} image={ImageComponent} />;
-        }
-        case 'Sepia0.4': {
-          return <Sepia amount={0.4} image={ImageComponent} />;
-        }
-        case 'Warm': {
-          return <Warm image={ImageComponent} />;
-        }
-        case 'Browni': {
-          return <Browni image={ImageComponent} />;
-        }
-        case 'Tint': {
-          return <Tint amount={0.2} image={ImageComponent} />;
-        }
-        case 'Technicolor': {
-          return <Technicolor image={ImageComponent} />;
-        }
-        case 'Tritanomaly': {
-          return <Tritanomaly image={ImageComponent} />;
-        }
-        case 'Tritanopia': {
-          return <Tritanopia image={ImageComponent} />;
-        }
-        case 'Deuteranomaly': {
-          return <Deuteranomaly image={ImageComponent} />;
-        }
-        case 'Invert': {
-          return <Invert image={ImageComponent} firstColor={'#FFE580'} secondColor={'pink'} />;
-        }
-        case 'EmbossPolaroid': {
-          return <Emboss image={<Polaroid image={ImageComponent} />} />;
-        }
-        case 'EmbossCool': {
-          return <Emboss image={<Cool image={ImageComponent} />} />;
-        }
-        case 'EmbossAchromatopsia': {
-          return <Emboss image={<Achromatopsia image={ImageComponent} />} />;
-        }
-
-        default: {
-          return ImageComponent;
-        }
-      }
-    };
     const propsImage = () => {
       return (
         <Image
@@ -984,66 +1075,17 @@ const PostEditor = (props) => {
     const propsTitles = (title) => {
       return <Text style={{ color: 'white', fontSize: 16, marginLeft: 40 }}>{title}</Text>;
     };
-    const saveFilterImage = (nativeEvent, item, flag = false) => {
-      setPhotoFile(nativeEvent.uri);
-      if (flag) {
-        setPhotoFile([nativeEvent.uri]);
-      } else {
-        // 判断是否已经选中过
-        if (photosDataIndex.indexOf(item) != -1) {
-          let dataIndex = photosDataIndex.indexOf(item);
-          let list = [...photoFile];
-          list[dataIndex] = nativeEvent.uri;
-          setPhotoFile(list);
-        } else {
-          let dataIndex = [...photosDataIndex];
-          dataIndex.push(item);
-          setPhotosDataIndex(dataIndex);
 
-          let list = [...photoFile];
-          list.push(nativeEvent.uri);
-          setPhotoFile(list);
-        }
-      }
-    };
     return (
       <>
-        <View style={{ width: width, height: width, overflow: 'hidden' }}>
-          <View>
-            {multipleSandBoxData.length == 1 && (
-              <Grayscale
-                amount={0}
-                onExtractImage={({ nativeEvent }) => {
-                  saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
-                }}
-                extractImageEnabled={true}
-                image={Extractor(imgfilterName, multipleSandBoxData[0], true)}
-              ></Grayscale>
-            )}
-            {multipleSandBoxData.length > 1 && (
-              <FlatList
-                style={[{ marginTop: 40 }, !(multipleSandBoxData.length > 1) && { display: 'none' }]}
-                horizontal={true}
-                data={multipleSandBoxData}
-                renderItem={({ item, index }) => {
-                  return (
-                    <Grayscale
-                      amount={0}
-                      onExtractImage={({ nativeEvent }) => {
-                        saveFilterImage(nativeEvent, item);
-                      }}
-                      extractImageEnabled={true}
-                      image={Extractor(imgfilterName, item)}
-                    ></Grayscale>
-                  );
-                }}
-                ListFooterComponent={() => {
-                  return <AddPhoto {...props} />;
-                }}
-              />
-            )}
-          </View>
-        </View>
+        {/* post 图片展示 */}
+        <PhotoShow
+          multipleSandBoxData={multipleSandBoxData}
+          imgfilterName={imgfilterName}
+          setPhotoFile={(data) => setPhotoFile(data)}
+          photoFile={photoFile}
+          goback={props.goback}
+        />
         <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
           <TouchableOpacity
             onPress={() => {
