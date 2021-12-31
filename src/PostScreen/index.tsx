@@ -98,6 +98,7 @@ class MultipleSelectButton extends Component {
     this.props.setSelectMultiple();
   };
   render() {
+    return null;
     return (
       <Pressable onPress={this.pressMultiple}>
         <Image
@@ -271,8 +272,6 @@ class PostContent extends Component {
               areaOverlay={<View></View>}
               setCropperParams={(cropperParams) => {
                 if (imageItem?.videoFile) {
-                  console.info('是视频');
-                  console.info('00000-----cropperParams', cropDataRow);
                   // cropDataRow?.imageItem?.videoFile = cropperParams
                   // cropDataRow = {...cropDataRow,imageItem.videoFile:cropperParams}
                 } else {
@@ -281,7 +280,6 @@ class PostContent extends Component {
                 let newKey = imageItem.uri;
                 cropDataRow[newKey] = cropperParams;
                 // cropDataRow = cropperParams;
-                console.info('00000-----cropperParams', cropDataRow);
               }}
             />
           </View>
@@ -570,7 +568,6 @@ class GridItem extends Component {
 }
 const PostHead = React.memo((props) => {
   const { postEditor, goback, multipleData, setSelectMultiple } = props;
-  console.info('propsprops', multipleData);
   const closePng = require('../../images/postClose.png');
   const pressMultiple = () => {
     // 点击在这里修改数值
