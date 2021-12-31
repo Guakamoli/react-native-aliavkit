@@ -98,6 +98,7 @@ class MultipleSelectButton extends Component {
     this.props.setSelectMultiple();
   };
   render() {
+    return null;
     return (
       <Pressable onPress={this.pressMultiple}>
         <Image
@@ -567,7 +568,6 @@ class GridItem extends Component {
 }
 const PostHead = React.memo((props) => {
   const { postEditor, goback, multipleData, setSelectMultiple } = props;
-
   const closePng = require('../../images/postClose.png');
   const pressMultiple = () => {
     // 点击在这里修改数值
