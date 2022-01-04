@@ -15,8 +15,8 @@ import * as Arrow from './Arrow';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const MINIMUM_TRIM_DURATION = 2000;
-const MAXIMUM_TRIM_DURATION = 180000;
+const MINIMUM_TRIM_DURATION = 2 * 1000;
+const MAXIMUM_TRIM_DURATION = 5 * 60 * 1000;
 const MAXIMUM_SCALE_VALUE = 1;
 const ZOOM_MULTIPLIER = 1;
 const INITIAL_ZOOM = 1;
@@ -24,9 +24,16 @@ const SCALE_ON_INIT_TYPE = 'trim-duration';
 const SHOW_SCROLL_INDICATOR = false;
 const CENTER_ON_LAYOUT = false;
 
-const TRACK_PADDING_OFFSET = 10;
-const HANDLE_WIDTHS = 12;
-const SCRUBBER_WIDTHS = 10;
+//左右两端缩进
+const TRACK_PADDING_OFFSET = 0;
+//左右两边滑块宽度,可触摸滑动区域
+const HANDLE_WIDTHS = 35;
+//左右两边滑块宽度，展示出来能看到的宽度
+const HANDLE_WIDTHS_SHOW = 20;
+//进度指针区域的宽度
+const SCRUBBER_WIDTHS = 8;
+//进度指正展示出来的宽度
+const SCRUBBER_WIDTHS_SHOW = 5;
 
 const MARKER_INCREMENT = 1000;
 const SPECIAL_MARKER_INCREMEMNT = 5;
@@ -57,6 +64,8 @@ export default class Trimmer extends React.Component {
       trackScale = this.clamp({ value: smartScaleValue, min: 1, max: props.maximumZoomLevel || MAXIMUM_SCALE_VALUE });
     }
 
+    this.scrubberTocuhing = false;
+
     this.initiateAnimator();
     this.state = {
       scrubbing: false, // this value means scrubbing is currently happening
@@ -86,32 +95,55 @@ export default class Trimmer extends React.Component {
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
       onPanResponderGrant: (evt, gestureState) => {
+        const { totalDuration, trackWidth,trimmerLeftHandlePosition, trimmerRightHandlePosition,} = this.props;
+        const newBoundedScrubberPosition = (gestureState.x0 - TRACK_PADDING_OFFSET - HANDLE_WIDTHS + SCRUBBER_WIDTHS) / trackWidth * totalDuration
         this.setState({
           scrubbing: true,
-          internalScrubbingPosition: this.props.scrubberPosition,
+          // internalScrubbingPosition: this.props.scrubberPosition,
+          internalScrubbingPosition: newBoundedScrubberPosition,
         });
         this.handleScrubberPressIn();
       },
       onPanResponderMove: (evt, gestureState) => {
-        const { trackScale } = this.state;
-        const { scrubberPosition, trimmerLeftHandlePosition, trimmerRightHandlePosition, totalDuration } = this.props;
-
-        const trackWidth = screenWidth * trackScale;
-        const calculatedScrubberPosition = (scrubberPosition / totalDuration) * trackWidth;
-
-        const newScrubberPosition = ((calculatedScrubberPosition + gestureState.dx) / trackWidth) * totalDuration;
+        const { totalDuration, trackWidth,trimmerLeftHandlePosition,trimmerRightHandlePosition } = this.props;
+        let moveX = gestureState.moveX - TRACK_PADDING_OFFSET - HANDLE_WIDTHS + SCRUBBER_WIDTHS;
+        if (moveX < 0) {
+          moveX = 0;
+        }
+        if (moveX > trackWidth) {
+          moveX = trackWidth;
+        }
+        const position = moveX / trackWidth * totalDuration
 
         const lowerBound = Math.max(0, trimmerLeftHandlePosition);
         const upperBound = trimmerRightHandlePosition;
 
         const newBoundedScrubberPosition = this.clamp({
-          value: newScrubberPosition,
+          value: position,
           min: lowerBound,
           max: upperBound,
         });
 
+        // const { trackScale } = this.state;
+        // const { scrubberPosition, trimmerLeftHandlePosition, trimmerRightHandlePosition, totalDuration } = this.props;
+
+        // const trackWidth = screenWidth * trackScale;
+        // const calculatedScrubberPosition = (scrubberPosition / totalDuration) * trackWidth;
+
+        // const newScrubberPosition = ((calculatedScrubberPosition + gestureState.dx) / trackWidth) * totalDuration;
+
+        // const lowerBound = Math.max(0, trimmerLeftHandlePosition);
+        // const upperBound = trimmerRightHandlePosition;
+
+        // const newBoundedScrubberPosition = this.clamp({
+        //   value: newScrubberPosition,
+        //   min: lowerBound,
+        //   max: upperBound,
+        // });
+
         this.setState({ internalScrubbingPosition: newBoundedScrubberPosition });
       },
+      //松开手指
       onPanResponderRelease: (evt, gestureState) => {
         this.handleScrubbingValueChange(this.state.internalScrubbingPosition);
         this.setState({ scrubbing: false });
@@ -226,10 +258,6 @@ export default class Trimmer extends React.Component {
             trimmingLeftHandleValue: newBoundedTrimmerLeftHandlePosition,
           });
         } else if (this.state.trimmingRightHandleValue - newBoundedTrimmerLeftHandlePosition <= minimumTrimDuration) {
-          // this.setState({
-          //   trimmingRightHandleValue: newBoundedTrimmerLeftHandlePosition,
-          //   trimmingLeftHandleValue: newBoundedTrimmerLeftHandlePosition - minimumTrimDuration,
-          // })
           this.setState({
             trimmingRightHandleValue: newBoundedTrimmerLeftHandlePosition + minimumTrimDuration,
             trimmingLeftHandleValue: newBoundedTrimmerLeftHandlePosition,
@@ -319,6 +347,7 @@ export default class Trimmer extends React.Component {
     });
 
   handleScrubbingValueChange = (newScrubPosition) => {
+    this.scrubberTocuhing = true;
     const { onScrubbingComplete } = this.props;
     onScrubbingComplete && onScrubbingComplete(newScrubPosition | 0);
   };
@@ -419,25 +448,30 @@ export default class Trimmer extends React.Component {
     const scrubPosition = scrubbing ? internalScrubbingPosition : scrubberPosition;
 
     const boundedLeftPosition = Math.max(leftPosition, 0);
-    const boundedScrubPosition = this.clamp({ value: scrubPosition, min: boundedLeftPosition, max: rightPosition });
+
+    let boundedScrubPosition = this.clamp({ value: scrubPosition, min: boundedLeftPosition, max: rightPosition });
+    if(this.scrubberTocuhing){
+      boundedScrubPosition = scrubPosition;
+      this.scrubberTocuhing = false;
+    }
+
     const boundedTrimTime = Math.max(rightPosition - boundedLeftPosition, 0);
 
     const actualTrimmerWidth = (boundedTrimTime / totalDuration) * trackWidth;
     const actualTrimmerOffset =
       (boundedLeftPosition / totalDuration) * trackWidth + TRACK_PADDING_OFFSET + HANDLE_WIDTHS;
-    const actualScrubPosition =
-      (boundedScrubPosition / totalDuration) * trackWidth +
-      TRACK_PADDING_OFFSET +
-      HANDLE_WIDTHS / 2 +
-      SCRUBBER_WIDTHS / 2;
+
+    const actualScrubPosition = (boundedScrubPosition / totalDuration) * trackWidth +
+      TRACK_PADDING_OFFSET + HANDLE_WIDTHS - SCRUBBER_WIDTHS / 2;
+    //  TRACK_PADDING_OFFSET + HANDLE_WIDTHS / 2 + SCRUBBER_WIDTHS / 2 - SCRUBBER_WIDTHS_SHOW / 2;
 
     const onLayoutHandler = centerOnLayout
       ? {
-          onLayout: () => {
-            const centerOffset = actualTrimmerOffset + actualTrimmerWidth / 2 - screenWidth / 2;
-            this.scrollView.scrollTo({ x: centerOffset, y: 0, animated: false });
-          },
-        }
+        onLayout: () => {
+          const centerOffset = actualTrimmerOffset + actualTrimmerWidth / 2 - screenWidth / 2;
+          this.scrollView.scrollTo({ x: centerOffset, y: 0, animated: false });
+        },
+      }
       : null;
 
     if (isNaN(actualTrimmerWidth)) {
@@ -456,52 +490,48 @@ export default class Trimmer extends React.Component {
     return (
       <View style={styles.root}>
         <View
-          // ref={scrollView => this.scrollView = scrollView}
-          // scrollEnabled={!trimming && !scrubbing}
           style={[styles.horizontalScrollView, { transform: [{ scaleX: 1.0 }] }]}
-          // horizontal
-          // showsHorizontalScrollIndicator={showScrollIndicator}
-          // {...{ ...this.trackPanResponder.panHandlers, ...onLayoutHandler }}
         >
           <View style={trackBackgroundStyles}>
             <View style={styles.markersContainer}>
-              {/* {
-                markers.map((m, i) => (
-                  <View
-                    key={`marker-${i}`}
-                    style={[
-                      styles.marker,
-                      i % SPECIAL_MARKER_INCREMEMNT ? {} : styles.specialMarker,
-                      i === 0 || i === markers.length - 1 ? styles.hiddenMarker : {},
-                      { backgroundColor: markerColor }
-                    ]} />
-                ))
-              } */}
               {this.props.children}
             </View>
           </View>
-          <Animated.View
-            style={[
-              styles.scrubberContainer,
-              { left: actualScrubPosition },
-              {
-                transform: [{ translateX: this.props.scrollAniRef }],
-              },
-            ]}
-            pointerEvents='none'
-          >
-            <View style={[styles.scrubberTail, { backgroundColor: scrubberColor }]} />
-          </Animated.View>
+
+
+          {
+            typeof scrubberPosition === 'number'
+              ? (
+                <Animated.View style={[
+                  styles.scrubberContainer,
+                  { left: actualScrubPosition },
+                  {
+                    transform: [{ translateX: this.props.scrollAniRef }],
+                  },
+                ]}
+                  hitSlop={{ top: 8, bottom: 8, right: 5, left: 5 }}
+                  {...this.scrubHandlePanResponder.panHandlers}
+
+                >
+                  {/* <View style={[styles.scrubberTail]} /> */}
+                  <View style={[styles.scrubberTail, { backgroundColor: scrubberColor }]} />
+                </Animated.View>
+              )
+              : null
+          }
+
 
           <View
             {...this.leftHandlePanResponder.panHandlers}
             style={[
               styles.handle,
-              styles.leftHandle,
-              { backgroundColor: tintColor, left: actualTrimmerOffset - HANDLE_WIDTHS },
+              { left: actualTrimmerOffset - HANDLE_WIDTHS },
             ]}
+            hitSlop={{ top: 8, bottom: 8, right: 8, left: 8 }}
           >
-            <Arrow.Left />
+            <View style={[styles.leftHandleContainer, { backgroundColor: tintColor, }]}>
+              <Arrow.Left />
+            </View>
           </View>
 
           <View
@@ -518,12 +548,15 @@ export default class Trimmer extends React.Component {
             {...this.rightHandlePanResponder.panHandlers}
             style={[
               styles.handle,
-              styles.rightHandle,
-              { backgroundColor: tintColor, left: actualTrimmerOffset + actualTrimmerWidth },
+              { left: actualTrimmerOffset + actualTrimmerWidth },
             ]}
+            hitSlop={{ top: 8, bottom: 8, right: 8, left: 8 }}
           >
-            <Arrow.Right />
+            <View style={[styles.rightHandleContainer, { backgroundColor: tintColor, }]}>
+              <Arrow.Right />
+            </View>
           </View>
+
         </View>
       </View>
     );
@@ -531,10 +564,10 @@ export default class Trimmer extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  root: {},
+  root: {
+    //  backgroundColor: 'red' 
+    },
   horizontalScrollView: {
-    marginStart: 'auto',
-    marginEnd: 'auto',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -561,17 +594,26 @@ const styles = StyleSheet.create({
     height: 54,
   },
   handle: {
+    zIndex: 1,
     position: 'absolute',
     width: HANDLE_WIDTHS,
     height: 54,
-    backgroundColor: TINT_COLOR,
+    // backgroundColor: TINT_COLOR,
     top: 8,
   },
-  leftHandle: {
+  leftHandleContainer: {
+    position: 'absolute',
+    width: HANDLE_WIDTHS_SHOW,
+    height: 54,
+    marginStart: HANDLE_WIDTHS - HANDLE_WIDTHS_SHOW,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  rightHandle: {
+  rightHandleContainer: {
+    position: 'absolute',
+    width: HANDLE_WIDTHS_SHOW,
+    height: 54,
+    marginEnd: HANDLE_WIDTHS - HANDLE_WIDTHS_SHOW,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
   },
@@ -601,12 +643,12 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   scrubberContainer: {
-    zIndex: 1,
+    zIndex: 2,
+    // backgroundColor: 'rgba(0,0,255,0.2)',
     position: 'absolute',
     width: SCRUBBER_WIDTHS,
-    paddingTop: 8,
-    height: 44,
-    // justifyContent: 'center',
+    height: 72,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   scrubberHead: {
@@ -618,13 +660,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   scrubberTail: {
-    paddingTop: SCRUBBER_WIDTHS,
-    backgroundColor: SCRUBBER_COLOR,
-    height: 54 + 6,
-    width: 6,
-    top: -3,
-    borderBottomLeftRadius: SCRUBBER_WIDTHS,
-    borderBottomRightRadius: SCRUBBER_WIDTHS,
-    borderRadius: 3,
+    height: 62,
+    width: SCRUBBER_WIDTHS_SHOW,
+    // backgroundColor: 'rgba(0,255,0,0.6)',
+    // backgroundColor: SCRUBBER_COLOR,
+    borderRadius: SCRUBBER_WIDTHS_SHOW,
   },
 });

@@ -54,7 +54,9 @@ const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
-const cropWidth = width - 30 * 2;
+const cropWidth = width - 35 * 2;
+console.log("width", width);
+console.log("cropWidth", cropWidth);
 const PostHead = React.memo((props) => {
   const { videoMute, setvideoMute } = props;
 
@@ -329,6 +331,8 @@ const PostEditor = (props) => {
   // const [coverImage, setcoverImage] = useState('');
   const coverImage = useRef(null);
   const [selectBottomModel, setselectBottomModel] = useState('滤镜');
+
+
   const [trimmerLeftHandlePosition, settrimmerLeftHandlePosition] = useState(0);
   const [trimmerRightHandlePosition, settrimmerRightHandlePosition] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
@@ -593,10 +597,10 @@ const PostEditor = (props) => {
   };
 
   const postEditorViewData = () => {
-    const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
+    const delta = trimmerRightHandlePosition - scrubberPosition;
     const top = props.params.cropDataRow.positionY;
     let cropDataRowkey = props.params.originalData[0].image.uri;
-    console.info('props.params.trimVideoData', props.params.originalData[0]);
+    // console.info('props.params.trimVideoData', props.params.originalData[0]);
     const width1 = props.params.cropDataRow[cropDataRowkey].fittedSize.width;
     const height1 = props.params.cropDataRow[cropDataRowkey].fittedSize.height;
     const srcWidth = props.params.cropDataRow[cropDataRowkey].srcSize.width;
@@ -705,6 +709,14 @@ const PostEditor = (props) => {
               onExportVideo(event);
             }}
             onPlayProgress={({ nativeEvent }) => {
+              // console.log("onPlayProgress", nativeEvent);
+              if (nativeEvent.streamProgress === 0) {
+                //重新播放，重置状态
+                startRef.current = false;
+                lockRef.current = false;
+                stopRef.current = false;
+              }
+
               if (
                 nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition &&
                 !startRef.current &&
@@ -715,6 +727,7 @@ const PostEditor = (props) => {
                   // 随时间变化而执行动画
                   scrollAniRef, // 动画中的变量值
                   {
+                    //Math.min((newScrubPosition - ) / videoTime, 1) * cropWidth
                     toValue: Math.min(delta / videoTime, 1) * cropWidth, // 透明度最终变为1，即完全不透明
                     duration: delta, // 让动画持续一段时间
                     useNativeDriver: true,
@@ -733,6 +746,9 @@ const PostEditor = (props) => {
                   startRef.current = false;
 
                   aniRef.current.stop();
+
+                  // setscrubberPosition(0);
+                  setscrubberPosition(trimmerLeftHandlePosition);
 
                   scrollAniRef.setValue(0);
                   stopRef.current = false;
@@ -837,17 +853,50 @@ const PostEditor = (props) => {
 
     return (
       <>
-        <View style={{ paddingHorizontal: 5, bottom: 140, position: 'absolute' }}>
+        <View style={{ paddingHorizontal: 0, bottom: 140, position: 'absolute' }}>
           <Trimmer
             onHandleChange={onHandleChange}
             totalDuration={videoTime}
             initialZoomValue={1}
-            maxTrimDuration={trimmerRightHandlePosition}
             trimmerLeftHandlePosition={trimmerLeftHandlePosition}
             trimmerRightHandlePosition={trimmerRightHandlePosition}
             scrubberPosition={scrubberPosition}
-            onScrubbingComplete={() => {
-              // RNEditViewManager.replay();
+            onScrubbingComplete={(newScrubPosition) => {
+
+              stopRef.current = false;
+              startRef.current = true;
+              lockRef.current = false;
+
+              //指示器拖动结束
+              const scrollValue = Math.min(newScrubPosition / videoTime, 1) * cropWidth
+
+              const toValue = Math.min(trimmerRightHandlePosition / videoTime, 1) * cropWidth;
+
+              const duration = trimmerRightHandlePosition - newScrubPosition;
+
+              setscrubberPosition(0);
+
+              scrollAniRef.setValue(scrollValue);
+              aniRef.current = Animated.timing(
+                // 随时间变化而执行动画
+                scrollAniRef, // 动画中的变量值
+                {
+                  toValue: toValue, // 透明度最终变为1，即完全不透明
+                  duration: duration, // 让动画持续一段时间
+                  useNativeDriver: true,
+                },
+              );
+              aniRef.current.start();
+
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.seekToTime(newScrubPosition / 1000);
+                setTimeout(() => {
+                  RNEditViewManager.play();
+                }, 500);
+              } else {
+                editor?.onSeek(newScrubPosition);
+              }
+
             }}
             scrollAniRef={scrollAniRef}
             tintColor='white'
@@ -856,14 +905,27 @@ const PostEditor = (props) => {
             trackBorderColor='#5a3d5c'
             scrubberColor='white'
             onScrubberPressIn={() => {
+              //指示器被点击
               console.log('onScrubberPressIn');
+              if (continueRef.current) return;
+              stopRef.current = true;
+              startRef.current = false;
+              lockRef.current = true;
+ 
+              aniRef.current.stop();
+              scrollAniRef.setValue(0);
+
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             onRightHandlePressIn={() => {
               if (continueRef.current) return;
 
               stopRef.current = true;
               startRef.current = false;
-              ``;
               lockRef.current = true;
               aniRef.current.stop();
 
@@ -892,9 +954,10 @@ const PostEditor = (props) => {
             trackHeight={50}
           >
             <View style={{ flexDirection: 'row' }}>
-              {coverList.map((i) => {
+              {coverList.map((i,index) => {
                 return (
                   <Image
+                    key={index}
                     source={{ uri: i }}
                     style={{ width: cropWidth / coverList.length, height: 50 }}
                     resizeMode={'cover'}

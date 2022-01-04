@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Button, SafeAreaView, StatusBar } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -36,14 +36,16 @@ function HomeScreen(props) {
 
   }
   return (
-
     <>
-      <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
-       insets={insets}
+      <SafeAreaView style={{ flex: 1, }}>
+        <View style={{ backgroundColor: '#000' }}>
+        <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile}
+        insets={insets}
         getUploadFile={(data) => {
           navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
         }}></Entry>
-
+        </View>
+      </SafeAreaView>
     </>
     // </View>
   );
