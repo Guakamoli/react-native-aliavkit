@@ -332,7 +332,7 @@ const PostEditor = (props) => {
   const coverImage = useRef(null);
   const [selectBottomModel, setselectBottomModel] = useState('滤镜');
 
-  var [videoStreamProgress, setVideoStreamProgress] = useState(0);
+
   const [trimmerLeftHandlePosition, settrimmerLeftHandlePosition] = useState(0);
   const [trimmerRightHandlePosition, settrimmerRightHandlePosition] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
@@ -710,7 +710,6 @@ const PostEditor = (props) => {
             }}
             onPlayProgress={({ nativeEvent }) => {
               // console.log("onPlayProgress", nativeEvent);
-              videoStreamProgress = nativeEvent?.streamProgress;
               if (nativeEvent.streamProgress === 0) {
                 //重新播放，重置状态
                 startRef.current = false;
@@ -915,7 +914,6 @@ const PostEditor = (props) => {
  
               aniRef.current.stop();
               scrollAniRef.setValue(0);
-              // setscrubberPosition(videoStreamProgress*1000);
 
               if (Platform.OS === 'ios') {
                 RNEditViewManager.pause();

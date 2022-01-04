@@ -64,9 +64,10 @@ export default class Trimmer extends React.Component {
       trackScale = this.clamp({ value: smartScaleValue, min: 1, max: props.maximumZoomLevel || MAXIMUM_SCALE_VALUE });
     }
 
+    this.scrubberTocuhing = false;
+
     this.initiateAnimator();
     this.state = {
-      scrubberTocuhing:false,
       scrubbing: false, // this value means scrubbing is currently happening
       trimming: false, // this value means the handles are being moved
       trackScale, // the scale factor for the track
@@ -346,7 +347,7 @@ export default class Trimmer extends React.Component {
     });
 
   handleScrubbingValueChange = (newScrubPosition) => {
-    this.state.scrubberTocuhing = true;
+    this.scrubberTocuhing = true;
     const { onScrubbingComplete } = this.props;
     onScrubbingComplete && onScrubbingComplete(newScrubPosition | 0);
   };
@@ -449,9 +450,9 @@ export default class Trimmer extends React.Component {
     const boundedLeftPosition = Math.max(leftPosition, 0);
 
     let boundedScrubPosition = this.clamp({ value: scrubPosition, min: boundedLeftPosition, max: rightPosition });
-    if(this.state.scrubberTocuhing){
+    if(this.scrubberTocuhing){
       boundedScrubPosition = scrubPosition;
-      this.state.scrubberTocuhing = false;
+      this.scrubberTocuhing = false;
     }
 
     const boundedTrimTime = Math.max(rightPosition - boundedLeftPosition, 0);
