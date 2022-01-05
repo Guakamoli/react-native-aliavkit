@@ -240,7 +240,7 @@ class PostContent extends Component {
       }
     }
 
-    if (!this.props.multipleData[0]) return null;
+    // if (!this.props.multipleData[0]) return null;
     const { cropScale } = this.state;
     if (!imageItem) return null;
     return (
