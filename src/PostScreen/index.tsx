@@ -99,7 +99,7 @@ class MultipleSelectButton extends Component {
     if (this.props.selectMultiple) {
       let selectData = null;
       // 变成单选，设置最后一次选中的 item 为单选选中状态
-      if (!!this.props.multipleData && this.props.multipleData.length > 0) {
+      if (this.props?.multipleData?.length) {
         if (lastSelectedItemIndex > 0 && this.props.multipleData.length > lastSelectedItemIndex - 1) {
           selectData = this.props.multipleData[lastSelectedItemIndex - 1]
         } else {
@@ -433,7 +433,7 @@ class GridItemCover extends Component {
       cropDataRow = {};
     }
 
-    if (!!multipleData && multipleData.length > 0) {
+    if (multipleData?.length) {
       //  多选
       let fileSelectType = multipleData[multipleData.length - 1].type;
       if (fileSelectType != fileType && selectMultiple) {
@@ -509,7 +509,7 @@ class GridItemCover extends Component {
 
       //如果有删除，将选中的下标设置为数组的最后一个条在相册中对应的下标
       if (isrepetition) {
-        if (!!datalist && datalist.length > 0) {
+        if (datalist?.length) {
           lastSelectedItemPosition = datalist[datalist.length - 1].itemPosition
         }
       }
