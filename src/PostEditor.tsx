@@ -116,7 +116,7 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={() => {
           continueEdit();
-          // successEdit();
+          successEdit();
         }}
         style={{
           height: 30,
