@@ -857,8 +857,8 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    // this.getPhotoFromCache();
-    this.getPhotos();
+    this.getPhotoFromCache();
+    // this.getPhotos();
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
