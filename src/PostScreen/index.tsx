@@ -39,6 +39,12 @@ let clickItemLock = false;
 const photosItem = width / 4;
 let prevClickCallBack = null;
 let multipleData = [];
+
+//点击的item在所有图片中的下标
+let lastSelectedItemPosition = 0;
+//点击的item在选中集合中的下标
+let lastSelectedItemIndex = 0;
+
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
   multipleBtnImage: any;
@@ -90,15 +96,26 @@ let end_cursor;
 class MultipleSelectButton extends Component {
   pressMultiple = () => {
     // 点击在这里修改数值
-    // 取消多选 采用最后一个
     if (this.props.selectMultiple) {
-      let endSelectData = this.props.multipleData[this.props.multipleData.length - 1];
-      this.props.setMultipleData([endSelectData]);
+      let selectData = null;
+      // 变成单选，设置最后一次选中的 item 为单选选中状态
+      if (!!this.props.multipleData && this.props.multipleData.length > 0) {
+        if (lastSelectedItemIndex > 0 && this.props.multipleData.length > lastSelectedItemIndex - 1) {
+          selectData = this.props.multipleData[lastSelectedItemIndex - 1]
+        } else {
+          selectData = this.props.multipleData[this.props.multipleData.length - 1];
+        }
+      }
+      if (!!selectData) {
+        this.props.setMultipleData([selectData]);
+      }
+      // let endSelectData = this.props.multipleData[this.props.multipleData.length - 1];
+      // this.props.setMultipleData([endSelectData]);
     }
     this.props.setSelectMultiple();
   };
   render() {
-    return null;
+    // return null;
     return (
       <Pressable onPress={this.pressMultiple}>
         <Image
@@ -156,6 +173,11 @@ class PostContent extends Component {
     };
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    //没有选择照片时，不更新
+    if (!nextProps.multipleData || nextProps.multipleData.length == 0) {
+      return false;
+    }
     if (nextProps.multipleData !== this.props.multipleData) {
       if (!!nextProps.multipleData[0] && nextProps.multipleData[0]?.type == 'image') {
         this.setState({
@@ -207,9 +229,18 @@ class PostContent extends Component {
   };
 
   render() {
+
+    //设置选中的图片下标，并设置到 ImageCropper
+    let imageItem = '';
+    if (!!this.props.multipleData && this.props.multipleData.length > 0) {
+      if (lastSelectedItemIndex > 0 && this.props.multipleData.length > lastSelectedItemIndex - 1) {
+        imageItem = this.props.multipleData[lastSelectedItemIndex - 1].image
+      } else {
+        imageItem = this.props.multipleData[this.props.multipleData.length - 1].image;
+      }
+    }
+
     if (!this.props.multipleData[0]) return null;
-    const imageItem = this.props.multipleData[this.props.multipleData.length - 1].image;
-    console.info('-----', imageItem);
     const { cropScale } = this.state;
     if (!imageItem) return null;
     return (
@@ -298,7 +329,9 @@ class GridItemCover extends Component {
     super(props);
     this.state = {
       active: false,
+      selectPostion: -1,
       selectIndex: 1,
+      selectType: 0,
     };
     this.animteRef = new Animated.Value(0);
     if (this.props.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1) {
@@ -308,9 +341,32 @@ class GridItemCover extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+
+    //从选中一个，变成选中0个
+    if (this.props.multipleData?.length > 0 && nextProps.multipleData.length == 0) {
+      this.setState({
+        active: false,
+      });
+      this.animteRef.setValue(0);
+      return true;
+    }
+
+    //从选中0个，变成选中一个
+    if (this.props.multipleData?.length == 0 && nextProps.multipleData.length > 0) {
+      const active = nextProps.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1;
+      this.setState({
+        active,
+      });
+      const selectIndex = nextProps.multipleData.findIndex((item) => item.image.uri === this.props.item.image.uri);
+      this.setState({ selectIndex: selectIndex + 1 });
+      this.animteRef.setValue(active ? 0.5 : 0);
+      return true;
+    }
+
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
       return true;
     }
+
     if (nextProps.multipleData !== this.props.multipleData) {
       const active = nextProps.multipleData.findIndex((i) => i.image.uri === this.props.item.image.uri) > -1;
       this.setState({
@@ -321,7 +377,23 @@ class GridItemCover extends Component {
 
       this.setState({ selectIndex: selectIndex + 1 });
 
-      this.animteRef.setValue(active ? 0.5 : 0);
+      //设置选中时的白色半透明背景
+      if (nextProps.selectMultiple) {
+        if (nextState.selectPostion === lastSelectedItemPosition) {
+          if (active) {
+            this.animteRef.setValue(0.5);
+          } else {
+            // 被取消选中
+            this.animteRef.setValue(0);
+          }
+        } else {
+          //多选
+          this.animteRef.setValue(0);
+        }
+      } else {
+        //单选
+        this.animteRef.setValue(active ? 0.5 : 0);
+      }
       return false;
     }
     if (nextState.active !== this.state.active) {
@@ -330,66 +402,97 @@ class GridItemCover extends Component {
     if (nextState.selectIndex !== this.state.selectIndex) {
       return true;
     }
-
-    return false;
+    return true;
   }
-  clickItem = async () => {
-    // if (clickItemLock) return
-    // clickItemLock = true
-    const { item, multipleData, selectMultiple } = this.props;
+
+
+  clickItem = async (selectType: any) => {
+    const { item, multipleData, selectMultiple, index } = this.props;
     const { type } = item;
+    let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
+
+
+    if (!!selectType && this.state.active && fileType === 'image') {
+      //多选模式、已经选中的图片 被点击时，图片背景高亮
+      let datalist = [...multipleData];
+      this.props.setMultipleData(datalist);
+      lastSelectedItemPosition = index;
+      if (this.state.selectIndex != 0) {
+        lastSelectedItemIndex = this.state.selectIndex;
+      }
+      this.setState({
+        selectPostion: index,
+        selectType: selectType,
+      });
+      return;
+    } else {
+      lastSelectedItemIndex = 0;
+    }
+
     if (!selectMultiple) {
       cropDataRow = {};
     }
 
-    let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
-    let fileSelectType = multipleData[multipleData.length - 1].type;
-    const itemCopy = { ...item };
-    //  已选的必须 一致
-
-    if (fileSelectType != fileType && selectMultiple) {
-      console.info('选择不一致 无效');
-      return;
+    if (!!multipleData && multipleData.length > 0) {
+      //  多选
+      let fileSelectType = multipleData[multipleData.length - 1].type;
+      if (fileSelectType != fileType && selectMultiple) {
+        console.info('选择不一致 无效');
+        return;
+      }
     }
 
-    //    if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
+    const itemCopy = { ...item };
+
     if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
       return this.props.toastRef.current.show('视频时长不能超过5分钟', 1000);
     }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
       const localUri = await this.props.getVideFile(fileType, item);
-      if (!localUri) return;
-
+      if (!localUri) {
+        return;
+      }
+      //选择的是之前选中的视频，取消选中
+      if (!!multipleData[0]) {
+        if (multipleData[0].image.uri == itemCopy.image.uri) {
+          this.props.setMultipleData([]);
+          return
+        }
+      }
       itemCopy.image.videoFile = localUri;
+      lastSelectedItemPosition = index;
+      this.setState({
+        selectPostion: index,
+        selectType: selectType,
+      });
       this.props.setMultipleData([itemCopy]);
     } else {
       // 单选
-      console.info('222', !selectMultiple);
       if (!selectMultiple) {
         this.props.setMultipleData([itemCopy]);
         return;
       }
-      //
 
       let datalist = [...multipleData];
 
       // 遍历 判断是否已有
       let isrepetition = false;
-      console.info('--------datalist', datalist);
+
       try {
         datalist.forEach((data, index) => {
           if (data.image.uri == itemCopy.image.uri) {
             isrepetition = true;
-            console.info('datalist.length', datalist.length);
-            if (datalist.length == 1) {
-              throw new Error('LoopTerminates');
-            }
+            //可以不选择图片或者视频
+            // if (datalist.length == 1) {
+            //   throw new Error('LoopTerminates');
+            // }
             datalist.splice(index, 1);
+
           }
         });
       } catch (error) {
-        console.info('至少悬着一个2');
+        console.info('至少选择一张图片');
       }
       if (datalist.length >= 10) {
         this.props.toastRef.current.show('最多选择十张图片', 1000);
@@ -397,104 +500,129 @@ class GridItemCover extends Component {
         return;
       }
       if (!isrepetition) {
+        //这里保存每个选中的图片，在相册中对应的下标
+        itemCopy.itemPosition = index;
         datalist.push(itemCopy);
       }
+
+      lastSelectedItemPosition = index;
+
+      //如果有删除，将选中的下标设置为数组的最后一个条在相册中对应的下标
+      if (isrepetition) {
+        if (!!datalist && datalist.length > 0) {
+          lastSelectedItemPosition = datalist[datalist.length - 1].itemPosition
+        }
+      }
+
+      this.setState({
+        selectPostion: index,
+        selectType: selectType,
+      });
       this.props.setMultipleData(datalist);
     }
-    // prevClickCallBack?.();
-    // prevClickCallBack = () => {
-    //   this.setState({ active: false });
-    //   this.animteRef.setValue(0);
-    // };
-
-    // if (this.props.selectMultiple) {
-    //   this.animteRef.setValue(this.state.active ? 0 : 0.5);
-    // } else {
-    //   this.animteRef.setValue(0.5);
-    // }
-    // this.setState({
-    //   active: !this.state.active,
-    // });
-    // setTimeout(() => {
-    //   clickItemLock = false
-    // }, 60);
   };
+
+
+
+
+
+
   render() {
-    const { item, multipleData, selectMultiple } = this.props;
+    const { item, multipleData, selectMultiple, index } = this.props;
 
     const { type } = item;
 
-    let fileSelectType = multipleData[multipleData.length - 1]?.type ?? '';
+    //当前文件的类型
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
-    let filtTypeSame = fileSelectType != fileType && selectMultiple;
+
+    //是否可以选择，默认可以
+    let isSelector = true;
+    if (selectMultiple) {
+      if (!!multipleData && multipleData.length > 0) {
+        //选中的文件类型
+        let fileSelectType = multipleData[multipleData.length - 1]?.type ?? '';
+        if (fileSelectType !== fileType) {
+          isSelector = false;
+        }
+      }
+    }
+
     return (
       <TouchableOpacity
-        onPress={this.clickItem}
+        onPress={() => this.clickItem(1)}
         activeOpacity={1}
-        disabled={filtTypeSame}
+        disabled={!isSelector}
         style={[
           {
+            backgroundColor: 'rgba(255,0,0,0)',
             width: photosItem,
             height: photosItem,
             position: 'absolute',
             zIndex: 1,
           },
-          filtTypeSame && { backgroundColor: '#000', opacity: 0.5 },
+          !isSelector && { backgroundColor: '#000', opacity: 0.5 },
         ]}
       >
-        <>
-          {/* TODO */}
-          <View
-            style={[
-              {
-                borderRadius: 22,
-                borderWidth: 1,
-                width: 22,
-                height: 22,
-                borderColor: 'white',
-                overflow: 'hidden',
-                position: 'absolute',
-                zIndex: 99,
-                right: 5,
-                top: 5,
-                display: this.props.selectMultiple ? 'flex' : 'none',
-              },
-              Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
-            ]}
-          >
-            <Image
-              source={postFileSelectPng}
-              style={{
-                width: 20,
-                height: 20,
-                // borderRadius: 20,
-                zIndex: 99,
-                backgroundColor: '#836BFF',
-                justifyContent: 'center',
-                alignItems: 'center',
-                display: this.state.active && fileSelectType == 'video' ? 'flex' : 'none',
-              }}
-            />
-
-            <View
-              style={{
-                width: 20,
-                height: 20,
-                // borderRadius: 20,
-                zIndex: 99,
-                backgroundColor: '#836BFF',
-
-                justifyContent: 'center',
-                // alignItems: 'center',
-
-                display: this.state.active && fileSelectType == 'image' ? 'flex' : 'none',
-              }}
-            >
-              <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
-                {this.state.selectIndex}
-              </Text>
-            </View>
-          </View>
+        <View>
+          <Pressable
+            hitSlop={{ top: 10, bottom: 10, right: 10, left: 10 }}
+            style={{ zIndex: 2, backgroundColor: '#000' }}
+            onPress={() => {
+              this.clickItem(0)
+            }}>
+            <View>
+              <View
+                style={[
+                  {
+                    borderRadius: 22,
+                    borderWidth: 1,
+                    width: 22,
+                    height: 22,
+                    borderColor: 'white',
+                    overflow: 'hidden',
+                    position: 'absolute',
+                    zIndex: 99,
+                    right: 5,
+                    top: 5,
+                    display: this.props.selectMultiple ? 'flex' : 'none',
+                  },
+                  Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
+                ]}
+              >
+                {fileType == 'video' ?
+                  <Image
+                    source={postFileSelectPng}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      // borderRadius: 20,
+                      zIndex: 99,
+                      backgroundColor: '#836BFF',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      display: this.state.active ? 'flex' : 'none',
+                    }}
+                  />
+                  :
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      // borderRadius: 20,
+                      zIndex: 99,
+                      backgroundColor: '#836BFF',
+                      justifyContent: 'center',
+                      // alignItems: 'center',
+                      display: this.state.active ? 'flex' : 'none',
+                    }}
+                  >
+                    <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
+                      {this.state.selectIndex}
+                    </Text>
+                  </View>
+                }
+              </View></View>
+          </Pressable>
           <Animated.View
             style={[
               {
@@ -506,7 +634,8 @@ class GridItemCover extends Component {
               { opacity: this.animteRef },
             ]}
           ></Animated.View>
-        </>
+
+        </View>
       </TouchableOpacity>
     );
   }
@@ -520,7 +649,6 @@ const GIWMapDispatchToProps = (dispatch) => ({
   setSelectMultiple: () => dispatch(setSelectMultiple()),
   setMultipleData: (params) => {
     multipleData = params;
-    console.info('打印', params.length);
     dispatch(setMultipleData(params));
   },
 });
@@ -729,7 +857,8 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    this.getPhotoFromCache();
+    // this.getPhotoFromCache();
+    this.getPhotos();
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
@@ -765,13 +894,8 @@ class PostFileUpload extends Component {
         if (!firstData) return;
         let selectedValid = false;
         if (multipleData[0]) {
-          console.info(multipleData[0]?.image?.uri, 'multipleData[0]?.image?.uri');
           let myAssetId = multipleData[0]?.image?.uri.slice(5);
-          console.info('kaishi');
           let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-          console.info('kaishi22');
-
-          console.info(localUri, 'localUrilocalUrilocalUri');
           if (localUri) {
             selectedValid = true;
           }
@@ -870,12 +994,15 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   };
   postEditor = async () => {
-    const imageItem = multipleData[multipleData.length - 1].image;
-    // TODO  安卓type 待文件类型
-    let type = multipleData[multipleData.length - 1]?.type;
+
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 1000);
     }
+
+    const imageItem = multipleData[multipleData.length - 1].image;
+    // TODO  安卓type 待文件类型
+    let type = multipleData[multipleData.length - 1]?.type;
+
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
       return this.myRef.current.show('视频时长不能超过5分钟', 1000);
     }
@@ -885,7 +1012,6 @@ export default class CameraScreen extends Component<Props, State> {
       let trimVideoData = null;
       let resultData = [];
 
-      console.info('----cropDataRow', cropDataRow);
       // const result = await ImageCropper.crop({
       //   ...cropDataRow[imageItem?.uri],
       //   imageUri: imageItem.uri,
@@ -915,7 +1041,6 @@ export default class CameraScreen extends Component<Props, State> {
           });
         }),
       );
-      console.info('resultsresultsresultsresults', result);
       if (type === 'video') {
         if (Platform.OS !== 'android') {
           trimVideoData = await AVService.saveToSandBox({
@@ -976,7 +1101,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
   };
 
-  componentDidMount() {}
+  componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
