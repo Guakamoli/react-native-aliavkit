@@ -183,13 +183,17 @@ class PhotoShow extends Component {
         list[index] = nativeEvent.uri;
         setPhotoFile(list);
       } else {
-        let dataIndex = [...photosDataIndex];
-        dataIndex.push(item);
-        // setPhotosDataIndex(dataIndex);
-        // photosDataIndex =[...]
-        this.setState({ photosDataIndex: dataIndex });
+        // let dataIndex = [...photosDataIndex];
+        // dataIndex.push(item);
+        // // setPhotosDataIndex(dataIndex);
+        // // photosDataIndex =[...]
+        // this.setState({ photosDataIndex: dataIndex });
+        // let list = [...photoFile];
+        // list.push(nativeEvent.uri);
+        // setPhotoFile(list);
+
         let list = [...photoFile];
-        list.push(nativeEvent.uri);
+        list[index] = nativeEvent.uri;
         setPhotoFile(list);
       }
     }
@@ -910,7 +914,7 @@ const PostEditor = (props) => {
               stopRef.current = true;
               startRef.current = false;
               lockRef.current = true;
- 
+
               aniRef.current.stop();
               scrollAniRef.setValue(0);
 
