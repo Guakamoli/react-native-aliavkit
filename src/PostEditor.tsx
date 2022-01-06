@@ -168,7 +168,7 @@ class PhotoShow extends Component {
     };
   }
   // const [photosDataIndex, setPhotosDataIndex] = useState([]);
-  saveFilterImage = (nativeEvent, item, flag = false) => {
+  saveFilterImage = (nativeEvent, item, flag = false,index = 0) => {
     // ？？？？？
     const { setPhotoFile, photoFile } = this.props;
     const { photosDataIndex } = this.state;
@@ -179,9 +179,8 @@ class PhotoShow extends Component {
     } else {
       // 判断是否已经选中过 没有
       if (photosDataIndex.indexOf(item) != -1) {
-        let dataIndex = photosDataIndex.indexOf(item);
         let list = [...photoFile];
-        list[dataIndex] = nativeEvent.uri;
+        list[index] = nativeEvent.uri;
         setPhotoFile(list);
       } else {
         let dataIndex = [...photosDataIndex];
@@ -297,7 +296,7 @@ class PhotoShow extends Component {
                     <Grayscale
                       amount={0}
                       onExtractImage={({ nativeEvent }) => {
-                        this.saveFilterImage(nativeEvent, item);
+                        this.saveFilterImage(nativeEvent, item, false, index);
                       }}
                       extractImageEnabled={true}
                       image={this.Extractor(imgfilterName, item)}
