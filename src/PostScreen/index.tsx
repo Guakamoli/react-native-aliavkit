@@ -187,12 +187,24 @@ class PostContent extends Component {
   componentDidUpdate(nextProps, nextState) {
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
       // console.log("单选切换---");
-        this.setState({
-          positionX: 0,
-          positionY: 0,
-          cropScale: 0,
-          minScale: 0,
-        });
+      this.setState({
+        positionX: 0,
+        positionY: 0,
+        cropScale: 0,
+        minScale: 0,
+      });
+    }
+
+    if (nextProps.multipleData?.length < this.props.multipleData?.length) {
+      // console.log("多选新增");
+      this.setState({
+        positionX: 0,
+        positionY: 0,
+        cropScale: 0,
+        minScale: 0,
+      });
+    } else if (nextProps.multipleData?.length > this.props.multipleData?.length) {
+      // console.log("多选删除");
     }
   }
 
@@ -276,8 +288,17 @@ class PostContent extends Component {
     });
   };
 
+  emptyView = () => (
+    <View style={{
+      padding: 0,
+      backgroundColor: '#000',
+      position: 'relative',
+      height: width,
+      width: width,
+    }}>
+    </View>
+  );
   render() {
-
     //设置选中的图片下标，并设置到 ImageCropper
     let imageItem = '';
     if (!!this.props.multipleData && this.props.multipleData.length > 0) {
@@ -288,9 +309,9 @@ class PostContent extends Component {
       }
     }
 
-    if (!this.props.multipleData[0]) return null;
+    if (!this.props.multipleData[0]) return this.emptyView();
     const { cropScale } = this.state;
-    if (!imageItem) return null;
+    if (!imageItem) return this.emptyView();
 
     let minScale = 1;
     if (imageItem.width > imageItem.height) {
@@ -300,7 +321,7 @@ class PostContent extends Component {
     }
 
     //多选模式，图片切换执行
-    if (this.props.selectMultiple&&this.showItemUri !== imageItem?.uri) {
+    if (this.props.selectMultiple && this.showItemUri !== imageItem?.uri) {
       const itemCropData = cropDataRow[imageItem?.uri];
       if (!!itemCropData) {
         const positionX = itemCropData?.positionX;
@@ -315,7 +336,7 @@ class PostContent extends Component {
             positionY: positionY,
           });
           this.showItemUri = imageItem?.uri;
-          return null;
+          return this.emptyView();
         }
       }
     }
@@ -326,7 +347,7 @@ class PostContent extends Component {
         cropScale: minScale,
         minScale: minScale,
       });
-      return null;
+      return this.emptyView();
     }
 
     //宽高比不一致了，需要刷新一次
@@ -336,7 +357,7 @@ class PostContent extends Component {
         minScale: minScale,
         isChangeScale: true,
       });
-      return null;
+      return this.emptyView();
     }
 
     // console.log("positionX", this.state.positionX, "positionY", this.state.positionY, "cropScale", this.state.cropScale, "minScale", minScale);
