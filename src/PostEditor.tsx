@@ -391,9 +391,9 @@ const PostEditor = (props) => {
       }
     } else {
       // 裁剪视频
-      if (!coverImage.current) {
-        return;
-      }
+      // if (!coverImage.current) {
+      //   return;
+      // }
       if (continueRef.current) return;
       continueRef.current = true;
       // toast.current.show('正在导出, 请不要离开', 0);
@@ -527,16 +527,16 @@ const PostEditor = (props) => {
       coverData = await AVService.getThumbnails(thumbnailsArgument);
 
       setcoverList(coverData);
-      let videoData = props.params.originalData[0]?.image;
+      // let videoData = props.params.originalData[0]?.image;
 
-      const FirstcoverData = await AVService.getThumbnails({
-        width: videoData.width,
-        height: videoData.height,
-        ...thumbnailsArgument,
-        needCover: true,
-      });
-      console.info(FirstcoverData, 'FirstcoverData');
-      coverImage.current = FirstcoverData[0];
+      // const FirstcoverData = await AVService.getThumbnails({
+      //   width: videoData.width,
+      //   height: videoData.height,
+      //   ...thumbnailsArgument,
+      //   needCover: true,
+      // });
+      // console.info(FirstcoverData, 'FirstcoverData');
+      // coverImage.current = FirstcoverData[0];
     } catch (e) {
       console.info(e);
     }
@@ -574,11 +574,11 @@ const PostEditor = (props) => {
         let type = outputPath.split('.');
         //TODO
         let uploadCoverImage = '';
-        if (Platform.OS === 'ios') {
-          uploadCoverImage = coverImage.current ? `file://${encodeURI(coverImage.current)}` : '';
-        } else {
-          uploadCoverImage = coverImage.current ? `${encodeURI(coverImage.current)}` : '';
-        }
+        // if (Platform.OS === 'ios') {
+        //   uploadCoverImage = coverImage.current ? `file://${encodeURI(coverImage.current)}` : '';
+        // } else {
+        //   uploadCoverImage = coverImage.current ? `${encodeURI(coverImage.current)}` : '';
+        // }
         uploadFile.push({
           type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
@@ -987,7 +987,7 @@ const PostEditor = (props) => {
                 {/* 封面选择 */}
                 <TouchableOpacity
                   onPress={() => {
-                    coverImage.current = item;
+                    // coverImage.current = item;
                     // setcoverImage(item);
                   }}
                 >
