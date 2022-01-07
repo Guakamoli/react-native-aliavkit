@@ -165,12 +165,17 @@ const PostFileUploadHead = React.memo((props) => {
 });
 
 class PostContent extends Component {
+
+  private moveScale: number;
   constructor(props) {
     super(props);
     this.state = {
-      cropScale: 1,
+      cropScale: 0,
       videoPaused: false,
+      isChangeScale: false,
+      minScale: 0,
     };
+    this.moveScale = 0;
   }
   shouldComponentUpdate(nextProps, nextState) {
 
@@ -191,6 +196,8 @@ class PostContent extends Component {
       return true;
     }
     if (nextState.cropScale !== this.state.cropScale) {
+      return true;
+    } else if (nextState.cropScale !== this.moveScale) {
       return true;
     }
     if (nextState.videoPaused !== this.state.videoPaused) {
@@ -216,16 +223,39 @@ class PostContent extends Component {
 
     return false;
   }
-  toggleCropWidth = () => {
-    if (!cropDataRow.scale || cropDataRow.scale < 1 || this.state.cropScale === 1) {
-      this.setState({
-        cropScale: 1,
-      });
-    } else {
-      this.setState({
-        cropScale: 1,
-      });
+  toggleCropWidth = (imageItem) => {
+    if (!!imageItem && !!this.moveScale) {
+      let minScale = 1;
+      if (imageItem.width > imageItem.height) {
+        minScale = imageItem.height / imageItem.width
+      } else {
+        minScale = imageItem.width / imageItem.height
+      }
+      // isChangeScale = true 表示本次刷新强行更新 scale
+      // 更新完 scale，回调 setChangeScale 重新设置为false,表示仅本次点击更新有效
+      if (this.moveScale >= 1) {
+        this.setState({
+          cropScale: minScale,
+          minScale: minScale,
+          isChangeScale: true,
+        });
+      } else {
+        this.setState({
+          cropScale: 1,
+          minScale: minScale,
+          isChangeScale: true,
+        });
+      }
     }
+  };
+
+  /**
+   * 重置 isChangeScale状态
+   */
+  setChangeScale = () => {
+    this.setState({
+      isChangeScale: false,
+    });
   };
 
   render() {
@@ -243,6 +273,35 @@ class PostContent extends Component {
     // if (!this.props.multipleData[0]) return null;
     const { cropScale } = this.state;
     if (!imageItem) return null;
+
+
+    let minScale = 1;
+    if (imageItem.width > imageItem.height) {
+      minScale = imageItem.height / imageItem.width
+    } else {
+      minScale = imageItem.width / imageItem.height
+    }
+
+
+    //没有裁剪比例
+    if (!cropScale) {
+      this.setState({
+        cropScale: minScale,
+        minScale: minScale,
+      });
+      return null;
+    }
+
+    //切换了图片，宽高比不一致了，需要刷新一次
+    if (this.state.minScale != minScale) {
+      this.setState({
+        cropScale: minScale,
+        minScale: minScale,
+        isChangeScale: true,
+      });
+      return null;
+    }
+
     return (
       <View
         style={{
@@ -256,29 +315,32 @@ class PostContent extends Component {
         }}
       >
         {/* 左侧尺寸按钮 */}
-        {/* <TouchableOpacity
-          style={{
-            width: 31,
-            height: 31,
-            marginRight: 10,
-            position: 'absolute',
-            left: 15,
-            bottom: 20,
-            zIndex: 99,
-          }}
-          onPress={this.toggleCropWidth}
-        >
-          <Image
-            style={[
-              {
-                width: 31,
-                height: 31,
-              },
-            ]}
-            source={this.props.changeSizeImage}
-          />
-        </TouchableOpacity> */}
-
+        {(!imageItem?.videoFile || !imageItem?.playableDuration) &&
+          <TouchableOpacity
+            style={{
+              width: 31,
+              height: 31,
+              marginRight: 10,
+              position: 'absolute',
+              left: 15,
+              bottom: 20,
+              zIndex: 99,
+            }}
+            onPress={() => {
+              this.toggleCropWidth(imageItem)
+            }}
+          >
+            <Image
+              style={[
+                {
+                  width: 31,
+                  height: 31,
+                },
+              ]}
+              source={this.props.changeSizeImage}
+            />
+          </TouchableOpacity>
+        }
         <View
           style={{
             backgroundColor: '#ececec',
@@ -287,6 +349,11 @@ class PostContent extends Component {
         >
           <View style={{ backgroundColor: 'black' }}>
             <ImageCropper
+
+              isChangeScale={this.state.isChangeScale}
+              setChangeScale={this.setChangeScale}
+              minScale={this.state.minScale}
+
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
               videoPaused={this.state.videoPaused}
@@ -310,7 +377,8 @@ class PostContent extends Component {
                 }
                 let newKey = imageItem.uri;
                 cropDataRow[newKey] = cropperParams;
-                // cropDataRow = cropperParams;
+                this.moveScale = cropperParams.scale;
+                // console.log("cropperParams", cropperParams);
               }}
             />
           </View>
@@ -857,8 +925,11 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    this.getPhotoFromCache();
-    // this.getPhotos();
+    if (!!this.props.isExample) {
+      this.getPhotos();
+    } else {
+      this.getPhotoFromCache();
+    }
   }
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {

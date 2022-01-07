@@ -103,20 +103,20 @@ class ImageViewer extends Component<IProps> {
   constructor(props: IProps) {
     super(props);
     let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale } = props;
-    minScale = propsScale;
+    minScale = minScale;
 
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
     this.translateX = new Value(0);
     this.translateY = new Value(0);
-    this.scale = new Value(minScale);
+    this.scale = new Value(propsScale);
     this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,
       easing: Easing.linear,
     };
 
-    const maxScale = minScale + 3;
+    const maxScale = 2;
 
     const offsetX = new Value(0);
     const offsetY = new Value(0);
@@ -232,7 +232,7 @@ class ImageViewer extends Component<IProps> {
             cond(
               and(
                 eq(state, State.END),
-                greaterOrEq(scaledWidth, multiply(viewerAreaWidth, this.props.propsScale)),
+                greaterOrEq(scaledWidth, multiply(viewerAreaWidth, this.props.minScale)),
                 greaterOrEq(this.scale, new Value(minScale)),
               ),
 
@@ -370,7 +370,13 @@ class ImageViewer extends Component<IProps> {
   //   return true
   // }
   componentDidUpdate(prevProps: IProps) {
-    const { propsScale, disablePin } = this.props;
+    const { propsScale, disablePin, isChangeScale } = this.props;
+
+    if (isChangeScale) {
+      this.props.setChangeScale();
+      this.scale.setValue(propsScale);
+      return;
+    }
 
     if (propsScale && prevProps.propsScale !== propsScale) {
       this.scale.setValue(propsScale);
