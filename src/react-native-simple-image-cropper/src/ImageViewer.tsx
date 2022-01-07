@@ -102,14 +102,14 @@ class ImageViewer extends Component<IProps> {
 
   constructor(props: IProps) {
     super(props);
-    let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale } = props;
+    let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale,propsX,propsY} = props;
     minScale = minScale;
 
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
-    this.translateX = new Value(0);
-    this.translateY = new Value(0);
-    this.scale = new Value(propsScale);
+    this.translateX = new Value(propsX?propsX:0);
+    this.translateY = new Value(propsY?propsY:0);
+    this.scale = new Value(propsScale?propsScale:1);
     this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,

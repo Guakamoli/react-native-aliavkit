@@ -255,6 +255,8 @@ class ImageCropper extends PureComponent<IProps, IState> {
       disablePin,
       videoPaused,
       srcSize,
+      positionX,
+      positionY,
     } = this.props;
 
     const areaWidth = cropAreaWidth!;
@@ -277,6 +279,10 @@ class ImageCropper extends PureComponent<IProps, IState> {
           <ImageViewer
             isChangeScale={this.props.isChangeScale}
             setChangeScale={this.props.setChangeScale}
+            propsX={!!positionX ? positionX : 0}
+            propsY={!!positionY ? positionY : 0}
+            propsScale={!!scale ? scale : 1}
+
             image={imageUri}
             areaWidth={areaWidth}
             areaHeight={areaHeight}
@@ -289,7 +295,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
             containerColor={containerColor}
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
-            propsScale={!!scale ? scale : 1}
             disablePin={disablePin}
             videoPaused={videoPaused}
           />

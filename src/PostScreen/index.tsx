@@ -167,6 +167,7 @@ const PostFileUploadHead = React.memo((props) => {
 class PostContent extends Component {
 
   private moveScale: number;
+  private showItemUri: string;
   constructor(props) {
     super(props);
     this.state = {
@@ -174,11 +175,28 @@ class PostContent extends Component {
       videoPaused: false,
       isChangeScale: false,
       minScale: 0,
+      positionX: 0,
+      positionY: 0,
     };
+    // 展示中的图片缩放值
     this.moveScale = 0;
+    // 展示中的图片uri
+    this.showItemUri = ""
   }
-  shouldComponentUpdate(nextProps, nextState) {
 
+  componentDidUpdate(nextProps, nextState) {
+    if (nextProps.selectMultiple !== this.props.selectMultiple) {
+      // console.log("单选切换---");
+        this.setState({
+          positionX: 0,
+          positionY: 0,
+          cropScale: 0,
+          minScale: 0,
+        });
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
     //没有选择照片时，不更新
     if (!nextProps.multipleData || nextProps.multipleData.length == 0) {
       return false;
@@ -270,10 +288,9 @@ class PostContent extends Component {
       }
     }
 
-    // if (!this.props.multipleData[0]) return null;
+    if (!this.props.multipleData[0]) return null;
     const { cropScale } = this.state;
     if (!imageItem) return null;
-
 
     let minScale = 1;
     if (imageItem.width > imageItem.height) {
@@ -282,7 +299,27 @@ class PostContent extends Component {
       minScale = imageItem.width / imageItem.height
     }
 
+    //多选模式，图片切换执行
+    if (this.props.selectMultiple&&this.showItemUri !== imageItem?.uri) {
+      const itemCropData = cropDataRow[imageItem?.uri];
+      if (!!itemCropData) {
+        const positionX = itemCropData?.positionX;
+        const positionY = itemCropData?.positionY;
+        const positionScale = itemCropData?.scale;
 
+        if (positionX !== this.state.positionX || positionY !== this.state.positionY || positionScale !== this.state.cropScale) {
+          this.setState({
+            cropScale: positionScale,
+            minScale: minScale,
+            positionX: positionX,
+            positionY: positionY,
+          });
+          this.showItemUri = imageItem?.uri;
+          return null;
+        }
+      }
+    }
+    this.showItemUri = imageItem?.uri;
     //没有裁剪比例
     if (!cropScale) {
       this.setState({
@@ -292,7 +329,7 @@ class PostContent extends Component {
       return null;
     }
 
-    //切换了图片，宽高比不一致了，需要刷新一次
+    //宽高比不一致了，需要刷新一次
     if (this.state.minScale != minScale) {
       this.setState({
         cropScale: minScale,
@@ -301,6 +338,8 @@ class PostContent extends Component {
       });
       return null;
     }
+
+    // console.log("positionX", this.state.positionX, "positionY", this.state.positionY, "cropScale", this.state.cropScale, "minScale", minScale);
 
     return (
       <View
@@ -353,6 +392,9 @@ class PostContent extends Component {
               isChangeScale={this.state.isChangeScale}
               setChangeScale={this.setChangeScale}
               minScale={this.state.minScale}
+              positionX={this.state.positionX}
+              positionY={this.state.positionY}
+              scale={cropScale}
 
               imageUri={imageItem?.uri}
               videoFile={imageItem?.videoFile}
@@ -366,7 +408,6 @@ class PostContent extends Component {
               cropAreaHeight={width}
               containerColor='black'
               areaColor='black'
-              scale={cropScale}
               areaOverlay={<View></View>}
               setCropperParams={(cropperParams) => {
                 if (imageItem?.videoFile) {
@@ -389,6 +430,7 @@ class PostContent extends Component {
 }
 const PostContentMapStateToProps = (state) => ({
   multipleData: state.shootPost.multipleData,
+  selectMultiple: state.shootPost.selectMultiple,
 });
 
 PostContent = connect(PostContentMapStateToProps)(PostContent);
