@@ -167,26 +167,25 @@ const PostFileUploadHead = React.memo((props) => {
 class PostContent extends Component {
 
   private moveScale: number;
-  private showItemUri: string;
   constructor(props) {
     super(props);
     this.state = {
+      imageItem: "",
       cropScale: 0,
       videoPaused: false,
       isChangeScale: false,
       minScale: 0,
       positionX: 0,
       positionY: 0,
+      selectMultiple: false,
     };
     // 展示中的图片缩放值
     this.moveScale = 0;
     // 展示中的图片uri
-    this.showItemUri = ""
   }
 
   componentDidUpdate(nextProps, nextState) {
     if (nextProps.selectMultiple !== this.props.selectMultiple) {
-      // console.log("单选切换---");
       this.setState({
         positionX: 0,
         positionY: 0,
@@ -196,7 +195,6 @@ class PostContent extends Component {
     }
 
     if (nextProps.multipleData?.length < this.props.multipleData?.length) {
-      // console.log("多选新增");
       this.setState({
         positionX: 0,
         positionY: 0,
@@ -208,47 +206,23 @@ class PostContent extends Component {
     }
   }
 
+
   shouldComponentUpdate(nextProps, nextState) {
-    //没有选择照片时，不更新
-    if (!nextProps.multipleData || nextProps.multipleData.length == 0) {
+    const isRender = this.isRender(nextProps, nextState)
+    if (isRender == 0) {
       return false;
-    }
-    if (nextProps.multipleData !== this.props.multipleData) {
-      if (!!nextProps.multipleData[0] && nextProps.multipleData[0]?.type == 'image') {
-        this.setState({
-          videoPaused: true,
-        });
-      } else {
-        this.setState({
-          videoPaused: false,
-        });
-      }
+    } else if (isRender == 1) {
       return true;
     }
+
+    if (nextState.isChangeScale) {
+      return true;
+    }
+
     if (nextState.cropScale !== this.state.cropScale) {
       return true;
     } else if (nextState.cropScale !== this.moveScale) {
       return true;
-    }
-    if (nextState.videoPaused !== this.state.videoPaused) {
-      return true;
-    }
-
-    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
-      this.setState({
-        videoPaused: !nextProps.isDrawerOpen,
-      });
-      return false;
-    }
-    if (nextProps.postEditorParams !== this.props.postEditorParams) {
-      console.info('修改');
-      setTimeout(() => {
-        this.setState({
-          videoPaused: !!this.props.postEditorParams,
-        });
-      }, 0);
-
-      return false;
     }
 
     return false;
@@ -267,6 +241,8 @@ class PostContent extends Component {
         this.setState({
           cropScale: minScale,
           minScale: minScale,
+          positionX: 0,
+          positionY: 0,
           isChangeScale: true,
         });
       } else {
@@ -298,20 +274,34 @@ class PostContent extends Component {
     }}>
     </View>
   );
-  render() {
-    //设置选中的图片下标，并设置到 ImageCropper
-    let imageItem = '';
-    if (!!this.props.multipleData && this.props.multipleData.length > 0) {
-      if (lastSelectedItemIndex > 0 && this.props.multipleData.length > lastSelectedItemIndex - 1) {
-        imageItem = this.props.multipleData[lastSelectedItemIndex - 1].image
-      } else {
-        imageItem = this.props.multipleData[this.props.multipleData.length - 1].image;
-      }
+
+  //
+  isRender = (nextProps, nextState) => {
+
+    //没有选择照片时，不更新
+    if (!nextProps.multipleData || nextProps.multipleData.length <= 0) {
+      console.log("multipleData 为空");
+      return 0;
     }
 
-    if (!this.props.multipleData[0]) return this.emptyView();
-    const { cropScale } = this.state;
-    if (!imageItem) return this.emptyView();
+    let imageItem = null;
+    if (lastSelectedItemIndex > 0 && nextProps.multipleData.length > lastSelectedItemIndex - 1) {
+      imageItem = nextProps.multipleData[lastSelectedItemIndex - 1].image
+    } else {
+      imageItem = nextProps.multipleData[nextProps.multipleData.length - 1].image;
+    }
+
+    if (!imageItem) {
+      console.log("imageItem 为空");
+      return 0;
+    }
+
+    let videoPaused = true;
+    if (!!nextProps.multipleData[0] && nextProps.multipleData[0]?.type == 'image') {
+      videoPaused = true;
+    } else {
+      videoPaused = false;
+    }
 
     let minScale = 1;
     if (imageItem.width > imageItem.height) {
@@ -320,48 +310,94 @@ class PostContent extends Component {
       minScale = imageItem.width / imageItem.height
     }
 
-    //多选模式，图片切换执行
-    if (this.props.selectMultiple && this.showItemUri !== imageItem?.uri) {
-      const itemCropData = cropDataRow[imageItem?.uri];
-      if (!!itemCropData) {
-        const positionX = itemCropData?.positionX;
-        const positionY = itemCropData?.positionY;
-        const positionScale = itemCropData?.scale;
+    if (nextProps.selectMultiple != this.state.selectMultiple) {
+      //切换单选多选
+      this.setState({
+        videoPaused: videoPaused,
+        imageItem: imageItem,
+        cropScale: minScale,
+        minScale: minScale,
+        positionX: 0,
+        positionY: 0,
+        selectMultiple: nextProps.selectMultiple,
+      });
+      return 0;
+    }
 
-        if (positionX !== this.state.positionX || positionY !== this.state.positionY || positionScale !== this.state.cropScale) {
-          this.setState({
-            cropScale: positionScale,
-            minScale: minScale,
-            positionX: positionX,
-            positionY: positionY,
-          });
-          this.showItemUri = imageItem?.uri;
-          return this.emptyView();
+
+    if (!nextProps.selectMultiple) {
+      //单选 uri 改变 ，刷新
+      if (imageItem?.uri !== this.state.imageItem?.uri) {
+        // setTimeout(() => {
+        // }, 100);
+        this.setState({
+          videoPaused: videoPaused,
+          imageItem: imageItem,
+          cropScale: minScale,
+          minScale: minScale,
+          positionX: 0,
+          positionY: 0,
+          selectMultiple: nextProps.selectMultiple,
+        });
+        return 0;
+      } else {
+        return 1;
+      }
+    } else {
+      //多选
+      if (!this.props.multipleData || nextProps.multipleData.length > this.props.multipleData.length) {
+        //新增加了照片，按初始化值刷新
+        this.setState({
+          videoPaused: videoPaused,
+          imageItem: imageItem,
+          cropScale: minScale,
+          minScale: minScale,
+          positionX: 0,
+          positionY: 0,
+          selectMultiple: nextProps.selectMultiple,
+        });
+        return 0;
+      } else {
+        if (this.state.imageItem?.uri !== imageItem?.uri) {
+          const itemCropData = cropDataRow[imageItem?.uri];
+          if (!itemCropData) {
+            this.setState({
+              videoPaused: videoPaused,
+              imageItem: imageItem,
+              cropScale: minScale,
+              minScale: minScale,
+              positionX: 0,
+              positionY: 0,
+              selectMultiple: nextProps.selectMultiple,
+            });
+          } else {
+            const positionX = itemCropData?.positionX;
+            const positionY = itemCropData?.positionY;
+            const positionScale = itemCropData?.scale;
+            this.setState({
+              videoPaused: videoPaused,
+              imageItem: imageItem,
+              cropScale: positionScale,
+              minScale: minScale,
+              positionX: positionX,
+              positionY: positionY,
+              selectMultiple: nextProps.selectMultiple,
+            });
+          }
+          return 0;
+        } else {
+          return 1;
         }
       }
-    }
-    this.showItemUri = imageItem?.uri;
-    //没有裁剪比例
-    if (!cropScale) {
-      this.setState({
-        cropScale: minScale,
-        minScale: minScale,
-      });
-      return this.emptyView();
+
     }
 
-    //宽高比不一致了，需要刷新一次
-    if (this.state.minScale != minScale) {
-      this.setState({
-        cropScale: minScale,
-        minScale: minScale,
-        isChangeScale: true,
-      });
-      return this.emptyView();
-    }
 
-    // console.log("positionX", this.state.positionX, "positionY", this.state.positionY, "cropScale", this.state.cropScale, "minScale", minScale);
+    return -1;
+  }
 
+  render() {
+    // console.log("render", this.state.positionX, this.state.positionY, this.state.cropScale, this.state.minScale);
     return (
       <View
         style={{
@@ -375,7 +411,7 @@ class PostContent extends Component {
         }}
       >
         {/* 左侧尺寸按钮 */}
-        {(!imageItem?.videoFile || !imageItem?.playableDuration) &&
+        {(!this.state.imageItem?.videoFile || !this.state.imageItem?.playableDuration) &&
           <TouchableOpacity
             style={{
               width: 31,
@@ -387,7 +423,7 @@ class PostContent extends Component {
               zIndex: 99,
             }}
             onPress={() => {
-              this.toggleCropWidth(imageItem)
+              this.toggleCropWidth(this.state.imageItem)
             }}
           >
             <Image
@@ -415,29 +451,31 @@ class PostContent extends Component {
               minScale={this.state.minScale}
               positionX={this.state.positionX}
               positionY={this.state.positionY}
-              scale={cropScale}
+              scale={this.state.cropScale}
 
-              imageUri={imageItem?.uri}
-              videoFile={imageItem?.videoFile}
+              imageUri={this.state.imageItem?.uri ? this.state.imageItem?.uri : ""}
+              videoFile={this.state.imageItem?.videoFile ? this.state.imageItem?.videoFile : ""}
               videoPaused={this.state.videoPaused}
+
               srcSize={{
-                width: imageItem.width,
-                height: imageItem.height,
+                width: this.state.imageItem.width,
+                height: this.state.imageItem.height,
               }}
-              disablePin={!!imageItem?.videoFile}
+              disablePin={!!this.state.imageItem?.videoFile}
+
               cropAreaWidth={width}
               cropAreaHeight={width}
               containerColor='black'
               areaColor='black'
               areaOverlay={<View></View>}
               setCropperParams={(cropperParams) => {
-                if (imageItem?.videoFile) {
+                if (this.state.imageItem?.videoFile) {
                   // cropDataRow?.imageItem?.videoFile = cropperParams
                   // cropDataRow = {...cropDataRow,imageItem.videoFile:cropperParams}
                 } else {
                   // cropDataRow?.imageItem?.uri = cropperParams
                 }
-                let newKey = imageItem.uri;
+                let newKey = this.state.imageItem.uri;
                 cropDataRow[newKey] = cropperParams;
                 this.moveScale = cropperParams.scale;
                 // console.log("cropperParams", cropperParams);
@@ -620,6 +658,8 @@ class GridItemCover extends Component {
             // }
             datalist.splice(index, 1);
 
+            //把对应裁剪参数置空
+            cropDataRow[itemCopy.image.uri] = null;
           }
         });
       } catch (error) {
@@ -1145,6 +1185,7 @@ export default class CameraScreen extends Component<Props, State> {
       Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
       let trimVideoData = null;
       let resultData = [];
+      let editImageData = new Array;
 
       // const result = await ImageCropper.crop({
       //   ...cropDataRow[imageItem?.uri],
@@ -1186,23 +1227,61 @@ export default class CameraScreen extends Component<Props, State> {
         }
       } else {
         const cropData = result;
+        //图片编辑的参数，包含裁剪展示参数
+
+        editImageData = [];
         let results = await Promise.all(
           multipleData.map(async (item, index) => {
-            // 等待异步操作完成，返回执行结果
-            return await AVService.crop({
-              source: item.image.uri,
-              cropOffsetX: cropData[index].offset.x,
-              cropOffsetY: cropData[index].offset.y,
-              cropWidth: cropData[index].size.width,
-              cropHeight: cropData[index].size.height,
-            });
+            // console.info('------裁剪数据回调：', index, cropData[index]);
+
+            let imageScale = cropDataRow[item?.image?.uri].scale;
+            let imageWidth = cropDataRow[item?.image?.uri].fittedSize?.width;
+            let imageHeight = cropDataRow[item?.image?.uri].fittedSize?.height;
+
+            //使用的地方，设置图片宽高需要乘以这个 imageWidthScale。imageHeightScale值
+            let imageWidthScale = imageWidth / width;
+            let imageHeightScale = imageHeight / width;
+
+            let translateX = cropDataRow[item?.image?.uri].positionX;
+            let translateY = cropDataRow[item?.image?.uri].positionY;
+
+            let translateXScale = translateX / width;
+            let translateYScale = translateY / width;
+
+            //TODO 新增图片选中数据接口，包含裁剪参数、下标、uri 等等
+            editImageData[index] = {
+              index: index,
+              type: item.type,
+              uri: item.image.uri,
+              // srcWidth: item.image.width,
+              // srcHeight: item.image.height,
+              // imageWidth: imageWidth,
+              // imageHeight: imageHeight,
+              imageScale: imageScale,
+              imageWidthScale: imageWidthScale,
+              imageHeightScale: imageHeightScale,
+              // translateX: translateX,
+              // translateY: translateY,
+              translateXScale: translateXScale,
+              translateYScale: translateYScale,
+            };
+
+            return item.image.uri;
+
+            // // 等待异步操作完成，返回执行结果
+            // return await AVService.crop({
+            //   source: item.image.uri,
+            //   cropOffsetX: cropData[index].offset.x,
+            //   cropOffsetY: cropData[index].offset.y,
+            //   cropWidth: cropData[index].size.width,
+            //   cropHeight: cropData[index].size.height,
+            // });
           }),
         );
-        console.info('------裁剪数据回调233', results);
+        // console.info('------裁剪数据回调233', results);
         resultData = results;
       }
-
-      console.info('-xx', resultData);
+      // console.info('-xx editImageData', editImageData);
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
@@ -1214,6 +1293,7 @@ export default class CameraScreen extends Component<Props, State> {
 
         this.setState({
           postEditorParams: {
+            editImageData: editImageData,
             // 数据
             trimVideoData: resultData,
             videoduration: videoTime,
