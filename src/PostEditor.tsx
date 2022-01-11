@@ -114,7 +114,8 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={() => {
           continueEdit();
-          successEdit();
+          //TODO
+          // successEdit();
         }}
         style={{
           height: 30,
@@ -166,7 +167,6 @@ class PhotoShow extends Component {
     };
   }
 
-  //TODO
   // const [photosDataIndex, setPhotosDataIndex] = useState([]);
   saveFilterImage = (nativeEvent, item, flag = false, index = 0) => {
     // ？？？？？
@@ -189,33 +189,33 @@ class PhotoShow extends Component {
       }
     }
   };
-  Extractor = (imgFilter, imgfile, isSingle = false, editImageInfo) => {
+  Extractor = (imgFilter, isSingle = false, editImageInfo) => {
 
-    const imageWidth = (isSingle ? width : 319) * editImageInfo.imageWidthScale;
-    const imageHeight = (isSingle ? width : 319) * editImageInfo.imageHeightScale;
+    const imageWidth = (isSingle ? width : 319) * editImageInfo.widthScale;
+    const imageHeight = (isSingle ? width : 319) * editImageInfo.heightScale;
     const translateX = (isSingle ? width : 319) * editImageInfo.translateXScale;
     const translateY = (isSingle ? width : 319) * editImageInfo.translateYScale;
     const ImageComponent = (
       <>
-        {editImageInfo ?
+        {editImageInfo &&
           <Image style={[{ width: imageWidth, height: imageHeight }, {
             transform: [
-              { scale: editImageInfo.imageScale },
+              { scale: editImageInfo.scale },
               { translateX: translateX },
               { translateY: translateY },
             ]
           }]}
             source={{ uri: editImageInfo.uri }}>
           </Image>
-          :
-          <Image
-            style={{
-              width: isSingle ? width : 319,
-              height: isSingle ? width : 319,
-              marginRight: 8,
-            }}
-            source={{ uri: imgfile }}
-          />
+          // :
+          // <Image
+          //   style={{
+          //     width: isSingle ? width : 319,
+          //     height: isSingle ? width : 319,
+          //     marginRight: 8,
+          //   }}
+          //   source={{ uri: imgfile }}
+          // />
         }
       </>
     );
@@ -279,8 +279,10 @@ class PhotoShow extends Component {
     return false;
   }
   render() {
-    const { multipleSandBoxData, imgfilterName, goback, params } = this.props;
+    // const { multipleSandBoxData, imgfilterName, goback, params } = this.props;
+    const { imgfilterName, goback, params } = this.props;
     const editImageData = params.editImageData;
+    console.log("滤镜名称", imgfilterName);
     return (
       <View style={{ width: width, height: width, overflow: 'hidden' }}>
         <View>
@@ -296,12 +298,15 @@ class PhotoShow extends Component {
               collapsable={false}
               amount={0}
               onExtractImage={({ nativeEvent }) => {
+
+                editImageData[0].cacheUri = nativeEvent.uri;
+
                 // console.log("save phont", nativeEvent.uri);
                 // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
-                this.saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
+                // this.saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
               }}
               extractImageEnabled={true}
-              image={this.Extractor(imgfilterName, multipleSandBoxData[0], true, editImageData[0])}
+              image={this.Extractor(imgfilterName, true, editImageData[0])}
             ></Grayscale>
           )}
           {editImageData.length > 1 && (
@@ -323,12 +328,15 @@ class PhotoShow extends Component {
                       collapsable={false}
                       amount={0}
                       onExtractImage={({ nativeEvent }) => {
+
+                        editImageData[index].cacheUri = nativeEvent.uri;
+
                         // console.log("save phont", nativeEvent.uri);
                         // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
-                        this.saveFilterImage(nativeEvent, item, false, index);
+                        // this.saveFilterImage(nativeEvent, item, false, index);
                       }}
                       extractImageEnabled={true}
-                      image={this.Extractor(imgfilterName, item, false, item)}
+                      image={this.Extractor(imgfilterName, false, item)}
                     ></Grayscale>
                   );
                 }}
@@ -381,40 +389,72 @@ const PostEditor = (props) => {
   const [videoPause, setVideoPause] = useState(false);
   const outputPathRef = useRef(null);
 
+  /**
+   * 继续
+   */
   const continueEdit = async () => {
-    const cropData = props.params.cropDataResult;
-
+    // const cropData = props.params.cropDataResult;
     if (fileType === 'image') {
-      if (continueRef.current) return;
-      continueRef.current = true;
-      try {
-        // console.info('photoFilephotoFile', photosDataIndex);
-        // return
-        // const path = photoFile[0];
 
-        let uploadFile = [];
-        uploadFile = photoFile.map((item, index) => {
-          // 图片的宽高
-          let imageData = props.params.originalData[index]?.image;
-          return {
-            type: `image/png`,
-            path: item,
-            size: 0,
-            name: item,
-            coverImage: item,
-            width: imageData.width,
-            height: imageData.height,
-          };
-        });
-        props.getUploadFile(uploadFile);
-        uploadFile = [];
-        props.goback();
-      } catch (e) {
-        console.info(e, '错误');
-        setTimeout(() => {
-          continueRef.current = false;
-        }, 1500);
-      }
+      const editImageData = props.params.editImageData;
+
+      let uploadData = editImageData.map((item, index) => {
+        return {
+          index: item.index,
+          type: `image/png`,
+          path: item.cacheUri,
+          size: item.size,
+          name: item.name,
+          coverImage: item.cacheUri,
+          width: item.srcWidth,
+          height: item.srcHeight,
+
+          scale: item.scale,
+          widthScale: item.widthScale,
+          heightScale: item.heightScale,
+          translateXScale: item.translateXScale,
+          translateYScale: item.translateYScale,
+        };
+      });
+
+      uploadData.forEach((item, index) => {
+        if (!item.path) {
+          return;
+        }
+        //设置滤镜
+        // console.log("uploadData", item.index, item);
+      });
+      props.getUploadFile(uploadData);
+      props.goback();
+      // if (continueRef.current) return;
+      // continueRef.current = true;
+      // try {
+      //   // console.info('photoFilephotoFile', photosDataIndex);
+      //   // return
+      //   // const path = photoFile[0];
+      //   let uploadFile = [];
+      //   uploadFile = photoFile.map((item, index) => {
+      //     // 图片的宽高
+      //     let imageData = props.params.originalData[index]?.image;
+      // return {
+      //   type: `image/png`,
+      //   path: item,
+      //   size: 0,
+      //   name: item,
+      //   coverImage: item,
+      //   width: imageData.width,
+      //   height: imageData.height,
+      // };
+      //   });
+      //   props.getUploadFile(uploadFile);
+      //   uploadFile = [];
+      //   props.goback();
+      // } catch (e) {
+      //   console.info(e, '错误');
+      //   setTimeout(() => {
+      //     continueRef.current = false;
+      //   }, 1500);
+      // }
     } else {
       // 裁剪视频
       // if (!coverImage.current) {
@@ -446,7 +486,6 @@ const PostEditor = (props) => {
 
         0,
       );
-      //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.trimVideo({
           videoPath: multipleSandBoxData[0],
@@ -517,7 +556,6 @@ const PostEditor = (props) => {
       console.info('销毁了');
       // console.info('销毁了', subscription);
       // AVService.removeThumbnaiImages();
-      //TODO
       if (Platform.OS === 'ios') {
         RNEditViewManager.stop();
       } else {
@@ -540,7 +578,6 @@ const PostEditor = (props) => {
         itemPerTime = videoTime / 8;
       }
 
-      //TODO
       // const cropData = props.params.cropDataResult;
       // const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
       // const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
@@ -600,7 +637,6 @@ const PostEditor = (props) => {
         let uploadFile = [];
         //
         let type = outputPath.split('.');
-        //TODO
         let uploadCoverImage = '';
         // if (Platform.OS === 'ios') {
         //   uploadCoverImage = coverImage.current ? `file://${encodeURI(coverImage.current)}` : '';
@@ -1098,13 +1134,13 @@ const PostEditor = (props) => {
 
     const propsImage = () => {
       if (editImageInfo) {
-        const imageWidth = 100 * editImageInfo.imageWidthScale;
-        const imageHeight = 100 * editImageInfo.imageHeightScale;
+        const imageWidth = 100 * editImageInfo.widthScale;
+        const imageHeight = 100 * editImageInfo.heightScale;
         const translateX = 100 * editImageInfo.translateXScale;
         const translateY = 100 * editImageInfo.translateYScale;
         return (<Image style={[{ width: imageWidth, height: imageHeight }, {
           transform: [
-            { scale: editImageInfo.imageScale },
+            { scale: editImageInfo.scale },
             { translateX: translateX },
             { translateY: translateY },
           ]

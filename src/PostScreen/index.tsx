@@ -1232,7 +1232,6 @@ export default class CameraScreen extends Component<Props, State> {
         editImageData = [];
         let results = await Promise.all(
           multipleData.map(async (item, index) => {
-            // console.info('------裁剪数据回调：', index, cropData[index]);
 
             let imageScale = cropDataRow[item?.image?.uri].scale;
             let imageWidth = cropDataRow[item?.image?.uri].fittedSize?.width;
@@ -1252,18 +1251,23 @@ export default class CameraScreen extends Component<Props, State> {
             editImageData[index] = {
               index: index,
               type: item.type,
+              name: item?.image?.filename,
+              size: item?.image?.fileSize,
               uri: item.image.uri,
-              // srcWidth: item.image.width,
-              // srcHeight: item.image.height,
-              // imageWidth: imageWidth,
-              // imageHeight: imageHeight,
-              imageScale: imageScale,
-              imageWidthScale: imageWidthScale,
-              imageHeightScale: imageHeightScale,
-              // translateX: translateX,
-              // translateY: translateY,
+
+              //图片原始宽高
+              srcWidth:item.image.width,
+              srcHeight:item.image.height,
+
+              scale: imageScale,
+              widthScale: imageWidthScale,
+              heightScale: imageHeightScale,
               translateXScale: translateXScale,
               translateYScale: translateYScale,
+
+              //如果是视频，还需要以下两个参数
+              // playableDuration:item?.image?.playableDuration,
+              // playableDuration:item?.image?.playableDurationFormat,
             };
 
             return item.image.uri;
@@ -1281,7 +1285,7 @@ export default class CameraScreen extends Component<Props, State> {
         // console.info('------裁剪数据回调233', results);
         resultData = results;
       }
-      // console.info('-xx editImageData', editImageData);
+      // console.info('-xx multipleData', multipleData);
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
