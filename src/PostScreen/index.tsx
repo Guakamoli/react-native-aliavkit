@@ -1000,6 +1000,7 @@ class PostFileUpload extends Component {
     }
 
     //获取照片
+
     clickItemLock = false;
     let getPhotosProps = {
       first: getPhotosNum,
@@ -1064,8 +1065,12 @@ class PostFileUpload extends Component {
     );
   };
   _handleAppStateChange = (nextAppState) => {
+<<<<<<< HEAD
     if (!this.props.isDrawerOpen || this.props.type !== 'post') return
 
+=======
+    if (!this.props.isDrawerOpen || this.props.type !=='post') return
+>>>>>>> 3b2e550 (修正获取相册)
     if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
       clickItemLock = false;
       this.getPhotos();
