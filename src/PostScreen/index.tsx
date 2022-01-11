@@ -833,6 +833,8 @@ class PostFileUpload extends Component {
     );
   };
   _handleAppStateChange = (nextAppState) => {
+    if (!this.props.isDrawerOpen || this.props.type !=='post') return
+
     if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
       clickItemLock = false;
       this.getPhotos();
