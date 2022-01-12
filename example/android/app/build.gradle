@@ -137,6 +137,7 @@ dependencies {
     implementation project (':common:AliyunSVideoBase')
     implementation project (':common:AliyunSvideoMusic')
 
+    implementation project(':react-native-permissions')
     implementation project(':react-native-svg')
     implementation project(':react-native-video')
     implementation project(':react-native-gesture-handler')
