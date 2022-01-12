@@ -964,13 +964,20 @@ class PostFileUpload extends Component {
   };
   getPhotos = async (getMore = false) => {
 
+    console.log("getPhotos", this.props.isDrawerOpen, this.props.type);
     if (Platform.OS === 'android') {
-      if (!await this.checkStoragePermissions()) {
-        if ((await this.getStoragePermissions())) {
-          //同意了权限
-          this.getPhotos(getMore);
+      if (!this.props.isDrawerOpen || this.props.type !== 'post') {
+        if (!await this.checkStoragePermissions()) {
+          return;
         }
-        return;
+      } else {
+        if (!await this.checkStoragePermissions(true)) {
+          if ((await this.getStoragePermissions(true))) {
+            //同意了权限
+            this.getPhotos(getMore);
+          }
+          return;
+        }
       }
     }
 
@@ -1052,37 +1059,17 @@ class PostFileUpload extends Component {
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
 
-    if (Platform.OS === 'android') {
-      this.getPhotoFromCacheAndroid();
+    if (!!this.props.isExample) {
+      this.getPhotos();
     } else {
-      if (!!this.props.isExample) {
-        this.getPhotos();
-      } else {
-        this.getPhotoFromCache();
-      }
+      this.getPhotoFromCache();
     }
 
-  }
-
-  getPhotoFromCacheAndroid = async () => {
-    if (await this.checkStoragePermissions(true)) {
-      if (!!this.props.isExample) {
-        this.getPhotos();
-      } else {
-        this.getPhotoFromCache();
-      }
-    } else if (await this.getStoragePermissions(true)) {
-      if (!!this.props.isExample) {
-        this.getPhotos();
-      } else {
-        this.getPhotoFromCache();
-      }
-    }
   }
 
   /**
- * 检测是否有存储权限
- */
+  * 检测是否有存储权限
+  */
   checkStoragePermissions = async (isToSetting: boolean = false) => {
     const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
     if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
@@ -1159,6 +1146,25 @@ class PostFileUpload extends Component {
     AppState.removeEventListener('change', this._handleAppStateChange);
   }
   getPhotoFromCache = async () => {
+
+    console.log("getPhotoFromCache", this.props.isDrawerOpen, this.props.type);
+    if (Platform.OS === 'android') {
+      if (!this.props.isDrawerOpen || this.props.type !== 'post') {
+        if (!await this.checkStoragePermissions()) {
+          return;
+        }
+      } else {
+        if (!await this.checkStoragePermissions(true)) {
+          if ((await this.getStoragePermissions(true))) {
+            //同意了权限
+            this.getPhotoFromCache();
+          }
+          return;
+        }
+      }
+    }
+
+
     const { AsyncStorage } = this.props;
     if (AsyncStorage) {
       let photos = await AsyncStorage.getItem('AvKitCameraRollList');
