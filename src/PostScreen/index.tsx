@@ -579,6 +579,7 @@ class GridItemCover extends Component {
 
 
   clickItem = async (selectType: any) => {
+    // console.info("clickItem", "selectType", selectType);
     const { item, multipleData, selectMultiple, index } = this.props;
     const { type } = item;
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
@@ -741,68 +742,64 @@ class GridItemCover extends Component {
             position: 'absolute',
             zIndex: 1,
           },
-          !isSelector && { backgroundColor: '#000', opacity: 0.6 },
+          !isSelector && { backgroundColor: '#000', opacity: 0.4 },
         ]}
       >
         <View>
           <Pressable
-            hitSlop={{ top: 10, bottom: 10, right: 10, left: 10 }}
-            style={{ zIndex: 2, backgroundColor: '#000' }}
+            style={{ zIndex: 2, width: 28, height: 28, position: 'absolute', top: 0, right: 0 , overflow: 'hidden'}}
             onPress={() => {
               this.clickItem(0)
             }}>
-            <View>
-              <View
-                style={[
-                  {
-                    borderRadius: 22,
-                    borderWidth: 1,
-                    width: 22,
-                    height: 22,
-                    borderColor: 'white',
-                    overflow: 'hidden',
-                    position: 'absolute',
+            <View
+              style={[
+                {
+                  borderRadius: 22,
+                  borderWidth: 1,
+                  width: 22,
+                  height: 22,
+                  borderColor: 'white',
+                  overflow: 'hidden',
+                  position: 'absolute',
+                  right: 5,
+                  top: 5,
+                  display: this.props.selectMultiple ? 'flex' : 'none',
+                },
+                !this.props.selectMultiple && { position: 'relative' },
+              ]}
+            >
+              {fileType == 'video' ?
+                <Image
+                  source={postFileSelectPng}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    // borderRadius: 20,
+                    backgroundColor: '#836BFF',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    display: this.state.active ? 'flex' : 'none',
+                  }}
+                />
+                :
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    // borderRadius: 20,
                     zIndex: 99,
-                    right: 5,
-                    top: 5,
-                    display: this.props.selectMultiple ? 'flex' : 'none',
-                  },
-                  Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
-                ]}
-              >
-                {fileType == 'video' ?
-                  <Image
-                    source={postFileSelectPng}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      // borderRadius: 20,
-                      zIndex: 99,
-                      backgroundColor: '#836BFF',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      display: this.state.active ? 'flex' : 'none',
-                    }}
-                  />
-                  :
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      // borderRadius: 20,
-                      zIndex: 99,
-                      backgroundColor: '#836BFF',
-                      justifyContent: 'center',
-                      // alignItems: 'center',
-                      display: this.state.active ? 'flex' : 'none',
-                    }}
-                  >
-                    <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
-                      {this.state.selectIndex}
-                    </Text>
-                  </View>
-                }
-              </View></View>
+                    backgroundColor: '#836BFF',
+                    justifyContent: 'center',
+                    // alignItems: 'center',
+                    display: this.state.active ? 'flex' : 'none',
+                  }}
+                >
+                  <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
+                    {this.state.selectIndex}
+                  </Text>
+                </View>
+              }
+            </View>
           </Pressable>
           <Animated.View
             style={[
@@ -962,22 +959,20 @@ class PostFileUpload extends Component {
     }
     return t;
   };
-  getPhotos = async (getMore = false) => {
 
-    console.log("getPhotos", this.props.isDrawerOpen, this.props.type);
+
+  getPhotos = async (isGetPermissions = false) => {
+
     if (Platform.OS === 'android') {
-      if (!this.props.isDrawerOpen || this.props.type !== 'post') {
-        if (!await this.checkStoragePermissions()) {
-          return;
+      if (!await this.checkStoragePermissions()) {
+        if (isGetPermissions) {
+          setTimeout(async () => {
+            if (await this.getStoragePermissions(true)) {
+              this.getPhotos();
+            }
+          }, 300);
         }
-      } else {
-        if (!await this.checkStoragePermissions(true)) {
-          if ((await this.getStoragePermissions(true))) {
-            //同意了权限
-            this.getPhotos(getMore);
-          }
-          return;
-        }
+        return;
       }
     }
 
@@ -1060,7 +1055,7 @@ class PostFileUpload extends Component {
     AppState.addEventListener('change', this._handleAppStateChange);
 
     if (!!this.props.isExample) {
-      this.getPhotos();
+      this.getPhotos(true);
     } else {
       this.getPhotoFromCache();
     }
@@ -1129,13 +1124,13 @@ class PostFileUpload extends Component {
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
-        this.getPhotos();
+        this.getPhotos(true);
       }
       return false;
     }
     if (nextProps.type !== this.props.type && nextProps.type === 'post') {
       if (this.props.isDrawerOpen) {
-        this.getPhotos();
+        this.getPhotos(true);
       }
       return false;
     }
@@ -1147,23 +1142,11 @@ class PostFileUpload extends Component {
   }
   getPhotoFromCache = async () => {
 
-    console.log("getPhotoFromCache", this.props.isDrawerOpen, this.props.type);
     if (Platform.OS === 'android') {
-      if (!this.props.isDrawerOpen || this.props.type !== 'post') {
-        if (!await this.checkStoragePermissions()) {
-          return;
-        }
-      } else {
-        if (!await this.checkStoragePermissions(true)) {
-          if ((await this.getStoragePermissions(true))) {
-            //同意了权限
-            this.getPhotoFromCache();
-          }
-          return;
-        }
+      if (!await this.checkStoragePermissions()) {
+        return;
       }
     }
-
 
     const { AsyncStorage } = this.props;
     if (AsyncStorage) {
