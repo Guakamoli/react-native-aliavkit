@@ -1004,7 +1004,7 @@ class PostFileUpload extends Component {
     );
   };
   _handleAppStateChange = (nextAppState) => {
-    if (!this.props.isDrawerOpen || this.props.type !=='post') return
+    if (!this.props.isDrawerOpen || this.props.type !== 'post') return
 
     if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
       clickItemLock = false;
@@ -1258,8 +1258,8 @@ export default class CameraScreen extends Component<Props, State> {
               uri: item.image.uri,
 
               //图片原始宽高
-              srcWidth:item.image.width,
-              srcHeight:item.image.height,
+              srcWidth: item.image.width,
+              srcHeight: item.image.height,
 
               scale: imageScale,
               widthScale: imageWidthScale,
@@ -1288,6 +1288,14 @@ export default class CameraScreen extends Component<Props, State> {
         resultData = results;
       }
       // console.info('-xx multipleData', multipleData);
+
+      //选择图片视频直接上传，不进入编辑页面
+      if (type === 'video') {
+        this.onUploadVideo(multipleData, resultData);
+      } else {
+        this.onUploadPhoto(editImageData)
+      }
+      return;
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
@@ -1320,6 +1328,72 @@ export default class CameraScreen extends Component<Props, State> {
       console.info(e, '错误');
     }
   };
+
+  onUploadVideo = async (multipleData, resultData) => {
+    let uploadData = [];
+    for (let i = 0; i < multipleData.length; i++) {
+      const item = multipleData[i];
+      if (!item?.image) {
+        return;
+      }
+      if (!resultData[i]) {
+        return;
+      }
+      const path = `file://${encodeURI(resultData[i])}`
+      let type = resultData[i].split('.');
+      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+      uploadData[i] = {
+        index: i,
+        type: type,
+        path: path,
+        size: item.image.fileSize,
+        name: resultData[i],
+        coverImage: '',
+        width: item.image.width,
+        height: item.image.height,
+      }
+    }
+    // console.info("uploadData", uploadData);
+    this.props.getUploadFile(uploadData);
+  }
+
+  onUploadPhoto = async (editImageData) => {
+
+    let uploadData = [];
+    for (let i = 0; i < editImageData.length; i++) {
+      const item = editImageData[i];
+      if (!item?.uri) {
+        return;
+      }
+      let localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+      if (!localUri) {
+        return;
+      }
+
+      let type = item.name.split('.');
+
+      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+
+      uploadData[i] = {
+        index: item.index,
+        type: type,
+        path: localUri,
+        size: item.size,
+        name: item.name,
+        coverImage: localUri,
+        width: item.srcWidth,
+        height: item.srcHeight,
+
+        scale: item.scale,
+        widthScale: item.widthScale,
+        heightScale: item.heightScale,
+        translateXScale: item.translateXScale,
+        translateYScale: item.translateYScale,
+      }
+    }
+    // console.info("uploadData", uploadData);
+    this.props.getUploadFile(uploadData);
+  }
 
   componentDidMount() { }
 
