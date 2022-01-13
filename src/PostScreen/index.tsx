@@ -83,6 +83,7 @@ type State = {
   cropOffsetX: any;
   cropOffsetY: any;
   videoPaused: boolean;
+  isVidoePlayer: boolean;
 };
 
 let subscription = null;
@@ -208,6 +209,20 @@ class PostContent extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
+      if (nextProps.isVidoePlayer) {
+        this.setState({
+          videoPaused: false,
+        });
+      } else {
+        this.setState({
+          videoPaused: true,
+        });
+      }
+      return false;
+    }
+
     const isRender = this.isRender(nextProps, nextState)
     if (isRender == 0) {
       return false;
@@ -1012,6 +1027,9 @@ class PostFileUpload extends Component {
       // 在这里重新获取数据
 
       console.log('App has come to the foreground!');
+      this.props.setVideoPlayer(true)
+    } else {
+      this.props.setVideoPlayer(false)
     }
 
     this.appState = nextAppState;
@@ -1040,6 +1058,15 @@ class PostFileUpload extends Component {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
       return true;
     }
+
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (nextProps.isDrawerOpen) {
+        this.props.setVideoPlayer(true);
+      } else {
+        this.props.setVideoPlayer(false);
+      }
+    }
+
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
         this.getPhotos();
@@ -1164,8 +1191,15 @@ export default class CameraScreen extends Component<Props, State> {
     this.state = {
       postEditorParams: null,
       page: 'main',
+      isVidoePlayer: true,
     };
   }
+
+  setVideoPlayer = (isVidoePlayer) => {
+    // console.info("setVideoPlayer", isVidoePlayer);
+    this.setState({ isVidoePlayer: isVidoePlayer })
+  }
+
   playVideo = () => {
     this.setState({ videoPaused: false });
   };
@@ -1289,6 +1323,7 @@ export default class CameraScreen extends Component<Props, State> {
       }
       // console.info('-xx multipleData', multipleData);
 
+      this.setVideoPlayer(false);
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
         this.onUploadVideo(multipleData, resultData);
@@ -1398,6 +1433,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.isVidoePlayer !== this.state.isVidoePlayer) {
+      return true;
+    }
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
       this.messageRef?.current?.show(
         <View
@@ -1460,10 +1498,10 @@ export default class CameraScreen extends Component<Props, State> {
         />
         <View style={{ display: this.state.page === 'main' ? 'flex' : 'none' }}>
           <PostHeadWrap key={'PostHead'} {...this.props} postEditor={this.postEditor} />
-          <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} />
+          <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} isVidoePlayer={this.state.isVidoePlayer} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
 
-          <PostFileUpload {...this.props} toastRef={this.myRef} />
+          <PostFileUpload {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
         </View>
         {this.state.postEditorParams ? (
           <PostEditor
