@@ -1323,6 +1323,24 @@ export default class CameraScreen extends Component<Props, State> {
       }
       // console.info('-xx multipleData', multipleData);
 
+      if (this.props.selectMultiple) {
+        let selectData = null;
+        // 变成单选，设置最后一次选中的 item 为单选选中状态
+        if (multipleData?.length) {
+          if (lastSelectedItemIndex > 0 && multipleData.length > lastSelectedItemIndex - 1) {
+            selectData = multipleData[lastSelectedItemIndex - 1]
+          } else {
+            selectData = multipleData[multipleData.length - 1];
+          }
+        }
+        if (!!selectData) {
+          setTimeout(() => {
+            this.props.setMultipleData([selectData]);
+            this.props.setSelectMultiple();
+          }, 1000);
+        }
+      }
+
       this.setVideoPlayer(false);
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
@@ -1519,6 +1537,8 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 }
+
+CameraScreen = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(CameraScreen);
 
 const styles = StyleSheet.create({
   closeIcon: {
