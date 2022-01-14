@@ -1003,6 +1003,16 @@ class PostFileUpload extends Component {
           }
         }
         if (!selectedValid) {
+          if (firstData.type.indexOf("video") !== -1) {
+            let localUri;
+            if (Platform.OS === 'ios') {
+              let myAssetId = firstData?.image?.uri.slice(5);
+              localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            } else {
+              localUri = item?.image?.uri;
+            }
+            firstData.image.videoFile = localUri;
+          }
           this.props.setMultipleData([firstData]);
         }
 
@@ -1104,6 +1114,16 @@ class PostFileUpload extends Component {
           }
         }
         if (!selectedValid) {
+          if (firstData.type.indexOf("video") !== -1) {
+            let localUri;
+            if (Platform.OS === 'ios') {
+              let myAssetId = firstData?.image?.uri.slice(5);
+              localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            } else {
+              localUri = item?.image?.uri;
+            }
+            firstData.image.videoFile = localUri;
+          }
           this.props.setMultipleData([firstData]);
         }
 
