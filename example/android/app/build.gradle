@@ -144,6 +144,8 @@ dependencies {
     implementation project(':react-native-image-filter-kit')
     implementation project(':@react-native-community-cameraroll')
     implementation project(':@react-native-community-image-editor')
+
+    implementation project(':react-native-permissions')
 }
 
 task copyDownloadableDepsToLibs(type: Copy) {
