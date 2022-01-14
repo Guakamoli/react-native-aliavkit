@@ -540,6 +540,8 @@ class ImageViewer extends Component<IProps> {
                       // </Animated.View>
                       <Animated.View style={[videoBoxStyle, { justifyContent: 'center', alignItems: 'center' }]}>
                         <Video
+                          posterResizeMode={"cover"}
+                          resizeMode={"cover"}
                           paused={videoPaused}
                           repeat={true}
                           muted={true}

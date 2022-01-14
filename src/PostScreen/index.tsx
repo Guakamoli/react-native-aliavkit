@@ -83,6 +83,7 @@ type State = {
   cropOffsetX: any;
   cropOffsetY: any;
   videoPaused: boolean;
+  isVidoePlayer: boolean;
 };
 
 let subscription = null;
@@ -208,6 +209,20 @@ class PostContent extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
+      if (nextProps.isVidoePlayer) {
+        this.setState({
+          videoPaused: false,
+        });
+      } else {
+        this.setState({
+          videoPaused: true,
+        });
+      }
+      return false;
+    }
+
     const isRender = this.isRender(nextProps, nextState)
     if (isRender == 0) {
       return false;
@@ -988,6 +1003,16 @@ class PostFileUpload extends Component {
           }
         }
         if (!selectedValid) {
+          if (firstData.type.indexOf("video") !== -1) {
+            let localUri;
+            if (Platform.OS === 'ios') {
+              let myAssetId = firstData?.image?.uri.slice(5);
+              localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            } else {
+              localUri = item?.image?.uri;
+            }
+            firstData.image.videoFile = localUri;
+          }
           this.props.setMultipleData([firstData]);
         }
 
@@ -1004,7 +1029,7 @@ class PostFileUpload extends Component {
     );
   };
   _handleAppStateChange = (nextAppState) => {
-    if (!this.props.isDrawerOpen || this.props.type !=='post') return
+    if (!this.props.isDrawerOpen || this.props.type !== 'post') return
 
     if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
       clickItemLock = false;
@@ -1012,6 +1037,9 @@ class PostFileUpload extends Component {
       // 在这里重新获取数据
 
       console.log('App has come to the foreground!');
+      this.props.setVideoPlayer(true)
+    } else {
+      this.props.setVideoPlayer(false)
     }
 
     this.appState = nextAppState;
@@ -1040,6 +1068,15 @@ class PostFileUpload extends Component {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
       return true;
     }
+
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (nextProps.isDrawerOpen) {
+        this.props.setVideoPlayer(true);
+      } else {
+        this.props.setVideoPlayer(false);
+      }
+    }
+
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
         this.getPhotos();
@@ -1077,6 +1114,16 @@ class PostFileUpload extends Component {
           }
         }
         if (!selectedValid) {
+          if (firstData.type.indexOf("video") !== -1) {
+            let localUri;
+            if (Platform.OS === 'ios') {
+              let myAssetId = firstData?.image?.uri.slice(5);
+              localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            } else {
+              localUri = item?.image?.uri;
+            }
+            firstData.image.videoFile = localUri;
+          }
           this.props.setMultipleData([firstData]);
         }
 
@@ -1164,8 +1211,15 @@ export default class CameraScreen extends Component<Props, State> {
     this.state = {
       postEditorParams: null,
       page: 'main',
+      isVidoePlayer: true,
     };
   }
+
+  setVideoPlayer = (isVidoePlayer) => {
+    // console.info("setVideoPlayer", isVidoePlayer);
+    this.setState({ isVidoePlayer: isVidoePlayer })
+  }
+
   playVideo = () => {
     this.setState({ videoPaused: false });
   };
@@ -1258,8 +1312,8 @@ export default class CameraScreen extends Component<Props, State> {
               uri: item.image.uri,
 
               //图片原始宽高
-              srcWidth:item.image.width,
-              srcHeight:item.image.height,
+              srcWidth: item.image.width,
+              srcHeight: item.image.height,
 
               scale: imageScale,
               widthScale: imageWidthScale,
@@ -1288,6 +1342,33 @@ export default class CameraScreen extends Component<Props, State> {
         resultData = results;
       }
       // console.info('-xx multipleData', multipleData);
+
+      if (this.props.selectMultiple) {
+        let selectData = null;
+        // 变成单选，设置最后一次选中的 item 为单选选中状态
+        if (multipleData?.length) {
+          if (lastSelectedItemIndex > 0 && multipleData.length > lastSelectedItemIndex - 1) {
+            selectData = multipleData[lastSelectedItemIndex - 1]
+          } else {
+            selectData = multipleData[multipleData.length - 1];
+          }
+        }
+        if (!!selectData) {
+          setTimeout(() => {
+            this.props.setMultipleData([selectData]);
+            this.props.setSelectMultiple();
+          }, 1000);
+        }
+      }
+
+      this.setVideoPlayer(false);
+      //选择图片视频直接上传，不进入编辑页面
+      if (type === 'video') {
+        this.onUploadVideo(multipleData, resultData);
+      } else {
+        this.onUploadPhoto(editImageData)
+      }
+      return;
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
@@ -1321,9 +1402,80 @@ export default class CameraScreen extends Component<Props, State> {
     }
   };
 
+  onUploadVideo = async (multipleData, resultData) => {
+    let uploadData = [];
+    for (let i = 0; i < multipleData.length; i++) {
+      const item = multipleData[i];
+      if (!item?.image) {
+        return;
+      }
+      if (!resultData[i]) {
+        return;
+      }
+      const path = `file://${encodeURI(resultData[i])}`
+      let type = resultData[i].split('.');
+      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+      uploadData[i] = {
+        index: i,
+        type: type,
+        path: path,
+        size: item.image.fileSize,
+        name: resultData[i],
+        coverImage: '',
+        width: item.image.width,
+        height: item.image.height,
+      }
+    }
+    // console.info("uploadData", uploadData);
+    this.props.getUploadFile(uploadData);
+  }
+
+  onUploadPhoto = async (editImageData) => {
+
+    let uploadData = [];
+    for (let i = 0; i < editImageData.length; i++) {
+      const item = editImageData[i];
+      if (!item?.uri) {
+        return;
+      }
+      let localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+      if (!localUri) {
+        return;
+      }
+
+      let type = item.name.split('.');
+
+      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+
+      uploadData[i] = {
+        index: item.index,
+        type: type,
+        path: localUri,
+        size: item.size,
+        name: item.name,
+        coverImage: localUri,
+        width: item.srcWidth,
+        height: item.srcHeight,
+
+        cropParams: {
+          scale: item.scale,
+          widthScale: item.widthScale,
+          heightScale: item.heightScale,
+          translateXScale: item.translateXScale,
+          translateYScale: item.translateYScale,
+        }
+      }
+    }
+    // console.info("uploadData", uploadData);
+    this.props.getUploadFile(uploadData);
+  }
+
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.isVidoePlayer !== this.state.isVidoePlayer) {
+      return true;
+    }
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
       this.messageRef?.current?.show(
         <View
@@ -1386,10 +1538,10 @@ export default class CameraScreen extends Component<Props, State> {
         />
         <View style={{ display: this.state.page === 'main' ? 'flex' : 'none' }}>
           <PostHeadWrap key={'PostHead'} {...this.props} postEditor={this.postEditor} />
-          <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} />
+          <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} isVidoePlayer={this.state.isVidoePlayer} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
 
-          <PostFileUpload {...this.props} toastRef={this.myRef} />
+          <PostFileUpload {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
         </View>
         {this.state.postEditorParams ? (
           <PostEditor
@@ -1407,6 +1559,8 @@ export default class CameraScreen extends Component<Props, State> {
     );
   }
 }
+
+CameraScreen = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(CameraScreen);
 
 const styles = StyleSheet.create({
   closeIcon: {
