@@ -1457,11 +1457,13 @@ export default class CameraScreen extends Component<Props, State> {
         width: item.srcWidth,
         height: item.srcHeight,
 
-        scale: item.scale,
-        widthScale: item.widthScale,
-        heightScale: item.heightScale,
-        translateXScale: item.translateXScale,
-        translateYScale: item.translateYScale,
+        cropParams: {
+          scale: item.scale,
+          widthScale: item.widthScale,
+          heightScale: item.heightScale,
+          translateXScale: item.translateXScale,
+          translateYScale: item.translateYScale,
+        }
       }
     }
     // console.info("uploadData", uploadData);
