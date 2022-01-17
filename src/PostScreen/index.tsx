@@ -16,6 +16,7 @@ import {
   Modal,
   Pressable,
   AppState,
+  Alert,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { setSelectMultiple, setMultipleData } from '../actions/post';
@@ -29,6 +30,8 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
+
+import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS } from 'react-native-permissions';
 
 import ImageMap from '../../images';
 const { postFileSelectPng, errorAlertIconPng } = ImageMap;
@@ -591,6 +594,7 @@ class GridItemCover extends Component {
 
 
   clickItem = async (selectType: any) => {
+    // console.info("clickItem", "selectType", selectType);
     const { item, multipleData, selectMultiple, index } = this.props;
     const { type } = item;
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
@@ -620,7 +624,13 @@ class GridItemCover extends Component {
     if (multipleData?.length) {
       //  多选
       let fileSelectType = multipleData[multipleData.length - 1].type;
-      if (fileSelectType != fileType && selectMultiple) {
+      // if (fileSelectType != fileType && selectMultiple) {
+      //   console.info('选择不一致 无效');
+      //   return;
+      // }
+
+      // android 返回的 fileSelectType 是   video/mp4 |  image/jpeg
+      if (fileSelectType.indexOf(fileType) === -1 && selectMultiple) {
         console.info('选择不一致 无效');
         return;
       }
@@ -727,7 +737,8 @@ class GridItemCover extends Component {
       if (!!multipleData && multipleData.length > 0) {
         //选中的文件类型
         let fileSelectType = multipleData[multipleData.length - 1]?.type ?? '';
-        if (fileSelectType !== fileType) {
+        // android 的 fileSelectType 是   video/mp4 |  image/jpeg
+        if (fileSelectType.indexOf(fileType) === -1) {
           isSelector = false;
         }
       }
@@ -746,68 +757,64 @@ class GridItemCover extends Component {
             position: 'absolute',
             zIndex: 1,
           },
-          !isSelector && { backgroundColor: '#000', opacity: 0.5 },
+          !isSelector && { backgroundColor: '#000', opacity: 0.4 },
         ]}
       >
         <View>
           <Pressable
-            hitSlop={{ top: 10, bottom: 10, right: 10, left: 10 }}
-            style={{ zIndex: 2, backgroundColor: '#000' }}
+            style={{ zIndex: 2, width: 28, height: 28, position: 'absolute', top: 0, right: 0 , overflow: 'hidden'}}
             onPress={() => {
               this.clickItem(0)
             }}>
-            <View>
-              <View
-                style={[
-                  {
-                    borderRadius: 22,
-                    borderWidth: 1,
-                    width: 22,
-                    height: 22,
-                    borderColor: 'white',
-                    overflow: 'hidden',
-                    position: 'absolute',
+            <View
+              style={[
+                {
+                  borderRadius: 22,
+                  borderWidth: 1,
+                  width: 22,
+                  height: 22,
+                  borderColor: 'white',
+                  overflow: 'hidden',
+                  position: 'absolute',
+                  right: 5,
+                  top: 5,
+                  display: this.props.selectMultiple ? 'flex' : 'none',
+                },
+                !this.props.selectMultiple && { position: 'relative' },
+              ]}
+            >
+              {fileType == 'video' ?
+                <Image
+                  source={postFileSelectPng}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    // borderRadius: 20,
+                    backgroundColor: '#836BFF',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    display: this.state.active ? 'flex' : 'none',
+                  }}
+                />
+                :
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    // borderRadius: 20,
                     zIndex: 99,
-                    right: 5,
-                    top: 5,
-                    display: this.props.selectMultiple ? 'flex' : 'none',
-                  },
-                  Platform.OS === 'android' && !this.props.selectMultiple && { position: 'relative' },
-                ]}
-              >
-                {fileType == 'video' ?
-                  <Image
-                    source={postFileSelectPng}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      // borderRadius: 20,
-                      zIndex: 99,
-                      backgroundColor: '#836BFF',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      display: this.state.active ? 'flex' : 'none',
-                    }}
-                  />
-                  :
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      // borderRadius: 20,
-                      zIndex: 99,
-                      backgroundColor: '#836BFF',
-                      justifyContent: 'center',
-                      // alignItems: 'center',
-                      display: this.state.active ? 'flex' : 'none',
-                    }}
-                  >
-                    <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
-                      {this.state.selectIndex}
-                    </Text>
-                  </View>
-                }
-              </View></View>
+                    backgroundColor: '#836BFF',
+                    justifyContent: 'center',
+                    // alignItems: 'center',
+                    display: this.state.active ? 'flex' : 'none',
+                  }}
+                >
+                  <Text style={[{ color: '#FFFFFF', textAlign: 'center', fontSize: 12, marginRight: 1 }]}>
+                    {this.state.selectIndex}
+                  </Text>
+                </View>
+              }
+            </View>
           </Pressable>
           <Animated.View
             style={[
@@ -967,7 +974,23 @@ class PostFileUpload extends Component {
     }
     return t;
   };
-  getPhotos = (getMore = false) => {
+
+
+  getPhotos = async (isGetPermissions = false) => {
+
+    if (Platform.OS === 'android') {
+      if (!await this.checkStoragePermissions()) {
+        if (isGetPermissions) {
+          setTimeout(async () => {
+            if (await this.getStoragePermissions(true)) {
+              this.getPhotos();
+            }
+          }, 300);
+        }
+        return;
+      }
+    }
+
     //获取照片
     clickItemLock = false;
     let getPhotosProps = {
@@ -1058,12 +1081,71 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
+
     if (!!this.props.isExample) {
-      this.getPhotos();
+      this.getPhotos(true);
     } else {
       this.getPhotoFromCache();
     }
+
   }
+
+  /**
+  * 检测是否有存储权限
+  */
+  checkStoragePermissions = async (isToSetting: boolean = false) => {
+    const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+    if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
+      return true;
+    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'blocked' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'blocked') {
+      //拒绝且不再询问
+      if (isToSetting) {
+        this.showToSettingAlert();
+      }
+    }
+    return false;
+  }
+
+  /**
+   *  获取存储权限
+   * @param isToSetting  是否展示去设置的 Alert
+   */
+  getStoragePermissions = async (isToSetting: boolean = false) => {
+    const statuses = await requestMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+
+    if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
+      return true;
+    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'denied' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'denied') {
+    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'blocked' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'blocked') {
+      if (isToSetting) {
+        this.showToSettingAlert();
+      }
+    }
+    return false;
+  };
+
+  showToSettingAlert = () =>
+    Alert.alert(
+      "",
+      "“拍鸭”需要读取您的存储权限",
+      [
+        {
+          text: "暂不设置",
+          style: "default",
+        },
+        {
+          text: "去设置",
+          onPress: () => openSettings(),
+          style: "default",
+        },
+      ],
+      {
+        cancelable: true,
+      }
+    );
+
+
+
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
       return true;
@@ -1079,13 +1161,13 @@ class PostFileUpload extends Component {
 
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
-        this.getPhotos();
+        this.getPhotos(true);
       }
       return false;
     }
     if (nextProps.type !== this.props.type && nextProps.type === 'post') {
       if (this.props.isDrawerOpen) {
-        this.getPhotos();
+        this.getPhotos(true);
       }
       return false;
     }
@@ -1096,6 +1178,13 @@ class PostFileUpload extends Component {
     AppState.removeEventListener('change', this._handleAppStateChange);
   }
   getPhotoFromCache = async () => {
+
+    if (Platform.OS === 'android') {
+      if (!await this.checkStoragePermissions()) {
+        return;
+      }
+    }
+
     const { AsyncStorage } = this.props;
     if (AsyncStorage) {
       let photos = await AsyncStorage.getItem('AvKitCameraRollList');
