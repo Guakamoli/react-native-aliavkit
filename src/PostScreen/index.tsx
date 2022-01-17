@@ -1022,6 +1022,9 @@ class PostFileUpload extends Component {
           let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
 
           if (localUri) {
+            if (firstData.type.indexOf("video") !== -1) {
+              firstData.image.videoFile = localUri;
+            }
             selectedValid = true;
           }
         }
@@ -1032,7 +1035,7 @@ class PostFileUpload extends Component {
               let myAssetId = firstData?.image?.uri.slice(5);
               localUri = await CameraRoll.requestPhotoAccess(myAssetId);
             } else {
-              localUri = item?.image?.uri;
+              localUri = firstData?.image?.uri;
             }
             firstData.image.videoFile = localUri;
           }
@@ -1199,6 +1202,9 @@ class PostFileUpload extends Component {
           let myAssetId = multipleData[0]?.image?.uri.slice(5);
           let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
           if (localUri) {
+            if (firstData.type.indexOf("video") !== -1) {
+              firstData.image.videoFile = localUri;
+            }
             selectedValid = true;
           }
         }
@@ -1209,7 +1215,7 @@ class PostFileUpload extends Component {
               let myAssetId = firstData?.image?.uri.slice(5);
               localUri = await CameraRoll.requestPhotoAccess(myAssetId);
             } else {
-              localUri = item?.image?.uri;
+              localUri = firstData?.image?.uri;
             }
             firstData.image.videoFile = localUri;
           }
