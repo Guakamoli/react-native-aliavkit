@@ -48,6 +48,8 @@ let lastSelectedItemPosition = 0;
 //点击的item在选中集合中的下标
 let lastSelectedItemIndex = 0;
 
+let isFirstLoad = true;
+
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
   multipleBtnImage: any;
@@ -977,9 +979,7 @@ class PostFileUpload extends Component {
 
 
   getPhotos = async (isGetPermissions = false) => {
-
-    // if (Platform.OS === 'android') {
-    if (!await this.checkStoragePermissions()) {
+    if (!await this.checkStoragePermissions(false,true)) {
       if (isGetPermissions) {
         setTimeout(async () => {
           if (await this.getStoragePermissions(true)) {
@@ -989,7 +989,15 @@ class PostFileUpload extends Component {
       }
       return;
     }
-    // }
+
+    if(isFirstLoad){
+      await new Promise((resolved)=>{
+        setTimeout(() => {
+          resolved()
+        }, 300);
+      })
+      isFirstLoad = false;
+    }
 
     //获取照片
     clickItemLock = false;
@@ -1096,7 +1104,7 @@ class PostFileUpload extends Component {
   /**
   * 检测是否有存储权限
   */
-  checkStoragePermissions = async (isToSetting: boolean = false) => {
+  checkStoragePermissions = async (isToSetting: boolean = false, isCheckLimited: boolean = false) => {
     if (Platform.OS === 'android') {
       const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
       if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === RESULTS.GRANTED && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === RESULTS.GRANTED) {
@@ -1109,7 +1117,6 @@ class PostFileUpload extends Component {
       }
     } else if (Platform.OS === 'ios') {
       const statuses = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
-      console.info("checkStoragePermissions ios", statuses);
       if (statuses === RESULTS.GRANTED) {
         return true;
       } else if (statuses === RESULTS.BLOCKED) {
@@ -1117,7 +1124,7 @@ class PostFileUpload extends Component {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
-        return true;
+        return isCheckLimited;
       }
     }
     return false;
@@ -1140,7 +1147,6 @@ class PostFileUpload extends Component {
       }
     } else if (Platform.OS === 'ios') {
       const statuses = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
-      console.info("getStoragePermissions ios", statuses);
       if (statuses === RESULTS.GRANTED) {
         return true;
       } else if (statuses === RESULTS.BLOCKED) {
