@@ -48,7 +48,6 @@ let lastSelectedItemPosition = 0;
 //点击的item在选中集合中的下标
 let lastSelectedItemIndex = 0;
 
-let isFirstLoad = true;
 
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 export type Props = {
@@ -953,9 +952,12 @@ const PostHeadMapStateToProps = (state) => ({
 
 const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
 class PostFileUpload extends Component {
+
+  private isFirstLoad:boolean;
   constructor(props) {
     super(props);
     this.appState = '';
+    this.isFirstLoad = true;
     this.state = {
       CameraRollList: [],
     };
@@ -990,13 +992,13 @@ class PostFileUpload extends Component {
       return;
     }
 
-    if(isFirstLoad){
+    if(this.isFirstLoad){
       await new Promise((resolved)=>{
         setTimeout(() => {
           resolved()
         }, 300);
       })
-      isFirstLoad = false;
+      this.isFirstLoad = false;
     }
 
     //获取照片
@@ -1214,12 +1216,9 @@ class PostFileUpload extends Component {
     AppState.removeEventListener('change', this._handleAppStateChange);
   }
   getPhotoFromCache = async () => {
-
-    // if (Platform.OS === 'android') {
     if (!await this.checkStoragePermissions()) {
       return;
     }
-    // }
 
     const { AsyncStorage } = this.props;
     if (AsyncStorage) {
@@ -1344,7 +1343,6 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
   setVideoPlayer = (isVidoePlayer) => {
-    // console.info("setVideoPlayer", isVidoePlayer);
     this.setState({ isVidoePlayer: isVidoePlayer })
   }
 
