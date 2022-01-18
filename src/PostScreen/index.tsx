@@ -31,7 +31,7 @@ import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
 
-import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS } from 'react-native-permissions';
+import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import ImageMap from '../../images';
 const { postFileSelectPng, errorAlertIconPng } = ImageMap;
@@ -762,7 +762,7 @@ class GridItemCover extends Component {
       >
         <View>
           <Pressable
-            style={{ zIndex: 2, width: 28, height: 28, position: 'absolute', top: 0, right: 0 , overflow: 'hidden'}}
+            style={{ zIndex: 2, width: 28, height: 28, position: 'absolute', top: 0, right: 0, overflow: 'hidden' }}
             onPress={() => {
               this.clickItem(0)
             }}>
@@ -978,18 +978,18 @@ class PostFileUpload extends Component {
 
   getPhotos = async (isGetPermissions = false) => {
 
-    if (Platform.OS === 'android') {
-      if (!await this.checkStoragePermissions()) {
-        if (isGetPermissions) {
-          setTimeout(async () => {
-            if (await this.getStoragePermissions(true)) {
-              this.getPhotos();
-            }
-          }, 300);
-        }
-        return;
+    // if (Platform.OS === 'android') {
+    if (!await this.checkStoragePermissions()) {
+      if (isGetPermissions) {
+        setTimeout(async () => {
+          if (await this.getStoragePermissions(true)) {
+            this.getPhotos();
+          }
+        }, 300);
       }
+      return;
     }
+    // }
 
     //获取照片
     clickItemLock = false;
@@ -1097,13 +1097,27 @@ class PostFileUpload extends Component {
   * 检测是否有存储权限
   */
   checkStoragePermissions = async (isToSetting: boolean = false) => {
-    const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
-    if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
-      return true;
-    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'blocked' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'blocked') {
-      //拒绝且不再询问
-      if (isToSetting) {
-        this.showToSettingAlert();
+    if (Platform.OS === 'android') {
+      const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+      if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === RESULTS.GRANTED && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === RESULTS.BLOCKED || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === RESULTS.BLOCKED) {
+        //拒绝且不再询问
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const statuses = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      console.info("checkStoragePermissions ios", statuses);
+      if (statuses === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      } else if (statuses === RESULTS.LIMITED) {
+        return true;
       }
     }
     return false;
@@ -1114,14 +1128,27 @@ class PostFileUpload extends Component {
    * @param isToSetting  是否展示去设置的 Alert
    */
   getStoragePermissions = async (isToSetting: boolean = false) => {
-    const statuses = await requestMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
-
-    if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
-      return true;
-    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'denied' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'denied') {
-    } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'blocked' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'blocked') {
-      if (isToSetting) {
-        this.showToSettingAlert();
+    if (Platform.OS === 'android') {
+      const statuses = await requestMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+      if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted' && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'granted') {
+        return true;
+      } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'denied' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'denied') {
+      } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'blocked' || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === 'blocked') {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const statuses = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      console.info("getStoragePermissions ios", statuses);
+      if (statuses === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      } else if (statuses === RESULTS.LIMITED) {
+        return true;
       }
     }
     return false;
@@ -1129,8 +1156,8 @@ class PostFileUpload extends Component {
 
   showToSettingAlert = () =>
     Alert.alert(
-      "",
-      "“拍鸭”需要读取您的存储权限",
+      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相册权限" : "",
+      Platform.OS === 'ios' ? "" : "“拍鸭”需要读取您的存储权限",
       [
         {
           text: "暂不设置",
@@ -1182,11 +1209,11 @@ class PostFileUpload extends Component {
   }
   getPhotoFromCache = async () => {
 
-    if (Platform.OS === 'android') {
-      if (!await this.checkStoragePermissions()) {
-        return;
-      }
+    // if (Platform.OS === 'android') {
+    if (!await this.checkStoragePermissions()) {
+      return;
     }
+    // }
 
     const { AsyncStorage } = this.props;
     if (AsyncStorage) {
