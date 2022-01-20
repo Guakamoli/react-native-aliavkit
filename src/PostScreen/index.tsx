@@ -648,8 +648,8 @@ class GridItemCover extends Component {
       if (!localUri) {
         return;
       }
-      //选择的是之前选中的视频，取消选中
-      if (!!multipleData[0]) {
+      //选择的是之前选中的视频，取消选中  仅多选能取消选中
+      if (!!multipleData[0] && selectMultiple) {
         if (multipleData[0].image.uri == itemCopy.image.uri) {
           this.props.setMultipleData([]);
           return
@@ -917,10 +917,9 @@ const PostHead = React.memo((props) => {
           // pressMultiple();
         }}
         style={{
-          height: 30,
+          height: 44,
           width: 50,
           paddingHorizontal: 12,
-
           justifyContent: 'center',
         }}
       >
@@ -931,14 +930,13 @@ const PostHead = React.memo((props) => {
       <Pressable
         onPress={postEditor}
         style={{
-          height: 30,
+          height: 44,
           paddingHorizontal: 12,
-
           justifyContent: 'center',
           alignItems: 'flex-end',
         }}
       >
-        <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333' }]}>
+        <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
           继续
         </Text>
       </Pressable>
@@ -953,7 +951,7 @@ const PostHeadMapStateToProps = (state) => ({
 const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
 class PostFileUpload extends Component {
 
-  private isFirstLoad:boolean;
+  private isFirstLoad: boolean;
   constructor(props) {
     super(props);
     this.appState = '';
@@ -981,7 +979,7 @@ class PostFileUpload extends Component {
 
 
   getPhotos = async (isGetPermissions = false) => {
-    if (!await this.checkStoragePermissions(false,true)) {
+    if (!await this.checkStoragePermissions(false, true)) {
       if (isGetPermissions) {
         setTimeout(async () => {
           if (await this.getStoragePermissions(true)) {
@@ -992,8 +990,8 @@ class PostFileUpload extends Component {
       return;
     }
 
-    if(this.isFirstLoad){
-      await new Promise((resolved)=>{
+    if (this.isFirstLoad) {
+      await new Promise((resolved) => {
         setTimeout(() => {
           resolved()
         }, 300);
@@ -1028,13 +1026,14 @@ class PostFileUpload extends Component {
 
         let selectedValid = false;
         if (multipleData[0]) {
-          let myAssetId = multipleData[0]?.image?.uri.slice(5);
-          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-
+          let localUri;
+          if (Platform.OS === 'ios') {
+            let myAssetId = firstData?.image?.uri.slice(5);
+            localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+          } else {
+            localUri = firstData?.image?.uri;
+          }
           if (localUri) {
-            if (firstData.type.indexOf("video") !== -1) {
-              firstData.image.videoFile = localUri;
-            }
             selectedValid = true;
           }
         }
@@ -1231,12 +1230,14 @@ class PostFileUpload extends Component {
         if (!firstData) return;
         let selectedValid = false;
         if (multipleData[0]) {
-          let myAssetId = multipleData[0]?.image?.uri.slice(5);
-          let localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+          let localUri;
+          if (Platform.OS === 'ios') {
+            let myAssetId = firstData?.image?.uri.slice(5);
+            localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+          } else {
+            localUri = firstData?.image?.uri;
+          }
           if (localUri) {
-            if (firstData.type.indexOf("video") !== -1) {
-              firstData.image.videoFile = localUri;
-            }
             selectedValid = true;
           }
         }
@@ -1406,6 +1407,7 @@ export default class CameraScreen extends Component<Props, State> {
           resultData.push(trimVideoData);
         } else {
           trimVideoData = imageItem.uri;
+          resultData.push(trimVideoData);
         }
       } else {
         const cropData = result;
@@ -1487,11 +1489,15 @@ export default class CameraScreen extends Component<Props, State> {
         }
       }
 
+
+
       this.setVideoPlayer(false);
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
+        // console.info("onUploadVideo", resultData, multipleData);
         this.onUploadVideo(multipleData, resultData);
       } else {
+        // console.info("onUploadPhoto", editImageData);
         this.onUploadPhoto(editImageData)
       }
       return;
@@ -1538,9 +1544,18 @@ export default class CameraScreen extends Component<Props, State> {
       if (!resultData[i]) {
         return;
       }
-      const path = `file://${encodeURI(resultData[i])}`
-      let type = resultData[i].split('.');
-      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+
+      let type;
+      let path;
+      if (Platform.OS === 'ios') {
+        path = `file://${encodeURI(resultData[i])}`
+        type = resultData[i].split('.');
+        type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+      } else {
+        type = item.type;
+        path = resultData[i];
+      }
+
       uploadData[i] = {
         index: i,
         type: type,
@@ -1564,14 +1579,20 @@ export default class CameraScreen extends Component<Props, State> {
       if (!item?.uri) {
         return;
       }
-      let localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+
+      let localUri;
+      let type;
+      if (Platform.OS === 'ios') {
+        type = item.name.split('.');
+        type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+        localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+      } else {
+        type = item.type;
+        localUri = item.uri;
+      }
       if (!localUri) {
         return;
       }
-
-      let type = item.name.split('.');
-
-      type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
 
       uploadData[i] = {
         index: item.index,
@@ -1641,10 +1662,12 @@ export default class CameraScreen extends Component<Props, State> {
       this.props.getUploadFile(data);
     }
   }
+
+
   render() {
     return (
       <>
-        <StatusBar barStyle={'light-content'} />
+        <StatusBar barStyle={"dark-content"} backgroundColor={"#fff"} />
 
         <Toast
           ref={this.myRef}
@@ -1663,6 +1686,7 @@ export default class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
         <View style={{ display: this.state.page === 'main' ? 'flex' : 'none' }}>
+
           <PostHeadWrap key={'PostHead'} {...this.props} postEditor={this.postEditor} />
           <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} isVidoePlayer={this.state.isVidoePlayer} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
@@ -1732,7 +1756,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#836BFF',
-    lineHeight: 21,
+    lineHeight: 44,
   },
   textCenter: {
     fontSize: 17,
