@@ -1667,7 +1667,12 @@ export default class CameraScreen extends Component<Props, State> {
   render() {
     return (
       <>
-        {/* <StatusBar barStyle={"dark-content"} backgroundColor={"#fff"} /> */}
+        {
+          Platform.OS === 'ios' ?
+            <StatusBar barStyle={"dark-content"} backgroundColor={"#fff"} />
+            :
+            null
+        }
 
         <Toast
           ref={this.myRef}
