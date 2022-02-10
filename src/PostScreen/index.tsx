@@ -1000,6 +1000,7 @@ class PostFileUpload extends Component {
     }
 
     //获取照片
+
     clickItemLock = false;
     let getPhotosProps = {
       first: getPhotosNum,
