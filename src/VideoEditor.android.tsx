@@ -82,6 +82,14 @@ export default class Editor extends Component<Props, State> {
   };
 
 
+  onPause = async () => {
+    RNEditorKitModule.pause();
+  }
+
+  onSeek = async (seekTime) => {
+    RNEditorKitModule.seek(seekTime);
+  }
+
   release = async () => {
     // console.log("Video release");
     RNEditorKitModule.release();

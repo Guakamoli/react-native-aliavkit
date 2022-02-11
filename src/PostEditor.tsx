@@ -398,63 +398,49 @@ const PostEditor = (props) => {
 
       const editImageData = props.params.editImageData;
 
-      let uploadData = editImageData.map((item, index) => {
-        return {
+      let uploadData = [];
+
+      for (let i = 0; i < editImageData.length; i++) {
+        const item = editImageData[i];
+        if (!item?.uri) {
+          return;
+        }
+
+        let localUri;
+        let type;
+        if (Platform.OS === 'ios') {
+          type = item.name.split('.');
+          type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+          localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+        } else {
+          type = item.type;
+          localUri = item.uri;
+        }
+        if (!localUri) {
+          return;
+        }
+        uploadData[i] = {
           index: item.index,
-          type: `image/png`,
-          path: item.cacheUri,
+          type: type,
+          path: localUri,
           size: item.size,
           name: item.name,
-          coverImage: item.cacheUri,
+          coverImage: localUri,
           width: item.srcWidth,
           height: item.srcHeight,
 
-          scale: item.scale,
-          widthScale: item.widthScale,
-          heightScale: item.heightScale,
-          translateXScale: item.translateXScale,
-          translateYScale: item.translateYScale,
-        };
-      });
-
-      uploadData.forEach((item, index) => {
-        if (!item.path) {
-          return;
+          cropParams: {
+            scale: item.scale,
+            widthScale: item.widthScale,
+            heightScale: item.heightScale,
+            translateXScale: item.translateXScale,
+            translateYScale: item.translateYScale,
+          }
         }
-        //设置滤镜
-        // console.log("uploadData", item.index, item);
-      });
+      }
       props.getUploadFile(uploadData);
       props.goback();
-      // if (continueRef.current) return;
-      // continueRef.current = true;
-      // try {
-      //   // console.info('photoFilephotoFile', photosDataIndex);
-      //   // return
-      //   // const path = photoFile[0];
-      //   let uploadFile = [];
-      //   uploadFile = photoFile.map((item, index) => {
-      //     // 图片的宽高
-      //     let imageData = props.params.originalData[index]?.image;
-      // return {
-      //   type: `image/png`,
-      //   path: item,
-      //   size: 0,
-      //   name: item,
-      //   coverImage: item,
-      //   width: imageData.width,
-      //   height: imageData.height,
-      // };
-      //   });
-      //   props.getUploadFile(uploadFile);
-      //   uploadFile = [];
-      //   props.goback();
-      // } catch (e) {
-      //   console.info(e, '错误');
-      //   setTimeout(() => {
-      //     continueRef.current = false;
-      //   }, 1500);
-      // }
+    
     } else {
       // 裁剪视频
       // if (!coverImage.current) {

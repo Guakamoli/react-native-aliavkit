@@ -175,7 +175,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
 
 
     @ReactMethod
-    fun seek(seekTime: Int, viewTag: Int, promise: Promise) {
+    fun seek(seekTime: Int, promise: Promise) {
         mView?.seek(seekTime, promise)
 //        val context = reactContext
 //        val uiManager = context.getNativeModule(UIManagerModule::class.java)

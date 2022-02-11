@@ -1493,15 +1493,16 @@ export default class CameraScreen extends Component<Props, State> {
 
 
       this.setVideoPlayer(false);
-      //选择图片视频直接上传，不进入编辑页面
-      if (type === 'video') {
-        // console.info("onUploadVideo", resultData, multipleData);
-        this.onUploadVideo(multipleData, resultData);
-      } else {
-        // console.info("onUploadPhoto", editImageData);
-        this.onUploadPhoto(editImageData)
-      }
-      return;
+      
+      // //选择图片视频直接上传，不进入编辑页面
+      // if (type === 'video') {
+      //   // console.info("onUploadVideo", resultData, multipleData);
+      //   this.onUploadVideo(multipleData, resultData);
+      // } else {
+      //   // console.info("onUploadPhoto", editImageData);
+      //   this.onUploadPhoto(editImageData)
+      // }
+      // return;
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
