@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 // TODO
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, Platform } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, StatusBar as StatusBarRN, Platform } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
@@ -33,7 +33,7 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
-  const { server, user, item, navigation, sendfile = () => {}, goBack = () => {}, haptics } = props;
+  const { server, user, item, navigation, sendfile = () => { }, goBack = () => { }, haptics } = props;
   const dispatch = useDispatch();
   const type = useSelector((state) => {
     return state.shootContainer.type;
@@ -71,6 +71,7 @@ const Entry = (props) => {
   );
   return (
     <>
+      {props?.isDrawerOpen && <StatusBarRN backgroundColor={"#000"} barStyle={'light-content'} animated />}
       <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
         <PostUpload
           // onRef={this.onRef}
