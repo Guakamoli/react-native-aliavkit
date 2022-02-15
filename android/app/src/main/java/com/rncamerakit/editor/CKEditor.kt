@@ -96,7 +96,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
         params.gravity = Gravity.CENTER_HORIZONTAL
-        mVideoContainer?.setBackgroundColor(Color.BLUE)
         addView(mVideoContainer, params)
     }
 
@@ -382,6 +381,10 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
 
     init {
+        this.mWidth = ScreenUtils.getWidth(reactContext)
+        this.mHeight = mWidth*16/9
+        initVideoContainer()
+        initSurfaceView()
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
         copyAssets()
@@ -508,6 +511,18 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.stop()
         mAliyunIEditor?.onDestroy()
         mComposeManager?.onRelease()
+    }
+
+
+    override fun requestLayout() {
+        super.requestLayout()
+        post {
+            measure(
+                MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY)
+            );
+            layout(left, top, right, bottom);
+        }
     }
 
 }
