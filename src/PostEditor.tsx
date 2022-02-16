@@ -1000,7 +1000,11 @@ const PostEditor = (props) => {
 
               scrollAniRef.setValue(0);
 
-              RNEditViewManager.pause();
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             trackHeight={50}
           >

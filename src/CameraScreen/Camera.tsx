@@ -290,6 +290,7 @@ class RenderCamera extends Component {
     const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
 
     const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    console.info("Camera CameraFixHeight", CameraFixHeight, this.state.showCamera, this.props.isExample);
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
@@ -303,7 +304,7 @@ class RenderCamera extends Component {
             }, 0);
           }}
         >
-          {this.state.showCamera ? (
+          {this.state.showCamera || this.props.isExample ? (
             <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
               <Camera
                 ref={(cam) => (this.props.camera.current = cam)}
@@ -315,24 +316,9 @@ class RenderCamera extends Component {
                 normalBeautyLevel={this.props.normalBeautyLevel * 10}
                 facePasterInfo={this.props.facePasterInfo}
                 torchMode={'off'}
-                onReadCode={() => {}}
-                onRecordingProgress={() => {}}
+                onReadCode={() => { }}
+                onRecordingProgress={() => { }}
               />
-              {/* {this.state.showToast && (
-                <Animated.View
-                  style={[
-                    styles.toastBox,
-                    {
-                      opacity: this.fadeAnim,
-                    },
-                  ]}
-                >
-                  <Text style={{ textAlign: 'center', fontSize: 14, color: '#000', lineHeight: 40, fontWeight: '500' }}>
-                    点击拍照,长按拍视频
-                  </Text>
-                  <View style={styles.toast}></View>
-                </Animated.View>
-              )} */}
             </View>
           ) : null}
         </View>

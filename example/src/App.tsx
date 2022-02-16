@@ -37,13 +37,13 @@ function HomeScreen(props) {
   }
   return (
     <>
-      <SafeAreaView style={{ flex: 1, }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
         <View style={{ backgroundColor: '#000' }}>
-        <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile} isExample ={true}
-        insets={insets}
-        getUploadFile={(data) => {
-          navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
-        }}></Entry>
+          <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile} isExample={true}
+            insets={insets}
+            getUploadFile={(data) => {
+              navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
+            }}></Entry>
         </View>
       </SafeAreaView>
     </>

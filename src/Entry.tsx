@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 // TODO
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, StatusBar as StatusBarRN, Platform } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, StatusBar, Platform } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
@@ -69,35 +69,40 @@ const Entry = (props) => {
     },
     { wait: 1000 },
   );
-  return (
-    <>
-      {props?.isDrawerOpen && <StatusBarRN backgroundColor={"#000"} barStyle={'light-content'} animated />}
-      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-        <PostUpload
-          // onRef={this.onRef}
-          {...props}
-          goback={goBack}
-          goStory={() => {
-            props.navigation.replace('FeedsStory');
-          }}
-          goPostEditor={(data) => {
-            props.navigation.navigate('FeedsPostEditor', { ...data });
-          }}
-          type={type}
-          setType={(type) => {
-            dispatch(setType(type));
-          }}
-          multipleBtnImage={multipleBtnPng}
-          startMultipleBtnImage={startMultipleBtnPng}
-          postCameraImage={postCameraPng}
-          changeSizeImage={changeSizePng}
-          closePng={closePng}
-          cameraModule={true}
-          noVolumeImage={noVolumePng}
-          volumeImage={volumePng}
-        />
-      </View>
-      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
+  console.info("types", type);
+
+  const PostView = () => {
+    return (
+      <PostUpload
+        // onRef={this.onRef}
+        {...props}
+        goback={goBack}
+        goStory={() => {
+          props.navigation.replace('FeedsStory');
+        }}
+        goPostEditor={(data) => {
+          props.navigation.navigate('FeedsPostEditor', { ...data });
+        }}
+        type={type}
+        setType={(type) => {
+          dispatch(setType(type));
+        }}
+        multipleBtnImage={multipleBtnPng}
+        startMultipleBtnImage={startMultipleBtnPng}
+        postCameraImage={postCameraPng}
+        changeSizeImage={changeSizePng}
+        closePng={closePng}
+        cameraModule={true}
+        noVolumeImage={noVolumePng}
+        volumeImage={volumePng}
+      />
+    )
+  }
+
+
+  const CameraView = () => {
+    return (
+      <View style={{ height: '100%' }}>
         <CameraScreen
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
@@ -139,11 +144,21 @@ const Entry = (props) => {
           cameraModule={true}
         />
       </View>
+    )
+  }
 
-      {/*  <Animated.View
+  console.info("props.insets.bottom ",props.insets.bottom );
+
+  return (
+    <View style={{ width: "100%", height: "100%", backgroundColor: 'red' }}>
+      {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
+
+      {type === 'post' ? PostView() : CameraView()}
+
+      <Animated.View
         style={[
           styles.tools,
-          { bottom: props.insets.bottom },
+          { bottom: Platform.OS === 'android' ? 34 : 0  },
           { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
           // TODO
           Platform.OS === 'android' && { opacity: types.findIndex((i) => i.type === type) > -1 ? 1 : 0 },
@@ -165,9 +180,8 @@ const Entry = (props) => {
             </TouchableOpacity>
           );
         })}
-      </Animated.View> */}
-    </>
-    // </View>
+      </Animated.View>
+    </View>
   );
 };
 
