@@ -53,13 +53,14 @@ const Entry = (props) => {
   ];
   React.useEffect(() => {
     if (changeFlagLock.current) return;
-    transX.setValue(type === 'post' ? 30 : -30);
+    transX.setValue(type === 'post' ? 20 : -20);
   }, [type]);
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;
       Animated.timing(transX, {
-        toValue: i.type === 'post' ? 30 : -30,
+        duration: 200,
+        toValue: i.type === 'post' ? 20 : -20,
         useNativeDriver: true,
       }).start();
       dispatch(setType(i.type));
@@ -67,7 +68,7 @@ const Entry = (props) => {
         changeFlagLock.current = false;
       }, 0);
     },
-    { wait: 1000 },
+    { wait: 0 },
   );
   console.info("types", type);
 
@@ -147,40 +148,45 @@ const Entry = (props) => {
     )
   }
 
-  console.info("props.insets.bottom ",props.insets.bottom );
+  console.info("props.insets.bottom ", props.insets.bottom);
+
+  const iosInsetBottom = props.insets.bottom ? 0 : 15
 
   return (
-    <View style={{ width: "100%", height: "100%", backgroundColor: 'red' }}>
+    <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
       {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
 
-      {type === 'post' ? PostView() : CameraView()}
+      <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
+        {PostView()}
+      </View>
+      
+      {(type === 'story' || type === 'storyedit') && CameraView()}
 
-      <Animated.View
-        style={[
-          styles.tools,
-          { bottom: Platform.OS === 'android' ? 34 : 0  },
-          { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
-          // TODO
-          Platform.OS === 'android' && { opacity: types.findIndex((i) => i.type === type) > -1 ? 1 : 0 },
-
-          {
-            transform: [{ translateX: transX }],
-          },
-        ]}
-      >
-        {types.map((i) => {
-          return (
-            <TouchableOpacity
-              key={i.type}
-              onPress={() => {
-                changeType(i);
-              }}
-            >
-              <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </Animated.View>
+      {(type === 'story' || type === 'post') &&
+        <Animated.View
+          style={[
+            styles.tools,
+            { bottom: Platform.OS === 'android' ? 20 : iosInsetBottom },
+            {
+              transform: [{ translateX: transX }],
+            },
+          ]}
+        >
+          {types.map((i) => {
+            return (
+              <TouchableOpacity
+                style={{ width: '50%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+                key={i.type}
+                onPress={() => {
+                  changeType(i);
+                }}
+              >
+                <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
+      }
     </View>
   );
 };
@@ -194,7 +200,6 @@ const styles = StyleSheet.create({
     height: 36,
     position: 'absolute',
     left: (width - 120) / 2,
-    bottom: 40,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
