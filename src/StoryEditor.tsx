@@ -121,7 +121,7 @@ export default class StoryEditor extends Component<Props, State> {
     this.pauseMusic(this.musicOn);
   }
   async pauseMusic(song) {
-    console.info('暂停音乐', song);
+    // console.info('暂停音乐', song);
     await AVService.pauseMusic(song.songID);
   }
   //  发布快拍   导出视频  丢出数据
@@ -231,8 +231,8 @@ export default class StoryEditor extends Component<Props, State> {
           }
         },
       },
-      // 'Aa':
-      { img: this.props.AaImage, onPress: () => {} },
+      // // 'Aa':
+      // { img: this.props.AaImage, onPress: () => {} },
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -276,19 +276,27 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       //TODO
-      const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
-      const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+      // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
+      // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+
+      const CameraFixHeight = width * 16 / 9;
+
+      console.info("VideoEditors CameraFixHeight", CameraFixHeight);
       return (
         <View
           style={{
             height: CameraFixHeight,
-            backgroundColor: 'black',
+            backgroundColor: 'red',
             borderRadius: 20,
             width: '100%',
             overflow: 'hidden',
           }}
         >
           <VideoEditor
+            style={{
+              height: CameraFixHeight,
+              width: '100%',
+            }}
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
             editHeight={CameraFixHeight}
@@ -306,8 +314,8 @@ export default class StoryEditor extends Component<Props, State> {
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
             // TODO 安卓兼容
-            onPlayProgress={() => {}}
-            // source={"story"}
+            onPlayProgress={() => { }}
+          // source={"story"}
           />
         </View>
       );
@@ -347,6 +355,7 @@ export default class StoryEditor extends Component<Props, State> {
             <FlatList
               data={this.state.filterList}
               horizontal={true}
+              keyExtractor={item => item.iconPath}
               style={{ margin: 0, padding: 0, height: 80 }}
               renderItem={({ index, item }) => {
                 return (

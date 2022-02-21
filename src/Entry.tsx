@@ -70,7 +70,7 @@ const Entry = (props) => {
     },
     { wait: 0 },
   );
-  console.info("types", type);
+  // console.info("types", type);
 
   const PostView = () => {
     return (
@@ -148,7 +148,7 @@ const Entry = (props) => {
     )
   }
 
-  console.info("props.insets.bottom ", props.insets.bottom);
+  // console.info("props.insets.bottom ", props.insets.bottom);
 
   const iosInsetBottom = props.insets.bottom ? 0 : 15
 

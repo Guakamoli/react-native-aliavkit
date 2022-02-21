@@ -384,7 +384,6 @@ class CameraScreen extends Component<Props, State> {
   shotPreview = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
-      console.info(image, 'iasdiadfidifi');
       this.setState({
         previewImage: image,
       });

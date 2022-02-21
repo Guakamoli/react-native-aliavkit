@@ -89,9 +89,9 @@ const RenderLeftButtons = React.memo((props) => {
       </Pressable>
       <View style={styles.leftIconBox}>
         {/* 音乐 */}
-        <Pressable>
+        {/* <Pressable>
           <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable>
+        </Pressable> */}
         {/* 美颜 */}
         <BeautyButton {...props} />
       </View>
@@ -266,10 +266,10 @@ class RenderCamera extends Component {
   }
   renderCamera = () => {
     //TODO
-    const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
-
-    const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
-    console.info("Camera CameraFixHeight", CameraFixHeight, this.state.showCamera, this.props.isExample);
+    // const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
+    // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    const CameraFixHeight = width * 16/9;
+    console.info("Camera CameraFixHeight", CameraFixHeight);
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
