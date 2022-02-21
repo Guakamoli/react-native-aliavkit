@@ -248,7 +248,6 @@ const StoryMusic = (props) => {
 
     const contentHeight = height - props.insets.top - props.insets.bottom;
     const musicSearchHeight = contentHeight * 0.66;
-    const videoBottomHeight = props.insets.bottom + props.insets.top;
     return (
       //Pressable 屏蔽：搜索音乐时，点击屏幕空白退出音乐View
       <Pressable onPress={closeMusicSearch} style={{ width: "100%", height: height, position: 'relative' }}>
@@ -314,7 +313,7 @@ const StoryMusic = (props) => {
             />
           </View>
           {songData.length < 1 && <View style={styles.noNetworkBox}>{loading()}</View>}
-          <View style={[styles.musicFindContentBox, { marginBottom: 80 }]}>
+          <View style={[styles.musicFindContentBox, { height: musicSearchHeight - (56 + 42 + 10) }]}>
             <FlatList
               data={searchMusicList}
               keyExtractor={item => item.songID}
@@ -331,7 +330,7 @@ const StoryMusic = (props) => {
                       setSearchSelectedMusic(item);
                     }}
                   >
-                    <View style={[styles.musicFindBox, { marginBottom: (searchMusicList.length - 1 === index) ? videoBottomHeight : 5 }, isPlayMusic && { backgroundColor: 'rgba(255,255,255,0.9)' }]}>
+                    <View style={[styles.musicFindBox, { marginBottom: (searchMusicList.length - 1 === index) ? 40 : 5 }, isPlayMusic && { backgroundColor: 'rgba(255,255,255,0.9)' }]}>
                       <View style={[styles.musicFindItem]}>
                         <Image source={isPlayMusic ? musicIconPng : musicIcongray} style={styles.musicFindIcon} />
                         <View style={styles.musicFindSongData}>
@@ -409,9 +408,10 @@ const StoryMusic = (props) => {
 const styles = StyleSheet.create({
   findMusicHead: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    margin: 15,
     marginBottom: 0,
+    height: 56,
   },
   findMusicHeadTitle: {
     fontSize: 16,
@@ -427,6 +427,7 @@ const styles = StyleSheet.create({
   },
   findMusicCancel: {
     fontSize: 16,
+    marginLeft: 15,
     fontWeight: '400',
     lineHeight: 22,
     color: '#fff',
@@ -436,9 +437,9 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: 'auto',
     height: 42,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 12,
-    marginTop: 32,
+    marginTop: 5,
     marginBottom: 5,
     // justifyContent:'center',
     alignItems: 'center',
@@ -478,6 +479,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 1)',
   },
   musicFindSuccess: {
+    marginRight: 15,
     fontSize: 16,
     fontWeight: '500',
     color: 'rgba(255, 255, 255, 0.4)',
