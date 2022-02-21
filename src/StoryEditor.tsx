@@ -117,6 +117,11 @@ export default class StoryEditor extends Component<Props, State> {
       this.setState({ startExportVideo: true });
     });
     this.pauseMusic(this.musicOn);
+
+    //发布快拍，关闭页面
+    setTimeout(() => {
+      this.props.goback();
+    }, 1000);
   }
   async pauseMusic(song) {
     // console.info('暂停音乐', song);
