@@ -37,22 +37,37 @@ static RNStorageManager *_instance = nil;
                                        pageSize:(NSUInteger)pageSize
                                         inArray:(NSArray<RNMusicInfo *> *)array
 {
-    NSUInteger num = array.count % page;
-    if (array.count <= pageSize) {
-        return array;
-    }
-    else if (num != 0) {
-        if (page * pageSize > array.count) {
-            NSUInteger index = array.count / pageSize;
-            NSUInteger length = array.count - index * pageSize;
-            return [array subarrayWithRange:NSMakeRange(index * pageSize, length)];
+//    NSUInteger num = array.count % page;
+//    if (array.count <= pageSize) {
+//        return array;
+//    }
+//    else if (num != 0) {
+//        if (page * pageSize > array.count) {
+//            NSUInteger index = array.count / pageSize;
+//            NSUInteger length = array.count - index * pageSize;
+//            return [array subarrayWithRange:NSMakeRange(index * pageSize, length)];
+//        }
+//    }
+//    NSArray *tmpArray = [array subarrayWithRange:NSMakeRange(0, pageSize * page)];
+//    [tmpArray enumerateObjectsUsingBlock:^(RNMusicInfo *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        [obj isDBContain];
+//    }];
+//    return tmpArray;
+    @try {
+        NSUInteger startIndex = (page-1)*pageSize;
+        NSUInteger length = pageSize;
+        if(array.count <= startIndex){
+            return @[];
         }
+        if(array.count <= startIndex + length){
+            length = array.count -startIndex;
+        }
+        return [array subarrayWithRange:NSMakeRange(startIndex, length)];
+    } @catch (NSException *exception) {
+        return @[];
+    } @finally {
+
     }
-    NSArray *tmpArray = [array subarrayWithRange:NSMakeRange(0, pageSize * page)];
-    [tmpArray enumerateObjectsUsingBlock:^(RNMusicInfo *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [obj isDBContain];
-    }];
-    return tmpArray;
 }
 
 - (RNMusicInfo *)findMusicByID:(NSString *)songID inArray:(NSArray<RNMusicInfo *> *)array

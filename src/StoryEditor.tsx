@@ -84,7 +84,7 @@ export default class StoryEditor extends Component<Props, State> {
   // 设置音乐
   musicExport: any;
   constructor(props) {
-    console.info('story 编辑页面props', props);
+    // console.info('story 编辑页面props', props);
 
     super(props);
     this.myRef = React.createRef();

@@ -45,8 +45,7 @@ export default class AVService {
   }
   // name:'all-music' 分页传all-music'，其他传歌曲名
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
-    console.log('123', { name, page, songID, pageSize });
-
+    console.info('getMusics', { name, page, songID, pageSize });
     return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
 

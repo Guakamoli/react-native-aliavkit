@@ -9,15 +9,22 @@ import {
   FlatList,
   NativeModules,
   TextInput,
+  Platform,
 } from 'react-native';
 
 import Carousel from 'react-native-snap-carousel';
 import AVService from './AVService';
 import { Button } from 'react-native-elements';
 import ImageMap from '../images';
+import { concat } from 'lodash';
+import { ForceTouchGestureHandler } from 'react-native-gesture-handler';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const { width, height } = Dimensions.get('window');
+
+let mMusicList = [];
+let mSelectedMusicPosition = 0;
+
 const StoryMusic = (props) => {
   const {
     musicDynamicGif,
@@ -29,61 +36,78 @@ const StoryMusic = (props) => {
     getMusicOn,
     connected,
   } = props;
+  //打开搜索列表
   const [musicChoice, setMmusicChoice] = useState(false);
-  const [checkedData, setCheckedData] = useState();
+
+  const carouselRef = React.useRef(null);
+
+  //音乐列表
+  const [songData, setSongData] = useState(mMusicList);
+  //音乐列表是否选择第一条item
+  const [carouselFirstItem, setCarouselFirstItem] = useState(mSelectedMusicPosition);
+
+  //搜索框内容
   const [musicSearchValue, setMusicSearchValue] = useState('');
-  const [songData, setSongData] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [pages, setpage] = useState(2);
+  //输入名称搜索的歌曲列表
+  const [searchMusicList, setSearchMusicList] = useState([]);
+  //搜索列表选中的歌曲
+  const [searchSelectedMusic, setSearchSelectedMusic] = useState(null);
+
+  //选中音乐下标
+  const [currentIndex, setCurrentIndex] = useState(mSelectedMusicPosition);
+  //正在播放的音乐
+  const [currentPlayMusic, setCurrentPlayMusic] = useState({});
+
+  const [pages, setpage] = useState(1);
+
+  React.useEffect(() => {
+    if (!carouselRef.current) {
+      return;
+    }
+    console.info("carouselRef", currentIndex);
+    carouselRef.current?.snapToItem(currentIndex);
+    setTimeout(() => {
+      carouselRef.current?.snapToItem(currentIndex);
+    }, 1000);
+  }, [carouselRef]);
 
   useEffect(() => {
-    console.log(23);
-    // 判断当前是否有网络 没有不去获取音乐
-    if (connected) {
+    //初始化获取
+    console.log('初始化', currentIndex, songData.length, carouselFirstItem);
+    if (!songData || songData.length == 0) {
       getSong({});
+    } else {
+      if (setMusicState) {
+        setCurrentPlayMusic(songData[currentIndex])
+        playMusic(songData[currentIndex]);
+      }
     }
     return () => {
       console.log('音乐销毁');
-      console.log('音乐销毁', songData, checkedData);
     };
   }, []);
 
-  useEffect(() => {
-    if (songData.length > 0) {
-      playMusic(songData[0]);
-      setCheckedData(songData[0]);
-      // getmusicInfo(songData[0]);
-      !setMusicState && props.setMusic(true);
-    }
-  }, [songData]);
-
   const onLengthHandle = useCallback(
     (e) => {
-      console.log(e.nativeEvent.text);
-      if (e.nativeEvent.text) {
-        getSong({ name: `${e.nativeEvent.text}`, page: 1, pageSize: 5 });
-      }
-      // setLength(copyWordCount(e.nativeEvent.text, lang));
+      // 歌曲搜索
+      console.log("name", e.nativeEvent.text);
+      getSearchSong(e.nativeEvent.text ? e.nativeEvent.text.trim() : "");
       setMusicSearchValue(e.nativeEvent.text);
     },
-
     [musicSearchValue],
   );
   const playMusic = async (song) => {
-    console.info('播放音乐', song);
-    // = await AVService.playMusic(song.songID);
     if (!song) {
       return;
     }
-
     const songa = await AVService.playMusic(song.songID);
     getMusicOn(songa);
     getmusicInfo(songa);
-    console.log('---- 返回值: ', songa);
+    console.info('播放音乐', song.songID, song.name);
     // getmusicInfo(song)
   };
   const pauseMusic = async (song) => {
-    console.info('暂停音乐', song);
+    console.info('暂停音乐', song.songID, song.name);
     if (!song) {
       return;
     }
@@ -91,21 +115,38 @@ const StoryMusic = (props) => {
     getmusicInfo({});
   };
 
-  const getSong = async ({ name = 'all-music', page = 1, pageSize = 5 }) => {
+  const getSearchSong = async (name) => {
     if (!name) {
-      name = 'all-music';
-    }
-    // 暂时
-    if (page > 5) {
       return;
     }
+    const song = await AVService.getMusics({ name: name, page: 1, pageSize: 5 });
+    console.info("搜索歌曲列表 ", song.length, song);
+    setSearchMusicList(song);
+  }
+
+  const getSong = async ({ name = '', page = 1, pageSize = 5 }) => {
     const song = await AVService.getMusics({ name, page, pageSize });
-    if (song.length % pageSize != 0) {
-      setSongData(songData.concat(song));
-    } else {
-      setSongData(song);
+    // console.info("获取歌曲列表 ", song.length, song);
+    if (!song?.length) {
+      return
     }
+    songData.forEach((item, index) => {
+      song.forEach((itemNew, position) => {
+        if (item.songID === itemNew.songID) {
+          song.splice(position, 1);
+        }
+      });
+    });
+    if (!songData?.length) {
+      setCurrentPlayMusic(song[currentIndex])
+      playMusic(song[currentIndex]);
+      !setMusicState && props.setMusic(true);
+    }
+    const musicList = page <= 1 ? song : songData.concat(song);
+    setSongData(musicList);
+    mMusicList = musicList
   };
+
   const loading = () => {
     return (
       <Button
@@ -137,42 +178,39 @@ const StoryMusic = (props) => {
 
     return (
       <Carousel
+        ref={(carouselRef)}
         data={songData}
         itemWidth={298}
         sliderWidth={width}
-        initialNumToRender={4}
-        firstItem={!musicChoice && songData.indexOf(checkedData)}
+        initialNumToRender={10}
+        firstItem={carouselFirstItem}
         activeAnimationType={'timing'}
-        onEndReachedThreshold={0.2}
+        onEndReachedThreshold={0}
         onEndReached={() => {
-          let page = pages + 1;
-          getSong({ name: '', page: pages, pageSize: 5 });
+          const page = pages + 1;
+          getSong({ name: '', page: page, pageSize: 5 });
           setpage(page);
         }}
-        onSnapToItem={async (slideIndex = 0) => {
+        onSnapToItem={(slideIndex = 0) => {
           playMusic(songData[slideIndex]);
-          setTimeout(() => {
-            !setMusicState && props.setMusic(true);
-            // getmusicInfo(songData[slideIndex]);
-            setCheckedData(songData[slideIndex]);
-            setCurrentIndex(slideIndex);
-          }, 300);
+          !setMusicState && props.setMusic(true);
+          setCurrentPlayMusic(songData[slideIndex]);
+          console.info("slideIndex", slideIndex)
+          setCurrentIndex(slideIndex);
+          mSelectedMusicPosition = slideIndex;
         }}
         renderItem={({ index, item }) => {
-          // console.log(checkedData);
-          const IsPlayMusic = checkedData?.songID == item?.songID;
+          const IsPlayMusic = (index === currentIndex) && (currentPlayMusic && currentPlayMusic.songID == item.songID);
           return (
             <TouchableOpacity
               onPress={() => {
-                if (checkedData.songID == item.songID) {
+                if (currentPlayMusic && currentPlayMusic.songID == item.songID) {
                   pauseMusic(item);
+                  setCurrentPlayMusic({});
                   props.setMusic(false);
-                  setCheckedData({});
-                  // getmusicInfo({});
                 } else {
-                  // getmusicInfo(item);
-                  setCheckedData(item);
                   playMusic(item);
+                  setCurrentPlayMusic(item);
                   !setMusicState && props.setMusic(true);
                 }
               }}
@@ -199,6 +237,17 @@ const StoryMusic = (props) => {
         <View style={styles.findMusicHead}>
           <TouchableOpacity
             onPress={() => {
+
+              if (searchSelectedMusic) {
+                pauseMusic(searchSelectedMusic);
+              }
+              //搜索列表取消，关闭搜索列表,继续播放原来的歌曲
+              if (!!currentPlayMusic?.songID) {
+                playMusic(currentPlayMusic)
+              }
+              setMusicSearchValue("");
+              setSearchMusicList([]);
+              setSearchSelectedMusic(null);
               setMmusicChoice(false);
             }}
           >
@@ -207,11 +256,35 @@ const StoryMusic = (props) => {
           <Text style={styles.findMusicHeadTitle}>背景音乐</Text>
           <TouchableOpacity
             onPress={() => {
-              // pauseMusic(checkedData),
+              if (searchSelectedMusic) {
+                // pauseMusic(searchSelectedMusic);
+                let musicList = songData;
+                musicList.forEach((item, index) => {
+                  if (item.songID === searchSelectedMusic.songID) {
+                    musicList.splice(index, 1);
+                    return
+                  }
+                });
+                musicList.unshift(searchSelectedMusic)
+                if (!!musicList[0]) {
+                  playMusic(musicList[0])
+                  //设置成当前播放歌曲
+                  setCurrentPlayMusic(musicList[0]);
+                }
+                setSongData(musicList);
+                mMusicList = musicList
+                setCurrentIndex(0);
+                mSelectedMusicPosition = 0;
+                setCarouselFirstItem(0);
+              }
+              //清空搜索栏的内容
+              setMusicSearchValue("");
+              setSearchMusicList([]);
+              setSearchSelectedMusic(null);
               setMmusicChoice(false);
             }}
           >
-            <Text style={[styles.musicFindSuccess, checkedData && { color: '#fff' }]}> 完成</Text>
+            <Text style={[styles.musicFindSuccess, { color: '#fff' }]}> 完成</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.searchMusic}>
@@ -230,26 +303,24 @@ const StoryMusic = (props) => {
         {songData.length < 1 && <View style={styles.noNetworkBox}>{loading()}</View>}
         <View style={styles.musicFindContentBox}>
           <FlatList
-            data={songData}
+            data={searchMusicList}
             onEndReachedThreshold={0.2}
-            onEndReached={() => {
-              // let page = pages s+ 1;
-              // getSong({ name: '', page: pages, pageSize: 5 });
-              // setpage(page);
-            }}
+            // onEndReached={() => {
+            //   // let page = pages s+ 1;
+            //   // getSong({ name: '', page: pages, pageSize: 5 });
+            //   // setpage(page);
+            // }}
             renderItem={({ item }) => {
-              const isPlayMusic = checkedData?.songID == item?.songID;
+              const isPlayMusic = searchSelectedMusic && (searchSelectedMusic?.songID == item?.songID);
               return (
                 <TouchableOpacity
+                  key={item.songID}
                   onPress={async () => {
-                    console.log('点击', checkedData);
-                    if (checkedData.songID == item.songID) {
-                      pauseMusic(item);
-                      setCheckedData({});
-                    } else {
-                      setCheckedData(item);
+                    console.log('搜索列表点击', item);
+                    if (!isPlayMusic) {
                       playMusic(item);
                     }
+                    setSearchSelectedMusic(item);
                   }}
                 >
                   <View style={[styles.musicFindBox, isPlayMusic && { backgroundColor: 'rgba(255,255,255,0.95)' }]}>
@@ -276,8 +347,11 @@ const StoryMusic = (props) => {
       {!musicChoice && (
         <TouchableOpacity
           onPress={() => {
-            setMmusicChoice(!musicChoice);
-            pauseMusic(checkedData);
+            //打开搜索列表，暂停之前播放的音乐
+            if (!!currentPlayMusic?.songID) {
+              pauseMusic(currentPlayMusic)
+            }
+            setMmusicChoice(true);
           }}
         >
           <View style={styles.musicChoiceBox}>
@@ -293,15 +367,14 @@ const StoryMusic = (props) => {
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center' }}
             onPress={async () => {
+              //配乐
               props.setMusic(!setMusicState);
               if (!setMusicState) {
                 playMusic(songData[currentIndex]);
-                setCheckedData(songData[currentIndex]);
-                // getmusicInfo(songData[currentIndex]);
+                setCurrentPlayMusic(songData[currentIndex]);
               } else {
                 pauseMusic(songData[currentIndex]);
-                setCheckedData({});
-                // getmusicInfo({});
+                setCurrentPlayMusic({});
               }
             }}
           >

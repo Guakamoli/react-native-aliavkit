@@ -194,39 +194,18 @@ class RenderCamera extends Component {
     }
   };
   componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
-  }
-  componentWillUnmount() {
-    AppState.removeEventListener('change', this.handleAppStateChange);
-  }
-  handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
+    if(Platform.OS ==='ios'){
+      AppState.addEventListener('change', this.handleAppStateChange);
     }
-  };
-  componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
   }
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       //TODO
       this.props.camera.current?.release();
     }
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    if (Platform.OS === 'ios') {
+      AppState.removeEventListener('change', this.handleAppStateChange);
+    }
   }
   shouldComponentUpdate(nextProps, nextState) {
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
@@ -319,6 +298,21 @@ class RenderCamera extends Component {
                 onReadCode={() => { }}
                 onRecordingProgress={() => { }}
               />
+              {/* {this.state.showToast && (
+                <Animated.View
+                  style={[
+                    styles.toastBox,
+                    {
+                      opacity: this.fadeAnim,
+                    },
+                  ]}
+                >
+                  <Text style={{ textAlign: 'center', fontSize: 14, color: '#000', lineHeight: 40, fontWeight: '500' }}>
+                    点击拍照,长按拍视频
+                  </Text>
+                  <View style={styles.toast}></View>
+                </Animated.View>
+              )} */}
             </View>
           ) : null}
         </View>
