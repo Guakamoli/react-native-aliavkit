@@ -95,7 +95,6 @@ export type Props = {
 
 type State = {
   // 照片数据
-  captureImages: any[];
   flashData: any;
   torchMode: boolean;
   flag: any;
@@ -114,8 +113,6 @@ type State = {
   progress: number;
   startShoot: boolean;
   ShootSuccess: boolean;
-
-  fadeInOpacity: any;
 
   // 视频路径
   videoPath: any;
@@ -318,8 +315,6 @@ class CameraScreen extends Component<Props, State> {
     this.rt = null;
     this.cameraBox = { current: null };
     this.state = {
-      // 照片存储
-      captureImages: [],
       flashData: this.flashArray[this.currentFlashArrayPosition],
       torchMode: false,
       flag: null,
@@ -338,8 +333,6 @@ class CameraScreen extends Component<Props, State> {
 
       startShoot: false,
       ShootSuccess: false,
-
-      fadeInOpacity: new Animated.Value(60),
 
       // 视频 照片地址
       videoPath: null,
@@ -362,7 +355,6 @@ class CameraScreen extends Component<Props, State> {
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-    this.getPasterInfos();
     const { cameraModule } = this.props;
     this.setState({
       ratios: ratios || [],
@@ -381,19 +373,6 @@ class CameraScreen extends Component<Props, State> {
   componentDidUpdate(props, state) {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
-  shotPreview = async () => {
-    try {
-      const image = await this.cameraBox.current?.capture?.();
-      this.setState({
-        previewImage: image,
-      });
-      setTimeout(() => {
-        this.setState({
-          relaloadFlag: Math.random(),
-        });
-      }, 0);
-    } catch (e) {}
-  };
   shouldComponentUpdate(nextProps, nextState) {
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
@@ -453,78 +432,6 @@ class CameraScreen extends Component<Props, State> {
     });
     return;
   }
-  //  拍摄按钮
-  getPasterInfos = async () => {
-    const pasters = await AVService.getFacePasterInfos({});
-    pasters.forEach((item, index) => {
-      if (index == 0) {
-        return;
-      }
-      //TODO
-      if (item.icon) {
-        item.icon = item.icon.replace('http://', 'https://');
-      }
-      if (item.url) {
-        item.url = item.url.replace('http://', 'https://');
-      }
-    });
-    pasters.unshift({ eid: 0 });
-    this.setState({
-      pasterList: pasters,
-      facePasterInfo: pasters[0],
-    });
-  };
-  renderCaptureButton() {
-    const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
-    return (
-      this.props.captureButtonImage && (
-        // !this.isCaptureRetakeMode() && (
-        <View style={[styles.captureButtonContainer, !musicOpen && { bottom: 30 }]}>
-          {
-            <>
-              {/* 长按按钮 */}
-              <View style={[styles.startShootBox, this.state.startShoot ? {} : { opacity: 0 }]}>
-                <Animated.View
-                  style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}
-                ></Animated.View>
-                <View style={styles.captureButton}></View>
-
-                <ProgressCircleWrapper
-                  flag={this.state.flag}
-                  setFlag={(flag) => {
-                    this.setState({
-                      flag,
-                    });
-                  }}
-                  recordeSuccess={async (data) => {
-                    const videoPath = await this.cameraBox.current?.stopRecording?.();
-                    this.setState({
-                      videoPath,
-                      flag: null,
-                      ShootSuccess: true,
-                      startShoot: false,
-                    });
-                    // this.setState({
-                    //   videoPath,
-                    // });
-                  }}
-                />
-              </View>
-              {/* 普通的切换按钮 */}
-              <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
-                {this.state.musicOpen ? (
-                  <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng} />
-                ) : null}
-                {/* this.state.musicOpen */}
-              </View>
-            </>
-          }
-        </View>
-      )
-      // )
-    );
-  }
-
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
@@ -540,28 +447,25 @@ class CameraScreen extends Component<Props, State> {
   onCaptureImagePressed = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
-      //  ios
-      let sandData = '';
+      let imagePath = '';
       //
       if (Platform.OS !== 'android') {
         // sandData = await AVService.saveToSandBox({ path: image?.uri });
-        sandData = image?.uri;
+        imagePath = image?.uri;
       } else {
-        sandData = image;
+        imagePath = image;
       }
       if (this.props.allowCaptureRetake) {
-        this.setState({ imageCaptured: sandData, fileType: 'image' });
+        this.setState({ imageCaptured: imagePath, fileType: 'image' });
       } else {
         if (image) {
+          // this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
           this.setState({
-            captured: true,
-            imageCaptured: sandData,
+            ShootSuccess: true,
             fileType: 'image',
-            // captureImages: _.concat(this.state.captureImages, image?.uri),?
-            captureImages: _.concat(this.state.captureImages, sandData),
+            imageCaptured: imagePath,
           });
           this.props.setType('storyedit');
-          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
         }
       }
     } catch (e) {
@@ -647,7 +551,7 @@ class CameraScreen extends Component<Props, State> {
             musicSearch={this.props.musicSearch}
             imagePath={this.state.imageCaptured}
             noResultPng={this.props.noResultPng}
-            // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
           <>

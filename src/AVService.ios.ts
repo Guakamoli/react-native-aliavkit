@@ -56,6 +56,7 @@ export default class AVService {
   static async removeThumbnaiImages() {
     return await AliAVServiceBridge.removeThumbnaiImages({});
   }
+  //振动
   static enableHapticIfExist() {
     AliAVServiceBridge.enableHapticIfExist();
   }

@@ -84,8 +84,6 @@ export default class StoryEditor extends Component<Props, State> {
   // 设置音乐
   musicExport: any;
   constructor(props) {
-    // console.info('story 编辑页面props', props);
-
     super(props);
     this.myRef = React.createRef();
     this.state = {
@@ -176,7 +174,6 @@ export default class StoryEditor extends Component<Props, State> {
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state;
-
     return (
       <View style={styles.BottomBox}>
         <>
@@ -281,7 +278,9 @@ export default class StoryEditor extends Component<Props, State> {
 
       const CameraFixHeight = width * 16 / 9;
 
-      console.info("VideoEditors CameraFixHeight", CameraFixHeight);
+      console.info("拍摄内容渲染 VideoEditors CameraFixHeight", CameraFixHeight, this.props.fileType);
+      console.info("imagePath", this.props.imagePath);
+      console.info("videoPath", this.props.videoPath);
       return (
         <View
           style={{
@@ -413,6 +412,7 @@ export default class StoryEditor extends Component<Props, State> {
   }
 
   render() {
+    console.info("story editor render");
     return (
       <>
         <Toast

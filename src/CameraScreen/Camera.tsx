@@ -194,7 +194,7 @@ class RenderCamera extends Component {
     }
   };
   componentDidMount() {
-    if(Platform.OS ==='ios'){
+    if (Platform.OS === 'ios') {
       AppState.addEventListener('change', this.handleAppStateChange);
     }
   }
@@ -268,8 +268,9 @@ class RenderCamera extends Component {
     //TODO
     // const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
     // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
-    const CameraFixHeight = width * 16/9;
+    const CameraFixHeight = width * 16 / 9;
     console.info("Camera CameraFixHeight", CameraFixHeight);
+
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
