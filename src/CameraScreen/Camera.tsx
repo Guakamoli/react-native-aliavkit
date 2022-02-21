@@ -268,9 +268,12 @@ class RenderCamera extends Component {
     //TODO
     // const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
     // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
-    const CameraFixHeight = width * 16 / 9;
-    console.info("Camera CameraFixHeight", CameraFixHeight);
-
+    let CameraFixHeight = width * 16 / 9;
+    const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+    if (CameraFixHeight > fixHeight) {
+      CameraFixHeight = fixHeight;
+    }
+    // console.info("Camera CameraFixHeight", CameraFixHeight, height, this.props.insets.top, this.props.insets.bottom);
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>

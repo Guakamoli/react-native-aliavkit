@@ -275,12 +275,14 @@ export default class StoryEditor extends Component<Props, State> {
       //TODO
       // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
       // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
-
-      const CameraFixHeight = width * 16 / 9;
-
-      console.info("拍摄内容渲染 VideoEditors CameraFixHeight", CameraFixHeight, this.props.fileType);
-      console.info("imagePath", this.props.imagePath);
-      console.info("videoPath", this.props.videoPath);
+      let CameraFixHeight = width * 16 / 9;
+      const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+      if (CameraFixHeight > fixHeight) {
+        CameraFixHeight = fixHeight;
+      }
+      // console.info("拍摄内容渲染 VideoEditors CameraFixHeight", CameraFixHeight, this.props.fileType);
+      // console.info("imagePath", this.props.imagePath);
+      // console.info("videoPath", this.props.videoPath);
       return (
         <View
           style={{
@@ -406,7 +408,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ justifyContent: 'center', alignContent: 'center' }}>{this.renderUploadStory()}</View>
+        <View style={{ justifyContent: 'center', alignContent: 'center', marginBottom: 12 }}>{this.renderUploadStory()}</View>
       </>
     );
   }

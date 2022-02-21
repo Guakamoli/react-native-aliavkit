@@ -350,7 +350,8 @@ const StoryMusic = (props) => {
       </Pressable >
     );
   };
-  const musicBottonToolsHeight = height - width * 16 / 9 - props.insets.top - props.insets.bottom;
+  // const musicBottonToolsHeight = height - width * 16 / 9 - props.insets.top - props.insets.bottom;
+  const musicBottonToolsHeight = props.insets.bottom + 40;
   return (
     <View>
       {!musicChoice && (
