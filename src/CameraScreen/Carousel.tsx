@@ -335,14 +335,10 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-    // TODO
-    this.ani.stop();
-
     const videoPath = await this.props.camera.current?.stopRecording?.();
     setTimeout(() => {
       this.reset();
     }, 0);
-
     setTimeout(() => {
       this.props.setShootData({
         fileType: 'video',
@@ -355,8 +351,8 @@ class CarouselWrapper extends Component<Props, State> {
     }, 2500);
   };
   reset = () => {
-    this.ani.stop();
-    this.arcAngle.setValue(0);
+    this.ani?.stop();
+    this.arcAngle?.setValue(0);
     this.startTime = null;
     this.endTime = null;
     Reanimated.timing(this.scaleAnimated, {
