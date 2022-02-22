@@ -26,6 +26,9 @@ const { width, height } = Dimensions.get('window');
 let mMusicList = [];
 let mSelectedMusicPosition = 0;
 
+//记录音乐卡片选中的位置，下次恢复时，用于设置缓存数量
+let initialNum = 5;
+
 const StoryMusic = (props) => {
   const {
     musicDynamicGif,
@@ -66,9 +69,6 @@ const StoryMusic = (props) => {
       return;
     }
     carouselRef.current?.snapToItem(currentIndex);
-    setTimeout(() => {
-      carouselRef.current?.snapToItem(currentIndex);
-    }, 1000);
   }, [carouselRef]);
 
   useEffect(() => {
@@ -83,6 +83,7 @@ const StoryMusic = (props) => {
       }
     }
     return () => {
+      initialNum = mSelectedMusicPosition
       console.log('音乐销毁');
     };
   }, []);
@@ -182,7 +183,7 @@ const StoryMusic = (props) => {
         data={songData}
         itemWidth={298}
         sliderWidth={width}
-        initialNumToRender={10}
+        initialNumToRender={initialNum < 5 ? 5 : initialNum + 1}
         firstItem={carouselFirstItem}
         activeAnimationType={'timing'}
         onEndReachedThreshold={0}
@@ -283,7 +284,10 @@ const StoryMusic = (props) => {
                   mMusicList = musicList
                   setCurrentIndex(0);
                   mSelectedMusicPosition = 0;
+
                   setCarouselFirstItem(0);
+                  carouselRef.current?.snapToItem(0);
+
                 } else {
                   //未选择音乐点击完成，继续播放之前的音乐
                   if (!!currentPlayMusic?.songID) {
@@ -352,7 +356,7 @@ const StoryMusic = (props) => {
   // const musicBottonToolsHeight = height - width * 16 / 9 - props.insets.top - props.insets.bottom;
   const musicBottonToolsHeight = props.insets.bottom + 40;
   return (
-    <View>
+    <View style={{ marginBottom: props.toolsInsetBottom }}>
       {!musicChoice && (
         <TouchableOpacity
           onPress={() => {
@@ -375,7 +379,9 @@ const StoryMusic = (props) => {
         </TouchableOpacity>
       )}
 
-      {musicChoice ? findMusic() : musicCarousel()}
+      {musicCarousel()}
+      {musicChoice && findMusic()}
+
       {!musicChoice && (
         <View style={[styles.musicChoiceContent, { height: musicBottonToolsHeight }]}>
           <TouchableOpacity

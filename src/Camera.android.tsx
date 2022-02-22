@@ -32,6 +32,7 @@ export default class Camera extends Component<Props, State> {
 
   //释放资源，退出页面时调用
   release = async () => {
+    console.info("释放资源");
     RNCameraKitModule.release();
   }
 

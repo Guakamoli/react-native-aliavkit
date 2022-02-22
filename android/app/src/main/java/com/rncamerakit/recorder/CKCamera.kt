@@ -23,11 +23,13 @@ import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
 import com.rncamerakit.utils.DownloadUtils
+import kotlinx.coroutines.delay
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.util.*
+import java.util.logging.Handler
 
 @SuppressLint("ViewConstructor")
 class CKCamera(
@@ -48,6 +50,35 @@ class CKCamera(
     private var mHeight = 0
 
     private var isInit = false
+
+    companion object {
+        var permissions = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+    }
+
+    init {
+        if (!isPermissions()) {
+            getPermissions()
+        }
+        this.mWidth = ScreenUtils.getWidth(reactContext)
+        this.mHeight = mWidth*16/9
+        initLifecycle()
+        initCamera()
+        //延时器
+//        Timer().schedule(object : TimerTask() {
+//            override fun run() {
+//                doAsync {
+//                    uiThread {
+//
+//                    }
+//                }
+//            }
+//        }, 1000L)
+    }
 
     private fun initRecorder() {
         mRecorderManage = RecorderManage(reactContext)
@@ -162,19 +193,15 @@ class CKCamera(
     }
 
     fun onRelease() {
+        Log.e("AAA", "CKCamera onRelease")
         mFocusView?.activityStop()
         mRecorder?.release()
         mRecorder = null
         mRecorderManage?.onRelease()
+        removeAllViews()
         MediaPlayerManage.instance.release()
     }
 
-    private val permissions = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
 
     fun isPermissions(): Boolean {
         return PermissionUtils.checkPermissionsGroup(reactContext, permissions)
@@ -190,20 +217,6 @@ class CKCamera(
         }
     }
 
-
-    init {
-        if (!isPermissions()) {
-            getPermissions()
-        }
-        //下载初始化
-        DownloaderManager.getInstance().init(reactContext.applicationContext)
-        //初始化贴纸管理
-        EffectPasterManage.instance.init(reactContext)
-        //音乐库初始化
-        DownloadUtils.getMusicJsonInfo()
-
-        initLifecycle()
-    }
 
     private fun initLifecycle() {
         BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
@@ -251,7 +264,7 @@ class CKCamera(
 
     }
 
-    fun initCamera() {
+    private fun initCamera() {
         if (this.isInit) {
             return
         }
@@ -260,6 +273,17 @@ class CKCamera(
         initRecorder()
         initFocusView()
         this.isInit = true;
+    }
+
+    override fun requestLayout() {
+        super.requestLayout()
+        post {
+            measure(
+                MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY)
+            );
+            layout(left, top, right, bottom);
+        }
     }
 
 }

@@ -26,7 +26,9 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
     private var mDatabase: SQLiteDatabase? = null
 
     fun init(context: Context?) {
-        mHelper = FileSQLiteOpenHelper.getInstance(context)
+        if (mHelper == null && context != null) {
+            mHelper = FileSQLiteOpenHelper.getInstance(context)
+        }
     }
 
     private fun getReadableDataBase() {
@@ -202,10 +204,11 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
     }
 
     @Synchronized
-    override fun query(songID: String?): MusicFileBean? {
+    override fun query(songID: String?, context: Context?): MusicFileBean? {
         if (songID == null) {
             return null
         }
+        init(context)
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")
@@ -240,8 +243,10 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
     override fun queryList(
         queryMsg: String?,
         page: Int?,
-        total: Int?
+        total: Int?,
+        context: Context?
     ): MutableList<MusicFileBean> {
+        init(context)
         getReadableDataBase()
         if (mDatabase == null) {
             throw android.database.SQLException("SQLiteDatabase is null")

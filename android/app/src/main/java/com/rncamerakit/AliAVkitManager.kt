@@ -18,6 +18,8 @@ import com.blankj.utilcode.util.SPUtils
 import com.liulishuo.filedownloader.FileDownloader
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.font.FontManager
+import com.rncamerakit.recorder.manager.EffectPasterManage
+import com.rncamerakit.utils.DownloadUtils
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -26,14 +28,17 @@ class AliAVkitManager {
     companion object {
         @JvmStatic
         fun init(context: Application) {
-
-
-
             initVideo(context);
-            MusicFileInfoDao.instance.init(context)
+            //下载初始化
+            DownloaderManager.getInstance().init(context)
             //下载管理
             FileDownloader.setupOnApplicationOnCreate(context)
-
+            //初始化贴纸管理
+            EffectPasterManage.instance.init(context)
+            //音乐库初始化
+            MusicFileInfoDao.instance.init(context)
+            DownloadUtils.getMusicJsonInfo()
+            //字体
             FontManager.instance.init(context)
 
 

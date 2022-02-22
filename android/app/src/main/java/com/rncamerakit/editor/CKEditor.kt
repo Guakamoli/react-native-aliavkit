@@ -185,7 +185,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         if (this.isInit) {
             return
         }
-        mImportManager = ImportManager(reactContext, this.mWidth, this.mHeight)
+        mImportManager = ImportManager(reactContext)
         this.isVideo = isVideo
         mProjectConfigure = if (isVideo) {
             mImportManager?.importVideo(filePath).toString()

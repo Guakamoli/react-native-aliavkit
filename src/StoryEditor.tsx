@@ -413,7 +413,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ justifyContent: 'center', alignContent: 'center', marginBottom: 12 }}>{this.renderUploadStory()}</View>
+        <View style={{ justifyContent: 'center', alignContent: 'center', marginBottom: this.props.toolsInsetBottom }}>{this.renderUploadStory()}</View>
       </>
     );
   }

@@ -88,18 +88,8 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         } else {
             this.mFilePath = videoPath
         }
-
         this.isVideo = true
-
         view.importVideo(this.mFilePath, true)
-//        if (this.mWidth == 0) {
-//            return
-//        }
-//        view.reactContext.runOnUiQueueThread {
-//            Log.e("BBB", "setVideoPath")
-//            view.setLayout(mWidth, mHeight)
-//            view.importVideo(this.mFilePath, true)
-//        }
     }
 
 
@@ -114,16 +104,8 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         } else {
             this.mFilePath = imagePath
         }
-
         this.isVideo = false
-        if (this.mWidth == 0) {
-            return
-        }
-        view.reactContext.runOnUiQueueThread {
-            Log.e("BBB", "setImagePath")
-            view.setLayout(mWidth, mHeight)
-            view.importVideo(this.mFilePath, false)
-        }
+        view.importVideo(this.mFilePath, false)
     }
 
 

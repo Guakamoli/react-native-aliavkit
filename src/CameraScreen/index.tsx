@@ -124,71 +124,18 @@ type State = {
   musicOpen: Boolean;
 };
 
-const TestComponent = () => {
-  return (
-    <>
-      <Pressable
-        style={{
-          width: 80,
-          height: 80,
-          backgroundColor: '#3f0',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: 40,
-        }}
-        onPress={async () => {
-          const music = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
-          console.log('---- downloadMusic: ', music);
-        }}
-      >
-        <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
-      </Pressable>
-    </>
-  );
-};
-const ProgressCircleWrapper = (props) => {
-  const { flag, recordeSuccess, setFlag } = props;
-  let [progress, setProgress] = useState(0);
-  let [timer, setTimer] = useState(null);
-  useInterval(() => {
-    const newprogress = (progress += 1 / 140);
-    if (newprogress >= 1) {
-      setTimer(null);
-      setFlag(null);
-      recordeSuccess();
-      setProgress(0);
-    } else {
-      setProgress(newprogress);
-    }
-  }, timer);
-  useEffect(() => {
-    if (flag) {
-      setTimer(60);
-    } else {
-      setTimer(null);
-    }
-  }, [flag]);
-  return (
-    <Progress.Circle
-      style={[styles.progress, { position: 'absolute' }]}
-      progress={progress}
-      indeterminate={false}
-      size={122}
-      color={'#EA3600'}
-      borderWidth={0}
-      thickness={6}
-    />
-  );
-};
+/**
+ * 前后摄像头切换
+ */
 class RenderswitchModule extends React.PureComponent {
   constructor(props) {
     super(props);
   }
-
   render() {
     return (
       <View style={styles.BottomBox}>
         <Pressable
+          hitSlop={{ left: 20, top: 10, right: 20, bottom: 10 }}
           onPress={() => {
             this.props.setCameraType();
             setTimeout(() => {
@@ -198,22 +145,11 @@ class RenderswitchModule extends React.PureComponent {
                 console.info('eeee', e);
               }
             }, 100);
-
             AVService.enableHapticIfExist();
-
             this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <View
-            style={{
-              height: 28 + 30,
-              width: 31 + 15 * 2,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-          </View>
+          <Image style={{ width: 32, height: 26, marginBottom: this.props.toolsInsetBottom + 8, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
         </Pressable>
       </View>
     );
@@ -228,6 +164,9 @@ const RDSMMapDispatchToProps = (dispatch) => ({
 });
 RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule);
 
+/**
+ * 美颜弹框
+ */
 const BeautyButton = (props) => {
   const dispatch = useDispatch();
   const showBeautify = useSelector((state) => {
@@ -367,6 +306,7 @@ class CameraScreen extends Component<Props, State> {
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
+      // this.props.camera?.current?.release();
     }
     this.setState = () => false;
   }
@@ -448,9 +388,7 @@ class CameraScreen extends Component<Props, State> {
     try {
       const image = await this.cameraBox.current?.capture?.();
       let imagePath = '';
-      //
       if (Platform.OS !== 'android') {
-        // sandData = await AVService.saveToSandBox({ path: image?.uri });
         imagePath = image?.uri;
       } else {
         imagePath = image;
@@ -483,17 +421,37 @@ class CameraScreen extends Component<Props, State> {
   };
   // 底部渲染
   renderBottom() {
+
+
+    const videoHeight = width * 16 / 9;
+    const contentHeight = height - this.props.insets.top - this.props.insets.bottom
+
+    let bottomHeight
+    if (contentHeight > videoHeight + this.props.toolsInsetBottom + 36) {
+      bottomHeight = contentHeight - videoHeight
+      if (Platform.OS === 'android') {
+        bottomHeight -= 10
+      }
+    } else {
+      bottomHeight = this.props.toolsInsetBottom + 36
+    }
+
     return (
       <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
         <RenderbeautifyBox {...this.props} />
-        <Carousel
-          {...this.props}
-          myRef={this.myRef}
-          onCaptureImagePressed={this.onCaptureImagePressed}
-          camera={this.cameraBox}
-          enableCount={this.enableCount}
-          setShootData={this.setShootData}
-        />
+        <View
+          style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)' }}
+        >
+          <Carousel
+            {...this.props}
+            myRef={this.myRef}
+            onCaptureImagePressed={this.onCaptureImagePressed}
+            camera={this.cameraBox}
+            enableCount={this.enableCount}
+            setShootData={this.setShootData}
+          />
+        </View>
+
         <RenderswitchModule {...this.props} camera={this.cameraBox} />
       </View>
     );
@@ -584,12 +542,8 @@ const styles = StyleSheet.create({
   BottomBox: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    // backgroundColor:"green",
     alignItems: 'center',
-    // position: 'absolute',
-    // backgroundColor: "black",
     width: '100%',
-    bottom: 0,
   },
 
   cameraContainer: {},

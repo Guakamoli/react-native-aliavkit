@@ -194,14 +194,15 @@ class RenderCamera extends Component {
     }
   };
   componentDidMount() {
+    console.info("componentDidMount");
     if (Platform.OS === 'ios') {
       AppState.addEventListener('change', this.handleAppStateChange);
     }
   }
   componentWillUnmount() {
+    console.info("componentWillUnmount");
     if (Platform.OS === 'android') {
-      //TODO
-      this.props.camera.current?.release();
+      this.props.camera?.current?.release();
     }
     if (Platform.OS === 'ios') {
       AppState.removeEventListener('change', this.handleAppStateChange);
@@ -216,19 +217,7 @@ class RenderCamera extends Component {
     if (stateUpdated) {
       return true;
     }
-    // if (this.fadeAnim && !this.state.showToast) {
-    //   this.setState({
-    //     showToast: true,
-    //   });
-    //   Animated.timing(
-    //     // 随时间变化而执行动画
-    //     this.fadeAnim, // 动画中的变量值
-    //     {
-    //       toValue: 0, // 透明度最终变为1，即完全不透明
-    //       duration: 4000, // 让动画持续一段时间
-    //     },
-    //   ).start();
-    // }
+
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
       if (!showCamera) {

@@ -57,13 +57,13 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun getPasterInfos(promise: Promise) {
 //        reactContext.runOnUiQueueThread {
-        EffectPasterManage.instance.getPasterInfos(promise)
+        EffectPasterManage.instance.getPasterInfos(promise,reactContext)
 //        }
     }
 
     @ReactMethod
     fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
-        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
+        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize, reactContext.applicationContext)
         promise.resolve(GsonBuilder().create().toJson(list))
     }
 
@@ -83,7 +83,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun getMusicPath(songID: String, promise: Promise) {
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID,reactContext.applicationContext)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
@@ -126,7 +126,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
                 if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-            EffectPasterManage.instance.downloadPaster(previewPaster, promise)
+            EffectPasterManage.instance.downloadPaster(previewPaster,reactContext, promise)
 //            }
         }
     }

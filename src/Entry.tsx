@@ -101,10 +101,13 @@ const Entry = (props) => {
   }
 
 
+  const toolsInsetBottom = Platform.OS === 'android' ? 40 : (props.insets.bottom ? 5 : 20)
+
   const CameraView = () => {
     return (
       <View style={{ height: '100%' }}>
         <CameraScreen
+          toolsInsetBottom={toolsInsetBottom}
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
@@ -148,9 +151,8 @@ const Entry = (props) => {
     )
   }
 
-  // console.info("props.insets.bottom ", props.insets.bottom);
 
-  const iosInsetBottom = props.insets.bottom ? 0 : 15
+
 
   return (
     <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
@@ -159,14 +161,14 @@ const Entry = (props) => {
       <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
         {PostView()}
       </View>
-      
+
       {(type === 'story' || type === 'storyedit') && CameraView()}
 
       {(type === 'story' || type === 'post') &&
         <Animated.View
           style={[
             styles.tools,
-            { bottom: Platform.OS === 'android' ? 20 : iosInsetBottom },
+            { bottom: toolsInsetBottom },
             {
               transform: [{ translateX: transX }],
             },

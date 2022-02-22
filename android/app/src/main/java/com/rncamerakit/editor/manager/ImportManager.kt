@@ -10,7 +10,7 @@ import com.aliyun.svideosdk.importer.AliyunIImport
 import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
 import com.facebook.react.uimanager.ThemedReactContext
 
-class ImportManager(val reactContext: ThemedReactContext, private val mWidth: Int, private val mHeight: Int) {
+class ImportManager(val reactContext: ThemedReactContext) {
 
     private val mContext: Context = reactContext.applicationContext
 
@@ -18,12 +18,8 @@ class ImportManager(val reactContext: ThemedReactContext, private val mWidth: In
 
     private var mProjectConfigure: String? = null
 
-//    private var mWidth = 0
-//    private var mHeight = 0
 
     init {
-//        mWidth = ScreenUtils.getWidth(mContext)
-//        mHeight = mWidth * 16 / 9
         mAliyunIImport = AliyunImportCreator.getImportInstance(mContext)
     }
 
@@ -43,15 +39,16 @@ class ImportManager(val reactContext: ThemedReactContext, private val mWidth: In
                 .build()
         } else {
             return AliyunVideoParam.Builder()
-                .frameRate(10)
-                .gop(5)
-                .crf(1)
+                .bitrate(10*1000)
+                .frameRate(30)
+                .gop(30)
+                .crf(23)
                 .scaleRate(1.0f)
                 .outputWidth(1080)
                 .outputHeight(1920)
                 .videoQuality(VideoQuality.SSD)
                 .scaleMode(VideoDisplayMode.FILL)
-                .videoCodec(VideoCodecs.H264_SOFT_OPENH264)
+                .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
         }
     }
