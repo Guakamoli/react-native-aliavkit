@@ -2,6 +2,7 @@ package com.rncamerakit.recorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.util.Log
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
@@ -10,12 +11,15 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleObserver
 import com.aliyun.svideo.common.utils.*
 import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.focus.FocusView
+import com.facebook.react.ReactActivity
+import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
@@ -208,12 +212,43 @@ class CKCamera(
     }
 
     fun getPermissions() {
-        Objects.requireNonNull(reactContext.currentActivity)?.let {
-            ActivityCompat.requestPermissions(
-                it,
-                permissions,
-                0
+        val reactActivity: FragmentActivity = reactContext.currentActivity as ReactActivity
+        if (reactActivity is ReactActivity) {
+            reactActivity.requestPermissions(
+                permissions, 200, PermissionListener { requestCode, permissions, grantResults ->
+                    var isAllGranted: Boolean = true
+                    permissions?.let {
+                        for (i in it.indices) {
+                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                                Log.e("AAA", "同意:" + permissions[i])
+                            } else {
+                                isAllGranted = false
+                                break
+//                                if (PermissionUtils.isNeverAgainPermission(mReactContext.currentActivity as ReactActivity, permissions[i])) {
+//                                    Log.e("AAA", "拒绝且不再提示:" + permissions[i])
+//                                } else {
+//                                    Log.e("AAA", "拒绝:" + permissions[i])
+//                                }
+                            }
+                        }
+                    }
+                    if(isAllGranted){
+                        this.mWidth = ScreenUtils.getWidth(reactContext)
+                        this.mHeight = mWidth*16/9
+                        initLifecycle()
+                        initCamera()
+                    }
+                    false
+                }
             )
+        } else {
+            Objects.requireNonNull(reactContext.currentActivity)?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    permissions,
+                    200
+                )
+            }
         }
     }
 
