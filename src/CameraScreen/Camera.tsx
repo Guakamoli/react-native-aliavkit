@@ -194,13 +194,13 @@ class RenderCamera extends Component {
     }
   };
   componentDidMount() {
-    console.info("componentDidMount");
+    console.log("Story 录制初始化 componentDidMount");
     if (Platform.OS === 'ios') {
       AppState.addEventListener('change', this.handleAppStateChange);
     }
   }
   componentWillUnmount() {
-    console.info("componentWillUnmount");
+    console.log("Story 录制销毁 componentWillUnmount");
     if (Platform.OS === 'android') {
       this.props.camera?.current?.release();
     }
