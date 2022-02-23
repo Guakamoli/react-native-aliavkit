@@ -212,6 +212,7 @@ class RenderChildren extends Component {
             style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
           >
             <TapGestureHandler
+               shouldCancelWhenOutside={false}
               onHandlerStateChange={({ nativeEvent }) => {
                 if (nativeEvent.state === State.ACTIVE) {
                   this.props.singlePress();
@@ -318,7 +319,10 @@ class CarouselWrapper extends Component<Props, State> {
   };
   shotCamera = async () => {
     const videoPath = await this.props.camera.current?.stopRecording?.();
-    this.reset();
+
+    setTimeout(() => {
+      this.reset();
+    }, 50);
     this.props.setShootData({
       fileType: 'video',
       videoPath,

@@ -41,8 +41,8 @@ class CircleProgress extends Component {
       <Reanimated.View
         style={[
           styles.container,
-          {
-            transform: [{ scale: this.props.scale }],
+          { 
+            transform: [{ scale: this.props.scale,translateY:-0}],
           },
         ]}
       >

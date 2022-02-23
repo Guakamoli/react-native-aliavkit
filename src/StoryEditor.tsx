@@ -24,6 +24,7 @@ import StoryMusic from './StoryMusic';
 import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
+import CameraRoll from '@react-native-community/cameraroll';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -109,6 +110,7 @@ export default class StoryEditor extends Component<Props, State> {
     this.musicInfo = {};
   }
   startExportVideo() {
+    console.log('发布快拍 startExportVideo');
     if (this.state.startExportVideo) {
       return;
     }
@@ -117,21 +119,26 @@ export default class StoryEditor extends Component<Props, State> {
       this.setState({ startExportVideo: true });
     });
     this.pauseMusic(this.musicOn);
-
-    //发布快拍，关闭页面
-    setTimeout(() => {
-      this.props.goback();
-    }, 1000);
+    // //发布快拍，关闭页面
+    // setTimeout(() => {
+    //   this.props.goback();
+    // }, 1000);
   }
-  async pauseMusic(song) {
-    // console.info('暂停音乐', song);
-    await AVService.pauseMusic(song.songID);
+  pauseMusic(song) {
+    console.info('暂停音乐', song);
+    if (song) {
+      AVService.pauseMusic(song?.songID);
+    }
   }
-  //  发布快拍   导出视频  丢出数据
+  //  发布快拍   导出视频 
   onExportVideo = async (event) => {
-    console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
+      console.log('发布快拍 onExportVideo', fileType, event);
+
+      //TODO 测试代码：保存到相册 
+      CameraRoll.save(event.outputPath, { type: 'video' })
+
       let outputPath = event.outputPath;
       this.setState({ startExportVideo: false });
       let uploadFile = [];
@@ -143,7 +150,6 @@ export default class StoryEditor extends Component<Props, State> {
         size: 0,
         Name: outputPath,
       });
-
       this.props.getUploadFile(uploadFile);
     }
   };
@@ -292,7 +298,7 @@ export default class StoryEditor extends Component<Props, State> {
         <View
           style={{
             height: CameraFixHeight,
-            backgroundColor: 'red',
+            backgroundColor: 'black',
             borderRadius: 20,
             width: '100%',
             overflow: 'hidden',

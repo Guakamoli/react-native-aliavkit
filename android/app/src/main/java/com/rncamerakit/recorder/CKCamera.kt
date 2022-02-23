@@ -67,11 +67,13 @@ class CKCamera(
     init {
         if (!isPermissions()) {
             getPermissions()
+        }else{
+            this.mWidth = ScreenUtils.getWidth(reactContext)
+            this.mHeight = mWidth*16/9
+            initLifecycle()
+            initCamera()
         }
-        this.mWidth = ScreenUtils.getWidth(reactContext)
-        this.mHeight = mWidth*16/9
-        initLifecycle()
-        initCamera()
+
         //延时器
 //        Timer().schedule(object : TimerTask() {
 //            override fun run() {

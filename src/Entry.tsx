@@ -101,13 +101,27 @@ const Entry = (props) => {
   }
 
 
-  const toolsInsetBottom = Platform.OS === 'android' ? 40 : (props.insets.bottom ? 5 : 20)
+  let toolsInsetBottom = 20;
+  const videoHeight = width * 16 / 9;
+  const contentHeight = height - props.insets.top - props.insets.bottom
 
+  const toolsHeight = 36
+
+  let bottomSpaceHeight = 0;
+
+  if (contentHeight > videoHeight) {
+    bottomSpaceHeight = contentHeight - videoHeight
+    if (bottomSpaceHeight > toolsHeight) {
+      toolsInsetBottom = (bottomSpaceHeight - toolsHeight - (props.insets.bottom)/2) / 2
+      if (toolsInsetBottom < 0) toolsInsetBottom = 0
+    }
+  }
   const CameraView = () => {
     return (
       <View style={{ height: '100%' }}>
         <CameraScreen
           toolsInsetBottom={toolsInsetBottom}
+          bottomSpaceHeight={bottomSpaceHeight}
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}

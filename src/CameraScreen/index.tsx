@@ -132,6 +132,8 @@ class RenderswitchModule extends React.PureComponent {
     super(props);
   }
   render() {
+    let marginBottom = this.props.toolsInsetBottom + 5
+    console.info("RenderswitchModule marginBottom", marginBottom);
     return (
       <View style={styles.BottomBox}>
         <Pressable
@@ -149,7 +151,7 @@ class RenderswitchModule extends React.PureComponent {
             this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <Image style={{ width: 32, height: 26, marginBottom: this.props.toolsInsetBottom + 8, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
+          <Image style={{ width: 32, height: 26, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
         </Pressable>
       </View>
     );
@@ -422,18 +424,12 @@ class CameraScreen extends Component<Props, State> {
   // 底部渲染
   renderBottom() {
 
+    let bottomHeight = 60;
 
-    const videoHeight = width * 16 / 9;
-    const contentHeight = height - this.props.insets.top - this.props.insets.bottom
-
-    let bottomHeight
-    if (contentHeight > videoHeight + this.props.toolsInsetBottom + 36) {
-      bottomHeight = contentHeight - videoHeight
-      if (Platform.OS === 'android') {
-        bottomHeight -= 10
-      }
+    if (this.props.bottomSpaceHeight) {
+      bottomHeight = this.props.bottomSpaceHeight + 10;
     } else {
-      bottomHeight = this.props.toolsInsetBottom + 36
+      bottomHeight = this.props.toolsInsetBottom * 2 + 36;
     }
 
     return (
