@@ -73,7 +73,7 @@ const StoryMusic = (props) => {
 
   useEffect(() => {
     //初始化获取
-    // console.log('初始化');
+    // console.log('初始化', currentIndex, songData.length, carouselFirstItem);
     if (!songData || songData.length == 0 || !setMusicState) {
       getSong({});
     } else {
@@ -91,6 +91,7 @@ const StoryMusic = (props) => {
   const onLengthHandle = useCallback(
     (e) => {
       // 歌曲搜索
+      // console.log("name", e.nativeEvent.text);
       getSearchSong(e.nativeEvent.text ? e.nativeEvent.text.trim() : "");
       setMusicSearchValue(e.nativeEvent.text);
     },
@@ -103,11 +104,11 @@ const StoryMusic = (props) => {
     const songa = await AVService.playMusic(song.songID);
     getMusicOn(songa);
     getmusicInfo(songa);
-    console.log('播放音乐', song.songID, song.name);
+    console.info('播放音乐', song.songID, song.name);
     // getmusicInfo(song)
   };
   const pauseMusic = async (song) => {
-    console.log('暂停音乐', song.songID, song.name);
+    console.info('暂停音乐', song.songID, song.name);
     if (!song) {
       return;
     }
@@ -178,21 +179,32 @@ const StoryMusic = (props) => {
 
     return (
       <Carousel
+
+
+        enableMomentum={false}
+        decelerationRate={'fast'}
+
         ref={(carouselRef)}
         data={songData}
-        itemWidth={298}
+        itemWidth={300}
+        snapToInterval={300}
+        lockScrollWhileSnapping={true}
         sliderWidth={width}
         // initialNumToRender={initialNum < 5 ? 5 : initialNum + 1}
-        initialNumToRender={songData.length}
+        initialNumToRender={5}
         firstItem={carouselFirstItem}
-        activeAnimationType={'timing'}
+        // activeAnimationType={'timing'}
         onEndReachedThreshold={0}
         onEndReached={() => {
           const page = pages + 1;
           getSong({ name: '', page: page, pageSize: 5 });
           setpage(page);
         }}
+        onBeforeSnapToItem={(slideIndex = 0) => {
+          console.info("onBeforeSnapToItem", slideIndex);
+        }}
         onSnapToItem={(slideIndex = 0) => {
+          console.info("onSnapToItem", slideIndex);
           playMusic(songData[slideIndex]);
           !setMusicState && props.setMusic(true);
           setCurrentPlayMusic(songData[slideIndex]);
@@ -353,10 +365,9 @@ const StoryMusic = (props) => {
       </Pressable >
     );
   };
-  // const musicBottonToolsHeight = height - width * 16 / 9 - props.insets.top - props.insets.bottom;
-  const musicBottonToolsHeight = props.insets.bottom + 40;
+  const musicBottonToolsHeight = props.bottomSpaceHeight ? props.bottomSpaceHeight : 60;
   return (
-    <View style={{ marginBottom: props.toolsInsetBottom }}>
+    <View style={{ marginBottom: 0 }}>
       {!musicChoice && (
         <TouchableOpacity
           onPress={() => {
