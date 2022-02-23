@@ -125,7 +125,7 @@ export default class StoryEditor extends Component<Props, State> {
     // }, 1000);
   }
   pauseMusic(song) {
-    console.info('暂停音乐', song);
+    console.log('暂停音乐', song);
     if (song) {
       AVService.pauseMusic(song?.songID);
     }
@@ -158,7 +158,6 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.filterList.length < 1) {
       if (Platform.OS === 'android') {
         const filterList = await this.editor.getColorFilterList();
-        // console.log('filterList111', filterList);
         this.setState({ filterList: filterList });
       } else {
         const infos = await AVService.getFilterIcons({});
@@ -172,7 +171,6 @@ export default class StoryEditor extends Component<Props, State> {
   }
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      // console.log(Platform.OS === 'android');
       //  this.camera.release();
     } else {
       RNEditViewManager.stop();
@@ -291,9 +289,6 @@ export default class StoryEditor extends Component<Props, State> {
       if (CameraFixHeight > fixHeight) {
         CameraFixHeight = fixHeight;
       }
-      // console.info("拍摄内容渲染 VideoEditors CameraFixHeight", CameraFixHeight, this.props.fileType);
-      // console.info("imagePath", this.props.imagePath);
-      // console.info("videoPath", this.props.videoPath);
       return (
         <View
           style={{
@@ -336,9 +331,12 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={[styles.cameraContainer]}>
         <TouchableOpacity
           onPress={() => {
-            // 关闭音乐 暂停音乐
+            //关闭音乐列表，有设置过音乐，将音乐同步到视频中，并且暂停播放的音乐
+            // if(this.musicInfo?.songID){
+            //   this.pauseMusic(this.musicInfo)
+            //   this.setState({ musicExport: true })
+            // }
             this.setState({ showFilterLens: false, musicOpen: false });
-            // !this.state.showFilterLens
           }}
           activeOpacity={1}
           disabled={this.state.showBeautify}
@@ -425,7 +423,6 @@ export default class StoryEditor extends Component<Props, State> {
   }
 
   render() {
-    console.info("story editor render");
     return (
       <>
         <Toast

@@ -55,6 +55,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     private var isCopyAssets = false
 
+    private var isSilence = false
+
     //导出视频时是否保存到相册
     private var isSaveToPhotoLibrary = false
 
@@ -210,9 +212,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 设置静音
      */
     fun setVideoMute(isSilence: Boolean?) {
+        if (isSilence != null) {
+            this.isSilence = isSilence
+        }
         if (isSilence == true) {
-            mAliyunIEditor?.setVolume(0)
+            mAliyunIEditor?.applyMusicMixWeight(1, 100)
         } else {
+            mAliyunIEditor?.applyMusicMixWeight(1, 50)
             mAliyunIEditor?.setVolume(50)
         }
     }
@@ -347,7 +353,18 @@ class CKEditor(val reactContext: ThemedReactContext) :
         musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
         musicEffect.streamDuration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
 
-        musicEffect.weight = 50
+        if(this.isSilence){
+            musicEffect.weight = 100
+        }else{
+            musicEffect.weight = 50
+        }
+
+        if(this.isSilence){
+            mAliyunIEditor?.applyMusicMixWeight(1, 100)
+        } else {
+            mAliyunIEditor?.applyMusicMixWeight(1, 50)
+            mAliyunIEditor?.setVolume(50)
+        }
 
         mAliyunIEditor?.applyMusic(musicEffect)
 

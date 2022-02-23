@@ -141,7 +141,7 @@ AliyunCropDelegate
     NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
     
     AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
-    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:3.0 animDuration:0];
+    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:0];
     [importor addMediaClip:clip];
     
     // set video param
@@ -438,9 +438,17 @@ AliyunCropDelegate
 }
 
 - (void)setVideoMute:(BOOL)videoMute {
-    if (_videoMute != videoMute) {
-        _videoMute = videoMute;
-        [self.editor setMute:videoMute];
+//    if (_videoMute != videoMute) {
+//        _videoMute = videoMute;
+//        [self.editor setMute:videoMute];
+//    }
+    _videoMute = videoMute;
+    if(videoMute){
+        [self.editor setAudioMixWeight:100];
+        [self.editor setMainStreamsAudioWeight:0];
+    }else{
+        [self.editor setAudioMixWeight:50];
+        [self.editor setMainStreamsAudioWeight:50];
     }
 }
 
@@ -526,7 +534,22 @@ AliyunCropDelegate
     AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
     effectMusic.startTime = music.startTime * 0.001;
     effectMusic.duration = music.duration;
-    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+//    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+    
+    if (_videoMute){
+        effectMusic.audioMixWeight = 100;
+    }else{
+        effectMusic.audioMixWeight = 50;
+    }
+    
+    if(_videoMute){
+        [self.editor setAudioMixWeight:100];
+        [self.editor setMainStreamsAudioWeight:0];
+    }else{
+        [self.editor setAudioMixWeight:50];
+        [self.editor setMainStreamsAudioWeight:50];
+    }
+    
     int code = [self.editor applyMusic:effectMusic];
     if (code == ALIVC_COMMON_RETURN_SUCCESS) {
         AVDLog(@"composeAACFormatMusic success");

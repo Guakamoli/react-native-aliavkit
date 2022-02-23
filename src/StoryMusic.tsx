@@ -73,7 +73,7 @@ const StoryMusic = (props) => {
 
   useEffect(() => {
     //初始化获取
-    // console.log('初始化', currentIndex, songData.length, carouselFirstItem);
+    // console.log('初始化');
     if (!songData || songData.length == 0 || !setMusicState) {
       getSong({});
     } else {
@@ -91,7 +91,6 @@ const StoryMusic = (props) => {
   const onLengthHandle = useCallback(
     (e) => {
       // 歌曲搜索
-      // console.log("name", e.nativeEvent.text);
       getSearchSong(e.nativeEvent.text ? e.nativeEvent.text.trim() : "");
       setMusicSearchValue(e.nativeEvent.text);
     },
@@ -104,11 +103,11 @@ const StoryMusic = (props) => {
     const songa = await AVService.playMusic(song.songID);
     getMusicOn(songa);
     getmusicInfo(songa);
-    console.info('播放音乐', song.songID, song.name);
+    console.log('播放音乐', song.songID, song.name);
     // getmusicInfo(song)
   };
   const pauseMusic = async (song) => {
-    console.info('暂停音乐', song.songID, song.name);
+    console.log('暂停音乐', song.songID, song.name);
     if (!song) {
       return;
     }
@@ -183,7 +182,8 @@ const StoryMusic = (props) => {
         data={songData}
         itemWidth={298}
         sliderWidth={width}
-        initialNumToRender={initialNum < 5 ? 5 : initialNum + 1}
+        // initialNumToRender={initialNum < 5 ? 5 : initialNum + 1}
+        initialNumToRender={songData.length}
         firstItem={carouselFirstItem}
         activeAnimationType={'timing'}
         onEndReachedThreshold={0}
