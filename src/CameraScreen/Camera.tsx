@@ -201,9 +201,7 @@ class RenderCamera extends Component {
   }
   componentWillUnmount() {
     console.log("Story 录制销毁 componentWillUnmount");
-    if (Platform.OS === 'android') {
-      this.props.camera?.current?.release();
-    }
+    this.props.camera?.current?.release();
     if (Platform.OS === 'ios') {
       AppState.removeEventListener('change', this.handleAppStateChange);
     }

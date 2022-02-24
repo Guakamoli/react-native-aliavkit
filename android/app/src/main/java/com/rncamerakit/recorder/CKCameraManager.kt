@@ -16,9 +16,9 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     }
 
     override fun onDropViewInstance(view: CKCamera) {
+        view.onRelease()
         super.onDropViewInstance(view)
 //        MusicFileInfoDao.instance.closeDB()
-        RNCameraKitModule.mView?.onRelease()
     }
 
     private var mReactContext:ThemedReactContext? = null

@@ -277,4 +277,24 @@ static BeautyEngineManager *_instance = nil;
     }
 }
 
+
+ /**
+  * 释放美颜引擎，需要在 processPixelThread  线程中执行释放
+  */
+- (void)cleanQueenEngine
+    {
+        [self performSelector:@selector(desTroyEngines) onThread:self.processPixelThread withObject:nil waitUntilDone:YES];
+        [self.processPixelThread cancel];
+}
+
+
+- (void)desTroyEngines {
+    if (self.beautyEngine)
+    {
+        //释放queen，确保当前线程与执行 processPixelBuffer:是同一条线程
+        [self.beautyEngine destroyEngine];
+        self.beautyEngine = nil;
+    }
+}
+
 @end

@@ -270,10 +270,14 @@
     [_recorder stopPreview];
 }
 
-- (void)dealloc
+- (void)destroyRecorder
 {
+    //美颜引擎释放
+    [[BeautyEngineManager shareManager] cleanQueenEngine];
+    //录制释放
     [_recorder destroyRecorder];
     _recorder = nil;
+  
 }
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position

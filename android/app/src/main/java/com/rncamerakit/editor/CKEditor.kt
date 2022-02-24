@@ -33,6 +33,7 @@ import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.editor.manager.*
 import com.rncamerakit.font.FontManager
 import com.rncamerakit.font.IFontCallback
+import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.*
@@ -416,12 +417,14 @@ class CKEditor(val reactContext: ThemedReactContext) :
                 super.onHostResume()
                 Log.e("AAA", "onHostResume()")
                 replay()
+                MediaPlayerManage.instance.resume()
             }
 
             override fun onHostPause() {
                 super.onHostPause()
                 Log.e("AAA", "onHostPause()")
                 pause(null)
+                MediaPlayerManage.instance.pause()
             }
 
             override fun onHostDestroy() {
@@ -528,6 +531,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.stop()
         mAliyunIEditor?.onDestroy()
         mComposeManager?.onRelease()
+        MediaPlayerManage.instance.release()
     }
 
 
