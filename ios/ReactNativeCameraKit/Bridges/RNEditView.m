@@ -137,28 +137,55 @@ AliyunCropDelegate
 
 - (void)setPhotoTaskPathWithPhotoPath:(NSString *)photoPath
 {
-    NSString *editDir = [AliyunPathManager compositionRootDir];
-    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+//    NSString *editDir = [AliyunPathManager compositionRootDir];
+//    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+//
+//    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
+//    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:0];
+//    [importor addMediaClip:clip];
+//
+//    // set video param
+//    AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
+//    param.fps = self.mediaConfig.fps;
+//    param.gop = self.mediaConfig.gop;
+//    param.bitrate = 10*1000*1000;
+//    param.scaleMode = AliyunScaleModeFill;
+//    param.codecType = AliyunVideoCodecHardware;
+//    [importor setVideoParam:param];
+//
+////    AVDLog(@"PhototaskPath: %@", taskPath);
+//    // generate config
+//    [importor generateProjectConfigure];
+//    // output path
+//    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+//    self.taskPath = taskPath;
     
-    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
-    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:0];
-    [importor addMediaClip:clip];
+ 
+    self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
     
-    // set video param
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.mediaConfig.outputSize];
+
+    AliyunClip *imageClip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:1];
+    [importer addMediaClip:imageClip];
+    
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
-    param.fps = self.mediaConfig.fps;
-    param.gop = self.mediaConfig.gop;
-    param.bitrate = 10*1000*1000;
-    param.scaleMode = AliyunScaleModeFill;
-    param.codecType = AliyunVideoCodecHardware;
-    [importor setVideoParam:param];
+    if ([RNAVDeviceHelper isBelowIphone_11]) {
+        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
+    } else {
+        param.bitrate = 10*1000*1000; // 10Mbps
+    }
+    param.fps = self.mediaConfig.fps; // 帧率
+    param.gop = self.mediaConfig.gop; // 关键帧间隔
+    param.scaleMode = AliyunScaleModeFill; // 缩放模式
+    param.codecType = AliyunVideoCodecHardware; // 编码模式
+
+    [importer setVideoParam:param];
+
+    [importer generateProjectConfigure];
+
+    self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
     
-//    AVDLog(@"PhototaskPath: %@", taskPath);
-    // generate config
-    [importor generateProjectConfigure];
-    // output path
-    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
-    self.taskPath = taskPath;
+    NSLog(@"importer image: %@", self.mediaConfig.outputPath);
 }
 
 /// 单视频接入编辑页面，生成一个新的taskPath

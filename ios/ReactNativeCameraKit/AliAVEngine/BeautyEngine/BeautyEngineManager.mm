@@ -283,8 +283,14 @@ static BeautyEngineManager *_instance = nil;
   */
 - (void)cleanQueenEngine
     {
+        [self.lock lock];
+        _instance.hasInit = NO;
+      
         [self performSelector:@selector(desTroyEngines) onThread:self.processPixelThread withObject:nil waitUntilDone:YES];
         [self.processPixelThread cancel];
+        
+        _newPixelBuffer = NULL;
+        [self.lock unlock];
 }
 
 
