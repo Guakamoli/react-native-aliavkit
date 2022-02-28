@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NativeModules, DeviceEventEmitter } from 'react-native';
-const { RNEditorKitModule,RNCameraKitModule } = NativeModules;
+const { RNEditorKitModule, RNCameraKitModule } = NativeModules;
 
 type MusicRequestType = {
   name: string,
@@ -11,6 +11,18 @@ type MusicRequestType = {
 }
 
 export default class AVService {
+
+  //Post 视频上传压缩裁剪
+  static async postCropVideo(videoPath: String) {
+    const carpListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
+      //0~1
+      console.log("post 视频裁剪中...", progress);
+    });
+    let cropVideoPath = await RNEditorKitModule.postCropVideo(videoPath);
+    carpListener.remove();
+    console.log('post 视频裁剪完成', cropVideoPath);
+    return cropVideoPath;
+  }
 
   static async getFilterIcons() {
     let colorFilterList = await RNEditorKitModule.getColorFilterList();
@@ -117,7 +129,7 @@ export default class AVService {
     return JSON.parse(fontList)
   }
 
-  
+
   /**
    * 下载字体
    * @param font  上面 getFontList 函数返回的字体对象：FileDownloaderModel
@@ -137,19 +149,19 @@ export default class AVService {
     //      "effectType": 1,
     //      ...  其他非必要字段
     //   }
-    console.log("去下载字体",font);
+    console.log("去下载字体", font);
     let fontInfo = await RNEditorKitModule.downloadFont(font);
     return JSON.parse(fontInfo)
   }
 
 
-  static async   downloadFontTest(){
-      // //TODO
+  static async downloadFontTest() {
+    // //TODO
     let fontList = await AVService.getFontList();
-    console.log("所有字体：","+"+fontList.length);
-    for(let i=0;i<fontList.length;i++){
+    console.log("所有字体：", "+" + fontList.length);
+    for (let i = 0; i < fontList.length; i++) {
       let fontInfo = await AVService.downloadFont(fontList[i]);
-      console.log("下载成功的字体",fontInfo);
+      console.log("下载成功的字体", fontInfo);
     }
   }
 }

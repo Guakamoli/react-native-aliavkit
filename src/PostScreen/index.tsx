@@ -1407,7 +1407,8 @@ export default class CameraScreen extends Component<Props, State> {
           });
           resultData.push(trimVideoData);
         } else {
-          trimVideoData = imageItem.uri;
+          trimVideoData = await AVService.postCropVideo(imageItem.uri);
+          // trimVideoData = imageItem.uri;
           resultData.push(trimVideoData);
         }
       } else {

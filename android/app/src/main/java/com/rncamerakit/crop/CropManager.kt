@@ -5,12 +5,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
+import com.aliyun.svideo.editor.Transcoder
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -35,11 +35,11 @@ class CropManager {
     companion object {
 
 
-        fun getMediaCacheDirs(context: Context): String{
+        fun getMediaCacheDirs(context: Context): String {
             return FileUtils.getDiskCachePath(context) + File.separator + "media" + File.separator
         }
 
-        fun getCameraDirs(context: Context): String{
+        fun getCameraDirs(context: Context): String {
             return FileUtils.getDiskCachePath(context) + File.separator + "media/camera" + File.separator
         }
 
@@ -58,6 +58,161 @@ class CropManager {
         }
 
         private const val TAG = "CropManager"
+
+        private fun getCropParam(
+            context: Context,
+            videoPath: String,
+            videoWidth: Int,
+            videoHeight: Int,
+            videoDuration: Long,
+            bitrate: Int,
+            rect: Rect?
+        ): CropParam {
+            val param = CropParam()
+
+            param.inputPath = videoPath
+            val file = File(videoPath)
+            val fileName = "crop_" + file.name
+            val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
+            Log.e("AAA", "视频输出路径：$outputPath")
+            param.outputPath = outputPath
+
+            //4M Bit/s
+            param.setVideoBitrate((bitrate*0.9).toInt())
+//            param.frameRate = 25
+//            param.gop = 250
+//            param.crf = 23
+//            param.quality = VideoQuality.HD
+            //视频编码方式
+            param.videoCodec = VideoCodecs.H264_HARDWARE
+
+            param.mediaType = MediaType.ANY_VIDEO_TYPE
+            param.scaleMode = VideoDisplayMode.SCALE
+            param.fillColor = Color.BLACK
+
+            param.outputWidth = videoWidth
+            param.outputHeight = videoHeight
+            param.cropRect = rect
+
+            //视频时长  单位：us
+            param.startTime = 0L
+            param.endTime = videoDuration
+
+            return param
+        }
+
+
+        fun cropPostVideo(reactContext: ReactContext, videoPath: String, promise: Promise) {
+            if (TextUtils.isEmpty(videoPath)) {
+                promise?.reject("corpVideoFrame", "error: videoPath is empty")
+                return
+            }
+            var videoPath = videoPath
+            if (videoPath != null) {
+                if (videoPath.startsWith("content://") || videoPath.startsWith("file://")) {
+                    videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
+                }
+            }
+
+            var mVideoWidth = 720
+            var mVideoHeight = 1280
+            var mDuration = 0L
+            //设置一个默认码率
+            var mBitrate = 4*1000
+            var mRect: Rect? = null
+            try {
+                val nativeParser = NativeParser()
+                nativeParser.init(videoPath)
+                try {
+                    val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+                    val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
+                    mDuration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()
+                    val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
+                    val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
+//                    //是否有B帧
+//                    val isHasBFrame = nativeParser.checkBFrame()
+
+                    //宽高过大需要裁剪
+                    if (frameWidth*frameHeight > mVideoWidth*mVideoHeight) {
+                        if (frameWidth > frameHeight) {
+                            //视频宽度大于视频高度，横屏视频。保证高度不超过  720
+                            mVideoWidth = mVideoHeight
+                            mVideoHeight = (mVideoWidth*frameHeight.toFloat()/frameWidth).toInt()
+                        } else {
+                            //视频宽度小于视频高度，竖屏竖屏。 保存宽度不超过 720
+                            mVideoHeight = mVideoWidth
+                            mVideoWidth = (mVideoHeight*frameWidth.toFloat()/frameHeight).toInt()
+                        }
+                        //沿用原视频码率
+                        if (bitRate < mBitrate*1000) {
+                            mBitrate = (bitRate/1000).toInt()
+                        }
+                    } else {
+                        //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
+                        if (bitRate < mBitrate*1000) {
+                            promise.resolve(videoPath)
+                            return
+                        }
+                        mVideoWidth = frameWidth
+                        mVideoHeight = frameHeight
+                    }
+                    //保证宽高为偶数
+                    if (mVideoWidth%2 == 1) {
+                        mVideoWidth += 1
+                    }
+                    if (mVideoHeight%2 == 1) {
+                        mVideoHeight += 1
+                    }
+                    val temp: Int
+                    if (rotation == 90 || rotation == 270) {
+                        temp = mVideoWidth
+                        mVideoWidth = mVideoHeight
+                        mVideoHeight = temp
+                    }
+                    mRect = if (rotation == 90 || rotation == 270) {
+                        Rect(0, 0, frameHeight, frameWidth)
+                    } else {
+                        Rect(0, 0, frameWidth, frameHeight)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                nativeParser.release()
+                nativeParser.dispose()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            val videoParam = getCropParam(reactContext.applicationContext, videoPath, mVideoWidth, mVideoHeight, mDuration, mBitrate, mRect)
+
+            val aliyunCrop = AliyunCropCreator.createCropInstance(reactContext.applicationContext)
+            aliyunCrop.setCropParam(videoParam)
+            aliyunCrop.setCropCallback(object : CropCallback {
+                override fun onProgress(percent: Int) {
+                    Log.e("AAA", "onProgress：$percent")
+                    RNEventEmitter.postVideoCrop(reactContext, percent)
+                }
+
+                override fun onError(code: Int) {
+                    Log.e("AAA", "onError：$code")
+                    promise.reject("cropVideo", "onError:$code")
+                }
+
+                override fun onComplete(duration: Long) {
+                    RNEventEmitter.postVideoCrop(reactContext, 100)
+                    aliyunCrop.dispose()
+                    promise.resolve(videoParam.outputPath)
+                }
+
+                override fun onCancelComplete() {
+                    aliyunCrop.dispose()
+                    promise.reject("cropVideo", "onCancel")
+                }
+
+            })
+            aliyunCrop.startCrop()
+        }
+
 
         /**
          * 图片裁剪

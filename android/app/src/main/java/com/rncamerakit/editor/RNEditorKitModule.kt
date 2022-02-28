@@ -190,11 +190,16 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun cropVideo(options: ReadableMap, viewTag: Int, promise: Promise) {
+    fun cropVideo(options: ReadableMap, promise: Promise) {
         val context = reactContext
         CropManager.cropVideo(context, options, promise)
     }
 
+    @ReactMethod
+    fun postCropVideo(videoPath: String, promise: Promise) {
+        val context = reactContext
+        CropManager.cropPostVideo(context, videoPath, promise)
+    }
 
     /**
      * 将沙盒的图片\视频 保存到相册

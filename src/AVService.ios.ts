@@ -10,11 +10,18 @@ type MusicRequestType = {
 };
 
 export default class AVService {
+
+  //Post 视频上传压缩裁剪
+  static async postCropVideo(videoPath: String) {
+  
+  }
+
+
   static async getFilterIcons() {
     return await AliAVServiceBridge.getFilterIcons({});
   }
 
-  static async getFacePasterInfos({}) {
+  static async getFacePasterInfos({ }) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }
 
@@ -50,7 +57,7 @@ export default class AVService {
   }
 
   static async getThumbnails({ videoPath, startTime, itemPerTime, needCover }) {
-    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime, needCover});
+    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime, needCover });
   }
 
   static async removeThumbnaiImages() {
@@ -107,6 +114,6 @@ export default class AVService {
     //      ...
     //   }
 
-    
+
   }
 }
