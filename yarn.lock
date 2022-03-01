@@ -1326,8 +1326,8 @@
     deep-assign "^3.0.0"
 
 "@react-native-community/cameraroll@Guakamoli/react-native-cameraroll#feat/request-photo-access":
-  version "4.0.4-patch.1"
-  resolved "https://codeload.github.com/Guakamoli/react-native-cameraroll/tar.gz/c3f17ed4a8b64081176567287c6edfd20a47f8a3"
+  version "4.0.5-patch.1"
+  resolved "https://codeload.github.com/Guakamoli/react-native-cameraroll/tar.gz/12de8f03f44e767da66b29b7c9257f2dbbb51ce6"
 
 "@react-native-community/cli-debugger-ui@^6.0.0-rc.0":
   version "6.0.0-rc.0"
