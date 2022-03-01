@@ -1402,9 +1402,21 @@ export default class CameraScreen extends Component<Props, State> {
       );
       if (type === 'video') {
         if (Platform.OS !== 'android') {
+          trimVideoData = imageItem.uri;
+          console.log("ios postCropVideo 000",trimVideoData);
+         
           trimVideoData = await AVService.saveToSandBox({
             path: imageItem.uri,
           });
+          // let myAssetId = imageItem.uri.slice(5);
+          // trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+          console.log("ios postCropVideo 111",trimVideoData);
+
+          trimVideoData = await AVService.postCropVideo(trimVideoData);
+          console.log("ios postCropVideo 222", trimVideoData);
+
+          CameraRoll.save(trimVideoData, { type: 'video' })
+
           resultData.push(trimVideoData);
         } else {
           trimVideoData = await AVService.postCropVideo(imageItem.uri);
@@ -1494,7 +1506,7 @@ export default class CameraScreen extends Component<Props, State> {
 
 
       this.setVideoPlayer(false);
-      
+
       // //选择图片视频直接上传，不进入编辑页面
       // if (type === 'video') {
       //   // console.info("onUploadVideo", resultData, multipleData);

@@ -27,7 +27,10 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 {
     BOOL _hasListeners;
     RCTPromiseResolveBlock _videoCropResolve;
+    RCTPromiseRejectBlock _videoCropReject;
     NSString *_videoCropOutputPath;
+    // 裁剪模式， 1：原裁剪 2：post 压缩裁剪
+    NSInteger _videoCropType;
 }
 
 @property (nonatomic, strong) AliyunCrop *cutPanel;
@@ -51,6 +54,151 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
           }
       }
   }
+}
+
+
+- (BOOL)isBlankObject:(__kindof id)object {
+   if (!object) {
+       return YES;
+   }
+
+   if (object == NULL) {
+       return YES;
+   }
+   
+   if ([object isEqual:[NSNull null]]) {
+       return YES;
+   }
+   
+   if ([object respondsToSelector:@selector(length)]) {
+       NSUInteger count = (NSUInteger)[object performSelector:@selector(length)];
+       return count == 0;
+   }
+
+    ///集合类型
+   if ([object respondsToSelector:@selector(count)]) {
+       NSUInteger count = (NSUInteger)[object performSelector:@selector(count)];
+       return count == 0;
+   }
+   return NO;
+}
+
+
+RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    
+    if (!videoPath) {
+        reject(@"",@"no path param",nil);
+        return;
+    }
+//    if (![videoPath containsString:@"ph://"]) {
+//        reject(@"",@"no ph:// scheme",nil);
+//        return;
+//    }
+    
+    NSInteger mVideoWidth = 720;
+    NSInteger mVideoHeight = 1280;
+    CGFloat mDuration = 0;
+    
+    CGRect mCropRect = CGRectMake(0, 0, mVideoWidth, mVideoHeight);
+            
+    NSInteger mBitrate = 4*1000*1000;
+         
+    @try {
+        
+        AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
+        CGSize size = [asset avAssetNaturalSize];
+        
+        CGFloat frameWidth = size.width;
+        CGFloat frameHeight = size.height;
+        
+        AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoPath];
+        
+        mDuration = nativeParser.getVideoDuration;
+        
+        NSInteger bitRate = nativeParser.getVideoBitrate;
+        
+//        NSInteger frameWidth = nativeParser.getVideoWidth;
+//        NSInteger frameHeight = nativeParser.getVideoHeight;
+        
+        //宽高过大需要裁剪
+        if (frameWidth*frameHeight > mVideoWidth*mVideoHeight) {
+            if (frameWidth > frameHeight) {
+                mVideoWidth = mVideoHeight;
+                mVideoHeight = mVideoWidth*frameHeight/frameWidth;
+            }else{
+//                mVideoHeight = mVideoWidth;
+                mVideoWidth = mVideoHeight*frameWidth/frameHeight;
+            }
+            if (bitRate < mBitrate) {
+                mBitrate = bitRate;
+            }
+        } else {
+            //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
+            if (bitRate < mBitrate) {
+                resolve(videoPath);
+                return;
+            }
+            mVideoWidth = frameWidth;
+            mVideoHeight = frameHeight;
+        }
+        //保证宽高为偶数
+        if (mVideoWidth%2 == 1) {
+            mVideoWidth += 1;
+        }
+        if (mVideoHeight%2 == 1) {
+            mVideoHeight += 1;
+        }
+        mCropRect = CGRectMake(0, 0, frameWidth, frameHeight);;
+    } @catch (NSException *exception) {
+        reject(@"",@"AliyunNativeParser catch",nil);
+        return;
+    }
+ 
+    //调用初始化方法创建裁剪对象   self.cutPanel
+    self.cutPanel = [[AliyunCrop alloc] initWithDelegate:(id<AliyunCropDelegate>)self];
+    
+    NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+   
+    self.cutPanel.inputPath = videoPath;
+    self.cutPanel.outputPath = outputPath;
+ 
+    self.cutPanel.bitrate = mBitrate*0.9;
+    self.cutPanel.fps = 30;
+    self.cutPanel.gop = 5;
+    
+    //视频质量
+    self.cutPanel.videoQuality = AliyunVideoQualityHight;
+    //硬编
+    self.cutPanel.encodeMode = 1;
+    self.cutPanel.cropMode = AliyunCropModeScaleAspectCut;
+    
+
+    self.cutPanel.outputSize = CGSizeMake(mVideoWidth, mVideoHeight);
+    //裁剪区域
+    self.cutPanel.rect = mCropRect;
+    
+    self.cutPanel.startTime = 0.0;
+    self.cutPanel.endTime = mDuration;
+     
+    int res =[self.cutPanel startCrop];//20003004
+    
+    if(res == ALIVC_COMMON_RETURN_SUCCESS){
+        _videoCropOutputPath = outputPath;
+        _videoCropResolve = resolve;
+        _videoCropReject = reject;
+        _videoCropType = 2;
+    }else if (res == ALIVC_SVIDEO_ERROR_PARAM_VIDEO_PATH_NULL){
+        // 输入视频路径为空
+        NSString *_text = [NSString stringWithFormat:@"%@%d",@"输入视频路径为空  code:",res];
+        reject(@"",_text,nil);
+    }else{
+        NSString *_text = [NSString stringWithFormat:@"%@%d",@"裁剪视频错误， code:",res];
+        reject(@"",_text,nil);
+    }
+
 }
 
 RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
@@ -200,6 +348,7 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
 - (NSArray<NSString *> *)supportedEvents
 {
     return @[
+        @"postVideoCrop",
         @"cropProgress",
         @"icloudImageDownloadProgress",
         @"icloudVideoDownloadProgress"
@@ -475,38 +624,72 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
 - (void)cropOnError:(int)error
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
-    [self.cutPanel cancel];
+   
+    if(![self isBlankObject:self.cutPanel]){
+        [self.cutPanel cancel];
+    }
+    
+    if(_videoCropType == 2 && _videoCropReject != nil){
+        NSString *_text = [NSString stringWithFormat:@"%@%d",@"postCropVideo Error code:",error];
+        _videoCropReject(@"",_text,nil);
+    }
+    
     _videoCropOutputPath = nil;
     _videoCropResolve = nil;
+    _videoCropReject = nil;
+    _videoCropType = 0;
 }
 
 - (void)cropTaskOnProgress:(float)progress
 {
 //    AVDLog(@"---🚀 %s :%f",__PRETTY_FUNCTION__, progress);
     if (_hasListeners) {
-        [self sendEventWithName:@"cropProgress" body:@{@"progress":@(progress)}];
+        if(_videoCropType == 2){
+            [self sendEventWithName:@"postVideoCrop" body:@{@"progress":@(progress)}];
+        }else{
+            [self sendEventWithName:@"cropProgress" body:@{@"progress":@(progress)}];
+        }
     }
 }
 
 - (void)cropTaskOnComplete
 {
+    if(![self isBlankObject:self.cutPanel]){
+        [self.cutPanel cancel];
+    }
+    
     AVDLog(@"--- ✅ %s ✅",__PRETTY_FUNCTION__);
     if (_hasListeners) {
-        if (_videoCropOutputPath && _videoCropOutputPath) {
-            _videoCropResolve(_videoCropOutputPath);
+//        if (_videoCropOutputPath && _videoCropOutputPath) {
+//            _videoCropResolve(_videoCropOutputPath);
+//        }
+        if(_videoCropType == 2){
+            [self sendEventWithName:@"postVideoCrop" body:@{@"progress":@(1.0)}];
+        }else{
+            [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
         }
-        [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
     }
-    [self.cutPanel cancel];
+    
+    if(_videoCropType == 2 && _videoCropResolve != nil && _videoCropOutputPath){
+        _videoCropResolve(_videoCropOutputPath);
+    }
+    
     _videoCropOutputPath = nil;
     _videoCropResolve = nil;
+    _videoCropReject = nil;
+    _videoCropType = 0;
 }
 
 - (void)cropTaskOnCancel
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
+    if(![self isBlankObject:self.cutPanel]){
+        [self.cutPanel cancel];
+    }
     _videoCropOutputPath = nil;
     _videoCropResolve = nil;
+    _videoCropReject = nil;
+    _videoCropType = 0;
 }
 
 RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options

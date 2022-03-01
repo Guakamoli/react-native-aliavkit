@@ -1,5 +1,5 @@
 import React from 'react';
-import { NativeModules } from 'react-native';
+import { NativeModules,  NativeEventEmitter, } from 'react-native';
 const { AliAVServiceBridge, RNMusicService } = NativeModules;
 
 type MusicRequestType = {
@@ -13,7 +13,14 @@ export default class AVService {
 
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String) {
-  
+    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
+      console.log("post 视频裁剪中...", reminder);
+    });
+    let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
+    managerEmitter.removeSubscription(carpListener);
+    // console.log('post 视频裁剪完成', cropVideoPath);
+    return cropVideoPath;
   }
 
 

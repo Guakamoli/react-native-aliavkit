@@ -79,10 +79,10 @@ class CropManager {
 
             //4M Bit/s
             param.setVideoBitrate((bitrate*0.9).toInt())
-//            param.frameRate = 25
-//            param.gop = 250
-//            param.crf = 23
-//            param.quality = VideoQuality.HD
+            param.frameRate = 30
+            param.gop = 5
+            param.crf = 23
+            param.quality = VideoQuality.HD
             //视频编码方式
             param.videoCodec = VideoCodecs.H264_HARDWARE
 
@@ -135,12 +135,12 @@ class CropManager {
                     //宽高过大需要裁剪
                     if (frameWidth*frameHeight > mVideoWidth*mVideoHeight) {
                         if (frameWidth > frameHeight) {
-                            //视频宽度大于视频高度，横屏视频。保证高度不超过  720
+                            //视频宽度大于视频高度，横屏视频。
                             mVideoWidth = mVideoHeight
                             mVideoHeight = (mVideoWidth*frameHeight.toFloat()/frameWidth).toInt()
                         } else {
-                            //视频宽度小于视频高度，竖屏竖屏。 保存宽度不超过 720
-                            mVideoHeight = mVideoWidth
+                            //视频宽度小于视频高度，竖屏竖屏。
+//                            mVideoHeight = mVideoWidth
                             mVideoWidth = (mVideoHeight*frameWidth.toFloat()/frameHeight).toInt()
                         }
                         //沿用原视频码率
