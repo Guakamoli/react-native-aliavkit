@@ -1703,7 +1703,7 @@ export default class CameraScreen extends Component<Props, State> {
       <View style={{
         width: 120,
         height: 120,
-        backgroundColor: 'rgba(80,80,80,0.8)',
+        backgroundColor: 'rgba(80,80,80,1)',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
