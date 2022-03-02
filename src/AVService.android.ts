@@ -20,7 +20,7 @@ export default class AVService {
     });
     let cropVideoPath = await RNEditorKitModule.postCropVideo(videoPath);
     carpListener.remove();
-    console.log('post 视频裁剪完成', cropVideoPath);
+    // console.log('post 视频裁剪完成', cropVideoPath);
     return cropVideoPath;
   }
 

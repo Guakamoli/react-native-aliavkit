@@ -312,6 +312,7 @@ class PhotoShow extends Component {
           {editImageData.length > 1 && (
             <>
               <FlatList
+                keyExtractor={(item, index) => "" + index}
                 style={[{ marginTop: 40 }, !(editImageData.length > 1) && { display: 'none' }]}
                 horizontal={true}
                 data={editImageData}
@@ -440,7 +441,7 @@ const PostEditor = (props) => {
       }
       props.getUploadFile(uploadData);
       props.goback();
-    
+
     } else {
       // 裁剪视频
       // if (!coverImage.current) {
@@ -830,6 +831,7 @@ const PostEditor = (props) => {
     return (
       <View style={{ bottom: height * 0.15, position: 'absolute' }}>
         <FlatList
+          keyExtractor={(item, index) => "" + index}
           data={filterList}
           initialNumToRender={4}
           horizontal={true}
@@ -1030,6 +1032,7 @@ const PostEditor = (props) => {
     return (
       <View style={{ marginTop: 93, paddingHorizontal: 17 }}>
         <FlatList
+          keyExtractor={(item, index) => "" + index}
           data={coverList}
           initialNumToRender={7}
           horizontal={true}

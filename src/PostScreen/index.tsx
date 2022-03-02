@@ -17,6 +17,7 @@ import {
   Pressable,
   AppState,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { setSelectMultiple, setMultipleData } from '../actions/post';
@@ -1341,6 +1342,7 @@ export default class CameraScreen extends Component<Props, State> {
       postEditorParams: null,
       page: 'main',
       isVidoePlayer: true,
+      isShowLoading: false,
     };
   }
 
@@ -1401,28 +1403,31 @@ export default class CameraScreen extends Component<Props, State> {
         }),
       );
       if (type === 'video') {
+        this.setState({
+          isShowLoading: true,
+        })
+        trimVideoData = imageItem.uri;
         if (Platform.OS !== 'android') {
-          trimVideoData = imageItem.uri;
-          console.log("ios postCropVideo 000",trimVideoData);
-         
+          console.log("ios postCropVideo 000", trimVideoData);
           trimVideoData = await AVService.saveToSandBox({
             path: imageItem.uri,
           });
-          // let myAssetId = imageItem.uri.slice(5);
-          // trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
-          console.log("ios postCropVideo 111",trimVideoData);
-
-          trimVideoData = await AVService.postCropVideo(trimVideoData);
-          console.log("ios postCropVideo 222", trimVideoData);
-
-          CameraRoll.save(trimVideoData, { type: 'video' })
-
+          //POST 直接上传暂时不做压缩
+          // console.log("ios postCropVideo 111", trimVideoData);
+          // trimVideoData = await AVService.postCropVideo(trimVideoData);
+          // console.log("ios postCropVideo 222", trimVideoData);
+          // CameraRoll.save(trimVideoData, { type: 'video' })
           resultData.push(trimVideoData);
         } else {
-          trimVideoData = await AVService.postCropVideo(imageItem.uri);
-          // trimVideoData = imageItem.uri;
+          // console.log("android postCropVideo 111", trimVideoData);
+          // trimVideoData = await AVService.postCropVideo(imageItem.uri);
+          // console.log("android postCropVideo 222", trimVideoData);
+          // CameraRoll.save(trimVideoData, { type: 'video' })
           resultData.push(trimVideoData);
         }
+        this.setState({
+          isShowLoading: false,
+        })
       } else {
         const cropData = result;
         //图片编辑的参数，包含裁剪展示参数
@@ -1507,15 +1512,17 @@ export default class CameraScreen extends Component<Props, State> {
 
       this.setVideoPlayer(false);
 
-      // //选择图片视频直接上传，不进入编辑页面
-      // if (type === 'video') {
-      //   // console.info("onUploadVideo", resultData, multipleData);
-      //   this.onUploadVideo(multipleData, resultData);
-      // } else {
-      //   // console.info("onUploadPhoto", editImageData);
-      //   this.onUploadPhoto(editImageData)
-      // }
-      // return;
+      //TODO
+      //选择图片视频直接上传，不进入编辑页面
+      if (type === 'video') {
+        // console.info("onUploadVideo", resultData, multipleData);
+        this.onUploadVideo(multipleData, resultData);
+      } else {
+        // console.info("onUploadPhoto", editImageData);
+        this.onUploadPhoto(editImageData)
+      }
+      return;
+      //TODO
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
@@ -1635,6 +1642,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.isShowLoading !== this.state.isShowLoading) {
+      return true;
+    }
     if (nextState.isVidoePlayer !== this.state.isVidoePlayer) {
       return true;
     }
@@ -1679,9 +1689,44 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
 
+  loadingView = (text = '加载中...', isShow = true) => {
+    return isShow && (<View style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      // backgroundColor: 'rgba(255,0,0,1)',
+    }}>
+      <View style={{
+        width: 120,
+        height: 120,
+        backgroundColor: 'rgba(80,80,80,0.8)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        paddingTop: 8
+      }}>
+        <ActivityIndicator
+          size={'large'}
+          color="#fff"
+          animating={true}
+          hidesWhenStopped={true}
+        />
+        <Text style={{ color: '#fff', fontSize: 15, paddingTop: 8, }}>{text}</Text>
+      </View>
+
+    </View >)
+  }
+
+
+
   render() {
+
     return (
-      <>
+      <View style={{ width: '100%', height: '100%', position: 'relative' }}>
         <Toast
           ref={this.myRef}
           position='top'
@@ -1718,7 +1763,8 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           />
         ) : null}
-      </>
+        {this.loadingView("视频处理中...", this.state.isShowLoading)}
+      </View>
     );
   }
 }
