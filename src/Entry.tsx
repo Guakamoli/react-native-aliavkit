@@ -33,6 +33,17 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
+
+  const [bottomToolsVisibility, setBottomToolsVisibility] = useState(true);
+
+  const showBottomTools = () => {
+    setBottomToolsVisibility(true);
+  }
+
+  const hideBottomTools = () => {
+    setBottomToolsVisibility(false);
+  }
+
   const { server, user, item, navigation, sendfile = () => { }, goBack = () => { }, haptics } = props;
   const dispatch = useDispatch();
   const type = useSelector((state) => {
@@ -53,14 +64,14 @@ const Entry = (props) => {
   ];
   React.useEffect(() => {
     if (changeFlagLock.current) return;
-    transX.setValue(type === 'post' ? 20 : -20);
+    transX.setValue(type === 'post' ? 30 : -30);
   }, [type]);
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;
       Animated.timing(transX, {
         duration: 200,
-        toValue: i.type === 'post' ? 20 : -20,
+        toValue: i.type === 'post' ? 30 : -30,
         useNativeDriver: true,
       }).start();
       dispatch(setType(i.type));
@@ -112,7 +123,7 @@ const Entry = (props) => {
   if (contentHeight > videoHeight) {
     bottomSpaceHeight = contentHeight - videoHeight
     if (bottomSpaceHeight > toolsHeight) {
-      toolsInsetBottom = (bottomSpaceHeight - toolsHeight - (props.insets.bottom)/2) / 2
+      toolsInsetBottom = (bottomSpaceHeight - toolsHeight - (props.insets.bottom) / 2) / 2
       if (toolsInsetBottom < 0) toolsInsetBottom = 0
     }
   }
@@ -120,6 +131,9 @@ const Entry = (props) => {
     return (
       <View style={{ height: '100%' }}>
         <CameraScreen
+          bottomToolsVisibility={bottomToolsVisibility}
+          showBottomTools={showBottomTools}
+          hideBottomTools={hideBottomTools}
           toolsInsetBottom={toolsInsetBottom}
           bottomSpaceHeight={bottomSpaceHeight}
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
@@ -178,7 +192,7 @@ const Entry = (props) => {
 
       {(type === 'story' || type === 'storyedit') && CameraView()}
 
-      {(type === 'story' || type === 'post') &&
+      {bottomToolsVisibility && (type === 'story' || type === 'post') &&
         <Animated.View
           style={[
             styles.tools,

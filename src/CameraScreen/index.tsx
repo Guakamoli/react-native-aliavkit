@@ -166,53 +166,6 @@ const RDSMMapDispatchToProps = (dispatch) => ({
 });
 RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule);
 
-/**
- * 美颜弹框
- */
-const BeautyButton = (props) => {
-  const dispatch = useDispatch();
-  const showBeautify = useSelector((state) => {
-    return state.shootStory.showBeautify;
-  });
-  return (
-    <Pressable
-      onPress={() => {
-        dispatch(setShowBeautify());
-        // this.setState({ showBeautify: !this.state.showBeautify });
-      }}
-    >
-      <Image
-        style={styles.beautifyIcon}
-        source={showBeautify ? props.selectBeautify : props.beautifyImage}
-        resizeMode='contain'
-      />
-    </Pressable>
-  );
-};
-const RenderLeftButtons = React.memo((props) => {
-  return (
-    <>
-      {/* 取消 */}
-      <Pressable
-        onPress={() => {
-          props.goback();
-        }}
-        style={styles.closeBox}
-      >
-        <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' />
-      </Pressable>
-      <View style={styles.leftIconBox}>
-        {/* 音乐 */}
-        <Pressable>
-          <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable>
-        {/* 美颜 */}
-        <BeautyButton {...props} />
-      </View>
-    </>
-  );
-});
-
 class CameraScreen extends Component<Props, State> {
   static propTypes = {
     allowCaptureRetake: PropTypes.bool,
@@ -316,6 +269,11 @@ class CameraScreen extends Component<Props, State> {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
+      return true;
+    }
+
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       return true;
@@ -448,7 +406,7 @@ class CameraScreen extends Component<Props, State> {
           />
         </View>
 
-        <RenderswitchModule {...this.props} camera={this.cameraBox} />
+        {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
   }

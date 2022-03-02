@@ -285,7 +285,7 @@ class CarouselWrapper extends Component<Props, State> {
   startAnimate = async () => {
     try {
       const success = await this.props.camera.current?.startRecording?.();
-
+      this.props.hideBottomTools();
       if (!success) {
         this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
         this.pressLock = false;
@@ -319,7 +319,7 @@ class CarouselWrapper extends Component<Props, State> {
   };
   shotCamera = async () => {
     const videoPath = await this.props.camera.current?.stopRecording?.();
-
+    this.props.showBottomTools();
     setTimeout(() => {
       this.reset();
     }, 50);

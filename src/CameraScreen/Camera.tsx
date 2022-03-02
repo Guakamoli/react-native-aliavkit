@@ -207,6 +207,16 @@ class RenderCamera extends Component {
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (nextProps.showBeautify != this.props.showBeautify) {
+      if (nextProps.showBeautify) {
+        this.props.hideBottomTools();
+      } else {
+        this.props.showBottomTools();
+      }
+      return false;
+    }
+
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
       return true;
@@ -329,6 +339,7 @@ const RenderCameraMapStateToProps = (state) => ({
   cameraType: state.shootStory.cameraType,
   normalBeautyLevel: state.shootStory.normalBeautyLevel,
   facePasterInfo: state.shootStory.facePasterInfo,
+  showBeautify: state.shootStory.showBeautify,
 });
 const RenderCameraMapDispatchToProps = (dispatch) => ({
   setShowBeautify: () => dispatch(setShowBeautify(false)),
