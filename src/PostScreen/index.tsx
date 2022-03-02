@@ -1083,7 +1083,6 @@ class PostFileUpload extends Component {
   };
   getVideFile = async (fileType, item) => {
     if (fileType !== 'video') return '';
-    //TODO
     let localUri;
     if (Platform.OS === 'ios') {
       let myAssetId = item?.image?.uri.slice(5);
@@ -1282,7 +1281,7 @@ class PostFileUpload extends Component {
           ]}
         >
           <FlatGrid
-            //TODO android上  spacing={0} 时，页面隐藏会闪退
+            // android上  spacing={0} 时，页面隐藏会闪退
             itemDimension={Platform.OS === 'android' ? photosItem - 4 : photosItem}
             data={this.state.CameraRollList}
             spacing={Platform.OS === 'android' ? 1 : 0}
@@ -1406,25 +1405,23 @@ export default class CameraScreen extends Component<Props, State> {
         this.setState({
           isShowLoading: true,
         })
+
         trimVideoData = imageItem.uri;
-        if (Platform.OS !== 'android') {
-          console.log("ios postCropVideo 000", trimVideoData);
-          trimVideoData = await AVService.saveToSandBox({
-            path: imageItem.uri,
-          });
-          //POST 直接上传暂时不做压缩
-          // console.log("ios postCropVideo 111", trimVideoData);
-          // trimVideoData = await AVService.postCropVideo(trimVideoData);
-          // console.log("ios postCropVideo 222", trimVideoData);
-          // CameraRoll.save(trimVideoData, { type: 'video' })
-          resultData.push(trimVideoData);
-        } else {
-          // console.log("android postCropVideo 111", trimVideoData);
-          // trimVideoData = await AVService.postCropVideo(imageItem.uri);
-          // console.log("android postCropVideo 222", trimVideoData);
-          // CameraRoll.save(trimVideoData, { type: 'video' })
-          resultData.push(trimVideoData);
+
+        console.info("trimVideoData 1", trimVideoData);
+
+        if (Platform.OS === 'ios') {
+          //url 授权, ios url  需要特殊处理
+          let myAssetId = imageItem.uri.slice(5);
+          trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
         }
+        // 视频压缩
+        trimVideoData = await AVService.postCropVideo(trimVideoData);
+
+        console.info("trimVideoData 0", trimVideoData);
+        // CameraRoll.save(trimVideoData, { type: 'video' })
+        resultData.push(trimVideoData);
+
         this.setState({
           isShowLoading: false,
         })

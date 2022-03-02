@@ -38,6 +38,8 @@ PODS:
   - JSONModel (1.8.0)
   - Permission-Camera (3.2.0):
     - RNPermissions
+  - Permission-Microphone (3.2.0):
+    - RNPermissions
   - Permission-Notifications (3.2.0):
     - RNPermissions
   - Permission-PhotoLibrary (3.2.0):
@@ -239,7 +241,7 @@ PODS:
     - React-jsi (= 0.64.2)
     - React-perflogger (= 0.64.2)
   - React-jsinspector (0.64.2)
-  - react-native-cameraroll (4.0.4-patch.1):
+  - react-native-cameraroll (4.0.5-patch.1):
     - React-Core
   - react-native-image-editor (2.3.0):
     - React
@@ -354,6 +356,7 @@ DEPENDENCIES:
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - Permission-Camera (from `../../node_modules/react-native-permissions/ios/Camera`)
+  - Permission-Microphone (from `../../node_modules/react-native-permissions/ios/Microphone`)
   - Permission-Notifications (from `../../node_modules/react-native-permissions/ios/Notifications`)
   - Permission-PhotoLibrary (from `../../node_modules/react-native-permissions/ios/PhotoLibrary`)
   - Permission-PhotoLibraryAddOnly (from `../../node_modules/react-native-permissions/ios/PhotoLibraryAddOnly`)
@@ -423,6 +426,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   Permission-Camera:
     :path: "../../node_modules/react-native-permissions/ios/Camera"
+  Permission-Microphone:
+    :path: "../../node_modules/react-native-permissions/ios/Microphone"
   Permission-Notifications:
     :path: "../../node_modules/react-native-permissions/ios/Notifications"
   Permission-PhotoLibrary:
@@ -518,6 +523,7 @@ SPEC CHECKSUMS:
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
   Permission-Camera: 53efcbb755b0e8bdf253dbb27cc7559ccfce8480
+  Permission-Microphone: db557c64f7e9ad41bff6b3f6d93df3b67311855b
   Permission-Notifications: bb420c3d28328df24de1b476b41ed8249ccf2537
   Permission-PhotoLibrary: 7bec836dcdd04a0bfb200c314f1aae06d4476357
   Permission-PhotoLibraryAddOnly: 06fb0cdb1d35683b235ad8c464ef0ecc88859ea3
@@ -534,7 +540,7 @@ SPEC CHECKSUMS:
   React-jsi: 67747b9722f6dab2ffe15b011bcf6b3f2c3f1427
   React-jsiexecutor: 80c46bd381fd06e418e0d4f53672dc1d1945c4c3
   React-jsinspector: cc614ec18a9ca96fd275100c16d74d62ee11f0ae
-  react-native-cameraroll: ff8da290f88d08d6c90151e3a58bfca5c24a044c
+  react-native-cameraroll: edde2698ddcebf3510e3c492fdaef95a61093925
   react-native-image-editor: 9361a215c3991cafbe5e7f28cbbad6e72c9c2705
   react-native-image-filter-kit: d79137549eb44f8215b7f2be5e77213f605e2c92
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
@@ -563,6 +569,6 @@ SPEC CHECKSUMS:
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: e8c26024078acea7c6b1389d7ad969cc8ab85f11
+PODFILE CHECKSUM: 897f5e7678c81917c20b2dd828701913f6e85493
 
 COCOAPODS: 1.10.2

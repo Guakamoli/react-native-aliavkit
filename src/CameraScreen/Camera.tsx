@@ -68,8 +68,9 @@ const BeautyButton = React.memo((props) => {
       }}
     >
       <Image
-        style={styles.beautifyIcon}
-        source={showBeautify ? props.selectBeautify : props.beautifyImage}
+        style={styles.closeIcon}
+        source={require('../../images/ic_beauty_select.png')}
+        // source={showBeautify ? props.selectBeautify : props.beautifyImage}
         resizeMode='contain'
       />
     </Pressable>
@@ -77,25 +78,23 @@ const BeautyButton = React.memo((props) => {
 });
 const RenderLeftButtons = React.memo((props) => {
   return (
-    <>
+    <View style={{
+      position: 'absolute', backgroundColor: 'rgba(0,0,0,0)', width: '100%', height: 40,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingLeft: 20,
+      paddingRight: 20,
+      marginTop: 20,
+    }}>
       {/* 取消 */}
-      <Pressable
-        onPress={() => {
-          props.goback();
-        }}
-        style={styles.closeBox}
-      >
-        <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' />
+      <Pressable onPress={() => {
+        props.goback();
+      }}>
+        {/* <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
+        <Image style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
-      <View style={styles.leftIconBox}>
-        {/* 音乐 */}
-        {/* <Pressable>
-          <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable> */}
-        {/* 美颜 */}
-        <BeautyButton {...props} />
-      </View>
-    </>
+      <BeautyButton {...props} />
+    </View>
   );
 });
 // 拍摄内容渲染
@@ -328,8 +327,8 @@ class RenderCamera extends Component {
             this.props.setShowBeautify();
           }}
         >
-          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
+          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
         </Pressable>
       </View>
     );
@@ -424,9 +423,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   beautifyIcon: {
-    width: 28,
-    height: 28,
-    marginTop: 30,
+    width: 40,
+    height: 40,
   },
   closeBox: {
     position: 'absolute',
@@ -435,8 +433,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   closeIcon: {
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
   },
   beautifyBoxHead: {
     paddingHorizontal: 20,

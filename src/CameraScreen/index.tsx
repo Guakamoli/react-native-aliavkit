@@ -13,10 +13,14 @@ import {
   Easing,
   InteractionManager,
   Pressable,
+  Alert,
+  AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
+
+import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -182,7 +186,7 @@ class CameraScreen extends Component<Props, State> {
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
-
+  mAppState = '';
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -241,8 +245,102 @@ class CameraScreen extends Component<Props, State> {
       musicOpen: false,
       previewImage: {},
       relaloadFlag: null,
+      loadedPermissions: false,
     };
+    this.initPermissions();
   }
+
+  initPermissions = async () => {
+    if (await this.checkCameraPermissions(false, true)) {
+      this.setState({ loadedPermissions: true });
+    } else {
+      if (await this.getStoragePermissions(true)) {
+        this.setState({ loadedPermissions: true });
+      }
+    }
+  }
+
+  /**
+  * 检测是否有权限
+  */
+  checkCameraPermissions = async (isToSetting: boolean = false, isCheckLimited: boolean = false) => {
+    if (Platform.OS === 'android') {
+      const permissions = [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
+      const statuses = await checkMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        //拒绝且不再询问
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const permissions = [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE];
+      const statuses = await checkMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      } else if (statuses[permissions[0]] === RESULTS.LIMITED || statuses[permissions[1]] === RESULTS.LIMITED) {
+        return isCheckLimited;
+      }
+    }
+    return false;
+  }
+
+  /**
+ *  获取权限
+ * @param isToSetting  是否展示去设置的 Alert
+ */
+  getStoragePermissions = async (isToSetting: boolean = false) => {
+    if (Platform.OS === 'android') {
+      const permissions = [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
+      const statuses = await requestMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.DENIED || statuses[permissions[1]] === RESULTS.DENIED) {
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const permissions = [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE];
+      const statuses = await requestMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    }
+    return false;
+  };
+
+
+  showToSettingAlert = () =>
+    Alert.alert(
+      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相机和麦克风权限" : "",
+      Platform.OS === 'ios' ? "" : "“拍鸭”需要获取您的相机和麦克风权限",
+      [
+        {
+          text: "暂不设置",
+          style: "default",
+        },
+        {
+          text: "去设置",
+          onPress: () => openSettings(),
+          style: "default",
+        },
+      ],
+      {
+        cancelable: true,
+      }
+    );
 
   componentDidMount() {
     let ratios = [];
@@ -257,19 +355,46 @@ class CameraScreen extends Component<Props, State> {
     setTimeout(() => {
       AVService.enableHapticIfExist();
     }, 2000);
+
+    AppState.addEventListener('change', this._handleAppStateChange);
   }
+
+
+  _handleAppStateChange = (nextAppState) => {
+    if (this.mAppState === nextAppState) {
+      return
+    }
+    if (this.props.isExample) {
+      if (this.props.type !== 'story') {
+        return
+      }
+    } else {
+      if (!this.props.isDrawerOpen || this.props.type !== 'story') {
+        return
+      }
+    }
+    if (nextAppState === 'active') {
+      this.mAppState = 'active';
+      this.initPermissions();
+    } else {
+      this.mAppState = 'background';
+    }
+  };
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       // this.props.camera?.current?.release();
     }
     this.setState = () => false;
+    AppState.removeEventListener('change', this._handleAppStateChange);
   }
   componentDidUpdate(props, state) {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
-
+    if (this.state.loadedPermissions != nextState.loadedPermissions) {
+      return true;
+    }
     if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
       return true;
     }
@@ -417,6 +542,11 @@ class CameraScreen extends Component<Props, State> {
   }
 
   render() {
+
+    if (!this.state.loadedPermissions) {
+      return null;
+    }
+
     return (
       // TODO
       <View style={{ backgroundColor: '#000', flex: 1 }}>
