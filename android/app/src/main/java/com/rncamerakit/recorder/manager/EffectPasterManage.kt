@@ -3,9 +3,7 @@ package com.rncamerakit.recorder.manager
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
-import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.downloader.FileDownloaderCallback
-import com.aliyun.svideo.downloader.zipprocessor.DownloadFileUtils
 import com.aliyun.svideo.recorder.view.effects.manager.EffectLoader
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.Promise
@@ -14,7 +12,6 @@ import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.FileUtils
 import com.rncamerakit.RNEventEmitter
-import java.io.File
 import java.util.*
 
 
@@ -31,11 +28,10 @@ class EffectPasterManage private constructor() {
         val holder = EffectPasterManage()
     }
 
-    private lateinit var mReactContext: ReactContext
-
-    fun init(context: ReactContext) {
-        mReactContext = context
-        mPaterLoader = EffectLoader(mReactContext.applicationContext)
+    private lateinit var mContext: Context
+    fun init(context: Context) {
+        mContext = context
+        mPaterLoader = EffectLoader(mContext)
     }
 
     val mPasterList: MutableList<PreviewPasterForm> = ArrayList()
@@ -46,32 +42,26 @@ class EffectPasterManage private constructor() {
     /**
      * 获取贴纸列表
      */
-    fun getPasterInfos(promise: Promise?) {
+    fun getPasterInfos(promise: Promise?, reactContext: ReactContext?) {
         mPasterList.clear()
 //        val emptyPaster = PreviewPasterForm()
 //        emptyPaster.isLocalRes = true
 //        mPasterList.add(emptyPaster)
+        if (mPaterLoader == null && reactContext != null) {
+            mPaterLoader = EffectLoader(reactContext?.applicationContext)
+        }
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
             for (form in localInfos!!) {
                 if (form.id == 150) {
                     form.icon = "file://" + form.icon
                 }
-                if (FileUtils.fileIsExists(form.path)) {
-                    form.isLocalRes = true
-//                    Log.e("AAA", "icon：" + form.icon + "\npath：" + form.path)
-                } else {
-                    form.isLocalRes = false
-//                    Log.e("AAA", "icon：" + form.icon + "\nURL：" + form.url)
-                }
+                form.isLocalRes = FileUtils.fileIsExists(form.path)
                 mPasterList.add(form)
-
             }
             for (mv in remoteInfos!!) {
                 mv.isLocalRes = false
-//                Log.e("AAA","icon："+mv.icon+"\nURL："+mv.url)
                 mPasterList.add(mv)
             }
-//            Log.e("AAA", "mPasterList:" + mPasterList.size)
             val jsonList = GsonBuilder().create().toJson(mPasterList)
             promise?.resolve(jsonList)
         }
@@ -81,17 +71,17 @@ class EffectPasterManage private constructor() {
         open fun onPath(path: String) {}
     }
 
-    fun setEffectPaster(paster: PreviewPasterForm, callback: OnGifEffectPasterCallback) {
+    fun setEffectPaster(paster: PreviewPasterForm, mReactContext: ReactContext?, callback: OnGifEffectPasterCallback) {
         val path = if (paster.id == 150) {
             paster.path
         } else {
             EffectLoader.getEffectPasterDir(
-                mReactContext.applicationContext,
+                mContext,
                 paster.name,
                 paster.id
             ).absolutePath
 //                DownloadFileUtils.getAssetPackageDir(
-//                    mReactContext.applicationContext,
+//                    mContext,
 //                    paster.name,
 //                    paster.id.toLong()
 //                ).absolutePath
@@ -131,7 +121,7 @@ class EffectPasterManage private constructor() {
         }
     }
 
-    fun downloadPaster(paster: PreviewPasterForm?, promise: Promise) {
+    fun downloadPaster(paster: PreviewPasterForm?, mReactContext: ReactContext?, promise: Promise) {
         mPaterLoader?.downloadPaster(paster, object : FileDownloaderCallback() {
             override fun onProgress(
                 downloadId: Int,

@@ -17,6 +17,7 @@ import {
   Pressable,
   AppState,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { setSelectMultiple, setMultipleData } from '../actions/post';
@@ -1082,7 +1083,6 @@ class PostFileUpload extends Component {
   };
   getVideFile = async (fileType, item) => {
     if (fileType !== 'video') return '';
-    //TODO
     let localUri;
     if (Platform.OS === 'ios') {
       let myAssetId = item?.image?.uri.slice(5);
@@ -1281,7 +1281,7 @@ class PostFileUpload extends Component {
           ]}
         >
           <FlatGrid
-            //TODO android上  spacing={0} 时，页面隐藏会闪退
+            // android上  spacing={0} 时，页面隐藏会闪退
             itemDimension={Platform.OS === 'android' ? photosItem - 4 : photosItem}
             data={this.state.CameraRollList}
             spacing={Platform.OS === 'android' ? 1 : 0}
@@ -1331,6 +1331,7 @@ export default class CameraScreen extends Component<Props, State> {
   myRef: any;
   editor: any;
   messageRef: any;
+  private mClickLock: boolean;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -1341,7 +1342,10 @@ export default class CameraScreen extends Component<Props, State> {
       postEditorParams: null,
       page: 'main',
       isVidoePlayer: true,
+      isShowLoading: false,
     };
+
+    this.mClickLock = false;
   }
 
   setVideoPlayer = (isVidoePlayer) => {
@@ -1352,6 +1356,10 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   };
   postEditor = async () => {
+
+    if (this.mClickLock) {
+      return;
+    }
 
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 1000);
@@ -1364,6 +1372,8 @@ export default class CameraScreen extends Component<Props, State> {
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
       return this.myRef.current.show('视频时长不能超过5分钟', 1000);
     }
+
+    this.mClickLock = true;
 
     try {
       Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
@@ -1401,15 +1411,34 @@ export default class CameraScreen extends Component<Props, State> {
         }),
       );
       if (type === 'video') {
-        if (Platform.OS !== 'android') {
-          trimVideoData = await AVService.saveToSandBox({
-            path: imageItem.uri,
-          });
-          resultData.push(trimVideoData);
-        } else {
-          trimVideoData = imageItem.uri;
-          resultData.push(trimVideoData);
+        this.setState({
+          isShowLoading: true,
+        })
+
+        trimVideoData = imageItem.uri;
+
+        // console.info("trimVideoData 1", trimVideoData);
+
+        if (Platform.OS === 'ios') {
+          //url 授权, ios url  需要特殊处理
+          let myAssetId = imageItem.uri.slice(5);
+          trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+
+          //裁剪 file://
+          if (!!trimVideoData && trimVideoData.startsWith("file://")) {
+            trimVideoData = trimVideoData.slice(7)
+          }
         }
+        // //TODO  视频压缩
+        // trimVideoData = await AVService.postCropVideo(trimVideoData);
+
+        // console.info("trimVideoData 0", trimVideoData);
+        // CameraRoll.save(trimVideoData, { type: 'video' })
+        resultData.push(trimVideoData);
+
+        this.setState({
+          isShowLoading: false,
+        })
       } else {
         const cropData = result;
         //图片编辑的参数，包含裁剪展示参数
@@ -1493,6 +1522,8 @@ export default class CameraScreen extends Component<Props, State> {
 
 
       this.setVideoPlayer(false);
+
+      //TODO
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
         // console.info("onUploadVideo", resultData, multipleData);
@@ -1501,7 +1532,9 @@ export default class CameraScreen extends Component<Props, State> {
         // console.info("onUploadPhoto", editImageData);
         this.onUploadPhoto(editImageData)
       }
+      this.mClickLock = false;
       return;
+      //TODO
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {
@@ -1529,9 +1562,11 @@ export default class CameraScreen extends Component<Props, State> {
         });
         this.props.setType('edit');
       }
+      this.mClickLock = false;
       return;
     } catch (e) {
       console.info(e, '错误');
+      this.mClickLock = false;
     }
   };
 
@@ -1621,6 +1656,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.isShowLoading !== this.state.isShowLoading) {
+      return true;
+    }
     if (nextState.isVidoePlayer !== this.state.isVidoePlayer) {
       return true;
     }
@@ -1665,9 +1703,44 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
 
+  loadingView = (text = '加载中...', isShow = true) => {
+    return isShow && (<View style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      // backgroundColor: 'rgba(255,0,0,1)',
+    }}>
+      <View style={{
+        width: 120,
+        height: 120,
+        backgroundColor: 'rgba(80,80,80,1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        paddingTop: 8
+      }}>
+        <ActivityIndicator
+          size={'large'}
+          color="#fff"
+          animating={true}
+          hidesWhenStopped={true}
+        />
+        {/* <Text style={{ color: '#fff', fontSize: 15, paddingTop: 8, }}>{text}</Text> */}
+      </View>
+
+    </View >)
+  }
+
+
+
   render() {
+
     return (
-      <>
+      <View style={{ width: '100%', height: '100%', position: 'relative' }}>
         <Toast
           ref={this.myRef}
           position='top'
@@ -1704,7 +1777,8 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           />
         ) : null}
-      </>
+        {this.loadingView("视频处理中...", this.state.isShowLoading)}
+      </View>
     );
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useState } from 'react';
 // TODO
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, StatusBar as StatusBarRN, Platform } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, StatusBar, Platform } from 'react-native';
 import CameraScreen from './CameraScreen';
 import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
@@ -33,6 +33,17 @@ const Entry = (props) => {
     noResultPng,
     videomusicIconPng,
   } = props;
+
+  const [bottomToolsVisibility, setBottomToolsVisibility] = useState(true);
+
+  const showBottomTools = () => {
+    setBottomToolsVisibility(true);
+  }
+
+  const hideBottomTools = () => {
+    setBottomToolsVisibility(false);
+  }
+
   const { server, user, item, navigation, sendfile = () => { }, goBack = () => { }, haptics } = props;
   const dispatch = useDispatch();
   const type = useSelector((state) => {
@@ -59,6 +70,7 @@ const Entry = (props) => {
     (i) => {
       changeFlagLock.current = true;
       Animated.timing(transX, {
+        duration: 200,
         toValue: i.type === 'post' ? 30 : -30,
         useNativeDriver: true,
       }).start();
@@ -67,38 +79,63 @@ const Entry = (props) => {
         changeFlagLock.current = false;
       }, 0);
     },
-    { wait: 1000 },
+    { wait: 0 },
   );
-  return (
-    <>
-      {props?.isDrawerOpen && <StatusBarRN backgroundColor={"#000"} barStyle={'light-content'} animated />}
-      <View style={{ display: ['post', 'edit'].indexOf(type) > -1 ? 'flex' : 'none' }}>
-        <PostUpload
-          // onRef={this.onRef}
-          {...props}
-          goback={goBack}
-          goStory={() => {
-            props.navigation.replace('FeedsStory');
-          }}
-          goPostEditor={(data) => {
-            props.navigation.navigate('FeedsPostEditor', { ...data });
-          }}
-          type={type}
-          setType={(type) => {
-            dispatch(setType(type));
-          }}
-          multipleBtnImage={multipleBtnPng}
-          startMultipleBtnImage={startMultipleBtnPng}
-          postCameraImage={postCameraPng}
-          changeSizeImage={changeSizePng}
-          closePng={closePng}
-          cameraModule={true}
-          noVolumeImage={noVolumePng}
-          volumeImage={volumePng}
-        />
-      </View>
-      <View style={[['story', 'storyedit'].indexOf(type) > -1 ? {} : { display: 'none' }, { height: '100%' }]}>
+  // console.info("types", type);
+
+  const PostView = () => {
+    return (
+      <PostUpload
+        // onRef={this.onRef}
+        {...props}
+        goback={goBack}
+        goStory={() => {
+          props.navigation.replace('FeedsStory');
+        }}
+        goPostEditor={(data) => {
+          props.navigation.navigate('FeedsPostEditor', { ...data });
+        }}
+        type={type}
+        setType={(type) => {
+          dispatch(setType(type));
+        }}
+        multipleBtnImage={multipleBtnPng}
+        startMultipleBtnImage={startMultipleBtnPng}
+        postCameraImage={postCameraPng}
+        changeSizeImage={changeSizePng}
+        closePng={closePng}
+        cameraModule={true}
+        noVolumeImage={noVolumePng}
+        volumeImage={volumePng}
+      />
+    )
+  }
+
+
+  let toolsInsetBottom = 20;
+  const videoHeight = width * 16 / 9;
+  const contentHeight = height - props.insets.top - props.insets.bottom
+
+  const toolsHeight = 36
+
+  let bottomSpaceHeight = 0;
+
+  if (contentHeight > videoHeight) {
+    bottomSpaceHeight = contentHeight - videoHeight
+    if (bottomSpaceHeight > toolsHeight) {
+      toolsInsetBottom = (bottomSpaceHeight - toolsHeight - (props.insets.bottom) / 2) / 2
+      if (toolsInsetBottom < 0) toolsInsetBottom = 0
+    }
+  }
+  const CameraView = () => {
+    return (
+      <View style={{ height: '100%' }}>
         <CameraScreen
+          bottomToolsVisibility={bottomToolsVisibility}
+          showBottomTools={showBottomTools}
+          hideBottomTools={hideBottomTools}
+          toolsInsetBottom={toolsInsetBottom}
+          bottomSpaceHeight={bottomSpaceHeight}
           actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
           // 退出操作
           {...props}
@@ -139,35 +176,48 @@ const Entry = (props) => {
           cameraModule={true}
         />
       </View>
+    )
+  }
 
-      {/*  <Animated.View
-        style={[
-          styles.tools,
-          { bottom: props.insets.bottom },
-          { display: types.findIndex((i) => i.type === type) > -1 ? 'flex' : 'none' },
-          // TODO
-          Platform.OS === 'android' && { opacity: types.findIndex((i) => i.type === type) > -1 ? 1 : 0 },
 
-          {
-            transform: [{ translateX: transX }],
-          },
-        ]}
-      >
-        {types.map((i) => {
-          return (
-            <TouchableOpacity
-              key={i.type}
-              onPress={() => {
-                changeType(i);
-              }}
-            >
-              <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </Animated.View> */}
-    </>
-    // </View>
+
+
+  return (
+    <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
+      {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
+
+      <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
+        {PostView()}
+      </View>
+
+      {/* {(type === 'story' || type === 'storyedit') && CameraView()} */}
+
+      {/* {bottomToolsVisibility && (type === 'story' || type === 'post') &&
+        <Animated.View
+          style={[
+            styles.tools,
+            { bottom: toolsInsetBottom },
+            {
+              transform: [{ translateX: transX }],
+            },
+          ]}
+        >
+          {types.map((i) => {
+            return (
+              <TouchableOpacity
+                style={{ width: '50%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+                key={i.type}
+                onPress={() => {
+                  changeType(i);
+                }}
+              >
+                <Text style={[styles.toolText, type !== i.type ? styles.curretnText : {}]}> {i.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </Animated.View>
+      } */}
+    </View>
   );
 };
 
@@ -180,7 +230,6 @@ const styles = StyleSheet.create({
     height: 36,
     position: 'absolute',
     left: (width - 120) / 2,
-    bottom: 40,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',

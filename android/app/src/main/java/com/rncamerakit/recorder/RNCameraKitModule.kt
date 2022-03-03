@@ -17,11 +17,6 @@ import com.rncamerakit.utils.DownloadUtils
 class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
     companion object {
-        const val PORTRAIT = 0 // ⬆️
-        const val LANDSCAPE_LEFT = 1 // ⬅️
-        const val PORTRAIT_UPSIDE_DOWN = 2 // ⬇️
-        const val LANDSCAPE_RIGHT = 3 // ➡️
-
         @SuppressLint("StaticFieldLeak")
         var mView: CKCamera? = null
     }
@@ -30,67 +25,30 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         return "RNCameraKitModule"
     }
 
-    override fun getConstants(): Map<String, Any> {
-        return hashMapOf(
-            "PORTRAIT" to PORTRAIT,
-            "PORTRAIT_UPSIDE_DOWN" to PORTRAIT_UPSIDE_DOWN,
-            "LANDSCAPE_LEFT" to LANDSCAPE_LEFT,
-            "LANDSCAPE_RIGHT" to LANDSCAPE_RIGHT
-        )
-    }
-
     //设置滤镜
     @ReactMethod
     fun setColorFilter(position: Int, viewTag: Int, promise: Promise) {
         mView?.mRecorderManage?.setColorFilter()
-//        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-//        context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKCamera
-//            view.mRecorderManage?.setColorFilter()
-//        }
     }
 
     //去拍照
     @ReactMethod
-    fun capture(options: ReadableMap, viewTag: Int, promise: Promise) {
+    fun capture(promise: Promise) {
         mView?.mRecorderManage?.takePhoto(reactContext, promise)
-//        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-//        context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKCamera
-//            view.mRecorderManage?.takePhoto(context, promise)
-//        }
     }
 
     @ReactMethod
-    fun startRecording(viewTag: Int, promise: Promise) {
+    fun startRecording(promise: Promise) {
         if (mView?.isPermissions() == false) {
             mView?.getPermissions()
             return
         }
         mView?.mRecorderManage?.startRecording(reactContext, promise)
-//        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-//        context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKCamera
-//            if (!view.isPermissions()) {
-//                view.getPermissions()
-//                return@runOnUiQueueThread
-//            }
-//            view.mRecorderManage?.startRecording(context, promise)
-//        }
     }
 
     @ReactMethod
-    fun stopRecording(viewTag: Int, promise: Promise) {
+    fun stopRecording(promise: Promise) {
         mView?.mRecorderManage?.stopRecording(reactContext, promise)
-//        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-//        context.runOnUiQueueThread {
-//            val view = uiManager?.resolveView(viewTag) as CKCamera
-//            view.mRecorderManage?.stopRecording(context, promise)
-//        }
     }
 
     /**
@@ -99,20 +57,13 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun getPasterInfos(promise: Promise) {
 //        reactContext.runOnUiQueueThread {
-        EffectPasterManage.instance.getPasterInfos(promise)
+        EffectPasterManage.instance.getPasterInfos(promise,reactContext)
 //        }
     }
 
-//    @ReactMethod
-//    fun getMusicList(promise: Promise) {
-//        val list = MusicFileInfoDao.instance.queryAll()
-//        promise.resolve(GsonBuilder().create().toJson(list))
-//    }
-
-
     @ReactMethod
     fun getMusicList(name: String, page: Int, pageSize: Int, promise: Promise) {
-        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize)
+        val list = MusicFileInfoDao.instance.queryList(name, page, pageSize, reactContext.applicationContext)
         promise.resolve(GsonBuilder().create().toJson(list))
     }
 
@@ -132,7 +83,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun getMusicPath(songID: String, promise: Promise) {
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID)
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID,reactContext.applicationContext)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
@@ -175,7 +126,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
                 if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-            EffectPasterManage.instance.downloadPaster(previewPaster, promise)
+            EffectPasterManage.instance.downloadPaster(previewPaster,reactContext, promise)
 //            }
         }
     }
@@ -183,15 +134,6 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun release(promise: Promise) {
         mView?.onRelease()
-//        val context = reactContext
-//        val uiManager = context.getNativeModule(UIManagerModule::class.java)
-//        context.runOnUiQueueThread {
-//            if (uiManager?.resolveView(viewTag) != null && uiManager.resolveView(viewTag) is CKCamera) {
-//                Log.e("AAA", "Camera release 222")
-//                val view = uiManager.resolveView(viewTag) as CKCamera
-//                view.onRelease()
-//            }
-//        }
     }
 
 }

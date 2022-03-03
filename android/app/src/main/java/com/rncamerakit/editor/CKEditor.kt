@@ -33,6 +33,7 @@ import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.editor.manager.*
 import com.rncamerakit.font.FontManager
 import com.rncamerakit.font.IFontCallback
+import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.*
@@ -54,6 +55,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
     private var mHeight = 0
 
     private var isCopyAssets = false
+
+    private var isSilence = false
 
     //导出视频时是否保存到相册
     private var isSaveToPhotoLibrary = false
@@ -96,7 +99,6 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mVideoContainer = FrameLayout(mContext)
         val params = LayoutParams(mWidth, mHeight)
         params.gravity = Gravity.CENTER_HORIZONTAL
-        mVideoContainer?.setBackgroundColor(Color.BLUE)
         addView(mVideoContainer, params)
     }
 
@@ -186,7 +188,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
         if (this.isInit) {
             return
         }
-        mImportManager = ImportManager(reactContext, this.mWidth, this.mHeight)
+        mImportManager = ImportManager(reactContext)
         this.isVideo = isVideo
         mProjectConfigure = if (isVideo) {
             mImportManager?.importVideo(filePath).toString()
@@ -211,9 +213,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
      * 设置静音
      */
     fun setVideoMute(isSilence: Boolean?) {
+        if (isSilence != null) {
+            this.isSilence = isSilence
+        }
         if (isSilence == true) {
-            mAliyunIEditor?.setVolume(0)
+            mAliyunIEditor?.applyMusicMixWeight(1, 100)
         } else {
+            mAliyunIEditor?.applyMusicMixWeight(1, 50)
             mAliyunIEditor?.setVolume(50)
         }
     }
@@ -348,7 +354,18 @@ class CKEditor(val reactContext: ThemedReactContext) :
         musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
         musicEffect.streamDuration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
 
-        musicEffect.weight = 50
+        if(this.isSilence){
+            musicEffect.weight = 100
+        }else{
+            musicEffect.weight = 50
+        }
+
+        if(this.isSilence){
+            mAliyunIEditor?.applyMusicMixWeight(1, 100)
+        } else {
+            mAliyunIEditor?.applyMusicMixWeight(1, 50)
+            mAliyunIEditor?.setVolume(50)
+        }
 
         mAliyunIEditor?.applyMusic(musicEffect)
 
@@ -382,6 +399,10 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
 
     init {
+        this.mWidth = ScreenUtils.getWidth(reactContext)
+        this.mHeight = mWidth*16/9
+        initVideoContainer()
+        initSurfaceView()
         mColorFilterManager = ColorFilterManager(reactContext)
         mComposeManager = ComposeManager(reactContext)
         copyAssets()
@@ -396,12 +417,14 @@ class CKEditor(val reactContext: ThemedReactContext) :
                 super.onHostResume()
                 Log.e("AAA", "onHostResume()")
                 replay()
+                MediaPlayerManage.instance.resume()
             }
 
             override fun onHostPause() {
                 super.onHostPause()
                 Log.e("AAA", "onHostPause()")
                 pause(null)
+                MediaPlayerManage.instance.pause()
             }
 
             override fun onHostDestroy() {
@@ -508,6 +531,19 @@ class CKEditor(val reactContext: ThemedReactContext) :
         mAliyunIEditor?.stop()
         mAliyunIEditor?.onDestroy()
         mComposeManager?.onRelease()
+        MediaPlayerManage.instance.release()
+    }
+
+
+    override fun requestLayout() {
+        super.requestLayout()
+        post {
+            measure(
+                MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY)
+            );
+            layout(left, top, right, bottom);
+        }
     }
 
 }

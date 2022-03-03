@@ -12,5 +12,8 @@
 @interface AliAVServiceBridge : RCTEventEmitter<RCTBridgeModule>
 
 
+//RCT_EXTERN_METHOD(postCropVideo:(NSString*)videoPath
+//                  resolve:(RCTPromiseResolveBlock)resolve
+//                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end

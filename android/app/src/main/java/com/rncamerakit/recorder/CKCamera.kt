@@ -2,28 +2,32 @@ package com.rncamerakit.recorder
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.util.Log
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleObserver
-import com.aliyun.svideo.common.utils.*
-import com.aliyun.svideo.downloader.DownloaderManager
+import com.aliyun.svideo.common.utils.PermissionUtils
+import com.aliyun.svideo.common.utils.ScreenUtils
+import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
+import com.aliyun.svideo.recorder.view.control.RecordState
 import com.aliyun.svideo.recorder.view.focus.FocusView
+import com.facebook.react.ReactActivity
+import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
+import com.manwei.libs.dialog.DialogUtils
+import com.manwei.libs.dialog.OnDialogListener
+import com.manwei.libs.utils.permission.PermissionsDialog
+import com.manwei.libs.utils.permission.RxPermissionUtils
 import com.rncamerakit.BaseEventListener
-import com.rncamerakit.R
-import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
-import com.rncamerakit.utils.DownloadUtils
-import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
@@ -36,6 +40,9 @@ class CKCamera(
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
 
+    //录制状态，开始、暂停、准备,只是针对UI变化
+    private val mRecordState = RecordState.STOP
+
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
@@ -47,7 +54,39 @@ class CKCamera(
     private var mWidth = 0
     private var mHeight = 0
 
+
     private var isInit = false
+
+    companion object {
+        var permissions = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+    }
+
+    init {
+
+        if (!isPermissions()) {
+            getPermissions()
+        } else {
+            this.mWidth = ScreenUtils.getWidth(reactContext)
+            this.mHeight = mWidth*16/9
+            initCamera()
+        }
+        initLifecycle()
+        //延时器
+//        Timer().schedule(object : TimerTask() {
+//            override fun run() {
+//                doAsync {
+//                    uiThread {
+//
+//                    }
+//                }
+//            }
+//        }, 1000L)
+    }
 
     private fun initRecorder() {
         mRecorderManage = RecorderManage(reactContext)
@@ -162,59 +201,95 @@ class CKCamera(
     }
 
     fun onRelease() {
+        Log.e("AAA", "CKCamera onRelease")
         mFocusView?.activityStop()
         mRecorder?.release()
         mRecorder = null
         mRecorderManage?.onRelease()
+        removeAllViews()
         MediaPlayerManage.instance.release()
     }
 
-    private val permissions = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
 
     fun isPermissions(): Boolean {
         return PermissionUtils.checkPermissionsGroup(reactContext, permissions)
     }
 
     fun getPermissions() {
-        Objects.requireNonNull(reactContext.currentActivity)?.let {
-            ActivityCompat.requestPermissions(
-                it,
-                permissions,
-                0
+        val reactActivity: FragmentActivity = reactContext.currentActivity as ReactActivity
+        if (reactActivity is ReactActivity) {
+            reactActivity.requestPermissions(
+                permissions, 200, PermissionListener { requestCode, permissions, grantResults ->
+                    // 0 全部同意，1 有拒绝，2 有拒绝并且不再同意
+                    var isAllGranted: Int = 0
+                    permissions?.let {
+                        for (i in it.indices) {
+                            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                                Log.e("AAA", "同意:" + permissions[i])
+                            } else {
+
+//                                break
+                                if (PermissionUtils.isNeverAgainPermission(reactActivity, permissions[i])) {
+                                    Log.e("AAA", "拒绝且不再提示:" + permissions[i])
+                                    isAllGranted = 2
+                                    return@let
+                                } else {
+                                    Log.e("AAA", "拒绝:" + permissions[i])
+                                    isAllGranted = 1
+                                    return@let
+                                }
+                            }
+                        }
+                    }
+                    if (isAllGranted == 0) {
+                        this.mWidth = ScreenUtils.getWidth(reactContext)
+                        this.mHeight = mWidth*16/9
+                        initLifecycle()
+                        initCamera()
+                    } else if (isAllGranted == 2) {
+                        PermissionsDialog.showDialogTitle(reactActivity, "“拍鸭”需要获取您的相机和麦克风权限,是否去设置？", object : OnDialogListener {
+                            override fun onRightClick() {
+                                super.onRightClick()
+                                RxPermissionUtils.getAppDetailSettingIntent(reactActivity.applicationContext)
+                            }
+                        })
+
+                    }
+                    false
+                }
             )
+        } else {
+            Objects.requireNonNull(reactContext.currentActivity)?.let {
+                ActivityCompat.requestPermissions(
+                    it,
+                    permissions,
+                    200
+                )
+            }
         }
     }
 
-
-    init {
-        if (!isPermissions()) {
-            getPermissions()
-        }
-        //下载初始化
-        DownloaderManager.getInstance().init(reactContext.applicationContext)
-        //初始化贴纸管理
-        EffectPasterManage.instance.init(reactContext)
-        //音乐库初始化
-        DownloadUtils.getMusicJsonInfo()
-
-        initLifecycle()
-    }
 
     private fun initLifecycle() {
         BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
             override fun onHostResume() {
                 super.onHostResume()
                 Log.e("AAA", "onHostResume()")
+                if (isInit) {
+                    mRecorder?.startPreview()
+                } else {
+                    if (!isPermissions()) {
+                        getPermissions()
+                    }
+                }
             }
 
             override fun onHostPause() {
                 super.onHostPause()
                 Log.e("AAA", "onHostPause()")
+                if (isInit) {
+                    mRecorder?.stopPreview()
+                }
             }
 
             override fun onHostDestroy() {
@@ -251,7 +326,7 @@ class CKCamera(
 
     }
 
-    fun initCamera() {
+    private fun initCamera() {
         if (this.isInit) {
             return
         }
@@ -260,6 +335,17 @@ class CKCamera(
         initRecorder()
         initFocusView()
         this.isInit = true;
+    }
+
+    override fun requestLayout() {
+        super.requestLayout()
+        post {
+            measure(
+                MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY)
+            );
+            layout(left, top, right, bottom);
+        }
     }
 
 }

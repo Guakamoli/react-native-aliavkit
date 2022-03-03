@@ -1,18 +1,12 @@
 package com.rncamerakit.recorder
 
-import android.util.Log
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
-import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.ReadableType
-import com.facebook.react.common.MapBuilder
-import com.facebook.react.common.ReactConstants.TAG
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.rncamerakit.db.MusicFileBean
-import com.rncamerakit.db.MusicFileInfoDao
 
 
 class CKCameraManager : SimpleViewManager<CKCamera>() {
@@ -22,49 +16,51 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
     }
 
     override fun onDropViewInstance(view: CKCamera) {
+        view.onRelease()
         super.onDropViewInstance(view)
-        MusicFileInfoDao.instance.closeDB()
+//        MusicFileInfoDao.instance.closeDB()
     }
 
+    private var mReactContext:ThemedReactContext? = null
     private var mWidth = 0
     private var mHeight = 0
 
     override fun createViewInstance(context: ThemedReactContext): CKCamera {
+        this.mReactContext = context
         this.mWidth = 0
         this.mHeight = 0
-
         val view = CKCamera(context)
         RNCameraKitModule.mView = view
         return view
     }
 
-    override fun receiveCommand(view: CKCamera, commandId: String?, args: ReadableArray?) {
-        var logCommand = "CameraManager received command $commandId("
-        for (i in 0..(args?.size() ?: 0)) {
-            if (i > 0) {
-                logCommand += ", "
-            }
-            logCommand += when (args?.getType(0)) {
-                ReadableType.Null -> "Null"
-                ReadableType.Array -> "Array"
-                ReadableType.Boolean -> "Boolean"
-                ReadableType.Map -> "Map"
-                ReadableType.Number -> "Number"
-                ReadableType.String -> "String"
-                else -> ""
-            }
-        }
-        logCommand += ")"
-        Log.d(TAG, logCommand)
-    }
+//    override fun receiveCommand(view: CKCamera, commandId: String?, args: ReadableArray?) {
+//        var logCommand = "CameraManager received command $commandId("
+//        for (i in 0..(args?.size() ?: 0)) {
+//            if (i > 0) {
+//                logCommand += ", "
+//            }
+//            logCommand += when (args?.getType(0)) {
+//                ReadableType.Null -> "Null"
+//                ReadableType.Array -> "Array"
+//                ReadableType.Boolean -> "Boolean"
+//                ReadableType.Map -> "Map"
+//                ReadableType.Number -> "Number"
+//                ReadableType.String -> "String"
+//                else -> ""
+//            }
+//        }
+//        logCommand += ")"
+//        Log.d(TAG, logCommand)
+//    }
 
-    override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
-        return MapBuilder.of(
-            "onOrientationChange", MapBuilder.of("registrationName", "onOrientationChange"),
-            "onReadCode", MapBuilder.of("registrationName", "onReadCode"),
-            "onPictureTaken", MapBuilder.of("registrationName", "onPictureTaken")
-        )
-    }
+//    override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
+//        return MapBuilder.of(
+//            "onOrientationChange", MapBuilder.of("registrationName", "onOrientationChange"),
+//            "onReadCode", MapBuilder.of("registrationName", "onReadCode"),
+//            "onPictureTaken", MapBuilder.of("registrationName", "onPictureTaken")
+//        )
+//    }
 
 
     /**
@@ -98,7 +94,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-            view.mRecorderManage?.setFaceEffectPaster(previewPaster)
+            view.mRecorderManage?.setFaceEffectPaster(previewPaster,mReactContext)
         }
 
     }
@@ -143,10 +139,10 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         if (readableMap != null && readableMap.toHashMap().size > 0) {
             this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
             this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
-            view.reactContext.runOnUiQueueThread {
+//            view.reactContext.runOnUiQueueThread {
                 view.setLayout(this.mWidth, this.mHeight)
-                view.initCamera()
-            }
+//                view.initCamera()
+//            }
         }
     }
 

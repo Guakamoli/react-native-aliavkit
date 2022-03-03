@@ -1,5 +1,5 @@
 import React from 'react';
-import { NativeModules } from 'react-native';
+import { NativeModules, NativeEventEmitter, } from 'react-native';
 const { AliAVServiceBridge, RNMusicService } = NativeModules;
 
 type MusicRequestType = {
@@ -10,11 +10,31 @@ type MusicRequestType = {
 };
 
 export default class AVService {
+
+  //Post 视频上传压缩裁剪
+  static async postCropVideo(videoPath: String) {
+
+    //裁剪 file://
+    if (!!videoPath && videoPath.startsWith("file://")) {
+      videoPath = videoPath.slice(7)
+    }
+
+    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
+      console.log("post 视频裁剪中...", reminder);
+    });
+    let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
+    managerEmitter.removeSubscription(carpListener);
+    // console.log('post 视频裁剪完成', cropVideoPath);
+    return cropVideoPath;
+  }
+
+
   static async getFilterIcons() {
     return await AliAVServiceBridge.getFilterIcons({});
   }
 
-  static async getFacePasterInfos({}) {
+  static async getFacePasterInfos({ }) {
     return await AliAVServiceBridge.getFacePasterInfos({});
   }
 
@@ -45,18 +65,18 @@ export default class AVService {
   }
   // name:'all-music' 分页传all-music'，其他传歌曲名
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
-    console.log('123', { name, page, songID, pageSize });
-
+    // console.info('getMusics', { name, page, songID, pageSize });
     return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
 
   static async getThumbnails({ videoPath, startTime, itemPerTime, needCover }) {
-    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime, needCover});
+    return await AliAVServiceBridge.generateImages({ videoPath, startTime, itemPerTime, needCover });
   }
 
   static async removeThumbnaiImages() {
     return await AliAVServiceBridge.removeThumbnaiImages({});
   }
+  //振动
   static enableHapticIfExist() {
     AliAVServiceBridge.enableHapticIfExist();
   }
@@ -107,6 +127,6 @@ export default class AVService {
     //      ...
     //   }
 
-    
+
   }
 }

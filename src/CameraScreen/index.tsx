@@ -13,10 +13,14 @@ import {
   Easing,
   InteractionManager,
   Pressable,
+  Alert,
+  AppState,
 } from 'react-native';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
+
+import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -95,7 +99,6 @@ export type Props = {
 
 type State = {
   // 照片数据
-  captureImages: any[];
   flashData: any;
   torchMode: boolean;
   flag: any;
@@ -115,8 +118,6 @@ type State = {
   startShoot: boolean;
   ShootSuccess: boolean;
 
-  fadeInOpacity: any;
-
   // 视频路径
   videoPath: any;
 
@@ -127,71 +128,20 @@ type State = {
   musicOpen: Boolean;
 };
 
-const TestComponent = () => {
-  return (
-    <>
-      <Pressable
-        style={{
-          width: 80,
-          height: 80,
-          backgroundColor: '#3f0',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: 40,
-        }}
-        onPress={async () => {
-          const music = await AVService.downloadMusic('Berlin - Take My Breath Away.mp3');
-          console.log('---- downloadMusic: ', music);
-        }}
-      >
-        <Text style={{ fontSize: 25, color: 'white' }}>音乐</Text>
-      </Pressable>
-    </>
-  );
-};
-const ProgressCircleWrapper = (props) => {
-  const { flag, recordeSuccess, setFlag } = props;
-  let [progress, setProgress] = useState(0);
-  let [timer, setTimer] = useState(null);
-  useInterval(() => {
-    const newprogress = (progress += 1 / 140);
-    if (newprogress >= 1) {
-      setTimer(null);
-      setFlag(null);
-      recordeSuccess();
-      setProgress(0);
-    } else {
-      setProgress(newprogress);
-    }
-  }, timer);
-  useEffect(() => {
-    if (flag) {
-      setTimer(60);
-    } else {
-      setTimer(null);
-    }
-  }, [flag]);
-  return (
-    <Progress.Circle
-      style={[styles.progress, { position: 'absolute' }]}
-      progress={progress}
-      indeterminate={false}
-      size={122}
-      color={'#EA3600'}
-      borderWidth={0}
-      thickness={6}
-    />
-  );
-};
+/**
+ * 前后摄像头切换
+ */
 class RenderswitchModule extends React.PureComponent {
   constructor(props) {
     super(props);
   }
-
   render() {
+    let marginBottom = this.props.toolsInsetBottom + 5
+    console.info("RenderswitchModule marginBottom", marginBottom);
     return (
       <View style={styles.BottomBox}>
         <Pressable
+          hitSlop={{ left: 20, top: 10, right: 20, bottom: 10 }}
           onPress={() => {
             this.props.setCameraType();
             setTimeout(() => {
@@ -201,22 +151,11 @@ class RenderswitchModule extends React.PureComponent {
                 console.info('eeee', e);
               }
             }, 100);
-
             AVService.enableHapticIfExist();
-
             this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <View
-            style={{
-              height: 28 + 30,
-              width: 31 + 15 * 2,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Image style={{ width: 31, height: 28 }} source={this.props.cameraFlipImage} resizeMode='contain' />
-          </View>
+          <Image style={{ width: 32, height: 26, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
         </Pressable>
       </View>
     );
@@ -230,50 +169,6 @@ const RDSMMapDispatchToProps = (dispatch) => ({
   setFacePasterInfo: (data) => dispatch(setFacePasterInfo(data)),
 });
 RenderswitchModule = connect(RDSMMapStateToProps, RDSMMapDispatchToProps)(RenderswitchModule);
-
-const BeautyButton = (props) => {
-  const dispatch = useDispatch();
-  const showBeautify = useSelector((state) => {
-    return state.shootStory.showBeautify;
-  });
-  return (
-    <Pressable
-      onPress={() => {
-        dispatch(setShowBeautify());
-        // this.setState({ showBeautify: !this.state.showBeautify });
-      }}
-    >
-      <Image
-        style={styles.beautifyIcon}
-        source={showBeautify ? props.selectBeautify : props.beautifyImage}
-        resizeMode='contain'
-      />
-    </Pressable>
-  );
-};
-const RenderLeftButtons = React.memo((props) => {
-  return (
-    <>
-      {/* 取消 */}
-      <Pressable
-        onPress={() => {
-          props.goback();
-        }}
-        style={styles.closeBox}
-      >
-        <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' />
-      </Pressable>
-      <View style={styles.leftIconBox}>
-        {/* 音乐 */}
-        <Pressable>
-          <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable>
-        {/* 美颜 */}
-        <BeautyButton {...props} />
-      </View>
-    </>
-  );
-});
 
 class CameraScreen extends Component<Props, State> {
   static propTypes = {
@@ -291,7 +186,7 @@ class CameraScreen extends Component<Props, State> {
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
-
+  mAppState = '';
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -318,8 +213,6 @@ class CameraScreen extends Component<Props, State> {
     this.rt = null;
     this.cameraBox = { current: null };
     this.state = {
-      // 照片存储
-      captureImages: [],
       flashData: this.flashArray[this.currentFlashArrayPosition],
       torchMode: false,
       flag: null,
@@ -339,8 +232,6 @@ class CameraScreen extends Component<Props, State> {
       startShoot: false,
       ShootSuccess: false,
 
-      fadeInOpacity: new Animated.Value(60),
-
       // 视频 照片地址
       videoPath: null,
       fileType: 'video',
@@ -354,15 +245,109 @@ class CameraScreen extends Component<Props, State> {
       musicOpen: false,
       previewImage: {},
       relaloadFlag: null,
+      loadedPermissions: false,
     };
+      this.initPermissions();
+
   }
+
+  initPermissions = async () => {
+    if (await this.checkCameraPermissions(false, true)) {
+      this.setState({ loadedPermissions: true });
+    } else {
+      if (await this.getStoragePermissions(true)) {
+        this.setState({ loadedPermissions: true });
+      }
+    }
+  }
+
+  /**
+  * 检测是否有权限
+  */
+  checkCameraPermissions = async (isToSetting: boolean = false, isCheckLimited: boolean = false) => {
+    if (Platform.OS === 'android') {
+      const permissions = [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
+      const statuses = await checkMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        //拒绝且不再询问
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const permissions = [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE];
+      const statuses = await checkMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      } else if (statuses[permissions[0]] === RESULTS.LIMITED || statuses[permissions[1]] === RESULTS.LIMITED) {
+        return isCheckLimited;
+      }
+    }
+    return false;
+  }
+
+  /**
+ *  获取权限
+ * @param isToSetting  是否展示去设置的 Alert
+ */
+  getStoragePermissions = async (isToSetting: boolean = false) => {
+    if (Platform.OS === 'android') {
+      const permissions = [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
+      const statuses = await requestMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.DENIED || statuses[permissions[1]] === RESULTS.DENIED) {
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    } else if (Platform.OS === 'ios') {
+      const permissions = [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE];
+      const statuses = await requestMultiple(permissions);
+      if (statuses[permissions[0]] === RESULTS.GRANTED && statuses[permissions[1]] === RESULTS.GRANTED) {
+        return true;
+      } else if (statuses[permissions[0]] === RESULTS.BLOCKED || statuses[permissions[1]] === RESULTS.BLOCKED) {
+        if (isToSetting) {
+          this.showToSettingAlert();
+        }
+      }
+    }
+    return false;
+  };
+
+
+  showToSettingAlert = () =>
+    Alert.alert(
+      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相机和麦克风权限" : "",
+      Platform.OS === 'ios' ? "" : "“拍鸭”需要获取您的相机和麦克风权限",
+      [
+        {
+          text: "暂不设置",
+          style: "default",
+        },
+        {
+          text: "去设置",
+          onPress: () => openSettings(),
+          style: "default",
+        },
+      ],
+      {
+        cancelable: true,
+      }
+    );
 
   componentDidMount() {
     let ratios = [];
     if (this.props.cameraRatioOverlay) {
       ratios = this.props.cameraRatioOverlay.ratios || [];
     }
-    this.getPasterInfos();
     const { cameraModule } = this.props;
     this.setState({
       ratios: ratios || [],
@@ -371,31 +356,52 @@ class CameraScreen extends Component<Props, State> {
     setTimeout(() => {
       AVService.enableHapticIfExist();
     }, 2000);
+
+    AppState.addEventListener('change', this._handleAppStateChange);
+
   }
+
+
+  _handleAppStateChange = (nextAppState) => {
+    if (this.mAppState === nextAppState) {
+      return
+    }
+    if (this.props.isExample) {
+      if (this.props.type !== 'story') {
+        return
+      }
+    } else {
+      if (!this.props.isDrawerOpen || this.props.type !== 'story') {
+        return
+      }
+    }
+    if (nextAppState === 'active') {
+      this.mAppState = 'active';
+      this.initPermissions();
+    } else {
+      this.mAppState = 'background';
+    }
+  };
 
   componentWillUnmount() {
     if (Platform.OS === 'android') {
+      // this.props.camera?.current?.release();
     }
     this.setState = () => false;
+    AppState.removeEventListener('change', this._handleAppStateChange);
+
   }
   componentDidUpdate(props, state) {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
-  shotPreview = async () => {
-    try {
-      const image = await this.cameraBox.current?.capture?.();
-      console.info(image, 'iasdiadfidifi');
-      this.setState({
-        previewImage: image,
-      });
-      setTimeout(() => {
-        this.setState({
-          relaloadFlag: Math.random(),
-        });
-      }, 0);
-    } catch (e) {}
-  };
   shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.loadedPermissions != nextState.loadedPermissions) {
+      return true;
+    }
+    if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
+      return true;
+    }
+
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       return true;
@@ -454,78 +460,6 @@ class CameraScreen extends Component<Props, State> {
     });
     return;
   }
-  //  拍摄按钮
-  getPasterInfos = async () => {
-    const pasters = await AVService.getFacePasterInfos({});
-    pasters.forEach((item, index) => {
-      if (index == 0) {
-        return;
-      }
-      //TODO
-      if (item.icon) {
-        item.icon = item.icon.replace('http://', 'https://');
-      }
-      if (item.url) {
-        item.url = item.url.replace('http://', 'https://');
-      }
-    });
-    pasters.unshift({ eid: 0 });
-    this.setState({
-      pasterList: pasters,
-      facePasterInfo: pasters[0],
-    });
-  };
-  renderCaptureButton() {
-    const { fadeInOpacity, ShootSuccess, pasterList, musicOpen } = this.state;
-    return (
-      this.props.captureButtonImage && (
-        // !this.isCaptureRetakeMode() && (
-        <View style={[styles.captureButtonContainer, !musicOpen && { bottom: 30 }]}>
-          {
-            <>
-              {/* 长按按钮 */}
-              <View style={[styles.startShootBox, this.state.startShoot ? {} : { opacity: 0 }]}>
-                <Animated.View
-                  style={[styles.startShootAnnulus, { width: fadeInOpacity, height: fadeInOpacity }]}
-                ></Animated.View>
-                <View style={styles.captureButton}></View>
-
-                <ProgressCircleWrapper
-                  flag={this.state.flag}
-                  setFlag={(flag) => {
-                    this.setState({
-                      flag,
-                    });
-                  }}
-                  recordeSuccess={async (data) => {
-                    const videoPath = await this.cameraBox.current?.stopRecording?.();
-                    this.setState({
-                      videoPath,
-                      flag: null,
-                      ShootSuccess: true,
-                      startShoot: false,
-                    });
-                    // this.setState({
-                    //   videoPath,
-                    // });
-                  }}
-                />
-              </View>
-              {/* 普通的切换按钮 */}
-              <View style={!this.state.startShoot ? {} : { opacity: 0 }}>
-                {this.state.musicOpen ? (
-                  <StoryMusic musicDynamicGif={this.props.musicDynamicGif} musicIconPng={this.props.musicIconPng} />
-                ) : null}
-                {/* this.state.musicOpen */}
-              </View>
-            </>
-          }
-        </View>
-      )
-      // )
-    );
-  }
-
   sendUploadFile(data) {
     if (this.props.getUploadFile) {
       this.props.getUploadFile(data);
@@ -541,28 +475,23 @@ class CameraScreen extends Component<Props, State> {
   onCaptureImagePressed = async () => {
     try {
       const image = await this.cameraBox.current?.capture?.();
-      //  ios
-      let sandData = '';
-      //
+      let imagePath = '';
       if (Platform.OS !== 'android') {
-        // sandData = await AVService.saveToSandBox({ path: image?.uri });
-        sandData = image?.uri;
+        imagePath = image?.uri;
       } else {
-        sandData = image;
+        imagePath = image;
       }
       if (this.props.allowCaptureRetake) {
-        this.setState({ imageCaptured: sandData, fileType: 'image' });
+        this.setState({ imageCaptured: imagePath, fileType: 'image' });
       } else {
         if (image) {
+          // this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
           this.setState({
-            captured: true,
-            imageCaptured: sandData,
+            ShootSuccess: true,
             fileType: 'image',
-            // captureImages: _.concat(this.state.captureImages, image?.uri),?
-            captureImages: _.concat(this.state.captureImages, sandData),
+            imageCaptured: imagePath,
           });
           this.props.setType('storyedit');
-          this.setState({ startShoot: false, ShootSuccess: true, fadeInOpacity: new Animated.Value(60) });
         }
       }
     } catch (e) {
@@ -580,18 +509,32 @@ class CameraScreen extends Component<Props, State> {
   };
   // 底部渲染
   renderBottom() {
+
+    let bottomHeight = 60;
+
+    if (this.props.bottomSpaceHeight) {
+      bottomHeight = this.props.bottomSpaceHeight + 10;
+    } else {
+      bottomHeight = this.props.toolsInsetBottom * 2 + 36;
+    }
+
     return (
       <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
         <RenderbeautifyBox {...this.props} />
-        <Carousel
-          {...this.props}
-          myRef={this.myRef}
-          onCaptureImagePressed={this.onCaptureImagePressed}
-          camera={this.cameraBox}
-          enableCount={this.enableCount}
-          setShootData={this.setShootData}
-        />
-        <RenderswitchModule {...this.props} camera={this.cameraBox} />
+        <View
+          style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)' }}
+        >
+          <Carousel
+            {...this.props}
+            myRef={this.myRef}
+            onCaptureImagePressed={this.onCaptureImagePressed}
+            camera={this.cameraBox}
+            enableCount={this.enableCount}
+            setShootData={this.setShootData}
+          />
+        </View>
+
+        {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
   }
@@ -602,6 +545,11 @@ class CameraScreen extends Component<Props, State> {
   }
 
   render() {
+
+    if (Platform.OS === 'ios' && !this.state.loadedPermissions) {
+      return null;
+    }
+
     return (
       // TODO
       <View style={{ backgroundColor: '#000', flex: 1 }}>
@@ -648,7 +596,7 @@ class CameraScreen extends Component<Props, State> {
             musicSearch={this.props.musicSearch}
             imagePath={this.state.imageCaptured}
             noResultPng={this.props.noResultPng}
-            // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
           />
         ) : (
           <>
@@ -681,12 +629,8 @@ const styles = StyleSheet.create({
   BottomBox: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    // backgroundColor:"green",
     alignItems: 'center',
-    // position: 'absolute',
-    // backgroundColor: "black",
     width: '100%',
-    bottom: 0,
   },
 
   cameraContainer: {},

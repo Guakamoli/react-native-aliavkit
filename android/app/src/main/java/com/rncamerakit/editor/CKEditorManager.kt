@@ -63,17 +63,17 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         if (readableMap != null && readableMap.toHashMap().size > 0) {
             this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
             this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
-
-            if (TextUtils.isEmpty(mFilePath)) {
-                return
-            }
-            view.reactContext.runOnUiQueueThread {
-                Log.e("BBB", "setEditorLayout")
-                view.setLayout(mWidth, mHeight)
-                if (!TextUtils.isEmpty(mFilePath)) {
-                    view.importVideo(mFilePath, isVideo)
-                }
-            }
+            view.setLayout(mWidth, mHeight)
+//            if (TextUtils.isEmpty(mFilePath)) {
+//                return
+//            }
+//            view.reactContext.runOnUiQueueThread {
+//                Log.e("BBB", "setEditorLayout")
+//                view.setLayout(mWidth, mHeight)
+//                if (!TextUtils.isEmpty(mFilePath)) {
+//                    view.importVideo(mFilePath, isVideo)
+//                }
+//            }
         }
     }
 
@@ -88,16 +88,8 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         } else {
             this.mFilePath = videoPath
         }
-
         this.isVideo = true
-        if (this.mWidth == 0) {
-            return
-        }
-        view.reactContext.runOnUiQueueThread {
-            Log.e("BBB", "setVideoPath")
-            view.setLayout(mWidth, mHeight)
-            view.importVideo(this.mFilePath, true)
-        }
+        view.importVideo(this.mFilePath, true)
     }
 
 
@@ -112,16 +104,8 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         } else {
             this.mFilePath = imagePath
         }
-
         this.isVideo = false
-        if (this.mWidth == 0) {
-            return
-        }
-        view.reactContext.runOnUiQueueThread {
-            Log.e("BBB", "setImagePath")
-            view.setLayout(mWidth, mHeight)
-            view.importVideo(this.mFilePath, false)
-        }
+        view.importVideo(this.mFilePath, false)
     }
 
 

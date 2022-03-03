@@ -1,5 +1,6 @@
 package com.rncamerakit.db
 
+import android.content.Context
 import java.sql.SQLException
 
 interface IMusicFileInfoDao {
@@ -23,10 +24,10 @@ interface IMusicFileInfoDao {
     fun queryAll(): MutableList<MusicFileBean>?
 
     @Throws(android.database.SQLException::class)
-    fun query(songID: String?): MusicFileBean?
+    fun query(songID: String?, context: Context?): MusicFileBean?
 
     @Throws(android.database.SQLException::class)
-    fun queryList(queryMsg: String?, page: Int?, total: Int?): MutableList<MusicFileBean>?
+    fun queryList(queryMsg: String?, page: Int?, total: Int?, context: Context?): MutableList<MusicFileBean>?
 
     @Throws(android.database.SQLException::class)
     fun delete(songID: String?)

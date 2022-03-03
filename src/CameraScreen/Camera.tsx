@@ -68,8 +68,9 @@ const BeautyButton = React.memo((props) => {
       }}
     >
       <Image
-        style={styles.beautifyIcon}
-        source={showBeautify ? props.selectBeautify : props.beautifyImage}
+        style={styles.closeIcon}
+        source={require('../../images/ic_beauty_select.png')}
+        // source={showBeautify ? props.selectBeautify : props.beautifyImage}
         resizeMode='contain'
       />
     </Pressable>
@@ -77,25 +78,23 @@ const BeautyButton = React.memo((props) => {
 });
 const RenderLeftButtons = React.memo((props) => {
   return (
-    <>
+    <View style={{
+      position: 'absolute', backgroundColor: 'rgba(0,0,0,0)', width: '100%', height: 40,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingLeft: 20,
+      paddingRight: 20,
+      marginTop: 20,
+    }}>
       {/* 取消 */}
-      <Pressable
-        onPress={() => {
-          props.goback();
-        }}
-        style={styles.closeBox}
-      >
-        <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' />
+      <Pressable onPress={() => {
+        props.goback();
+      }}>
+        {/* <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
+        <Image style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
-      <View style={styles.leftIconBox}>
-        {/* 音乐 */}
-        <Pressable>
-          <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable>
-        {/* 美颜 */}
-        <BeautyButton {...props} />
-      </View>
-    </>
+      <BeautyButton {...props} />
+    </View>
   );
 });
 // 拍摄内容渲染
@@ -175,60 +174,48 @@ class RenderCamera extends Component {
     // this.fadeAnim = new Animated.Value(1);
   }
   handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
-    }
+    // if (this.props.isDrawerOpen && this.props.type === 'story') {
+    //   if (e.match(/inactive|background/)) {
+    //     this.setState({
+    //       showCamera: false,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   } else {
+    //     this.setState({
+    //       showCamera: true,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   }
+    // }
   };
   componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
+    console.log("Story 录制初始化 componentDidMount");
+    // if (Platform.OS === 'ios') {
+    //   AppState.addEventListener('change', this.handleAppStateChange);
+    // }
   }
   componentWillUnmount() {
-    AppState.removeEventListener('change', this.handleAppStateChange);
-  }
-  handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
-    }
-  };
-  componentDidMount() {
-    AppState.addEventListener('change', this.handleAppStateChange);
-  }
-  componentWillUnmount() {
-    if (Platform.OS === 'android') {
-      //TODO
-      this.props.camera.current?.release();
-    }
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    console.log("Story 录制销毁 componentWillUnmount");
+    this.props.camera?.current?.release();
+    // if (Platform.OS === 'ios') {
+    //   AppState.removeEventListener('change', this.handleAppStateChange);
+    // }
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (nextProps.showBeautify != this.props.showBeautify) {
+      if (nextProps.showBeautify) {
+        this.props.hideBottomTools();
+      } else {
+        this.props.showBottomTools();
+      }
+      return false;
+    }
+
     const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
     if (propsUpdated) {
       return true;
@@ -237,19 +224,7 @@ class RenderCamera extends Component {
     if (stateUpdated) {
       return true;
     }
-    // if (this.fadeAnim && !this.state.showToast) {
-    //   this.setState({
-    //     showToast: true,
-    //   });
-    //   Animated.timing(
-    //     // 随时间变化而执行动画
-    //     this.fadeAnim, // 动画中的变量值
-    //     {
-    //       toValue: 0, // 透明度最终变为1，即完全不透明
-    //       duration: 4000, // 让动画持续一段时间
-    //     },
-    //   ).start();
-    // }
+
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
       if (!showCamera) {
@@ -287,9 +262,14 @@ class RenderCamera extends Component {
   }
   renderCamera = () => {
     //TODO
-    const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
-
-    const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    // const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
+    // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+    let CameraFixHeight = width * 16 / 9;
+    const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+    if (CameraFixHeight > fixHeight) {
+      CameraFixHeight = fixHeight;
+    }
+    // console.info("Camera CameraFixHeight", CameraFixHeight, height, this.props.insets.top, this.props.insets.bottom);
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
@@ -303,7 +283,7 @@ class RenderCamera extends Component {
             }, 0);
           }}
         >
-          {this.state.showCamera ? (
+          {this.state.showCamera || this.props.isExample ? (
             <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
               <Camera
                 ref={(cam) => (this.props.camera.current = cam)}
@@ -315,8 +295,8 @@ class RenderCamera extends Component {
                 normalBeautyLevel={this.props.normalBeautyLevel * 10}
                 facePasterInfo={this.props.facePasterInfo}
                 torchMode={'off'}
-                onReadCode={() => {}}
-                onRecordingProgress={() => {}}
+                onReadCode={() => { }}
+                onRecordingProgress={() => { }}
               />
               {/* {this.state.showToast && (
                 <Animated.View
@@ -347,8 +327,8 @@ class RenderCamera extends Component {
             this.props.setShowBeautify();
           }}
         >
-          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
+          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
         </Pressable>
       </View>
     );
@@ -358,6 +338,7 @@ const RenderCameraMapStateToProps = (state) => ({
   cameraType: state.shootStory.cameraType,
   normalBeautyLevel: state.shootStory.normalBeautyLevel,
   facePasterInfo: state.shootStory.facePasterInfo,
+  showBeautify: state.shootStory.showBeautify,
 });
 const RenderCameraMapDispatchToProps = (dispatch) => ({
   setShowBeautify: () => dispatch(setShowBeautify(false)),
@@ -442,9 +423,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   beautifyIcon: {
-    width: 28,
-    height: 28,
-    marginTop: 30,
+    width: 40,
+    height: 40,
   },
   closeBox: {
     position: 'absolute',
@@ -453,8 +433,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   closeIcon: {
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
   },
   beautifyBoxHead: {
     paddingHorizontal: 20,

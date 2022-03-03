@@ -4,7 +4,6 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.Log
 import com.aliyun.common.utils.CommonUtil
-import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
@@ -25,6 +24,7 @@ import com.aliyun.svideosdk.common.struct.recorder.MediaInfo
 import com.aliyun.svideosdk.recorder.AliyunIClipManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
@@ -283,14 +283,17 @@ class RecorderManage(
     /**
      * 设置人脸贴纸
      */
-    fun setFaceEffectPaster(paster: PreviewPasterForm) {
-        EffectPasterManage.instance.setEffectPaster(paster,
+    fun setFaceEffectPaster(paster: PreviewPasterForm,mReactContext: ReactContext?) {
+        if (mEffectPaster != null) {
+            mRecorder?.removePaster(mEffectPaster)
+        }
+        EffectPasterManage.instance.setEffectPaster(paster,mReactContext,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String) {
                     super.onPath(path)
-                    if (mEffectPaster != null) {
-                        mRecorder?.removePaster(mEffectPaster)
-                    }
+//                    if (mEffectPaster != null) {
+//                        mRecorder?.removePaster(mEffectPaster)
+//                    }
                     val source = Source(path)
                     mEffectPaster = EffectPaster(source)
                     val addPaster = mRecorder?.addPaster(mEffectPaster)

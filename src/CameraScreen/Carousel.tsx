@@ -193,9 +193,12 @@ class RenderChildren extends Component {
           },
         ]}
       >
+        {/* 安卓必须设置 shouldCancelWhenOutside={false}，否则松开后不会返回 State.END */}
         <LongPressGestureHandler
           ref={this.longPressRef}
+          shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
+            console.log("LongPressGestureHandler", nativeEvent.state);
             if (nativeEvent.state === State.ACTIVE) {
               this.props.longPress();
             } else if (nativeEvent.state === State.END) {
@@ -203,17 +206,18 @@ class RenderChildren extends Component {
             }
           }}
           minDurationMs={500}
+          maxDist={30}
         >
           <Animated.View
             style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
           >
             <TapGestureHandler
+               shouldCancelWhenOutside={false}
               onHandlerStateChange={({ nativeEvent }) => {
                 if (nativeEvent.state === State.ACTIVE) {
                   this.props.singlePress();
                 }
               }}
-              // waitFor={this.longPressRef}
             >
               <Animated.View>
                 <View style={styles.bigCircleBox}></View>
@@ -222,27 +226,6 @@ class RenderChildren extends Component {
             </TapGestureHandler>
           </Animated.View>
         </LongPressGestureHandler>
-        {/* <Pressable
-          style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
-          delayLongPress={500}
-          // 长按
-          pressRetentionOffset={{ bottom: 1000, left: 1000, right: 1000, top: 1000 }}
-          onLongPress={async () => {
-            // 按钮动画
-            this.props.longPress();
-          }}
-          // 长按结束
-          onPressOut={async () => {
-            this.props.stopAnimate();
-          }}
-          // 单击
-          onPress={() => {
-            this.props.singlePress();
-          }}
-        >
-          <View style={styles.bigCircleBox}></View>
-          <RenderBigCircle {...this.props} />
-        </Pressable> */}
       </Animated.View>
     );
   }
@@ -302,7 +285,7 @@ class CarouselWrapper extends Component<Props, State> {
   startAnimate = async () => {
     try {
       const success = await this.props.camera.current?.startRecording?.();
-
+      this.props.hideBottomTools();
       if (!success) {
         this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
         this.pressLock = false;
@@ -335,28 +318,23 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-    // TODO
-    this.ani.stop();
-
     const videoPath = await this.props.camera.current?.stopRecording?.();
+    this.props.showBottomTools();
     setTimeout(() => {
       this.reset();
-    }, 0);
-
-    setTimeout(() => {
-      this.props.setShootData({
-        fileType: 'video',
-        videoPath,
-        ShootSuccess: true,
-      });
-    }, 100);
+    }, 50);
+    this.props.setShootData({
+      fileType: 'video',
+      videoPath,
+      ShootSuccess: true,
+    });
     setTimeout(() => {
       this.pressLock = false;
     }, 2500);
   };
   reset = () => {
-    this.ani.stop();
-    this.arcAngle.setValue(0);
+    this.ani?.stop();
+    this.arcAngle?.setValue(0);
     this.startTime = null;
     this.endTime = null;
     Reanimated.timing(this.scaleAnimated, {
@@ -370,16 +348,6 @@ class CarouselWrapper extends Component<Props, State> {
       this.pressLock = false;
     }
     this.endTime = Date.now();
-
-    // if (this.endTime - this.startTime < 2 * 1000) {
-    //     this.reset()
-    //     console.info(this.props.myRef, 'hahah')
-    //     await this.props.camera.current?.stopRecording?.();
-
-    //     this.props.myRef.current?.show?.('时间小于2秒，请重新拍摄', 2000);
-    //     this.pressLock = false
-    //     return
-    // }
     this.shotCamera();
 
     // 在这里做结算
@@ -541,6 +509,7 @@ class CarouselWrapper extends Component<Props, State> {
             }}
             renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
           >
+
             <RenderChildren
               {...this.props}
               pasterList={pasterList}

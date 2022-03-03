@@ -24,6 +24,7 @@ import StoryMusic from './StoryMusic';
 import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
+import CameraRoll from '@react-native-community/cameraroll';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -84,8 +85,6 @@ export default class StoryEditor extends Component<Props, State> {
   // 设置音乐
   musicExport: any;
   constructor(props) {
-    console.info('story 编辑页面props', props);
-
     super(props);
     this.myRef = React.createRef();
     this.state = {
@@ -111,6 +110,7 @@ export default class StoryEditor extends Component<Props, State> {
     this.musicInfo = {};
   }
   startExportVideo() {
+    console.log('发布快拍 startExportVideo');
     if (this.state.startExportVideo) {
       return;
     }
@@ -119,16 +119,26 @@ export default class StoryEditor extends Component<Props, State> {
       this.setState({ startExportVideo: true });
     });
     this.pauseMusic(this.musicOn);
+    // //发布快拍，关闭页面
+    // setTimeout(() => {
+    //   this.props.goback();
+    // }, 1000);
   }
-  async pauseMusic(song) {
-    console.info('暂停音乐', song);
-    await AVService.pauseMusic(song.songID);
+  pauseMusic(song) {
+    console.log('暂停音乐', song);
+    if (song) {
+      AVService.pauseMusic(song?.songID);
+    }
   }
-  //  发布快拍   导出视频  丢出数据
+  //  发布快拍   导出视频 
   onExportVideo = async (event) => {
-    console.log('1231', event);
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
+      console.log('发布快拍 onExportVideo', fileType, event);
+
+      //TODO 测试代码：保存到相册 
+      CameraRoll.save(event.outputPath, { type: 'video' })
+
       let outputPath = event.outputPath;
       this.setState({ startExportVideo: false });
       let uploadFile = [];
@@ -140,7 +150,6 @@ export default class StoryEditor extends Component<Props, State> {
         size: 0,
         Name: outputPath,
       });
-
       this.props.getUploadFile(uploadFile);
     }
   };
@@ -149,7 +158,6 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.filterList.length < 1) {
       if (Platform.OS === 'android') {
         const filterList = await this.editor.getColorFilterList();
-        // console.log('filterList111', filterList);
         this.setState({ filterList: filterList });
       } else {
         const infos = await AVService.getFilterIcons({});
@@ -163,7 +171,6 @@ export default class StoryEditor extends Component<Props, State> {
   }
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      // console.log(Platform.OS === 'android');
       //  this.camera.release();
     } else {
       RNEditViewManager.stop();
@@ -176,7 +183,6 @@ export default class StoryEditor extends Component<Props, State> {
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state;
-
     return (
       <View style={styles.BottomBox}>
         <>
@@ -231,8 +237,8 @@ export default class StoryEditor extends Component<Props, State> {
           }
         },
       },
-      // 'Aa':
-      { img: this.props.AaImage, onPress: () => {} },
+      // // 'Aa':
+      // { img: this.props.AaImage, onPress: () => {} },
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -276,8 +282,18 @@ export default class StoryEditor extends Component<Props, State> {
   renderCamera() {
     const VideoEditors = () => {
       //TODO
-      const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
-      const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+      // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
+      // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+      let CameraFixHeight = width * 16 / 9;
+      const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+      if (CameraFixHeight > fixHeight) {
+        CameraFixHeight = fixHeight;
+      }
+
+
+      //TODO 测试代码：保存到相册 
+      // CameraRoll.save(this.props.imagePath, { type: 'photo' })
+      console.info("this.props.imagePath", this.props.imagePath);
       return (
         <View
           style={{
@@ -289,6 +305,10 @@ export default class StoryEditor extends Component<Props, State> {
           }}
         >
           <VideoEditor
+            style={{
+              height: CameraFixHeight,
+              width: '100%',
+            }}
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
             editHeight={CameraFixHeight}
@@ -306,8 +326,8 @@ export default class StoryEditor extends Component<Props, State> {
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
             // TODO 安卓兼容
-            onPlayProgress={() => {}}
-            // source={"story"}
+            onPlayProgress={() => { }}
+          // source={"story"}
           />
         </View>
       );
@@ -316,9 +336,12 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={[styles.cameraContainer]}>
         <TouchableOpacity
           onPress={() => {
-            // 关闭音乐 暂停音乐
+            //关闭音乐列表，有设置过音乐，将音乐同步到视频中，并且暂停播放的音乐
+            // if(this.musicInfo?.songID){
+            //   this.pauseMusic(this.musicInfo)
+            //   this.setState({ musicExport: true })
+            // }
             this.setState({ showFilterLens: false, musicOpen: false });
-            // !this.state.showFilterLens
           }}
           activeOpacity={1}
           disabled={this.state.showBeautify}
@@ -347,6 +370,7 @@ export default class StoryEditor extends Component<Props, State> {
             <FlatList
               data={this.state.filterList}
               horizontal={true}
+              keyExtractor={item => item.iconPath}
               style={{ margin: 0, padding: 0, height: 80 }}
               renderItem={({ index, item }) => {
                 return (
@@ -398,7 +422,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ justifyContent: 'center', alignContent: 'center' }}>{this.renderUploadStory()}</View>
+        <View style={{ justifyContent: 'center', alignContent: 'center', marginBottom: this.props.toolsInsetBottom }}>{this.renderUploadStory()}</View>
       </>
     );
   }

@@ -34,6 +34,11 @@ const Camera = React.forwardRef((props, ref) => {
     cameraStopPreview: () => {
       return CKCameraManager.cameraStopPreview();
     },
+
+    release: () => {
+      console.log("ios camera release")
+      return CKCameraManager.destroyRecorder();
+    },
   }));
 
   React.useEffect(() => {
@@ -42,6 +47,8 @@ const Camera = React.forwardRef((props, ref) => {
       // console.log('---- recordProgress: ', duration);
     });
     return () => {
+      // console.info("ios camera destroyRecorder")
+      // CKCameraManager?.destroyRecorder();
       subscription.remove();
     };
   }, []);

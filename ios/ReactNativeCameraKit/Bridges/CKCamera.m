@@ -492,5 +492,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     return temporaryFileURL;
 }
 
+-(void)destroyRecorder
+{
+    [self.cameraAction destroyRecorder];
+}
+
 @end
 
