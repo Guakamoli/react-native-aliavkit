@@ -1331,6 +1331,7 @@ export default class CameraScreen extends Component<Props, State> {
   myRef: any;
   editor: any;
   messageRef: any;
+  private mClickLock: boolean;
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -1343,6 +1344,8 @@ export default class CameraScreen extends Component<Props, State> {
       isVidoePlayer: true,
       isShowLoading: false,
     };
+
+    this.mClickLock = false;
   }
 
   setVideoPlayer = (isVidoePlayer) => {
@@ -1353,6 +1356,10 @@ export default class CameraScreen extends Component<Props, State> {
     this.setState({ videoPaused: false });
   };
   postEditor = async () => {
+
+    if (this.mClickLock) {
+      return;
+    }
 
     if (multipleData.length < 1) {
       return this.myRef.current.show('请至少选择一个上传文件', 1000);
@@ -1365,6 +1372,8 @@ export default class CameraScreen extends Component<Props, State> {
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
       return this.myRef.current.show('视频时长不能超过5分钟', 1000);
     }
+
+    this.mClickLock = true;
 
     try {
       Platform.OS === 'android' ? (type = type.split('/')[0]) : '';
@@ -1408,17 +1417,17 @@ export default class CameraScreen extends Component<Props, State> {
 
         trimVideoData = imageItem.uri;
 
-        console.info("trimVideoData 1", trimVideoData);
+        // console.info("trimVideoData 1", trimVideoData);
 
         if (Platform.OS === 'ios') {
           //url 授权, ios url  需要特殊处理
           let myAssetId = imageItem.uri.slice(5);
           trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
         }
-        // 视频压缩
-        trimVideoData = await AVService.postCropVideo(trimVideoData);
+        // //TODO  视频压缩
+        // trimVideoData = await AVService.postCropVideo(trimVideoData);
 
-        console.info("trimVideoData 0", trimVideoData);
+        // console.info("trimVideoData 0", trimVideoData);
         // CameraRoll.save(trimVideoData, { type: 'video' })
         resultData.push(trimVideoData);
 
@@ -1551,6 +1560,7 @@ export default class CameraScreen extends Component<Props, State> {
     } catch (e) {
       console.info(e, '错误');
     }
+    this.mClickLock = false;
   };
 
   onUploadVideo = async (multipleData, resultData) => {
