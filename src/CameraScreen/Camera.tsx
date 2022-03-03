@@ -174,36 +174,36 @@ class RenderCamera extends Component {
     // this.fadeAnim = new Animated.Value(1);
   }
   handleAppStateChange = (e) => {
-    if (this.props.isDrawerOpen && this.props.type === 'story') {
-      if (e.match(/inactive|background/)) {
-        this.setState({
-          showCamera: false,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      } else {
-        this.setState({
-          showCamera: true,
-        });
-        setTimeout(() => {
-          AVService.enableHapticIfExist();
-        }, 2000);
-      }
-    }
+    // if (this.props.isDrawerOpen && this.props.type === 'story') {
+    //   if (e.match(/inactive|background/)) {
+    //     this.setState({
+    //       showCamera: false,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   } else {
+    //     this.setState({
+    //       showCamera: true,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   }
+    // }
   };
   componentDidMount() {
     console.log("Story 录制初始化 componentDidMount");
-    if (Platform.OS === 'ios') {
-      AppState.addEventListener('change', this.handleAppStateChange);
-    }
+    // if (Platform.OS === 'ios') {
+    //   AppState.addEventListener('change', this.handleAppStateChange);
+    // }
   }
   componentWillUnmount() {
     console.log("Story 录制销毁 componentWillUnmount");
     this.props.camera?.current?.release();
-    if (Platform.OS === 'ios') {
-      AppState.removeEventListener('change', this.handleAppStateChange);
-    }
+    // if (Platform.OS === 'ios') {
+    //   AppState.removeEventListener('change', this.handleAppStateChange);
+    // }
   }
   shouldComponentUpdate(nextProps, nextState) {
 

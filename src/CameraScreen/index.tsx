@@ -247,7 +247,8 @@ class CameraScreen extends Component<Props, State> {
       relaloadFlag: null,
       loadedPermissions: false,
     };
-    this.initPermissions();
+      this.initPermissions();
+
   }
 
   initPermissions = async () => {
@@ -357,6 +358,7 @@ class CameraScreen extends Component<Props, State> {
     }, 2000);
 
     AppState.addEventListener('change', this._handleAppStateChange);
+
   }
 
 
@@ -387,6 +389,7 @@ class CameraScreen extends Component<Props, State> {
     }
     this.setState = () => false;
     AppState.removeEventListener('change', this._handleAppStateChange);
+
   }
   componentDidUpdate(props, state) {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
@@ -543,7 +546,7 @@ class CameraScreen extends Component<Props, State> {
 
   render() {
 
-    if (!this.state.loadedPermissions) {
+    if (Platform.OS === 'ios' && !this.state.loadedPermissions) {
       return null;
     }
 

@@ -8,32 +8,30 @@ import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleObserver
-import com.aliyun.svideo.common.utils.*
-import com.aliyun.svideo.downloader.DownloaderManager
+import com.aliyun.svideo.common.utils.PermissionUtils
+import com.aliyun.svideo.common.utils.ScreenUtils
+import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.RecordCommon
+import com.aliyun.svideo.recorder.view.control.RecordState
 import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.ReactActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
+import com.manwei.libs.dialog.DialogUtils
+import com.manwei.libs.dialog.OnDialogListener
+import com.manwei.libs.utils.permission.PermissionsDialog
+import com.manwei.libs.utils.permission.RxPermissionUtils
 import com.rncamerakit.BaseEventListener
-import com.rncamerakit.R
-import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
-import com.rncamerakit.utils.DownloadUtils
-import kotlinx.coroutines.delay
-import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.util.*
-import java.util.logging.Handler
 
 @SuppressLint("ViewConstructor")
 class CKCamera(
@@ -41,6 +39,9 @@ class CKCamera(
 ) :
     FrameLayout(reactContext.applicationContext),
     LifecycleObserver {
+
+    //录制状态，开始、暂停、准备,只是针对UI变化
+    private val mRecordState = RecordState.STOP
 
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
@@ -52,6 +53,7 @@ class CKCamera(
     private var mRecorder: AlivcRecorder? = null
     private var mWidth = 0
     private var mHeight = 0
+
 
     private var isInit = false
 
@@ -65,15 +67,15 @@ class CKCamera(
     }
 
     init {
+
         if (!isPermissions()) {
             getPermissions()
-        }else{
+        } else {
             this.mWidth = ScreenUtils.getWidth(reactContext)
             this.mHeight = mWidth*16/9
-            initLifecycle()
             initCamera()
         }
-
+        initLifecycle()
         //延时器
 //        Timer().schedule(object : TimerTask() {
 //            override fun run() {
@@ -218,27 +220,40 @@ class CKCamera(
         if (reactActivity is ReactActivity) {
             reactActivity.requestPermissions(
                 permissions, 200, PermissionListener { requestCode, permissions, grantResults ->
-                    var isAllGranted: Boolean = true
+                    // 0 全部同意，1 有拒绝，2 有拒绝并且不再同意
+                    var isAllGranted: Int = 0
                     permissions?.let {
                         for (i in it.indices) {
                             if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                                 Log.e("AAA", "同意:" + permissions[i])
                             } else {
-                                isAllGranted = false
-                                break
-//                                if (PermissionUtils.isNeverAgainPermission(mReactContext.currentActivity as ReactActivity, permissions[i])) {
-//                                    Log.e("AAA", "拒绝且不再提示:" + permissions[i])
-//                                } else {
-//                                    Log.e("AAA", "拒绝:" + permissions[i])
-//                                }
+
+//                                break
+                                if (PermissionUtils.isNeverAgainPermission(reactActivity, permissions[i])) {
+                                    Log.e("AAA", "拒绝且不再提示:" + permissions[i])
+                                    isAllGranted = 2
+                                    return@let
+                                } else {
+                                    Log.e("AAA", "拒绝:" + permissions[i])
+                                    isAllGranted = 1
+                                    return@let
+                                }
                             }
                         }
                     }
-                    if(isAllGranted){
+                    if (isAllGranted == 0) {
                         this.mWidth = ScreenUtils.getWidth(reactContext)
                         this.mHeight = mWidth*16/9
                         initLifecycle()
                         initCamera()
+                    } else if (isAllGranted == 2) {
+                        PermissionsDialog.showDialogTitle(reactActivity, "“拍鸭”需要获取您的相机和麦克风权限,是否去设置？", object : OnDialogListener {
+                            override fun onRightClick() {
+                                super.onRightClick()
+                                RxPermissionUtils.getAppDetailSettingIntent(reactActivity.applicationContext)
+                            }
+                        })
+
                     }
                     false
                 }
@@ -260,11 +275,21 @@ class CKCamera(
             override fun onHostResume() {
                 super.onHostResume()
                 Log.e("AAA", "onHostResume()")
+                if (isInit) {
+                    mRecorder?.startPreview()
+                } else {
+                    if (!isPermissions()) {
+                        getPermissions()
+                    }
+                }
             }
 
             override fun onHostPause() {
                 super.onHostPause()
                 Log.e("AAA", "onHostPause()")
+                if (isInit) {
+                    mRecorder?.stopPreview()
+                }
             }
 
             override fun onHostDestroy() {
