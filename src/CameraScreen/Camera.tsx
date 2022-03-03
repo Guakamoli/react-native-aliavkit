@@ -206,7 +206,9 @@ class RenderCamera extends Component {
     // }
   }
   shouldComponentUpdate(nextProps, nextState) {
-
+    if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
+      return true;
+    }
     if (nextProps.showBeautify != this.props.showBeautify) {
       if (nextProps.showBeautify) {
         this.props.hideBottomTools();
@@ -320,6 +322,7 @@ class RenderCamera extends Component {
     );
   };
   render() {
+    console.log("bottomToolsVisibility 222",this.props.bottomToolsVisibility);
     return (
       <View>
         <Pressable
@@ -328,7 +331,7 @@ class RenderCamera extends Component {
           }}
         >
           {this.renderCamera()}
-          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
+          {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />}
         </Pressable>
       </View>
     );

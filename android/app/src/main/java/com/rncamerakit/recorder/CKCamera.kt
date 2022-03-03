@@ -68,13 +68,13 @@ class CKCamera(
 
     init {
 
-        if (!isPermissions()) {
-            getPermissions()
-        } else {
+//        if (!isPermissions()) {
+//            getPermissions()
+//        } else {
             this.mWidth = ScreenUtils.getWidth(reactContext)
             this.mHeight = mWidth*16/9
             initCamera()
-        }
+//        }
         initLifecycle()
         //延时器
 //        Timer().schedule(object : TimerTask() {
@@ -277,11 +277,12 @@ class CKCamera(
                 Log.e("AAA", "onHostResume()")
                 if (isInit) {
                     mRecorder?.startPreview()
-                } else {
-                    if (!isPermissions()) {
-                        getPermissions()
-                    }
                 }
+//                else {
+//                    if (!isPermissions()) {
+//                        getPermissions()
+//                    }
+//                }
             }
 
             override fun onHostPause() {
