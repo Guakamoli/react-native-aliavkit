@@ -1423,6 +1423,11 @@ export default class CameraScreen extends Component<Props, State> {
           //url 授权, ios url  需要特殊处理
           let myAssetId = imageItem.uri.slice(5);
           trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+
+          //裁剪 file://
+          if (!!trimVideoData && trimVideoData.startsWith("file://")) {
+            trimVideoData = trimVideoData.slice(7)
+          }
         }
         // //TODO  视频压缩
         // trimVideoData = await AVService.postCropVideo(trimVideoData);
@@ -1527,6 +1532,7 @@ export default class CameraScreen extends Component<Props, State> {
         // console.info("onUploadPhoto", editImageData);
         this.onUploadPhoto(editImageData)
       }
+      this.mClickLock = false;
       return;
       //TODO
 
@@ -1556,11 +1562,12 @@ export default class CameraScreen extends Component<Props, State> {
         });
         this.props.setType('edit');
       }
+      this.mClickLock = false;
       return;
     } catch (e) {
       console.info(e, '错误');
+      this.mClickLock = false;
     }
-    this.mClickLock = false;
   };
 
   onUploadVideo = async (multipleData, resultData) => {
@@ -1722,7 +1729,7 @@ export default class CameraScreen extends Component<Props, State> {
           animating={true}
           hidesWhenStopped={true}
         />
-        <Text style={{ color: '#fff', fontSize: 15, paddingTop: 8, }}>{text}</Text>
+        {/* <Text style={{ color: '#fff', fontSize: 15, paddingTop: 8, }}>{text}</Text> */}
       </View>
 
     </View >)
