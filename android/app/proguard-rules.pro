@@ -140,3 +140,13 @@
 -keep  class  com.rncamerakit.db.MusicFileBaseInfo{*;}
 
 -keep public class * extends com.facebook.react.bridge.NativeModule{*;}
+
+
+-keep public class com.dylanvann.fastimage.* {*;}
+-keep public class com.dylanvann.fastimage.** {*;}
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public class * extends com.bumptech.glide.module.AppGlideModule
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}

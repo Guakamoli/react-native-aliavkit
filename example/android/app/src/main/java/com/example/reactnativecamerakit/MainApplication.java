@@ -15,6 +15,7 @@ import com.aliyun.svideo.downloader.DownloaderManager;
 import com.aliyun.sys.AlivcSdkCore;
 import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
+import com.dylanvann.fastimage.FastImageViewPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.rncamerakit.AliAVkitManager;
@@ -82,6 +83,7 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     packages.add(new ReanimatedPackage());
                     packages.add(new RNGestureHandlerPackage());
                     packages.add(new RNPermissionsPackage());
+                    packages.add(new FastImageViewPackage());
 
                     return packages;
                 }

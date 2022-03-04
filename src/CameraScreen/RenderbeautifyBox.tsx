@@ -29,6 +29,9 @@ import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
 import { setCameraType, setNormalBeautyLevel } from '../actions/story';
 
+import FastImage from '@rocket.chat/react-native-fast-image';
+
+
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
@@ -48,7 +51,7 @@ class RenderbeautifyBox extends React.PureComponent {
         <View style={styles.beautifyBoxHead}>
           <Text style={styles.beautifyTitle}>{`美颜`}</Text>
 
-          <Image style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' />
+          <FastImage style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' />
         </View>
         <View style={styles.beautifyBoxContent}>
           {[0, 1, 2, 3, 4, 5].map((item, index) => {

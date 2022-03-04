@@ -13,6 +13,8 @@ import {
   Platform,
 } from 'react-native';
 
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import Carousel from 'react-native-snap-carousel';
 import AVService from './AVService';
 import { Button } from 'react-native-elements';
@@ -229,9 +231,9 @@ const StoryMusic = (props) => {
             >
               <View style={[styles.musicCarouselBox, IsPlayMusic && { backgroundColor: 'rgba(255,255,255,0.98)' }]}>
                 <View style={styles.musicCarouselContent}>
-                  <Image source={musicIconPng} style={styles.musicIcon} />
+                  <FastImage source={musicIconPng} style={styles.musicIcon} />
                   {/* 播放展示gif */}
-                  {IsPlayMusic && <Image source={musicDynamicGif} style={styles.musicPlayGif} />}
+                  {IsPlayMusic && <FastImage source={musicDynamicGif} style={styles.musicPlayGif} />}
                 </View>
                 <View>
                   <Text>{item?.name}</Text>
@@ -317,7 +319,7 @@ const StoryMusic = (props) => {
             </TouchableOpacity>
           </View>
           <View style={styles.searchMusic}>
-            <Image source={musicSearch} style={styles.musicFindSearchIcon} />
+            <FastImage source={musicSearch} style={styles.musicFindSearchIcon} />
             <TextInput
               multiline={false}
               autoFocus={true}
@@ -348,11 +350,11 @@ const StoryMusic = (props) => {
                   >
                     <View style={[styles.musicFindBox, { marginBottom: (searchMusicList.length - 1 === index) ? 40 : 5 }, isPlayMusic && { backgroundColor: 'rgba(255,255,255,0.9)' }]}>
                       <View style={[styles.musicFindItem]}>
-                        <Image source={isPlayMusic ? musicIconPng : musicIcongray} style={styles.musicFindIcon} />
+                        <FastImage source={isPlayMusic ? musicIconPng : musicIcongray} style={styles.musicFindIcon} />
                         <View style={styles.musicFindSongData}>
                           <Text style={[styles.musicFindSongTitle, isPlayMusic && { color: '#000' }]}>{item?.name}</Text>
                           {/* 播放展示gif */}
-                          {isPlayMusic && <Image source={musicDynamicGif} style={styles.musicPlayGif} />}
+                          {isPlayMusic && <FastImage source={musicDynamicGif} style={styles.musicPlayGif} />}
                         </View>
                       </View>
                     </View>
@@ -380,7 +382,7 @@ const StoryMusic = (props) => {
           hitSlop={{ left: 10, top: 5, right: 10, bottom: 5 }}
         >
           <View style={styles.musicChoiceBox}>
-            <Image source={musicSearch} style={{
+            <FastImage source={musicSearch} style={{
               width: 12,
               height: 12,
               marginRight: 5,
@@ -410,7 +412,7 @@ const StoryMusic = (props) => {
             }}
           >
             {setMusicState ? (
-              <Image source={useMusic} style={styles.musicIcon} />
+              <FastImage source={useMusic} style={styles.musicIcon} />
             ) : (
               <View style={styles.musicUnSelect}></View>
             )}

@@ -14,6 +14,9 @@ import {
   NativeModules,
   StatusBar,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import _ from 'lodash';
 import Camera from './Camera';
 import VideoEditor from './VideoEditor';
@@ -253,7 +256,7 @@ export default class StoryEditor extends Component<Props, State> {
           }}
           style={[styles.UpdateBox, { left: 20 }]}
         >
-          <Image style={styles.updateTopIcon} source={this.props.giveUpImage} resizeMode='contain' />
+          <FastImage style={styles.updateTopIcon} source={this.props.giveUpImage} resizeMode='contain' />
         </TouchableOpacity>
         {/* 编辑按钮组 */}
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
@@ -264,7 +267,7 @@ export default class StoryEditor extends Component<Props, State> {
             }
             return (
               <TouchableOpacity onPress={item.onPress} key={index}>
-                <Image style={styles.updateTopIcon} source={item.img} resizeMode='contain' />
+                <FastImage style={styles.updateTopIcon} source={item.img} resizeMode='contain' />
               </TouchableOpacity>
             );
           })}
@@ -388,7 +391,7 @@ export default class StoryEditor extends Component<Props, State> {
                           marginRight: 20,
                         }}
                       >
-                        <Image
+                        <FastImage
                           style={[
                             styles.beautifySelect,
                             this.state.filterName == item.filterName && styles.beautifySelecin,

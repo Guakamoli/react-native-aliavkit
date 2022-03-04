@@ -19,6 +19,9 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { useSelector } from 'react-redux';
 import { setSelectMultiple, setMultipleData } from '../actions/post';
 import _, { lte } from 'lodash';
@@ -124,7 +127,7 @@ class MultipleSelectButton extends Component {
     // return null;
     return (
       <Pressable onPress={this.pressMultiple}>
-        <Image
+        <FastImage
           style={[styles.multipleBtnImage, { marginRight: 10 }]}
           source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
           resizeMode='contain'
@@ -446,7 +449,7 @@ class PostContent extends Component {
               this.toggleCropWidth(this.state.imageItem)
             }}
           >
-            <Image
+            <FastImage
               style={[
                 {
                   width: 31,
@@ -786,7 +789,7 @@ class GridItemCover extends Component {
               ]}
             >
               {fileType == 'video' ?
-                <Image
+                <FastImage
                   source={postFileSelectPng}
                   style={{
                     width: 20,
@@ -901,6 +904,7 @@ const PostHead = React.memo((props) => {
     }
     props.setSelectMultiple();
   };
+  console.info("closePng",closePng);
   return (
     <View
       style={{
@@ -924,7 +928,7 @@ const PostHead = React.memo((props) => {
           justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
+        <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
       <Text style={styles.textCenter}>新作品</Text>
 
@@ -1523,18 +1527,18 @@ export default class CameraScreen extends Component<Props, State> {
 
       this.setVideoPlayer(false);
 
-      //TODO
-      //选择图片视频直接上传，不进入编辑页面
-      if (type === 'video') {
-        // console.info("onUploadVideo", resultData, multipleData);
-        this.onUploadVideo(multipleData, resultData);
-      } else {
-        // console.info("onUploadPhoto", editImageData);
-        this.onUploadPhoto(editImageData)
-      }
-      this.mClickLock = false;
-      return;
-      //TODO
+      // //TODO
+      // //选择图片视频直接上传，不进入编辑页面
+      // if (type === 'video') {
+      //   // console.info("onUploadVideo", resultData, multipleData);
+      //   this.onUploadVideo(multipleData, resultData);
+      // } else {
+      //   // console.info("onUploadPhoto", editImageData);
+      //   this.onUploadPhoto(editImageData)
+      // }
+      // this.mClickLock = false;
+      // return;
+      // //TODO
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {

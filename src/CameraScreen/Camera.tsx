@@ -16,6 +16,9 @@ import {
   StatusBar,
   AppState,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
@@ -67,7 +70,7 @@ const BeautyButton = React.memo((props) => {
         // this.setState({ showBeautify: !this.state.showBeautify });
       }}
     >
-      <Image
+      <FastImage
         style={styles.closeIcon}
         source={require('../../images/ic_beauty_select.png')}
         // source={showBeautify ? props.selectBeautify : props.beautifyImage}
@@ -90,8 +93,8 @@ const RenderLeftButtons = React.memo((props) => {
       <Pressable onPress={() => {
         props.goback();
       }}>
-        {/* <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
-        <Image style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
+        {/* <FastImage style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
+        <FastImage style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
       <BeautyButton {...props} />
     </View>
@@ -149,7 +152,7 @@ class PreviewBack extends React.Component {
   }
   render() {
     return (
-      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0 }}>
+      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0,backgroundColor:'red' }}>
         <BoxBlur
           image={
             <Image
@@ -275,7 +278,7 @@ class RenderCamera extends Component {
     //TODO
     return (
       <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
-        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
+        {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
         <View
           style={{ position: 'absolute', zIndex: 1, width: '100%' }}
           // style={{ width: '100%', height: CameraFixHeight }}
@@ -285,7 +288,7 @@ class RenderCamera extends Component {
             }, 0);
           }}
         >
-          {this.state.showCamera || this.props.isExample ? (
+          {this.state.showCamera || this.props.isExample && (
             <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
               <Camera
                 ref={(cam) => (this.props.camera.current = cam)}
@@ -300,23 +303,8 @@ class RenderCamera extends Component {
                 onReadCode={() => { }}
                 onRecordingProgress={() => { }}
               />
-              {/* {this.state.showToast && (
-                <Animated.View
-                  style={[
-                    styles.toastBox,
-                    {
-                      opacity: this.fadeAnim,
-                    },
-                  ]}
-                >
-                  <Text style={{ textAlign: 'center', fontSize: 14, color: '#000', lineHeight: 40, fontWeight: '500' }}>
-                    点击拍照,长按拍视频
-                  </Text>
-                  <View style={styles.toast}></View>
-                </Animated.View>
-              )} */}
             </View>
-          ) : null}
+          )}
         </View>
       </View>
     );
