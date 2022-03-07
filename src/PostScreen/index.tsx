@@ -904,7 +904,7 @@ const PostHead = React.memo((props) => {
     }
     props.setSelectMultiple();
   };
-  console.info("closePng",closePng);
+  console.info("closePng", closePng);
   return (
     <View
       style={{
@@ -1060,6 +1060,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
+        console.info("photos", photos[1]);
         this.setState({
           CameraRollList: photos,
         });
@@ -1415,13 +1416,11 @@ export default class CameraScreen extends Component<Props, State> {
         }),
       );
       if (type === 'video') {
+
         this.setState({
           isShowLoading: true,
         })
-
         trimVideoData = imageItem.uri;
-
-        // console.info("trimVideoData 1", trimVideoData);
 
         if (Platform.OS === 'ios') {
           //url 授权, ios url  需要特殊处理
@@ -1433,11 +1432,13 @@ export default class CameraScreen extends Component<Props, State> {
             trimVideoData = trimVideoData.slice(7)
           }
         }
-        // //TODO  视频压缩
-        // trimVideoData = await AVService.postCropVideo(trimVideoData);
 
-        // console.info("trimVideoData 0", trimVideoData);
-        // CameraRoll.save(trimVideoData, { type: 'video' })
+        // //TODO  视频压缩
+        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+          console.log("post 视频裁剪中......", progress);
+        });
+        console.info("trimVideoData 0", trimVideoData);
+        CameraRoll.save(trimVideoData, { type: 'video' })
         resultData.push(trimVideoData);
 
         this.setState({
@@ -1527,18 +1528,18 @@ export default class CameraScreen extends Component<Props, State> {
 
       this.setVideoPlayer(false);
 
-      // //TODO
-      // //选择图片视频直接上传，不进入编辑页面
-      // if (type === 'video') {
-      //   // console.info("onUploadVideo", resultData, multipleData);
-      //   this.onUploadVideo(multipleData, resultData);
-      // } else {
-      //   // console.info("onUploadPhoto", editImageData);
-      //   this.onUploadPhoto(editImageData)
-      // }
-      // this.mClickLock = false;
-      // return;
-      // //TODO
+      //TODO
+      //选择图片视频直接上传，不进入编辑页面
+      if (type === 'video') {
+        // console.info("onUploadVideo", resultData, multipleData);
+        this.onUploadVideo(multipleData, resultData);
+      } else {
+        // console.info("onUploadPhoto", editImageData);
+        this.onUploadPhoto(editImageData)
+      }
+      this.mClickLock = false;
+      return;
+      //TODO
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {

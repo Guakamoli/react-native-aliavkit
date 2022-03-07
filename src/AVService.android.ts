@@ -13,10 +13,13 @@ type MusicRequestType = {
 export default class AVService {
 
   //Post 视频上传压缩裁剪
-  static async postCropVideo(videoPath: String) {
+  static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
     const carpListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
       //0~1
-      console.log("post 视频裁剪中...", progress);
+      // console.log("post 视频裁剪中...", progress);
+      if (progressListener) {
+        progressListener(progress);
+      }
     });
     let cropVideoPath = await RNEditorKitModule.postCropVideo(videoPath);
     carpListener.remove();
