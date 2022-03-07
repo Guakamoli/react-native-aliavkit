@@ -1433,12 +1433,13 @@ export default class CameraScreen extends Component<Props, State> {
           }
         }
 
-        // //TODO  视频压缩
-        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-          console.log("post 视频裁剪中......", progress);
-        });
-        console.info("trimVideoData 0", trimVideoData);
-        CameraRoll.save(trimVideoData, { type: 'video' })
+        // // //TODO  视频压缩
+        // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+        //   console.log("post 视频裁剪中......", progress);
+        // });
+        // console.info("trimVideoData 0", trimVideoData);
+        // CameraRoll.save(trimVideoData, { type: 'video' })
+        
         resultData.push(trimVideoData);
 
         this.setState({
