@@ -1060,7 +1060,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
-        console.info("photos", photos[1]);
+        // console.info("photos", photos[1]);
         this.setState({
           CameraRollList: photos,
         });
