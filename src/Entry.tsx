@@ -190,9 +190,9 @@ const Entry = (props) => {
         {PostView()}
       </View>
 
-      {/* {(type === 'story' || type === 'storyedit') && CameraView()} */}
+      {(type === 'story' || type === 'storyedit') && CameraView()}
 
-      {/* {bottomToolsVisibility && (type === 'story' || type === 'post') &&
+      {bottomToolsVisibility && (type === 'story' || type === 'post') &&
         <Animated.View
           style={[
             styles.tools,
@@ -216,7 +216,7 @@ const Entry = (props) => {
             );
           })}
         </Animated.View>
-      } */}
+      }
     </View>
   );
 };

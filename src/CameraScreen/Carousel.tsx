@@ -13,6 +13,9 @@ import {
   AppState,
   Pressable,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
@@ -96,7 +99,7 @@ class TopReset extends Component<PropsType> {
               this.props.snapToItem?.(0);
             }}
           >
-            <Image source={this.props.giveUpImage} style={styles.clearIcon} />
+            <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
           </Pressable>
         </Animated.View>
       </Reanimated.View>
@@ -157,7 +160,7 @@ class RenderBigCircle extends Component {
                   i.eid == 0 && { backgroundColor: '#fff' },
                 ]}
               >
-                <Image
+                <FastImage
                   style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
                   source={{ uri: i.icon }}
                 />
@@ -240,7 +243,7 @@ const RenderItem = React.memo((props) => {
     <Pressable delayLongPress={500} onPress={toItem}>
       <View>
         <View style={[styles.propStyle, styles.img]}>
-          <Image style={styles.img} source={{ uri: item.icon }} />
+          <FastImage style={styles.img} source={{ uri: item.icon }} />
         </View>
       </View>
     </Pressable>

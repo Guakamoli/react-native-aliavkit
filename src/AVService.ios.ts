@@ -12,7 +12,7 @@ type MusicRequestType = {
 export default class AVService {
 
   //Post 视频上传压缩裁剪
-  static async postCropVideo(videoPath: String) {
+  static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
 
     //裁剪 file://
     if (!!videoPath && videoPath.startsWith("file://")) {
@@ -21,7 +21,10 @@ export default class AVService {
 
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
-      console.log("post 视频裁剪中...", reminder);
+      // console.log("post 视频裁剪中...", reminder);
+      if(progressListener){
+        progressListener(reminder?.progress);
+      }
     });
     let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
     managerEmitter.removeSubscription(carpListener);

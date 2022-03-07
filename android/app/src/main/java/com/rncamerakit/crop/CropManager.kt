@@ -66,6 +66,7 @@ class CropManager {
             videoHeight: Int,
             videoDuration: Long,
             bitrate: Int,
+            fps: Int,
             rect: Rect?
         ): CropParam {
             val param = CropParam()
@@ -78,8 +79,8 @@ class CropManager {
             param.outputPath = outputPath
 
             //4M Bit/s
-            param.setVideoBitrate((bitrate*0.9).toInt())
-            param.frameRate = 30
+            param.setVideoBitrate(bitrate)
+            param.frameRate = fps
             param.gop = 5
             param.crf = 23
             param.quality = VideoQuality.HD
@@ -119,6 +120,7 @@ class CropManager {
             var mDuration = 0L
             //设置一个默认码率
             var mBitrate = 4*1000
+            var mFps = 60
             var mRect: Rect? = null
             try {
                 val nativeParser = NativeParser()
@@ -127,10 +129,15 @@ class CropManager {
                     val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
                     val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
                     mDuration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()
+                    val fps = nativeParser.getValue(NativeParser.VIDEO_FPS).toFloat()
                     val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
                     val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
 //                    //是否有B帧
 //                    val isHasBFrame = nativeParser.checkBFrame()
+
+                    if (mFps > fps) {
+                        mFps = fps.toInt()
+                    }
 
                     //宽高过大需要裁剪
                     if (frameWidth*frameHeight > mVideoWidth*mVideoHeight) {
@@ -183,7 +190,7 @@ class CropManager {
                 e.printStackTrace()
             }
 
-            val videoParam = getCropParam(reactContext.applicationContext, videoPath, mVideoWidth, mVideoHeight, mDuration, mBitrate, mRect)
+            val videoParam = getCropParam(reactContext.applicationContext, videoPath, mVideoWidth, mVideoHeight, mDuration, mBitrate, mFps, mRect)
 
             val aliyunCrop = AliyunCropCreator.createCropInstance(reactContext.applicationContext)
             aliyunCrop.setCropParam(videoParam)

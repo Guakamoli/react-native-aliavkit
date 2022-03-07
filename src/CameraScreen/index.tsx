@@ -20,6 +20,8 @@ import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
 
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import _ from 'lodash';
@@ -155,7 +157,7 @@ class RenderswitchModule extends React.PureComponent {
             this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <Image style={{ width: 32, height: 26, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
+          <FastImage style={{ width: 32, height: 26, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
         </Pressable>
       </View>
     );

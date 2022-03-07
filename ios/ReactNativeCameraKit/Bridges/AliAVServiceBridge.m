@@ -101,13 +101,13 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
     NSInteger mVideoWidth = 720;
     NSInteger mVideoHeight = 1280;
     CGFloat mDuration = 0;
+    NSInteger mFPS = 60;
     
     CGRect mCropRect = CGRectMake(0, 0, mVideoWidth, mVideoHeight);
             
     NSInteger mBitrate = 4*1000*1000;
          
     @try {
-        
         AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
         CGSize size = [asset avAssetNaturalSize];
         
@@ -116,9 +116,15 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         
         AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoPath];
         
-        mDuration = nativeParser.getVideoDuration;
+        NSInteger frameRate = nativeParser.getVideoFrameRate;
+        
+        if(mFPS > frameRate){
+            mFPS = frameRate;
+        }
         
         NSInteger bitRate = nativeParser.getVideoBitrate;
+        
+        mDuration = nativeParser.getVideoDuration;
         
 //        NSInteger frameWidth = nativeParser.getVideoWidth;
 //        NSInteger frameHeight = nativeParser.getVideoHeight;
@@ -151,7 +157,7 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         if (mVideoHeight%2 == 1) {
             mVideoHeight += 1;
         }
-        mCropRect = CGRectMake(0, 0, frameWidth, frameHeight);;
+        mCropRect = CGRectMake(0, 0, frameWidth, frameHeight);
     } @catch (NSException *exception) {
         reject(@"",@"AliyunNativeParser catch",nil);
         return;
@@ -165,17 +171,16 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
     self.cutPanel.inputPath = videoPath;
     self.cutPanel.outputPath = outputPath;
  
-    self.cutPanel.bitrate = mBitrate*0.9;
-    self.cutPanel.fps = 30;
+    self.cutPanel.bitrate = mBitrate;
+    self.cutPanel.fps = mFPS;
     self.cutPanel.gop = 5;
     
     //视频质量
-    self.cutPanel.videoQuality = AliyunVideoQualityHight;
+    self.cutPanel.videoQuality = AliyunVideoQualityMedium;
     //硬编
     self.cutPanel.encodeMode = 1;
     self.cutPanel.cropMode = AliyunCropModeScaleAspectCut;
     
-
     self.cutPanel.outputSize = CGSizeMake(mVideoWidth, mVideoHeight);
     //裁剪区域
     self.cutPanel.rect = mCropRect;
@@ -198,7 +203,6 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         NSString *_text = [NSString stringWithFormat:@"%@%d",@"裁剪视频错误， code:",res];
         reject(@"",_text,nil);
     }
-
 }
 
 RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options

@@ -86,8 +86,8 @@ class EffectPasterManage private constructor() {
 //                    paster.id.toLong()
 //                ).absolutePath
         }
-        if (paster.isLocalRes && FileUtils.fileIsExists(path)) {
-//            Log.e("AAA", "local progress：$path")
+        if (FileUtils.dirNotEmpty(path)) {
+            Log.e("AAA", "local effectPaster progress：$path")
             callback.onPath(path)
         } else {
             if (TextUtils.isEmpty(paster?.url)) {
@@ -103,19 +103,19 @@ class EffectPasterManage private constructor() {
                     speed: Long,
                     progress: Int
                 ) {
-//                    Log.e("AAA", "download progress：$progress")
+                    Log.e("AAA", "download effectPaster progress：$progress")
                     RNEventEmitter.downloadPasterProgress(mReactContext, progress)
                 }
 
                 override fun onFinish(downloadId: Int, path: String) {
-//                    Log.e("AAA", "download path：$path")
+                    Log.e("AAA", "下载完成 path：$path")
                     RNEventEmitter.downloadPasterProgress(mReactContext, 100)
                     callback.onPath(path)
                 }
 
                 override fun onError(task: BaseDownloadTask, e: Throwable) {
                     super.onError(task, e)
-//                    Log.e("AAA", "download error：${e.message}")
+                    Log.e("AAA", "download effectPaster error：${e.message}")
                 }
             })
         }

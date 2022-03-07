@@ -294,6 +294,7 @@ class RecorderManage(
 //                    if (mEffectPaster != null) {
 //                        mRecorder?.removePaster(mEffectPaster)
 //                    }
+                    Log.e("AAA", "set effectPaster path：$path")
                     val source = Source(path)
                     mEffectPaster = EffectPaster(source)
                     val addPaster = mRecorder?.addPaster(mEffectPaster)

@@ -19,6 +19,9 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { useSelector } from 'react-redux';
 import { setSelectMultiple, setMultipleData } from '../actions/post';
 import _, { lte } from 'lodash';
@@ -124,7 +127,7 @@ class MultipleSelectButton extends Component {
     // return null;
     return (
       <Pressable onPress={this.pressMultiple}>
-        <Image
+        <FastImage
           style={[styles.multipleBtnImage, { marginRight: 10 }]}
           source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
           resizeMode='contain'
@@ -446,7 +449,7 @@ class PostContent extends Component {
               this.toggleCropWidth(this.state.imageItem)
             }}
           >
-            <Image
+            <FastImage
               style={[
                 {
                   width: 31,
@@ -786,7 +789,7 @@ class GridItemCover extends Component {
               ]}
             >
               {fileType == 'video' ?
-                <Image
+                <FastImage
                   source={postFileSelectPng}
                   style={{
                     width: 20,
@@ -901,6 +904,7 @@ const PostHead = React.memo((props) => {
     }
     props.setSelectMultiple();
   };
+  console.info("closePng", closePng);
   return (
     <View
       style={{
@@ -924,7 +928,7 @@ const PostHead = React.memo((props) => {
           justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={closePng} resizeMode='contain' />
+        <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
       <Text style={styles.textCenter}>新作品</Text>
 
@@ -1056,6 +1060,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
+        console.info("photos", photos[1]);
         this.setState({
           CameraRollList: photos,
         });
@@ -1411,13 +1416,11 @@ export default class CameraScreen extends Component<Props, State> {
         }),
       );
       if (type === 'video') {
+
         this.setState({
           isShowLoading: true,
         })
-
         trimVideoData = imageItem.uri;
-
-        // console.info("trimVideoData 1", trimVideoData);
 
         if (Platform.OS === 'ios') {
           //url 授权, ios url  需要特殊处理
@@ -1429,11 +1432,13 @@ export default class CameraScreen extends Component<Props, State> {
             trimVideoData = trimVideoData.slice(7)
           }
         }
-        // //TODO  视频压缩
-        // trimVideoData = await AVService.postCropVideo(trimVideoData);
 
-        // console.info("trimVideoData 0", trimVideoData);
-        // CameraRoll.save(trimVideoData, { type: 'video' })
+        // //TODO  视频压缩
+        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+          console.log("post 视频裁剪中......", progress);
+        });
+        console.info("trimVideoData 0", trimVideoData);
+        CameraRoll.save(trimVideoData, { type: 'video' })
         resultData.push(trimVideoData);
 
         this.setState({

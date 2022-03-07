@@ -7,6 +7,8 @@ import PostUpload from './PostScreen';
 import PostEditor from './PostEditor';
 import Entry from './Entry';
 
+import AVService from './AVService';
+
 const { CameraKit } = NativeModules;
 
 // Start with portrait/pointing up, increment while moving counter-clockwise
@@ -20,4 +22,4 @@ export const Orientation = {
 export default CameraKit;
 
 
-export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry };
+export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry, AVService };

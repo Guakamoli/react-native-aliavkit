@@ -14,6 +14,9 @@ import {
   NativeEventEmitter,
   Platform,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -99,7 +102,7 @@ const PostHead = React.memo((props) => {
           justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
+        <FastImage style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
       </Pressable>
       {fileType === 'video' ? (
         <TouchableOpacity
@@ -107,7 +110,7 @@ const PostHead = React.memo((props) => {
             setvideoMute(!videoMute);
           }}
         >
-          <Image style={{ width: 22, height: 21 }} source={!videoMute ? postvolumePng : postnoVolumeImage} />
+          <FastImage style={{ width: 22, height: 21 }} source={!videoMute ? postvolumePng : postnoVolumeImage} />
         </TouchableOpacity>
       ) : null}
 
@@ -152,7 +155,7 @@ const AddPhoto = React.memo((props) => {
           goback();
         }}
       >
-        <Image source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }}></Image>
+        <FastImage source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }} />
       </Pressable>
     </View>
   );
@@ -205,17 +208,7 @@ class PhotoShow extends Component {
               { translateY: translateY },
             ]
           }]}
-            source={{ uri: editImageInfo.uri }}>
-          </Image>
-          // :
-          // <Image
-          //   style={{
-          //     width: isSingle ? width : 319,
-          //     height: isSingle ? width : 319,
-          //     marginRight: 8,
-          //   }}
-          //   source={{ uri: imgfile }}
-          // />
+            source={{ uri: editImageInfo.uri }} />
         }
       </>
     );
@@ -710,15 +703,6 @@ const PostEditor = (props) => {
         ]}
       >
         <TouchableOpacity
-          // style={{
-          //   width: width1,
-          //   height: height1,
-          //   transform: [
-          //     {
-          //       translateY: top,
-          //     },
-          //   ],
-          // }}
           activeOpacity={1}
           style={[videoStyle, { position: 'relative' }]}
           onPress={() => {
@@ -732,7 +716,7 @@ const PostEditor = (props) => {
             }
           }}
         >
-          <Image
+          <FastImage
             style={[
               {
                 width: 45,
@@ -860,10 +844,10 @@ const PostEditor = (props) => {
                           alignItems: 'center',
                         }}
                       >
-                        <Image style={{ width: 44, height: 44 }} source={postNoVolumePng} />
+                        <FastImage style={{ width: 44, height: 44 }} source={postNoVolumePng} />
                       </View>
                     ) : (
-                      <Image style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
+                      <FastImage style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -1138,8 +1122,8 @@ const PostEditor = (props) => {
             { translateY: translateY },
           ]
         }]}
-          source={{ uri: editImageInfo.uri }}>
-        </Image>)
+          source={{ uri: editImageInfo.uri }} />
+        )
       } else {
         return (<Image
           style={{ width: 100, height: 100, marginRight: 5, marginBottom: 5, marginTop: 20 }}
@@ -1182,7 +1166,7 @@ const PostEditor = (props) => {
                 alignItems: 'center',
               }}
             >
-              <Image style={{ width: 44, height: 44 }} source={postNoVolumePng} />
+              <FastImage style={{ width: 44, height: 44 }} source={postNoVolumePng} />
             </View>
             {propsTitles('M1')}
           </TouchableOpacity>
