@@ -19,7 +19,7 @@ import FastImage from '@rocket.chat/react-native-fast-image';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
-import Reanimated, { Easing } from 'react-native-reanimated';
+import Reanimated, { EasingNode } from 'react-native-reanimated';
 
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
@@ -69,7 +69,7 @@ class TopReset extends Component<PropsType> {
           {
             transform: [
               {
-                scale: scaleAnimated.interpolate({
+                scale: scaleAnimated.interpolateNode({
                   inputRange: [0, 0.00001, 1],
                   outputRange: [1, 0, 0],
                   extrapolate: 'clamp',
@@ -84,7 +84,7 @@ class TopReset extends Component<PropsType> {
             {
               transform: [
                 {
-                  scale: scrollPos.interpolate({
+                  scale: scrollPos.interpolateNode({
                     inputRange: [0, 1],
                     outputRange: [0, 1],
                     extrapolate: 'clamp',
@@ -149,7 +149,7 @@ class RenderBigCircle extends Component {
                     borderRadius: bigImageSize,
                     transform: [
                       {
-                        translateX: scrollPos.interpolate({
+                        translateX: scrollPos.interpolateNode({
                           inputRange: [(index - 1) * itemWidth, index * itemWidth, (index + 1) * itemWidth],
                           outputRange: [(bigImageSize - smallImageSize) / 2, 0, -(bigImageSize - smallImageSize) / 2],
 
@@ -300,13 +300,13 @@ class CarouselWrapper extends Component<Props, State> {
 
       Reanimated.timing(this.scaleAnimated, {
         toValue: 1,
-        easing: Easing.inOut(Easing.quad),
+        EasingNode: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
         if (finished) {
           this.ani = Reanimated.timing(this.arcAngle, {
             toValue: 360,
-            easing: Easing.linear,
+            EasingNode: EasingNode.linear,
             duration: 1000 * 15,
           });
           this.ani.start(({ finished }) => {
@@ -343,7 +343,7 @@ class CarouselWrapper extends Component<Props, State> {
     this.endTime = null;
     Reanimated.timing(this.scaleAnimated, {
       toValue: 0,
-      easing: Easing.inOut(Easing.quad),
+      EasingNode: EasingNode.inOut(EasingNode.quad),
       duration: 200,
     }).start();
   };
@@ -418,7 +418,7 @@ class CarouselWrapper extends Component<Props, State> {
   };
   _animatedStyles(index, animatedValue, carouselProps) {
     return {
-      opacity: animatedValue.interpolate({
+      opacity: animatedValue.interpolateNode({
         inputRange: [2, 3],
         outputRange: [1, 2],
 
@@ -426,14 +426,14 @@ class CarouselWrapper extends Component<Props, State> {
       }),
       transform: [
         {
-          translateX: animatedValue.interpolate({
+          translateX: animatedValue.interpolateNode({
             inputRange: [-3, -2, -1, 0, 1, 2, 3],
             outputRange: [1.5 * smallImageSize, 0, 0, 0, 0, 0, -1.5 * smallImageSize],
             extrapolate: 'clamp',
           }),
         },
         {
-          scale: animatedValue.interpolate({
+          scale: animatedValue.interpolateNode({
             inputRange: [-3, -2, -1, 0, 1, 2, 3],
             outputRange: [0, 0.5, 0.8, 1, 0.8, 0.5, 0],
             extrapolate: 'clamp',
@@ -475,7 +475,7 @@ class CarouselWrapper extends Component<Props, State> {
           style={{
             transform: [
               {
-                scale: this.scaleAnimated.interpolate({
+                scale: this.scaleAnimated.interpolateNode({
                   inputRange: [0, 0.00001, 1],
                   outputRange: [1, 0, 0],
                   extrapolate: 'clamp',
@@ -495,7 +495,7 @@ class CarouselWrapper extends Component<Props, State> {
             impactAsync={this.selectionAsync}
             enableMomentum={true}
             scrollInterpolator={this._scrollInterpolator}
-            slideInterpolatedStyle={this._animatedStyles}
+            slideinterpolateNodedStyle={this._animatedStyles}
             enableSnap={true}
             data={pasterList}
             decelerationRate={'normal'}

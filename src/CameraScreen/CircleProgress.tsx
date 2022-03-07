@@ -21,7 +21,7 @@ import AVService from '../AVService';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
 import { ReanimatedArcBase } from '@callstack/reanimated-arc';
-import Reanimated, { Easing } from 'react-native-reanimated';
+import Reanimated from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
