@@ -1,7 +1,7 @@
 import React, { Component, ReactNode, RefObject } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
-import Animated, { Easing, lessOrEq } from 'react-native-reanimated';
+import Animated, { EasingNode, lessOrEq } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 import Video from 'react-native-video';
@@ -113,7 +113,7 @@ class ImageViewer extends Component<IProps> {
     this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,
-      easing: Easing.linear,
+      EasingNode: EasingNode.linear,
     };
 
     const maxScale = 2;
