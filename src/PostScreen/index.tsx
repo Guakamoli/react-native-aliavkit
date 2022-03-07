@@ -1060,7 +1060,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
-        console.info("photos", photos[1]);
+        // console.info("photos", photos[1]);
         this.setState({
           CameraRollList: photos,
         });
@@ -1439,7 +1439,6 @@ export default class CameraScreen extends Component<Props, State> {
         // });
         // console.info("trimVideoData 0", trimVideoData);
         // CameraRoll.save(trimVideoData, { type: 'video' })
-        
         resultData.push(trimVideoData);
 
         this.setState({
