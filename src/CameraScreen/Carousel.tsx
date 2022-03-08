@@ -299,13 +299,13 @@ class CarouselWrapper extends Component<Props, State> {
 
       Reanimated.timing(this.scaleAnimated, {
         toValue: 1,
-        EasingNode: EasingNode.inOut(EasingNode.quad),
+        easing: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
         if (finished) {
           this.ani = Reanimated.timing(this.arcAngle, {
             toValue: 360,
-            EasingNode: EasingNode.linear,
+            easing: EasingNode.linear,
             duration: 1000 * 15,
           });
           this.ani.start(({ finished }) => {
@@ -342,7 +342,7 @@ class CarouselWrapper extends Component<Props, State> {
     this.endTime = null;
     Reanimated.timing(this.scaleAnimated, {
       toValue: 0,
-      EasingNode: EasingNode.inOut(EasingNode.quad),
+      easing: EasingNode.inOut(EasingNode.quad),
       duration: 200,
     }).start();
   };
