@@ -474,7 +474,7 @@ class CarouselWrapper extends Component<Props, State> {
           style={{
             transform: [
               {
-                scale:interpolateNode(this.scaleAnimated, {
+                scale: interpolateNode(this.scaleAnimated, {
                   inputRange: [0, 0.00001, 1],
                   outputRange: [1, 0, 0],
                   extrapolate: 'clamp',
