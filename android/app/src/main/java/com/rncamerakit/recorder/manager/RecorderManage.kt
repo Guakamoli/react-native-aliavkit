@@ -29,8 +29,10 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.VideoConst
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
+import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
 import com.rncamerakit.utils.DownloadUtils
@@ -317,12 +319,12 @@ class RecorderManage(
         onRelease()
         Log.e("AAA", "init recorder ")
         mRecorder = AlivcRecorder(mContext)
-        val mWidth = ScreenUtils.getWidth(mContext)
-        val mHeight = mWidth*16/9
+//        val mWidth = ScreenUtils.getWidth(mContext)
+//        val mHeight = mWidth*16/9
         val outputInfo = MediaInfo()
         outputInfo.fps = 35
-        outputInfo.videoWidth = mWidth
-        outputInfo.videoHeight = mHeight
+        outputInfo.videoWidth = VideoConst.mVideoWidth
+        outputInfo.videoHeight = VideoConst.mVideoHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
         mRecorder?.setMediaInfo(outputInfo)
 
@@ -333,7 +335,7 @@ class RecorderManage(
         mRecorder?.setOutputPath(videoPath)
         mRecorder?.setVideoQuality(VideoQuality.SSD)
         //10Mbps
-        mRecorder?.setVideoBitrate(10*1000)
+        mRecorder?.setVideoBitrate(4*1000)
         mRecorder?.setRatioMode(AliyunSnapVideoParam.RATIO_MODE_9_16)
         mRecorder?.setGop(30)
         mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)

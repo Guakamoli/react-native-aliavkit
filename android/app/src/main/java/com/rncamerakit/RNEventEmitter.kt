@@ -1,10 +1,10 @@
 package com.rncamerakit
 
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContext
+import com.duanqu.transcode.NativeParser
+import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.uimanager.ThemedReactContext
+import java.io.File
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -71,6 +71,31 @@ class RNEventEmitter {
             obj.putDouble("exportProgress", progress.toDouble()/100)
             if (progress == 100) {
                 obj.putString("outputPath", outputPath)
+                val response: WritableMap = WritableNativeMap()
+                response.putString("path", outputPath)
+                if (outputPath != null) {
+                    val videoFile = File(outputPath)
+                    response.putDouble("size", videoFile.length().toDouble())
+                    response.putString("type", "video/" + videoFile.extension)
+                    response.putString("name", videoFile.name)
+                }
+                try {
+                    val nativeParser = NativeParser()
+                    nativeParser.init(outputPath)
+                    val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+                    val videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH)
+                    val videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT)
+                    if (rotation == 90 || rotation == 270) {
+                        response.putInt("height", videoWidth.toInt())
+                        response.putInt("width", videoHeight.toInt())
+                    } else {
+                        response.putInt("width", videoWidth.toInt())
+                        response.putInt("height", videoHeight.toInt())
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                obj.putMap("videoParams", response)
             }
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 ?.emit("startVideoCompose", obj)

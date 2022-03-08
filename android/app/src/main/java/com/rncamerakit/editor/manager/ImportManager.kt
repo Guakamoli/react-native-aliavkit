@@ -8,7 +8,9 @@ import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
 import com.aliyun.svideosdk.crop.impl.AliyunCropCreator
 import com.aliyun.svideosdk.importer.AliyunIImport
 import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
+import com.duanqu.transcode.NativeParser
 import com.facebook.react.uimanager.ThemedReactContext
+import com.rncamerakit.VideoConst
 
 class ImportManager(val reactContext: ThemedReactContext) {
 
@@ -23,29 +25,38 @@ class ImportManager(val reactContext: ThemedReactContext) {
         mAliyunIImport = AliyunImportCreator.getImportInstance(mContext)
     }
 
-    private fun getVideoParam(isVideo: Boolean): AliyunVideoParam {
+    private fun getVideoParam(isVideo: Boolean, rotation: Int): AliyunVideoParam {
         if (isVideo) {
+            var videoWidth: Int
+            var videoHeight: Int
+            if (rotation == 90 || rotation == 270) {
+                videoWidth = VideoConst.mVideoHeight
+                videoHeight = VideoConst.mVideoWidth
+            } else {
+                videoWidth = VideoConst.mVideoWidth
+                videoHeight = VideoConst.mVideoHeight
+            }
             return AliyunVideoParam.Builder()
-                .bitrate(10*1000)
+                .bitrate(VideoConst.mVideoBitrate)
                 .frameRate(30)
                 .gop(30)
                 .crf(23)
                 .scaleRate(1.0f)
-                .outputWidth(1080)
-                .outputHeight(1920)
+                .outputWidth(videoWidth)
+                .outputHeight(videoHeight)
                 .videoQuality(VideoQuality.SSD)
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
         } else {
             return AliyunVideoParam.Builder()
-                .bitrate(10*1000)
+                .bitrate(VideoConst.mVideoBitrate)
                 .frameRate(30)
                 .gop(30)
                 .crf(23)
                 .scaleRate(1.0f)
-                .outputWidth(1080)
-                .outputHeight(1920)
+                .outputWidth(VideoConst.mVideoWidth)
+                .outputHeight(VideoConst.mVideoHeight)
                 .videoQuality(VideoQuality.SSD)
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
@@ -60,8 +71,11 @@ class ImportManager(val reactContext: ThemedReactContext) {
     fun importVideo(filePath: String?): String? {
         val aliyunCrop = AliyunCropCreator.createCropInstance(mContext)
         val duration = aliyunCrop.getVideoDuration(filePath)
+        val nativeParser = NativeParser()
+        nativeParser.init(filePath)
+        val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
         Log.e("AAA", "duration：$duration")
-        mAliyunIImport?.setVideoParam(getVideoParam(true))
+        mAliyunIImport?.setVideoParam(getVideoParam(true, rotation))
         mAliyunIImport?.addMediaClip(
             AliyunVideoClip.Builder()
                 .source(filePath)
@@ -79,7 +93,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
      * 导入图片
      */
     fun importImage(filePath: String?): String? {
-        mAliyunIImport?.setVideoParam(getVideoParam(false))
+        mAliyunIImport?.setVideoParam(getVideoParam(false,0))
         mAliyunIImport?.addMediaClip(
             AliyunImageClip.Builder()
                 .source(filePath)

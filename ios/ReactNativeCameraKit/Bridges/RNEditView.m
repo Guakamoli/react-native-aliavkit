@@ -33,6 +33,7 @@
 #import "RNMusicInfo.h"
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+#import "AVAsset+VideoInfo.h"
 
 typedef void(^TransCode_blk_t)(CGFloat);
 
@@ -689,6 +690,25 @@ AliyunCropDelegate
 
 #pragma mark - AliyunIExporterCallback -合成导出回调
 
+
+
+- (NSString *)fileMIMETypeURLSessionWithPath:(NSString*)path {
+    //1.确定请求路径
+    NSURL *url = [NSURL fileURLWithPath:path];
+    //2.创建可变的请求对象
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block NSString *mimeType = nil;
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        mimeType = response.MIMEType;
+        dispatch_semaphore_signal(semaphore);
+    }];
+    [task resume];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return mimeType;
+}
+
+
 ///导出结束
 - (void)exporterDidEnd:(NSString *)outputPath
 {
@@ -700,7 +720,22 @@ AliyunCropDelegate
             [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
         }
     }
-    id event = @{@"exportProgress": @(1.0), @"outputPath":path};
+    
+    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
+    CGSize size = [asset avAssetNaturalSize];
+    CGFloat frameWidth = size.width;
+    CGFloat frameHeight = size.height;
+    
+    NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil].fileSize;
+    
+    NSString *fileType =[self fileMIMETypeURLSessionWithPath:path];
+    
+    NSString *fileName = [path lastPathComponent];
+    
+    id videoParams = @{@"width":@(frameWidth), @"height":@(frameHeight),@"path":path,@"size":@(fileSize),@"type":fileType,@"name":fileName};
+    
+    id event = @{@"exportProgress": @(1.0), @"outputPath":path, @"videoParams":videoParams};
+    
     _onExportVideo(event);
 }
 

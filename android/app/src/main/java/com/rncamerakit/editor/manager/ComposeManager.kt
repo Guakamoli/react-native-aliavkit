@@ -92,7 +92,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
                 if (isSaveToPhotoLibrary) {
                     AliFileUtils.saveImageToMediaStore(mContext, thumbnailPath)
                 }
-                RNEventEmitter.startVideoCompose(mContext, 100, thumbnailPath)
+//                RNEventEmitter.startVideoCompose(mContext, 100, thumbnailPath)
                 promise?.resolve(thumbnailPath)
             }
 
