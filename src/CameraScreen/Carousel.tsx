@@ -19,7 +19,7 @@ import FastImage from '@rocket.chat/react-native-fast-image';
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
-import Reanimated, { EasingNode } from 'react-native-reanimated';
+import Reanimated, { EasingNode, interpolateNode } from 'react-native-reanimated';
 
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
@@ -69,7 +69,7 @@ class TopReset extends Component<PropsType> {
           {
             transform: [
               {
-                scale: scaleAnimated.interpolateNode({
+                scale: interpolateNode(scaleAnimated, {
                   inputRange: [0, 0.00001, 1],
                   outputRange: [1, 0, 0],
                   extrapolate: 'clamp',
@@ -84,7 +84,7 @@ class TopReset extends Component<PropsType> {
             {
               transform: [
                 {
-                  scale: scrollPos.interpolateNode({
+                  scale: scrollPos.interpolate({
                     inputRange: [0, 1],
                     outputRange: [0, 1],
                     extrapolate: 'clamp',
@@ -149,7 +149,7 @@ class RenderBigCircle extends Component {
                     borderRadius: bigImageSize,
                     transform: [
                       {
-                        translateX: scrollPos.interpolateNode({
+                        translateX: scrollPos.interpolate({
                           inputRange: [(index - 1) * itemWidth, index * itemWidth, (index + 1) * itemWidth],
                           outputRange: [(bigImageSize - smallImageSize) / 2, 0, -(bigImageSize - smallImageSize) / 2],
 
@@ -418,7 +418,7 @@ class CarouselWrapper extends Component<Props, State> {
   };
   _animatedStyles(index, animatedValue, carouselProps) {
     return {
-      opacity: animatedValue.interpolateNode({
+      opacity: animatedValue.interpolate({
         inputRange: [2, 3],
         outputRange: [1, 2],
 
@@ -426,14 +426,14 @@ class CarouselWrapper extends Component<Props, State> {
       }),
       transform: [
         {
-          translateX: animatedValue.interpolateNode({
+          translateX: animatedValue.interpolate({
             inputRange: [-3, -2, -1, 0, 1, 2, 3],
             outputRange: [1.5 * smallImageSize, 0, 0, 0, 0, 0, -1.5 * smallImageSize],
             extrapolate: 'clamp',
           }),
         },
         {
-          scale: animatedValue.interpolateNode({
+          scale: animatedValue.interpolate({
             inputRange: [-3, -2, -1, 0, 1, 2, 3],
             outputRange: [0, 0.5, 0.8, 1, 0.8, 0.5, 0],
             extrapolate: 'clamp',
@@ -475,7 +475,7 @@ class CarouselWrapper extends Component<Props, State> {
           style={{
             transform: [
               {
-                scale: this.scaleAnimated.interpolateNode({
+                scale:interpolateNode(this.scaleAnimated, {
                   inputRange: [0, 0.00001, 1],
                   outputRange: [1, 0, 0],
                   extrapolate: 'clamp',
