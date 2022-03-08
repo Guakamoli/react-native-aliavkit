@@ -139,7 +139,7 @@ export default class StoryEditor extends Component<Props, State> {
     if (event.exportProgress === 1) {
       console.log('发布快拍 onExportVideo',  event.videoParams);
 
-      // //TODO 测试代码：保存到相册 
+      // //TODO 测试代码：保存到相册
       // CameraRoll.save(event.outputPath, { type: 'video' })
 
       uploadFile.push(event.videoParams);
