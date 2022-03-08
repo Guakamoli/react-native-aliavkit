@@ -113,7 +113,7 @@ class ImageViewer extends Component<IProps> {
     this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,
-      EasingNode: EasingNode.linear,
+      easing: EasingNode.linear,
     };
 
     const maxScale = 2;
