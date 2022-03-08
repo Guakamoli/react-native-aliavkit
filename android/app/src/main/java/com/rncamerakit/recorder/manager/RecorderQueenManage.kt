@@ -189,6 +189,17 @@ class RecorderQueenManage(
         orientationDetector?.disable()
     }
 
+    fun resumeCamera() {
+        if (orientationDetector?.canDetectOrientation() == true) {
+            orientationDetector?.enable()
+        }
+    }
+
+
+    fun pauseCamera() {
+        orientationDetector?.disable()
+    }
+
     init {
         SharedPreferenceUtils.setIsQueenMode(mContext, true)
         initBeautyParam()

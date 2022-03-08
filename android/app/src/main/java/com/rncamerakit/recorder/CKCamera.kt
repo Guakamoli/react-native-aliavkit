@@ -21,7 +21,6 @@ import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.ReactActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
-import com.manwei.libs.dialog.DialogUtils
 import com.manwei.libs.dialog.OnDialogListener
 import com.manwei.libs.utils.permission.PermissionsDialog
 import com.manwei.libs.utils.permission.RxPermissionUtils
@@ -347,6 +346,15 @@ class CKCamera(
             );
             layout(left, top, right, bottom);
         }
+    }
+
+    fun resumeCamera(){
+        mRecorderManage?.resumeCamera()
+    }
+
+
+    fun pauseCamera(){
+        mRecorderManage?.pauseCamera()
     }
 
 }

@@ -196,19 +196,46 @@ class RenderCamera extends Component {
     // }
   };
   componentDidMount() {
-    console.log("Story 录制初始化 componentDidMount");
+    // console.log("Story 录制初始化 componentDidMount");
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
     // }
   }
   componentWillUnmount() {
-    console.log("Story 录制销毁 componentWillUnmount");
+    // console.log("Story 录制销毁 componentWillUnmount");
     this.props.camera?.current?.release();
     // if (Platform.OS === 'ios') {
     //   AppState.removeEventListener('change', this.handleAppStateChange);
     // }
   }
+
+  //恢复录制，用于 post 重新切换成  post, 或者 story 编辑 退出到 story
+  resumeCamera = () => {
+    console.info("resumeCamera");
+    this.props.camera.current?.resumeCamera();
+  }
+
+  //暂停录制，用于 story 切换成 post 或者 story 进入 story 编辑
+  pauseCamera = () => {
+    console.info("pauseCamera");
+    this.props.camera.current?.pauseCamera();
+  }
+
+
   shouldComponentUpdate(nextProps, nextState) {
+
+    console.info(nextProps.initStory, nextProps.type);
+
+    if (nextProps.initStory) {
+      if (nextProps.type == "post") {
+        this.pauseCamera();
+
+      } else if (nextProps.type == "story") {
+        this.resumeCamera();
+      }
+      return true;
+    }
+
     if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
       return true;
     }
@@ -266,16 +293,12 @@ class RenderCamera extends Component {
     return false;
   }
   renderCamera = () => {
-    //TODO
-    // const topheight = Platform.OS === 'ios' ? this.props.insets.top : 0;
-    // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
     let CameraFixHeight = width * 16 / 9;
     const fixHeight = height - this.props.insets.top - this.props.insets.bottom
     if (CameraFixHeight > fixHeight) {
       CameraFixHeight = fixHeight;
     }
     // console.info("Camera CameraFixHeight", CameraFixHeight, height, this.props.insets.top, this.props.insets.bottom);
-    //TODO
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
@@ -309,7 +332,7 @@ class RenderCamera extends Component {
     );
   };
   render() {
-    console.log("bottomToolsVisibility 222", this.props.bottomToolsVisibility);
+    // console.log("bottomToolsVisibility 222",this.props.bottomToolsVisibility);
     return (
       <View>
         <Pressable

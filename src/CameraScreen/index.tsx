@@ -139,7 +139,7 @@ class RenderswitchModule extends React.PureComponent {
   }
   render() {
     let marginBottom = this.props.toolsInsetBottom + 5
-    console.info("RenderswitchModule marginBottom", marginBottom);
+    // console.info("RenderswitchModule marginBottom", marginBottom);
     return (
       <View style={styles.BottomBox}>
         <Pressable
@@ -249,7 +249,7 @@ class CameraScreen extends Component<Props, State> {
       relaloadFlag: null,
       loadedPermissions: false,
     };
-      this.initPermissions();
+    this.initPermissions();
 
   }
 
@@ -416,11 +416,10 @@ class CameraScreen extends Component<Props, State> {
         }
         this.rt = setTimeout(() => {
           // this.props.setFacePasterInfo({eid: 0})
-
           this.setState({
             relaloadFlag: Math.random(),
           });
-        }, 1000);
+        }, this.props.initStory ? 0 : 0);
       });
       return false;
     }
@@ -546,6 +545,27 @@ class CameraScreen extends Component<Props, State> {
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
 
+
+
+  CameraView = () => {
+    return (
+      <View>
+        <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
+        {this.renderBottom()}
+      </View>
+    )
+  }
+
+  CameraEditorView = () => {
+    return (
+      <View>
+        <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
+        {this.renderBottom()}
+      </View>
+    )
+  }
+
+
   render() {
 
     if (Platform.OS === 'ios' && !this.state.loadedPermissions) {
@@ -578,7 +598,7 @@ class CameraScreen extends Component<Props, State> {
               setTimeout(() => {
                 this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
                 this.props.setType('story');
-              }, 1000);
+              }, 0);
             }}
             insets={this.props.insets}
             setType={this.props.setType}
@@ -602,8 +622,7 @@ class CameraScreen extends Component<Props, State> {
           />
         ) : (
           <>
-            <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
-            {this.renderBottom()}
+
           </>
         )}
       </View>

@@ -36,6 +36,10 @@ const Entry = (props) => {
 
   const [bottomToolsVisibility, setBottomToolsVisibility] = useState(true);
 
+  //story 是否初始化过，切换过，后续仅暂停拍摄器，不销毁
+  const [initStory, setInitStory] = useState(false);
+
+
   const showBottomTools = () => {
     setBottomToolsVisibility(true);
   }
@@ -62,10 +66,8 @@ const Entry = (props) => {
       name: '快拍',
     },
   ];
-  React.useEffect(() => {
-    if (changeFlagLock.current) return;
-    transX.setValue(type === 'post' ? 30 : -30);
-  }, [type]);
+
+
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;
@@ -78,14 +80,19 @@ const Entry = (props) => {
       setTimeout(() => {
         changeFlagLock.current = false;
       }, 0);
+      if (type === 'story' && !initStory) {
+        setInitStory(true)
+      }
+      // console.info("type:", type, "initStory:", initStory);
     },
     { wait: 0 },
   );
-  // console.info("types", type);
+  // console.info("types111", type);
 
   const PostView = () => {
     return (
       <PostUpload
+        initStory={initStory}
         // onRef={this.onRef}
         {...props}
         goback={goBack}
@@ -127,59 +134,56 @@ const Entry = (props) => {
       if (toolsInsetBottom < 0) toolsInsetBottom = 0
     }
   }
-  const CameraView = () => {
+  const StoryView = () => {
     return (
-      <View style={{ height: '100%' }}>
-        <CameraScreen
-          bottomToolsVisibility={bottomToolsVisibility}
-          showBottomTools={showBottomTools}
-          hideBottomTools={hideBottomTools}
-          toolsInsetBottom={toolsInsetBottom}
-          bottomSpaceHeight={bottomSpaceHeight}
-          actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
-          // 退出操作
-          {...props}
-          goback={goBack}
-          type={type}
-          setType={(type) => {
-            dispatch(setType(type));
-          }}
-          goPost={() => {
-            navigation.replace('FeedsPost');
-          }}
-          // 拿到上传数据
-          getUploadFile={(data) => {
-            sendfile(data);
-          }}
-          haptics={haptics}
-          cameraFlipImage={cameraFlipPng}
-          captureButtonImage={captureButtonPng}
-          closeImage={closePng}
-          musicImage={musicPng}
-          beautifyImage={beautifyPng}
-          beautyAdjustImag={beautyAdjustPng}
-          AaImage={AaPng}
-          filterImage={filterPng}
-          musicRevampImage={musicRevampPng}
-          giveUpImage={giveUpPng}
-          noVolumeImage={noVolumePng}
-          tailorImage={tailorPng}
-          volumeImage={volumePng}
-          cameraModule={true}
-          musicDynamicGif={musicDynamicGif}
-          musicIconPng={musicIconPng}
-          musicIcongray={musicIcongray}
-          videomusicIcon={videomusicIconPng}
-          musicSearch={musicSearchPng}
-          selectBeautify={selectBeautifyPng}
-          noResultPng={noResultPng}
-          cameraModule={true}
-        />
-      </View>
+      <CameraScreen
+        initStory={initStory}
+        bottomToolsVisibility={bottomToolsVisibility}
+        showBottomTools={showBottomTools}
+        hideBottomTools={hideBottomTools}
+        toolsInsetBottom={toolsInsetBottom}
+        bottomSpaceHeight={bottomSpaceHeight}
+        actions={{ rightButtonText: 'Done', leftButtonText: 'Cancel' }}
+        // 退出操作
+        {...props}
+        goback={goBack}
+        type={type}
+        setType={(type) => {
+          dispatch(setType(type));
+        }}
+        goPost={() => {
+          navigation.replace('FeedsPost');
+        }}
+        // 拿到上传数据
+        getUploadFile={(data) => {
+          sendfile(data);
+        }}
+        haptics={haptics}
+        cameraFlipImage={cameraFlipPng}
+        captureButtonImage={captureButtonPng}
+        closeImage={closePng}
+        musicImage={musicPng}
+        beautifyImage={beautifyPng}
+        beautyAdjustImag={beautyAdjustPng}
+        AaImage={AaPng}
+        filterImage={filterPng}
+        musicRevampImage={musicRevampPng}
+        giveUpImage={giveUpPng}
+        noVolumeImage={noVolumePng}
+        tailorImage={tailorPng}
+        volumeImage={volumePng}
+        cameraModule={true}
+        musicDynamicGif={musicDynamicGif}
+        musicIconPng={musicIconPng}
+        musicIcongray={musicIcongray}
+        videomusicIcon={videomusicIconPng}
+        musicSearch={musicSearchPng}
+        selectBeautify={selectBeautifyPng}
+        noResultPng={noResultPng}
+        cameraModule={true}
+      />
     )
   }
-
-
 
 
   return (
@@ -190,7 +194,17 @@ const Entry = (props) => {
         {PostView()}
       </View>
 
-      {(type === 'story' || type === 'storyedit') && CameraView()}
+      {initStory && (props.isDrawerOpen || props.isExample) ?
+        <View style={{ display: (type === 'story' || type === 'storyedit') ? 'flex' : 'none', height: '100%' }}>
+          {StoryView()}
+        </View>
+        :
+        ((type === 'story' || type === 'storyedit') &&
+          <View style={{ height: '100%', }}>
+            {StoryView()}
+          </View>
+        )
+      }
 
       {bottomToolsVisibility && (type === 'story' || type === 'post') &&
         <Animated.View

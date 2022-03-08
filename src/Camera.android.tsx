@@ -17,6 +17,14 @@ export default class Camera extends Component<Props, State> {
     }
   };
 
+  resumeCamera = async () => {
+    return await RNCameraKitModule.resumeCamera();
+  }
+
+  pauseCamera = async () => {
+    return await RNCameraKitModule.pauseCamera();
+  }
+
   startRecording = async () => {
     return await RNCameraKitModule.startRecording();
   }

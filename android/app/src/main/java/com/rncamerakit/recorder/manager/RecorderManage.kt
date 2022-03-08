@@ -46,6 +46,11 @@ class RecorderManage(
     val mContext: ThemedReactContext
 ) {
 
+    /**
+     * 是否正在录制中
+     */
+    var isRecording = false
+
     var cameraType: CameraType? = null
     var mRecorder: AlivcRecorder? = null
 
@@ -207,6 +212,7 @@ class RecorderManage(
                 reactContext,
                 reactContext.resources.getString(R.string.alivc_music_no_free_memory)
             )
+            isRecording = false
             return
         }
 
@@ -217,9 +223,11 @@ class RecorderManage(
                     RNEventEmitter.startVideoRecord(reactContext, duration)
                 }
             })
+            isRecording = true
             mRecorder?.startRecording()
             promise.resolve(true)
         } else {
+            isRecording = true
             promise.reject("startRecording", "recorder is null")
         }
     }
@@ -241,11 +249,13 @@ class RecorderManage(
 
             override fun onFinish(outputPath: String?) {
                 promise.resolve(outputPath)
+                isRecording = false
 //                onRelease()
             }
 
             override fun onError(errorCode: Int) {
                 promise.reject("startRecording", "errorCode:$errorCode")
+                isRecording = false
             }
         })
         mRecorder?.stopRecording()
@@ -316,6 +326,7 @@ class RecorderManage(
     }
 
     init {
+        isRecording = false
         onRelease()
         Log.e("AAA", "init recorder ")
         mRecorder = AlivcRecorder(mContext)
@@ -349,4 +360,18 @@ class RecorderManage(
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
     }
 
+
+    fun resumeCamera(){
+        mRecorder?.startPreview()
+        mRecorderQueenManage?.resumeCamera()
+    }
+
+
+    fun pauseCamera(){
+        if(isRecording){
+            mRecorder?.stopRecording()
+        }
+        mRecorder?.stopPreview()
+        mRecorderQueenManage?.pauseCamera()
+    }
 }
