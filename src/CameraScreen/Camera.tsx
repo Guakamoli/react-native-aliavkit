@@ -152,7 +152,7 @@ class PreviewBack extends React.Component {
   }
   render() {
     return (
-      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0,backgroundColor:'red' }}>
+      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0, backgroundColor: 'red' }}>
         <BoxBlur
           image={
             <Image
@@ -277,19 +277,18 @@ class RenderCamera extends Component {
     // console.info("Camera CameraFixHeight", CameraFixHeight, height, this.props.insets.top, this.props.insets.bottom);
     //TODO
     return (
-      <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
+      <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
         <View
-          style={{ position: 'absolute', zIndex: 1, width: '100%' }}
-          // style={{ width: '100%', height: CameraFixHeight }}
+          style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {
             setTimeout(() => {
               AVService.enableHapticIfExist();
             }, 0);
           }}
         >
-          {this.state.showCamera || this.props.isExample && (
-            <View style={{ height: CameraFixHeight, width, position: 'relative' }}>
+          {(this.state.showCamera || this.props.isExample) && (
+            <View style={{ height: CameraFixHeight, width: '100%', position: 'relative' }}>
               <Camera
                 ref={(cam) => (this.props.camera.current = cam)}
                 cameraStyle={{ height: CameraFixHeight, width }}
@@ -310,7 +309,7 @@ class RenderCamera extends Component {
     );
   };
   render() {
-    console.log("bottomToolsVisibility 222",this.props.bottomToolsVisibility);
+    console.log("bottomToolsVisibility 222", this.props.bottomToolsVisibility);
     return (
       <View>
         <Pressable
