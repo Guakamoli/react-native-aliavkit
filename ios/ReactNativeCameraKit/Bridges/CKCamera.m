@@ -497,5 +497,15 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [self.cameraAction destroyRecorder];
 }
 
+- (void)resumeCamera
+{
+    [self.cameraAction resumeCamera];
+}
+
+- (void)pauseCamera
+{
+    [self.cameraAction pauseCamera];
+}
+
 @end
 

@@ -97,6 +97,10 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 
 - (void)recorderStopPreview;
 
+- (void)resumeCamera;
+
+- (void)pauseCamera;
+
 
 /**
  释放录制资源

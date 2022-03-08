@@ -48,6 +48,9 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 - (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo;
 - (void)deletePreviousEffectPaster;
+
+- (void)resumeCamera;
+- (void)pauseCamera;
 @end
 
 

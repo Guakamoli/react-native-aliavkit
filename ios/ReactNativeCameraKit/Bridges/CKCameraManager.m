@@ -119,6 +119,16 @@ RCT_EXPORT_METHOD(destroyRecorder)
     [self.camera destroyRecorder];
 }
 
+RCT_EXPORT_METHOD(resumeCamera)
+{
+    [self.camera resumeCamera];
+}
+
+RCT_EXPORT_METHOD(pauseCamera)
+{
+    [self.camera pauseCamera];
+}
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();

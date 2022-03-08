@@ -10,11 +10,11 @@ const Camera = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
 
     resumeCamera: async () => {
-      return await CKCameraManager.resumeCamera({});
+      return await CKCameraManager.resumeCamera();
     },
 
     pauseCamera: async () => {
-      return await CKCameraManager.pauseCamera({});
+      return await CKCameraManager.pauseCamera();
     },
 
     capture: async () => {

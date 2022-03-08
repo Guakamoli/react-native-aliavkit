@@ -221,19 +221,33 @@ class RenderCamera extends Component {
     this.props.camera.current?.pauseCamera();
   }
 
-
   shouldComponentUpdate(nextProps, nextState) {
 
-    console.info(nextProps.initStory, nextProps.type);
-
-    if (nextProps.initStory) {
-      if (nextProps.type == "post") {
-        this.pauseCamera();
-
-      } else if (nextProps.type == "story") {
+    if (this.props.type != nextProps.type && this.props.initStory) {
+      // console.log("initStory  ", this.props.initStory, "type", nextProps.type);
+      if (nextProps.type == "story") {
         this.resumeCamera();
       }
+      if (nextProps.type == "storyedit" || nextProps.type == "post") {
+        this.pauseCamera();
+      }
       return true;
+    }
+
+    if (nextProps.type !== this.props.type) {
+      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
+      if (!showCamera) {
+        this.props.camera.current?.cameraStopPreview?.();
+      }
+      this.setState({
+        showCamera,
+      });
+
+      setTimeout(() => {
+        AVService.enableHapticIfExist();
+      }, 2000);
+
+      return false;
     }
 
     if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
@@ -257,21 +271,7 @@ class RenderCamera extends Component {
       return true;
     }
 
-    if (nextProps.type !== this.props.type) {
-      const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
-      if (!showCamera) {
-        this.props.camera.current?.cameraStopPreview?.();
-      }
-      this.setState({
-        showCamera,
-      });
 
-      setTimeout(() => {
-        AVService.enableHapticIfExist();
-      }, 2000);
-
-      return false;
-    }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
       if (!showCamera) {

@@ -298,7 +298,7 @@ export default class StoryEditor extends Component<Props, State> {
 
       //TODO 测试代码：保存到相册 
       // CameraRoll.save(this.props.imagePath, { type: 'photo' })
-      console.info("this.props.imagePath", this.props.imagePath);
+      // console.info("this.props.imagePath", this.props.imagePath);
       return (
         <View
           style={{

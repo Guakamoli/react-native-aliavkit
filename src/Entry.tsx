@@ -80,10 +80,12 @@ const Entry = (props) => {
       setTimeout(() => {
         changeFlagLock.current = false;
       }, 0);
-      if (type === 'story' && !initStory) {
+
+      if (i.type === 'story' && !initStory) {
+        console.info("setInitStory true:");
         setInitStory(true)
       }
-      // console.info("type:", type, "initStory:", initStory);
+
     },
     { wait: 0 },
   );
@@ -194,7 +196,7 @@ const Entry = (props) => {
         {PostView()}
       </View>
 
-      {initStory && (props.isDrawerOpen || props.isExample) ?
+      {(initStory && (props.isDrawerOpen || props.isExample)) ?
         <View style={{ display: (type === 'story' || type === 'storyedit') ? 'flex' : 'none', height: '100%' }}>
           {StoryView()}
         </View>

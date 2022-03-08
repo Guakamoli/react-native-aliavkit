@@ -30,6 +30,7 @@
 {
     NSString *_videoSavePath;
     VideoRecordEndBlk_t _complete;
+    AliyunIRecorderCameraPosition mRecorderCamerPosition;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -289,7 +290,7 @@
 //        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
 //            [self clearBeautyEngine];
 //        }
-        
+        mRecorderCamerPosition =cameraPosition;
         [self.recorder switchCameraPosition];
     }
 }
@@ -473,6 +474,23 @@
 - (void)clearBeautyEngine
 {
     [[BeautyEngineManager shareManager] clear];
+}
+
+
+- (void)resumeCamera
+{
+    if(mRecorderCamerPosition == AliyunIRecorderCameraPositionFront){
+       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
+    }else if(mRecorderCamerPosition == AliyunIRecorderCameraPositionBack){
+       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionBack];
+    }else{
+        [self.recorder startPreview];
+    }
+}
+
+- (void)pauseCamera
+{
+    [self.recorder stopPreview];
 }
 
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef

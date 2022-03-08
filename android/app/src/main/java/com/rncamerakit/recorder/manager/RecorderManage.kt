@@ -188,7 +188,6 @@ class RecorderManage(
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
                 Companion.photoPath = photoPath
-                onRelease()
                 promise.resolve(photoPath)
             }
 
