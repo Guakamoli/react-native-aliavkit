@@ -114,7 +114,7 @@ export default class Editor extends Component<Props, State> {
     //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
       // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
-      console.log("视频合成中...", param);
+      // console.log("视频合成中...", param);
       this.props.onExportVideo(param);
     });
 
