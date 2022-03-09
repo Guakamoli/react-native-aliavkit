@@ -58,6 +58,9 @@ class RecorderQueenManage(
     }
 
     override fun onFrameBack(bytes: ByteArray, width: Int, height: Int, info: Camera.CameraInfo) {
+        if(mRecorderManage.isPauseCamera){
+            return
+        }
         frameBytes = bytes
         frameWidth = width
         frameHeight = height
@@ -80,6 +83,9 @@ class RecorderQueenManage(
         textureHeight: Int,
         matrix: FloatArray?
     ): Int {
+        if(mRecorderManage.isPauseCamera){
+            return 0
+        }
         isQueenDrawed = true
         if (texture2D == null) {
             texture2D =
@@ -93,7 +99,6 @@ class RecorderQueenManage(
             matrix,
             texture2D
         ) ?: 0
-
     }
 
     override fun onScaledIdBack(

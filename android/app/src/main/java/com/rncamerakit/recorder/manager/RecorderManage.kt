@@ -51,6 +51,8 @@ class RecorderManage(
      */
     var isRecording = false
 
+    var isPauseCamera = false
+
     var cameraType: CameraType? = null
     var mRecorder: AlivcRecorder? = null
 
@@ -294,11 +296,11 @@ class RecorderManage(
     /**
      * 设置人脸贴纸
      */
-    fun setFaceEffectPaster(paster: PreviewPasterForm,mReactContext: ReactContext?) {
+    fun setFaceEffectPaster(paster: PreviewPasterForm, mReactContext: ReactContext?) {
         if (mEffectPaster != null) {
             mRecorder?.removePaster(mEffectPaster)
         }
-        EffectPasterManage.instance.setEffectPaster(paster,mReactContext,
+        EffectPasterManage.instance.setEffectPaster(paster, mReactContext,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String) {
                     super.onPath(path)
@@ -360,17 +362,21 @@ class RecorderManage(
     }
 
 
-    fun resumeCamera(){
+    fun resumeCamera() {
+        isPauseCamera = false
         mRecorder?.startPreview()
+        mRecorder?.setLight(mFlashType)
         mRecorderQueenManage?.resumeCamera()
     }
 
 
-    fun pauseCamera(){
-        if(isRecording){
+    fun pauseCamera() {
+        mRecorder?.setLight(FlashType.OFF)
+        if (isRecording) {
             mRecorder?.stopRecording()
         }
         mRecorder?.stopPreview()
         mRecorderQueenManage?.pauseCamera()
+        isPauseCamera = true
     }
 }
