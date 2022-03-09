@@ -490,6 +490,9 @@
 
 - (void)pauseCamera
 {
+    if(self.isRecording){
+        [self.recorder stopRecording];
+    }
     [self.recorder stopPreview];
 }
 
