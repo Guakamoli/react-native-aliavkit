@@ -229,7 +229,6 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-resources.sh",
 				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
-				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework/queen-ios.Bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Face_Sticker",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Filter",
@@ -239,7 +238,6 @@
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AliyunVideoSDKPro.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/queen-ios.Bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Face_Sticker",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Filter",
@@ -261,6 +259,7 @@
 				"${PODS_ROOT}/AlivcConan/AlivcConan.framework",
 				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoCore.framework",
 				"${PODS_ROOT}/QuCore-ThirdParty/frameworks/alivcffmpeg.framework",
+				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework",
 				"${PODS_ROOT}/Queen/Queen/Libs/opencv2.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -268,6 +267,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AlivcConan.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AliyunVideoCore.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/alivcffmpeg.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/queen.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/opencv2.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;

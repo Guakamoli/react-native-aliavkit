@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.dependency 'AliyunVideoSDKPro', '3.28.0'
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
-  s.dependency 'Queen', '1.4.0-official-pro'
+  s.dependency 'Queen', '1.9.0-official-pro'
   s.dependency 'AFNetworking'
   s.dependency 'FMDB'
   s.dependency 'JSONModel'
