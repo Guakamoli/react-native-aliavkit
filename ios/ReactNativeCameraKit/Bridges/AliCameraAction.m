@@ -144,18 +144,25 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
+- (void)removeNotification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)appWillResignActive:(id)sender
 {
-    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
-    if (self.recorder.isRecording) {
-        [self.recorder stopRecording];
-        [self.recorder stopPreview];
-    }
+//    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+//    if (self.recorder.isRecording) {
+//        [self.recorder stopRecording];
+//        [self.recorder stopPreview];
+//    }
+    [self pauseCamera];
 }
 
 - (void)appDidBecomeActive:(id)sender
 {
-    [self.recorder startPreview];
+//    [self.recorder startPreview];
+    [self resumeCamera];
 }
 
 - (void)addFocusGesture

@@ -67,7 +67,12 @@ const Entry = (props) => {
     },
   ];
 
-
+  useEffect(() => {
+    if (!props.isDrawerOpen) {
+      setInitStory(false)
+    }
+  }, [props.isDrawerOpen]);
+  
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;
