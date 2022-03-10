@@ -17,6 +17,8 @@ import {
   AppState,
 } from 'react-native';
 
+import Reanimated from 'react-native-reanimated';
+
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -100,6 +102,71 @@ const RenderLeftButtons = React.memo((props) => {
     </View>
   );
 });
+
+class CameraPreView extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      fadeAnim: new Animated.Value(1)
+    };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.initStory && this.props.type != nextProps.type) {
+      if (nextProps.type === 'story') {
+        setTimeout(() => {
+          Animated.timing(this.state.fadeAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }).start();
+        }, this.props.type === 'post' ? 250 : 0);
+      } if (nextProps.type === 'post') {
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 在第一次绘制 render() 之后
+   */
+  componentDidMount() {
+    Animated.timing(this.state.fadeAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  render() {
+    return (
+      <Animated.View style={{
+        opacity: this.state.fadeAnim,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 1,
+        width: this.props.width,
+        height: this.props.height,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,1)'
+      }}>
+      </Animated.View>
+    );
+  }
+}
 // 拍摄内容渲染
 class PreviewBack extends React.Component {
   constructor(props) {
@@ -126,7 +193,7 @@ class PreviewBack extends React.Component {
         );
       }, 0);
     } catch (e) {
-     
+
     }
   };
   shouldComponentUpdate(nextProps, nextState) {
@@ -211,13 +278,13 @@ class RenderCamera extends Component {
 
   //恢复录制，用于 post 重新切换成  post, 或者 story 编辑 退出到 story
   resumeCamera = () => {
-   
+
     this.props.camera.current?.resumeCamera();
   }
 
   //暂停录制，用于 story 切换成 post 或者 story 进入 story 编辑
   pauseCamera = () => {
-   
+
     this.props.camera.current?.pauseCamera();
   }
 
@@ -302,6 +369,7 @@ class RenderCamera extends Component {
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
+        <CameraPreView  {...this.props} width={width} height={CameraFixHeight} />
         <View
           style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {

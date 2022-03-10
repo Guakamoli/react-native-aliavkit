@@ -227,6 +227,7 @@ const Entry = (props) => {
             <View style={[styles.storyViewStyles, {
               width: isShowStory ? "100%" : 0,
               height: isShowStory ? "100%" : 0,
+              position: isShowStory ? 'absolute' : 'relative',
             }]}>
               {StoryView()}
             </View>
@@ -235,6 +236,7 @@ const Entry = (props) => {
               <View style={[styles.storyViewStyles, {
                 width: isShowStory ? "100%" : 0,
                 height: isShowStory ? "100%" : 0,
+                position: isShowStory ? 'absolute' : 'relative',
               }]}>
                 {StoryView()}
               </View>
