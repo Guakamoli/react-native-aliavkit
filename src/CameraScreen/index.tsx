@@ -613,13 +613,13 @@ class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        <View style={{ height: '100%', }}>
+        <View style={{ width: "100%", height: '100%', display: !this.state.ShootSuccess ? 'flex' : 'none' }}>
           {this.CameraView()}
           {this.renderBottom()}
         </View>
 
         {this.state.ShootSuccess &&
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: '100%' }}>
+          <View style={{ width: "100%", height: '100%' }}>
             {this.CameraEditorView()}
           </View>
         }
