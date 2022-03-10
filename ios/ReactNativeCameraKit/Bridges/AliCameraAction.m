@@ -491,16 +491,17 @@
 - (void)resumeCamera
 {
     _isPauseCamera = NO;
-    if(_mRecorderTorchMode){
-        [self.recorder switchTorchWithMode:_mRecorderTorchMode];
-    }
-    if(mRecorderCamerPosition == AliyunIRecorderCameraPositionFront){
-       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
-    }else if(mRecorderCamerPosition == AliyunIRecorderCameraPositionBack){
-       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionBack];
-    }else{
-        [self.recorder startPreview];
-    }
+//    if(_mRecorderTorchMode){
+//        [self.recorder switchTorchWithMode:_mRecorderTorchMode];
+//    }
+//    if(mRecorderCamerPosition == AliyunIRecorderCameraPositionFront){
+//       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
+//    }else if(mRecorderCamerPosition == AliyunIRecorderCameraPositionBack){
+//       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionBack];
+//    }else{
+//        [self.recorder startPreview];
+//    }
+    [self.recorder startPreview];
 }
 
 - (void)pauseCamera
