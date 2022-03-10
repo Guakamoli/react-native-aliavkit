@@ -17,7 +17,7 @@ import {
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { useInterval, useThrottleFn } from 'ahooks';
-import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
+import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler, NativeViewGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
 import Reanimated, { EasingNode, interpolateNode } from 'react-native-reanimated';
 
@@ -93,14 +93,27 @@ class TopReset extends Component<PropsType> {
             },
           ]}
         >
-          <Pressable
+          <NativeViewGestureHandler
+            disallowInterruption={true}
+            shouldActivateOnStart={true}
+            onHandlerStateChange={(event) => {
+              if (event.nativeEvent.state === State.END) {
+                this.props.snapToItem?.(0);
+              }
+            }}
+          >
+            <View style={styles.clearIcon}>
+              <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+            </View>
+          </NativeViewGestureHandler>
+          {/* <Pressable
             style={styles.clearIcon}
             onPress={() => {
               this.props.snapToItem?.(0);
             }}
           >
             <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-          </Pressable>
+          </Pressable> */}
         </Animated.View>
       </Reanimated.View>
     );
@@ -215,7 +228,7 @@ class RenderChildren extends Component {
             style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
           >
             <TapGestureHandler
-               shouldCancelWhenOutside={false}
+              shouldCancelWhenOutside={false}
               onHandlerStateChange={({ nativeEvent }) => {
                 if (nativeEvent.state === State.ACTIVE) {
                   this.props.singlePress();
