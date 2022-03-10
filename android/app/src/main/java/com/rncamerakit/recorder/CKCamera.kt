@@ -21,7 +21,6 @@ import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.ReactActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
-import com.manwei.libs.dialog.DialogUtils
 import com.manwei.libs.dialog.OnDialogListener
 import com.manwei.libs.utils.permission.PermissionsDialog
 import com.manwei.libs.utils.permission.RxPermissionUtils
@@ -71,9 +70,9 @@ class CKCamera(
 //        if (!isPermissions()) {
 //            getPermissions()
 //        } else {
-            this.mWidth = ScreenUtils.getWidth(reactContext)
-            this.mHeight = mWidth*16/9
-            initCamera()
+        this.mWidth = ScreenUtils.getWidth(reactContext)
+        this.mHeight = mWidth*16/9
+        initCamera()
 //        }
         initLifecycle()
         //延时器
@@ -274,34 +273,25 @@ class CKCamera(
         BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
             override fun onHostResume() {
                 super.onHostResume()
-                Log.e("AAA", "onHostResume()")
-                if (isInit) {
-                    mRecorder?.startPreview()
-                }
-//                else {
-//                    if (!isPermissions()) {
-//                        getPermissions()
-//                    }
-//                }
+//                Log.e("AAA", "onHostResume()")
+                resumeCamera()
             }
 
             override fun onHostPause() {
                 super.onHostPause()
-                Log.e("AAA", "onHostPause()")
-                if (isInit) {
-                    mRecorder?.stopPreview()
-                }
+//                Log.e("AAA", "onHostPause()")
+                pauseCamera()
             }
 
             override fun onHostDestroy() {
                 super.onHostDestroy()
-                Log.e("AAA", "onHostDestroy()")
+//                Log.e("AAA", "onHostDestroy()")
                 onRelease()
             }
 
             override fun onWindowFocusChange(hasFocus: Boolean) {
                 super.onWindowFocusChange(hasFocus)
-                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
+//                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
             }
         })
     }
@@ -347,6 +337,15 @@ class CKCamera(
             );
             layout(left, top, right, bottom);
         }
+    }
+
+    fun resumeCamera() {
+        mRecorderManage?.resumeCamera()
+    }
+
+
+    fun pauseCamera() {
+        mRecorderManage?.pauseCamera()
     }
 
 }

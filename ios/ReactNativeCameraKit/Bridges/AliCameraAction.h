@@ -33,6 +33,8 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)startPreview;
 - (void)stopPreview;
 - (void)destroyRecorder;
+- (void)addNotification;
+- (void)removeNotification;
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position;
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
@@ -48,6 +50,9 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 - (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo;
 - (void)deletePreviousEffectPaster;
+
+- (void)resumeCamera;
+- (void)pauseCamera;
 @end
 
 

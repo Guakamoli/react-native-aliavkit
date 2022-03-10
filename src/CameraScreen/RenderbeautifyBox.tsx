@@ -50,8 +50,7 @@ class RenderbeautifyBox extends React.PureComponent {
       >
         <View style={styles.beautifyBoxHead}>
           <Text style={styles.beautifyTitle}>{`美颜`}</Text>
-
-          <FastImage style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' />
+          {/* <FastImage style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' /> */}
         </View>
         <View style={styles.beautifyBoxContent}>
           {[0, 1, 2, 3, 4, 5].map((item, index) => {

@@ -58,6 +58,9 @@ class RecorderQueenManage(
     }
 
     override fun onFrameBack(bytes: ByteArray, width: Int, height: Int, info: Camera.CameraInfo) {
+        if(mRecorderManage.isPauseCamera){
+            return
+        }
         frameBytes = bytes
         frameWidth = width
         frameHeight = height
@@ -80,6 +83,9 @@ class RecorderQueenManage(
         textureHeight: Int,
         matrix: FloatArray?
     ): Int {
+        if(mRecorderManage.isPauseCamera){
+            return 0
+        }
         isQueenDrawed = true
         if (texture2D == null) {
             texture2D =
@@ -93,7 +99,6 @@ class RecorderQueenManage(
             matrix,
             texture2D
         ) ?: 0
-
     }
 
     override fun onScaledIdBack(
@@ -189,6 +194,17 @@ class RecorderQueenManage(
         orientationDetector?.disable()
     }
 
+    fun resumeCamera() {
+        if (orientationDetector?.canDetectOrientation() == true) {
+            orientationDetector?.enable()
+        }
+    }
+
+
+    fun pauseCamera() {
+        orientationDetector?.disable()
+    }
+
     init {
         SharedPreferenceUtils.setIsQueenMode(mContext, true)
         initBeautyParam()
@@ -198,8 +214,8 @@ class RecorderQueenManage(
         recorderInterface.setOnTextureIdCallback(this)
         orientationDetector = OrientationDetector(mContext)
         orientationDetector?.setOrientationChangedListener {
-            val rotation = getCameraRotation();
-            recorderInterface.setRotation(rotation)
+//            val rotation = getCameraRotation();
+//            recorderInterface.setRotation(rotation)
             Camera.getCameraInfo(mCameraInfo.facing, mCameraInfo)
             mQueenManager?.setDeviceOrientation(0, ActivityUtil.getDegrees(mContext.currentActivity))
         }

@@ -904,7 +904,6 @@ const PostHead = React.memo((props) => {
     }
     props.setSelectMultiple();
   };
-  console.info("closePng", closePng);
   return (
     <View
       style={{
@@ -1060,7 +1059,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
-        console.info("photos", photos[1]);
+        // console.info("photos", photos[1]);
         this.setState({
           CameraRollList: photos,
         });
@@ -1099,7 +1098,6 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-
     if (!!this.props.isExample) {
       this.getPhotos(true);
     } else {

@@ -139,7 +139,7 @@ class RenderswitchModule extends React.PureComponent {
   }
   render() {
     let marginBottom = this.props.toolsInsetBottom + 5
-    console.info("RenderswitchModule marginBottom", marginBottom);
+    // console.info("RenderswitchModule marginBottom", marginBottom);
     return (
       <View style={styles.BottomBox}>
         <Pressable
@@ -249,7 +249,7 @@ class CameraScreen extends Component<Props, State> {
       relaloadFlag: null,
       loadedPermissions: false,
     };
-      this.initPermissions();
+    this.initPermissions();
 
   }
 
@@ -397,6 +397,11 @@ class CameraScreen extends Component<Props, State> {
     // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (this.props.initStory != nextProps.initStory) {
+      return true;
+    }
+    // console.info(nextProps.initStory, nextProps.type);
     if (this.state.loadedPermissions != nextState.loadedPermissions) {
       return true;
     }
@@ -416,13 +421,12 @@ class CameraScreen extends Component<Props, State> {
         }
         this.rt = setTimeout(() => {
           // this.props.setFacePasterInfo({eid: 0})
-
           this.setState({
             relaloadFlag: Math.random(),
           });
-        }, 1000);
+        }, this.props.initStory ? 0 : 0);
       });
-      return false;
+      return true;
     }
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
       this.myRef?.current?.show?.('无法在你的设备使用此贴纸！', 2000);
@@ -434,10 +438,8 @@ class CameraScreen extends Component<Props, State> {
         if (this.rt) {
           clearTimeout(this.rt);
         }
-
         this.rt = setTimeout(() => {
           // this.props.setFacePasterInfo({eid: 0})
-
           this.setState({
             relaloadFlag: Math.random(),
           });
@@ -546,15 +548,62 @@ class CameraScreen extends Component<Props, State> {
     this.setState({ ratioArrayPosition: newRatiosArrayPosition });
   }
 
-  render() {
 
-    if (Platform.OS === 'ios' && !this.state.loadedPermissions) {
+
+
+  CameraEditorView() {
+    return (
+      <StoryEditor
+        {...this.props}
+        myRef={this.myRef}
+        rephotograph={() => {
+          this.props.setType('story');
+          this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+        }}
+        getUploadFile={async (data) => {
+          await this.sendUploadFile(data);
+
+          setTimeout(() => {
+            this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
+            this.props.setType('story');
+          }, 0);
+        }}
+        insets={this.props.insets}
+        setType={this.props.setType}
+        AaImage={this.props.AaImage}
+        filterImage={this.props.filterImage}
+        musicRevampImage={this.props.musicRevampImage}
+        giveUpImage={this.props.giveUpImage}
+        noVolumeImage={this.props.noVolumeImage}
+        tailorImage={this.props.tailorImage}
+        volumeImage={this.props.volumeImage}
+        videoPath={this.state.videoPath}
+        fileType={this.state.fileType}
+        videomusicIcon={this.props.videomusicIcon}
+        musicDynamicGif={this.props.musicDynamicGif}
+        musicIconPng={this.props.musicIconPng}
+        musicIcongray={this.props.musicIcongray}
+        musicSearch={this.props.musicSearch}
+        imagePath={this.state.imageCaptured}
+        noResultPng={this.props.noResultPng}
+      // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
+      />
+    )
+  }
+
+
+  CameraView() {
+    return (
+      <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
+    );
+  }
+
+  render() {
+    if (!this.state.loadedPermissions) {
       return null;
     }
-
     return (
-      // TODO
-      <View style={{ backgroundColor: '#000', flex: 1 }}>
+      <View style={{ backgroundColor: '#000', flex: 1, position: 'relative' }}>
         <Toast
           ref={this.myRef}
           position='center'
@@ -564,48 +613,16 @@ class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        {this.state.ShootSuccess ? (
-          <StoryEditor
-            {...this.props}
-            myRef={this.myRef}
-            rephotograph={() => {
-              this.props.setType('story');
-              this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
-            }}
-            getUploadFile={async (data) => {
-              await this.sendUploadFile(data);
+        <View style={{ height: '100%', }}>
+          {this.CameraView()}
+          {this.renderBottom()}
+        </View>
 
-              setTimeout(() => {
-                this.setState({ ShootSuccess: false, videoPath: '', imageCaptured: '' });
-                this.props.setType('story');
-              }, 1000);
-            }}
-            insets={this.props.insets}
-            setType={this.props.setType}
-            AaImage={this.props.AaImage}
-            filterImage={this.props.filterImage}
-            musicRevampImage={this.props.musicRevampImage}
-            giveUpImage={this.props.giveUpImage}
-            noVolumeImage={this.props.noVolumeImage}
-            tailorImage={this.props.tailorImage}
-            volumeImage={this.props.volumeImage}
-            videoPath={this.state.videoPath}
-            fileType={this.state.fileType}
-            videomusicIcon={this.props.videomusicIcon}
-            musicDynamicGif={this.props.musicDynamicGif}
-            musicIconPng={this.props.musicIconPng}
-            musicIcongray={this.props.musicIcongray}
-            musicSearch={this.props.musicSearch}
-            imagePath={this.state.imageCaptured}
-            noResultPng={this.props.noResultPng}
-          // imagePath ={'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/files/Media/1634557132176-photo.jpg'}
-          />
-        ) : (
-          <>
-            <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
-            {this.renderBottom()}
-          </>
-        )}
+        {this.state.ShootSuccess &&
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: '100%' }}>
+            {this.CameraEditorView()}
+          </View>
+        }
       </View>
     );
   }

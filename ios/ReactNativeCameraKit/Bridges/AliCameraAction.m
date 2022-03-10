@@ -30,6 +30,7 @@
 {
     NSString *_videoSavePath;
     VideoRecordEndBlk_t _complete;
+    AliyunIRecorderCameraPosition mRecorderCamerPosition;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -39,9 +40,12 @@
 @property (nonatomic, copy) VideoRecordStartBlk_t recordStartHandler;
 @property (nonatomic, copy) VideoRecordEndBlk_t recordEndHandler;
 @property (nonatomic, readwrite) BOOL isRecording;
+@property (nonatomic) BOOL isPauseCamera;
 @property (nonatomic, strong) AliyunDownloadManager *downloadManager;
 @property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //current face paster
 @property (nonatomic) CGRect previewRect;
+@property (nonatomic) AliyunIRecorderTorchMode mRecorderTorchMode;
+
 
 @end
 
@@ -140,18 +144,25 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
+- (void)removeNotification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)appWillResignActive:(id)sender
 {
-    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
-    if (self.recorder.isRecording) {
-        [self.recorder stopRecording];
-        [self.recorder stopPreview];
-    }
+//    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+//    if (self.recorder.isRecording) {
+//        [self.recorder stopRecording];
+//        [self.recorder stopPreview];
+//    }
+    [self pauseCamera];
 }
 
 - (void)appDidBecomeActive:(id)sender
 {
-    [self.recorder startPreview];
+//    [self.recorder startPreview];
+    [self resumeCamera];
 }
 
 - (void)addFocusGesture
@@ -289,7 +300,7 @@
 //        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
 //            [self clearBeautyEngine];
 //        }
-        
+        mRecorderCamerPosition =cameraPosition;
         [self.recorder switchCameraPosition];
     }
 }
@@ -311,6 +322,7 @@
     if (self.recorder.hasTorch) {
         return NO;
     }
+    _mRecorderTorchMode = tMode;
     if (self.recorder.torchMode != tMode) {
         return [self.recorder switchTorchWithMode:tMode];
     }
@@ -475,9 +487,38 @@
     [[BeautyEngineManager shareManager] clear];
 }
 
+
+- (void)resumeCamera
+{
+    _isPauseCamera = NO;
+    if(_mRecorderTorchMode){
+        [self.recorder switchTorchWithMode:_mRecorderTorchMode];
+    }
+    if(mRecorderCamerPosition == AliyunIRecorderCameraPositionFront){
+       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
+    }else if(mRecorderCamerPosition == AliyunIRecorderCameraPositionBack){
+       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionBack];
+    }else{
+        [self.recorder startPreview];
+    }
+}
+
+- (void)pauseCamera
+{
+    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+    if(self.isRecording){
+        [self.recorder stopRecording];
+    }
+    [self.recorder stopPreview];
+    _isPauseCamera = YES;
+}
+
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
+    if(_isPauseCamera){
+        return nil;
+    }
 //    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
 //        return CMSampleBufferGetImageBuffer(sampleBuffer);
 //    }

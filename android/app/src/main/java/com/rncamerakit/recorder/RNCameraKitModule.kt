@@ -25,6 +25,18 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         return "RNCameraKitModule"
     }
 
+    //恢复录制
+    @ReactMethod
+    fun resumeCamera(promise: Promise) {
+        mView?.resumeCamera()
+    }
+
+    //暂停录制
+    @ReactMethod
+    fun pauseCamera(promise: Promise) {
+        mView?.pauseCamera()
+    }
+
     //设置滤镜
     @ReactMethod
     fun setColorFilter(position: Int, viewTag: Int, promise: Promise) {

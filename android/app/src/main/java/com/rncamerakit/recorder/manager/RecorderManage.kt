@@ -46,6 +46,13 @@ class RecorderManage(
     val mContext: ThemedReactContext
 ) {
 
+    /**
+     * 是否正在录制中
+     */
+    var isRecording = false
+
+    var isPauseCamera = false
+
     var cameraType: CameraType? = null
     var mRecorder: AlivcRecorder? = null
 
@@ -183,7 +190,6 @@ class RecorderManage(
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onTakePhoto(photoPath: String?) {
                 Companion.photoPath = photoPath
-                onRelease()
                 promise.resolve(photoPath)
             }
 
@@ -207,6 +213,7 @@ class RecorderManage(
                 reactContext,
                 reactContext.resources.getString(R.string.alivc_music_no_free_memory)
             )
+            isRecording = false
             return
         }
 
@@ -217,9 +224,11 @@ class RecorderManage(
                     RNEventEmitter.startVideoRecord(reactContext, duration)
                 }
             })
+            isRecording = true
             mRecorder?.startRecording()
             promise.resolve(true)
         } else {
+            isRecording = true
             promise.reject("startRecording", "recorder is null")
         }
     }
@@ -241,11 +250,13 @@ class RecorderManage(
 
             override fun onFinish(outputPath: String?) {
                 promise.resolve(outputPath)
+                isRecording = false
 //                onRelease()
             }
 
             override fun onError(errorCode: Int) {
                 promise.reject("startRecording", "errorCode:$errorCode")
+                isRecording = false
             }
         })
         mRecorder?.stopRecording()
@@ -285,11 +296,11 @@ class RecorderManage(
     /**
      * 设置人脸贴纸
      */
-    fun setFaceEffectPaster(paster: PreviewPasterForm,mReactContext: ReactContext?) {
+    fun setFaceEffectPaster(paster: PreviewPasterForm, mReactContext: ReactContext?) {
         if (mEffectPaster != null) {
             mRecorder?.removePaster(mEffectPaster)
         }
-        EffectPasterManage.instance.setEffectPaster(paster,mReactContext,
+        EffectPasterManage.instance.setEffectPaster(paster, mReactContext,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String) {
                     super.onPath(path)
@@ -316,6 +327,7 @@ class RecorderManage(
     }
 
     init {
+        isRecording = false
         onRelease()
         Log.e("AAA", "init recorder ")
         mRecorder = AlivcRecorder(mContext)
@@ -349,4 +361,22 @@ class RecorderManage(
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)
     }
 
+
+    fun resumeCamera() {
+        isPauseCamera = false
+        mRecorder?.startPreview()
+        mRecorder?.setLight(mFlashType)
+        mRecorderQueenManage?.resumeCamera()
+    }
+
+
+    fun pauseCamera() {
+        mRecorder?.setLight(FlashType.OFF)
+        if (isRecording) {
+            mRecorder?.stopRecording()
+        }
+        mRecorder?.stopPreview()
+        mRecorderQueenManage?.pauseCamera()
+        isPauseCamera = true
+    }
 }

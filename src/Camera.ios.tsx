@@ -8,6 +8,15 @@ const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
+
+    resumeCamera: async () => {
+      return await CKCameraManager.resumeCamera();
+    },
+
+    pauseCamera: async () => {
+      return await CKCameraManager.pauseCamera();
+    },
+
     capture: async () => {
       return await CKCameraManager.capture({});
     },

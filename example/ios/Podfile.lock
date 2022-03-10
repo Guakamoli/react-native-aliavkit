@@ -56,7 +56,7 @@ PODS:
   - Permission-PhotoLibraryAddOnly (3.2.0):
     - RNPermissions
   - QuCore-ThirdParty (4.3.1)
-  - Queen (1.4.0-official-pro)
+  - Queen (1.9.0-official-pro)
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
     - DoubleConversion
@@ -335,7 +335,7 @@ PODS:
     - AliyunVideoSDKPro (= 3.28.0)
     - FMDB
     - JSONModel
-    - Queen (= 1.4.0-official-pro)
+    - Queen (= 1.9.0-official-pro)
     - React-Core
     - SSZipArchive
     - VODUpload (= 1.6.1)
@@ -554,7 +554,7 @@ SPEC CHECKSUMS:
   Permission-PhotoLibrary: 7bec836dcdd04a0bfb200c314f1aae06d4476357
   Permission-PhotoLibraryAddOnly: 06fb0cdb1d35683b235ad8c464ef0ecc88859ea3
   QuCore-ThirdParty: 837fa2cff865c468fd16b5b72ef092350a7073a9
-  Queen: 8305859c116f4c7220f93eb6f6999432454f18d5
+  Queen: 793f369401b64f19aab1e9ae0ee7414607f2a1e6
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: 6d3e854f0e7260a648badd0d44fc364bc9da9728
   RCTTypeSafety: c1f31d19349c6b53085766359caac425926fafaa
@@ -583,7 +583,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: bb8bd666d25ba34c89d8ec0fd982eeb490950df1
+  ReactNativeAliAVKit: f5cb01d9e0cfb458a3580527aa9e88d084c0c6ae
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNFastImage: f40d202ea2367239f71bc7cf11315f4bebab85b4

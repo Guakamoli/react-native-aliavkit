@@ -27,15 +27,15 @@ class ImportManager(val reactContext: ThemedReactContext) {
 
     private fun getVideoParam(isVideo: Boolean, rotation: Int): AliyunVideoParam {
         if (isVideo) {
-            var videoWidth: Int
-            var videoHeight: Int
-            if (rotation == 90 || rotation == 270) {
-                videoWidth = VideoConst.mVideoHeight
-                videoHeight = VideoConst.mVideoWidth
-            } else {
-                videoWidth = VideoConst.mVideoWidth
-                videoHeight = VideoConst.mVideoHeight
-            }
+            var videoWidth: Int = VideoConst.mVideoWidth
+            var videoHeight: Int = VideoConst.mVideoHeight
+//            if (rotation == 90 || rotation == 270) {
+//                videoWidth = VideoConst.mVideoHeight
+//                videoHeight = VideoConst.mVideoWidth
+//            } else {
+//                videoWidth = VideoConst.mVideoWidth
+//                videoHeight = VideoConst.mVideoHeight
+//            }
             return AliyunVideoParam.Builder()
                 .bitrate(VideoConst.mVideoBitrate)
                 .frameRate(30)
