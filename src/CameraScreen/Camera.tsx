@@ -121,7 +121,7 @@ class CameraPreView extends React.Component {
             duration: 500,
             useNativeDriver: true,
           }).start();
-        }, this.props.type === 'post' ? 250 : 0);
+        }, (this.props.type === 'post' || Platform.OS === 'android') ? 250 : 0);
       } if (nextProps.type === 'post') {
         Animated.timing(this.state.fadeAnim, {
           toValue: 1,
