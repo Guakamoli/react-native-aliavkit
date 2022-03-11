@@ -196,8 +196,8 @@ const Entry = (props) => {
   return (
     <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
       {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
-
-      <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
+      {PostView()}
+      {/* <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
         {PostView()}
       </View>
 
@@ -237,7 +237,7 @@ const Entry = (props) => {
             );
           })}
         </Animated.View>
-      }
+      } */}
     </View>
   );
 };
