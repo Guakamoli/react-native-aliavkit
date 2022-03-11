@@ -134,16 +134,16 @@ export default class StoryEditor extends Component<Props, State> {
     }
   }
   //  发布快拍   导出视频 
-  onExportVideo = async (event) => {
+   //  发布快拍   导出视频 
+   onExportVideo = async (event) => {
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
-      console.log('发布快拍 onExportVideo',  event.videoParams);
-
-      // //TODO 测试代码：保存到相册
-      // CameraRoll.save(event.outputPath, { type: 'video' })
-
-      uploadFile.push(event.videoParams);
-
+      // if(!event?.videoParams?.path.startsWith("file://") ){
+      //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
+      // }
+      let uploadData = [event.videoParams];
+      console.info('发布快拍 onExportVideo',  uploadData);
+      this.setState({ startExportVideo: false });
       // let outputPath = event.outputPath;
       // this.setState({ startExportVideo: false });
       // let uploadFile = [];
@@ -155,9 +155,10 @@ export default class StoryEditor extends Component<Props, State> {
       //   size: 0,
       //   Name: outputPath,
       // });
-      this.props.getUploadFile(uploadFile);
+      this.props.getUploadFile(uploadData);
     }
   };
+  
   getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if (this.state.filterList.length < 1) {
