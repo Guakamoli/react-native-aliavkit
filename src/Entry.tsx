@@ -72,7 +72,7 @@ const Entry = (props) => {
       setInitStory(false)
     }
   }, [props.isDrawerOpen]);
-  
+
   const { run: changeType } = useThrottleFn(
     (i) => {
       changeFlagLock.current = true;
@@ -195,7 +195,7 @@ const Entry = (props) => {
 
   return (
     <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
-      {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
+      {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
       {PostView()}
       {/* <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
         {PostView()}
