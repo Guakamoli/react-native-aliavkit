@@ -19,12 +19,14 @@ import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.view.control.RecordState
 import com.aliyun.svideo.recorder.view.focus.FocusView
 import com.facebook.react.ReactActivity
+import com.facebook.react.bridge.Promise
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.uimanager.ThemedReactContext
 import com.manwei.libs.dialog.OnDialogListener
 import com.manwei.libs.utils.permission.PermissionsDialog
 import com.manwei.libs.utils.permission.RxPermissionUtils
 import com.rncamerakit.BaseEventListener
+import com.rncamerakit.editor.manager.ColorFilterManager
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
 import org.jetbrains.anko.doAsync
@@ -42,6 +44,7 @@ class CKCamera(
     //录制状态，开始、暂停、准备,只是针对UI变化
     private val mRecordState = RecordState.STOP
 
+    private var isCopyAssets = false
     private val mContext = reactContext.applicationContext
     private var mFocusView: FocusView? = null
     private var mRecorderSurfaceView: SurfaceView? = null
@@ -192,6 +195,8 @@ class CKCamera(
         doAsync {
             RecordCommon.copyAll(reactContext)
             uiThread {
+                isCopyAssets = true
+                mColorFilterListPromise?.let { getRecordColorFilter(it) }
                 if (mRecorderManage != null) {
                     mRecorderManage?.initColorFilterAssets()
                 }
@@ -297,6 +302,13 @@ class CKCamera(
     }
 
     /**
+     * 设置滤镜
+     */
+    fun setColorFilter(filterPath: String?) {
+        mRecorderManage?.setColorFilter(filterPath)
+    }
+
+    /**
      * 设置宽高（dp）
      */
     fun setLayout(width: Int, height: Int) {
@@ -315,6 +327,17 @@ class CKCamera(
             mRecorderSurfaceView?.layoutParams = params
         }
 
+    }
+
+    private var mColorFilterListPromise: Promise? = null
+    //获取滤镜列表
+    fun getRecordColorFilter(promise: Promise) {
+        //如果还没解压完成，需要解压完后返回值
+        if (!isCopyAssets) {
+            mColorFilterListPromise = promise
+            return
+        }
+        ColorFilterManager.getRecordColorFilter(reactContext.applicationContext, promise)
     }
 
     private fun initCamera() {

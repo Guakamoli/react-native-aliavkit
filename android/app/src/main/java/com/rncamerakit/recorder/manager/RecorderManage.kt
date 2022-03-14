@@ -294,6 +294,20 @@ class RecorderManage(
     }
 
     /**
+     * 设置滤镜
+     */
+    fun setColorFilter(filterPath: String?) {
+        //设置滤镜 ,参数路径设置为null表示移除滤镜效果
+        if (TextUtils.isEmpty(filterPath)) {
+            val effect = EffectFilter("")
+            mRecorder?.applyFilter(effect)
+        } else {
+            val effect = EffectFilter(Source(filterPath))
+            mRecorder?.applyFilter(effect)
+        }
+    }
+
+    /**
      * 设置人脸贴纸
      */
     fun setFaceEffectPaster(paster: PreviewPasterForm, mReactContext: ReactContext?) {

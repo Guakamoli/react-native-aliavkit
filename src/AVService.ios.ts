@@ -32,6 +32,15 @@ export default class AVService {
     return cropVideoPath;
   }
 
+    /**
+   * 
+   * @returns 获取录制的滤镜列表
+   */
+     static async getRecordColorFilter() {
+      // let colorFilterList = await AliAVServiceBridge.getRecordColorFilter();
+      // return colorFilterList
+    }
+
 
   static async getFilterIcons() {
     return await AliAVServiceBridge.getFilterIcons({});

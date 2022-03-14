@@ -6,6 +6,7 @@ import {
   InteractionManager,
   View,
   // Pressable,
+  TouchableOpacity,
   Image,
   Dimensions,
   Platform,
@@ -98,6 +99,13 @@ const RenderLeftButtons = React.memo((props) => {
         {/* <FastImage style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
         <FastImage style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
+
+      <Pressable onPress={() => {
+        props.setShowColorFilter();
+      }}>
+        <FastImage style={styles.closeIcon} source={props.filterImage} resizeMode='contain' />
+      </Pressable>
+
       <BeautyButton {...props} />
     </View>
   );
@@ -240,6 +248,9 @@ class RenderCamera extends Component {
     this.state = {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
       showToast: false,
+      filterPath: null,
+      filterList: [],
+      showFilterLens: false,
     };
     // this.fadeAnim = new Animated.Value(1);
   }
@@ -263,11 +274,25 @@ class RenderCamera extends Component {
     // }
   };
   componentDidMount() {
+
+    this.getRecordColorFilter();
+
+    // console.log("Story 录制初始化 componentDidMount");
     //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
     // }
   }
+
+  getRecordColorFilter = async () => {
+    const colorFilerList = await AVService.getRecordColorFilter();
+    this.setState({
+      filterList: colorFilerList,
+      filterPath: colorFilerList[0]?.path,
+    });
+  }
+
+
   componentWillUnmount() {
     //
     this.props.camera?.current?.release();
@@ -288,7 +313,41 @@ class RenderCamera extends Component {
     this.props.camera.current?.pauseCamera();
   }
 
+  setShowColorFilter = () => {
+    if (this.state.showFilterLens) {
+      this.setState({
+        showFilterLens: false
+      });
+    } else {
+      this.setState({
+        showFilterLens: true
+      });
+    }
+  }
+
+
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (this.state.filterPath != nextState.filterPath) {
+      return true;
+    }
+
+    if (this.state.filterList != nextState.filterList) {
+      return true;
+    }
+
+    if (this.state.showFilterLens != nextState.showFilterLens) {
+      if (nextState.showFilterLens) {
+        this.props.hideBottomTools();
+        this.props.setShowRenderBottom(false);
+      } else {
+        this.props.showBottomTools();
+        this.props.setShowRenderBottom(true);
+      }
+      return true;
+    }
+
+
 
     if (this.props.type != nextProps.type && this.props.initStory) {
       //
@@ -323,8 +382,10 @@ class RenderCamera extends Component {
     if (nextProps.showBeautify != this.props.showBeautify) {
       if (nextProps.showBeautify) {
         this.props.hideBottomTools();
+        this.props.setShowRenderBottom(false);
       } else {
         this.props.showBottomTools();
+        this.props.setShowRenderBottom(true);
       }
       return false;
     }
@@ -359,13 +420,70 @@ class RenderCamera extends Component {
     }
     return false;
   }
+
+
+  // 滤镜 box
+  renderFilterBox() {
+    return (
+      <View style={{ height: 189, width: width, backgroundColor: 'black', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+        <View style={styles.beautifyBoxHead}>
+          <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
+        </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <FlatList
+            data={this.state.filterList}
+            horizontal={true}
+            keyExtractor={item => item.iconPath}
+            style={{ margin: 0, padding: 0, height: 80 }}
+            renderItem={({ index, item }) => {
+              return (
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({ filterPath: item.path });
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 20,
+                      }}
+                    >
+                      <FastImage
+                        style={[
+                          styles.beautifySelect,
+                          this.state.filterPath == item.filterPath && styles.beautifySelecin,
+                        ]}
+                        source={item.filterPath === null ? this.props.noResultPng : { uri: item.iconPath }}
+                      />
+                      <Text
+                        style={[
+                          styles.filterLensSelectTitle,
+                          this.state.filterPath == item.filterPath && { color: '#836BFF' },
+                        ]}
+                      >
+                        {item.filterPath ? item.filterPath : item.filterName}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              );
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+
   renderCamera = () => {
     let CameraFixHeight = width * 16 / 9;
     const fixHeight = height - this.props.insets.top - this.props.insets.bottom
     if (CameraFixHeight > fixHeight) {
       CameraFixHeight = fixHeight;
     }
-    //
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
@@ -392,6 +510,8 @@ class RenderCamera extends Component {
                 torchMode={'off'}
                 onReadCode={() => { }}
                 onRecordingProgress={() => { }}
+
+                filterPath={this.state.filterPath}
               />
             </View>
           )}
@@ -400,17 +520,19 @@ class RenderCamera extends Component {
     );
   };
   render() {
-    //
     return (
-      <View>
+      <View style={{ position: 'relative', height: '100%', width: '100%', backgroundColor: '#000' }}>
         <Pressable
           onPress={() => {
             this.props.setShowBeautify();
+            this.setState({ showFilterLens: false });
           }}
         >
           {this.renderCamera()}
-          {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />}
+
+          {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} setShowColorFilter={this.setShowColorFilter} key={'RenderLeftButtons'} />}
         </Pressable>
+        {this.state.showFilterLens && this.renderFilterBox()}
       </View>
     );
   }
