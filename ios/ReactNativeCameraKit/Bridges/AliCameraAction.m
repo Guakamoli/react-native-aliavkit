@@ -516,12 +516,13 @@
 
 - (void)setFilterPath:(NSString*)filterPath
 {
+    if(filterPath == nil || filterPath == NULL || [filterPath isKindOfClass:[NSNull class]] || filterPath.length == 0){
+        //移除滤镜
+        [self.recorder deleteFilter];
+    }else{
         AliyunEffectFilter *filter = [[AliyunEffectFilter alloc] initWithFile:filterPath];
         [self.recorder applyFilter:filter];
-//
-//        //移除滤镜
-//        [self.recorder deleteFilter];
-//    }
+    }
 }
 
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef

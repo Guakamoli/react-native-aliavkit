@@ -446,23 +446,23 @@ class RenderCamera extends Component {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        marginRight: 20,
+                        marginRight: 18,
                       }}
                     >
                       <FastImage
                         style={[
                           styles.beautifySelect,
-                          this.state.filterPath == item.filterPath && styles.beautifySelecin,
+                          this.state.filterPath == item.path && styles.beautifySelecin,
                         ]}
-                        source={item.filterPath === null ? this.props.noResultPng : { uri: item.iconPath }}
+                        source={!item.iconPath ? require('../../images/ic_color_filter_empty.png'): { uri: item.iconPath }}
                       />
                       <Text
                         style={[
                           styles.filterLensSelectTitle,
-                          this.state.filterPath == item.filterPath && { color: '#836BFF' },
+                          this.state.filterPath == item.path && { color: '#836BFF' },
                         ]}
                       >
-                        {item.filterPath ? item.filterPath : item.filterName}
+                        {item.filterName}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -666,6 +666,8 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(0, 0, 0, 1)',
   },
   beautifySelectTitle: {
     fontSize: 20,
