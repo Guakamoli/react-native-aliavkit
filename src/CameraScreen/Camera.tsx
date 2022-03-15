@@ -274,10 +274,7 @@ class RenderCamera extends Component {
     // }
   };
   componentDidMount() {
-
     this.getRecordColorFilter();
-
-    // console.log("Story 录制初始化 componentDidMount");
     //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);

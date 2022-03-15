@@ -27,7 +27,7 @@ export default class AVService {
 
 
   /**
-   * 
+   *
    * @returns 获取录制的滤镜列表
    */
   static async getRecordColorFilter() {
