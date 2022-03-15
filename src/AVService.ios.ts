@@ -22,7 +22,7 @@ export default class AVService {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
       // console.log("post 视频裁剪中...", reminder);
-      if(progressListener){
+      if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
@@ -32,18 +32,19 @@ export default class AVService {
     return cropVideoPath;
   }
 
-    /**
-   * 
-   * @returns 获取录制的滤镜列表
-   */
-     static async getRecordColorFilter() {
-      // let colorFilterList = await AliAVServiceBridge.getRecordColorFilter();
-      // return colorFilterList
-    }
+  /**
+ * 
+ * @returns 获取录制的滤镜列表
+ */
+  static async getRecordColorFilter() {
+    let colorFilterList = await AliAVServiceBridge.getRecordColorFilter({});
+    return colorFilterList
+  }
 
 
   static async getFilterIcons() {
-    return await AliAVServiceBridge.getFilterIcons({});
+    let colorFilterList = await AliAVServiceBridge.getFilterIcons({});
+    return colorFilterList
   }
 
   static async getFacePasterInfos({ }) {
