@@ -514,6 +514,16 @@
     _isPauseCamera = YES;
 }
 
+- (void)setFilterPath:(NSString*)filterPath
+{
+        AliyunEffectFilter *filter = [[AliyunEffectFilter alloc] initWithFile:filterPath];
+        [self.recorder applyFilter:filter];
+//
+//        //移除滤镜
+//        [self.recorder deleteFilter];
+//    }
+}
+
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {

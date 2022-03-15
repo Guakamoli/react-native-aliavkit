@@ -53,6 +53,7 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 - (void)resumeCamera;
 - (void)pauseCamera;
+- (void)setFilterPath:(NSString*)filterPath;
 @end
 
 

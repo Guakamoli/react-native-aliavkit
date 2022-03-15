@@ -286,6 +286,7 @@ class RenderCamera extends Component {
 
   getRecordColorFilter = async () => {
     const colorFilerList = await AVService.getRecordColorFilter();
+    colorFilerList.unshift({ filterName: "无效果", iconPath: '', path: '' });
     this.setState({
       filterList: colorFilerList,
       filterPath: colorFilerList[0]?.path,

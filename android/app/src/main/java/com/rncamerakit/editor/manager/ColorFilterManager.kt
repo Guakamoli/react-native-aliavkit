@@ -23,7 +23,7 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
     companion object {
         fun getColorFilter(mContext: Context, promise: Promise) {
             val mColorFilterList: MutableList<ColorFilter> = ArrayList()
-            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
+//            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
             EditorCommon.getColorFilterList(mContext).forEach { path ->
                 val name = File(path).name
                 val icon = "file://$path/icon.png"
@@ -37,7 +37,7 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
          */
         fun getRecordColorFilter(mContext: Context, promise: Promise) {
             val mColorFilterList: MutableList<ColorFilter> = ArrayList()
-            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
+//            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
             RecordCommon.getColorFilterList(mContext).forEach { path ->
                 val name = File(path).name
                 val icon = "file://$path/icon.png"
