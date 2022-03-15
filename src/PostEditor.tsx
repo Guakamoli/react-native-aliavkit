@@ -275,7 +275,7 @@ class PhotoShow extends Component {
     // const { multipleSandBoxData, imgfilterName, goback, params } = this.props;
     const { imgfilterName, goback, params } = this.props;
     const editImageData = params.editImageData;
-    console.log("滤镜名称", imgfilterName);
+   
     return (
       <View style={{ width: width, height: width, overflow: 'hidden' }}>
         <View>
@@ -294,7 +294,7 @@ class PhotoShow extends Component {
 
                 editImageData[0].cacheUri = nativeEvent.uri;
 
-                // console.log("save phont", nativeEvent.uri);
+                //
                 // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
                 // this.saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
               }}
@@ -325,7 +325,7 @@ class PhotoShow extends Component {
 
                         editImageData[index].cacheUri = nativeEvent.uri;
 
-                        // console.log("save phont", nativeEvent.uri);
+                        //
                         // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
                         // this.saveFilterImage(nativeEvent, item, false, index);
                       }}
@@ -478,7 +478,7 @@ const PostEditor = (props) => {
           startTime: trimmerLeftHandlePosition,
           endTime: trimmerRightHandlePosition,
         });
-        console.log('设置视频裁剪起止时间成功', isTrim);
+       
       }
 
       // 导出视频
@@ -507,7 +507,7 @@ const PostEditor = (props) => {
     const { params } = props;
 
     if (!params) return null;
-    // console.info('--------------multipleSandBoxData', params?.trimVideoData);
+    //
     setmultipleSandBoxData(params?.trimVideoData);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
@@ -531,10 +531,10 @@ const PostEditor = (props) => {
         toast.current.close();
       }
     });
-    // console.log("初始化:");
+    //
     return () => {
-      console.info('销毁了');
-      // console.info('销毁了', subscription);
+     
+      //
       // AVService.removeThumbnaiImages();
       if (Platform.OS === 'ios') {
         RNEditViewManager.stop();
@@ -580,10 +580,10 @@ const PostEditor = (props) => {
       //   ...thumbnailsArgument,
       //   needCover: true,
       // });
-      // console.info(FirstcoverData, 'FirstcoverData');
+      //
       // coverImage.current = FirstcoverData[0];
     } catch (e) {
-      console.info(e);
+     
     }
   };
   useEffect(() => {
@@ -593,7 +593,7 @@ const PostEditor = (props) => {
   }, [multipleSandBoxData]);
 
   const onExportVideo = async (event) => {
-    console.info('-------exportProgress', event.exportProgress);
+   
     try {
       if (event.exportProgress === 1) {
         // const cropData = props.params.cropDataResult;
@@ -639,7 +639,7 @@ const PostEditor = (props) => {
         }, 0);
       }
     } catch (e) {
-      console.info(e);
+     
     }
   };
 
@@ -647,7 +647,7 @@ const PostEditor = (props) => {
     const delta = trimmerRightHandlePosition - scrubberPosition;
     const top = props.params.cropDataRow.positionY;
     let cropDataRowkey = props.params.originalData[0].image.uri;
-    // console.info('props.params.trimVideoData', props.params.originalData[0]);
+    //
     const width1 = props.params.cropDataRow[cropDataRowkey].fittedSize.width;
     const height1 = props.params.cropDataRow[cropDataRowkey].fittedSize.height;
     const srcWidth = props.params.cropDataRow[cropDataRowkey].srcSize.width;

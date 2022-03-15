@@ -25,9 +25,9 @@ function HomeScreen(props) {
   const insets = useSafeAreaInsets()
   const sendfile = async (data) => {
     try {
-      console.log(data)
+      
     } catch (e) {
-      console.log(e);
+     
     }
 
   }
@@ -89,12 +89,12 @@ function Story(props) {
       {...props}
       // 退出操作
       goback={() => {
-        console.log(12313);
+       
         props.navigation.navigate('Home');
       }}
       // 拿到上传数据
       getUploadFile={(data) => {
-        console.log('getUploadFileStory-----------', data);
+       
       }}
       // story 跳转post 路由
       goPost={() => {
@@ -131,7 +131,6 @@ function Story(props) {
 }
 
 function Post(props) {
-  // console.info(props, 'ahshash');
   const { server, user, item, navigation } = props;
   return (
     <PostUpload
@@ -140,19 +139,18 @@ function Post(props) {
       //  退出操作
       goback={() => {
         // 回退操作
-        console.info('1111', props.navigation);
         props.navigation.replace('Home');
       }}
       goStory={() => {
         props.navigation.replace('storyPost');
       }}
       goPostEditor={(data) => {
-        console.log('postUploadpostUploadpostUpload', data);
+       
         props.navigation.push('PostEditorBox', { ...data });
       }}
       // 拿到上传数据
       getUploadFile={(data) => {
-        console.log('getUploadFile-----------', data);
+       
       }}
       multipleBtnImage={require('../images/multipleBtn.png')}
       startMultipleBtnImage={require('../images/startMultipleBtn.png')}
@@ -164,7 +162,7 @@ function Post(props) {
 }
 
 function PostEditorBox(props) {
-  // console.log(1111,props);
+  //
 
   return (
     <>
@@ -184,7 +182,7 @@ function PostEditorBox(props) {
         }}
         // 拿到上传数据
         getUploadFile={(data) => {
-          console.log('PostEditor-----getUploadFile', data);
+         
         }}
         noVolumeImage={require('../images/noVolume.png')}
         volumeImage={require('../images/volume.png')}

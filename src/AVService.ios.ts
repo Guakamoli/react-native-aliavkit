@@ -21,14 +21,14 @@ export default class AVService {
 
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
     const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
-      // console.log("post 视频裁剪中...", reminder);
-      if(progressListener){
+      //
+      if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
     let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
     managerEmitter.removeSubscription(carpListener);
-    // console.log('post 视频裁剪完成', cropVideoPath);
+    //
     return cropVideoPath;
   }
 
@@ -68,7 +68,6 @@ export default class AVService {
   }
   // name:'all-music' 分页传all-music'，其他传歌曲名
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
-    // console.info('getMusics', { name, page, songID, pageSize });
     return await RNMusicService.getMusics({ name, page, songID, pageSize });
   }
 

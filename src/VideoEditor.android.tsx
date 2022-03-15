@@ -78,7 +78,7 @@ export default class Editor extends Component<Props, State> {
     // }
     let videoTrim = await RNEditorKitModule.trimVideo(trimParams);
     return videoTrim
-    // console.log("videoTrim", videoTrim, trimParams);
+    //
   };
 
 
@@ -91,7 +91,7 @@ export default class Editor extends Component<Props, State> {
   }
 
   release = async () => {
-    // console.log("Video release");
+    //
     RNEditorKitModule.release();
   };
 
@@ -99,28 +99,28 @@ export default class Editor extends Component<Props, State> {
   async componentDidMount() {
 
     let list = await this.getMusicList("", 2, 10);
-    // console.log("getMusicList", list);
+    //
     //播放回调
     this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
-      // console.log("startVideoEditor", params);
+      //
       this.props.onPlayProgress({ nativeEvent: params });
     });
 
     // //视频裁剪进度
     // this.startVideoCropListener = DeviceEventEmitter.addListener('startVideoCrop', (progress) => {
-    //   console.log("startVideoCrop", progress);
+    //  
     // });
 
     //导出视频 合成回调
     this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
       // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
-      // console.log("视频合成中...", param);
+      //
       this.props.onExportVideo(param);
     });
 
     //音乐下载进度
     this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
-      console.log("downloadMusic", progress);
+     
     });
   }
 
@@ -140,7 +140,7 @@ export default class Editor extends Component<Props, State> {
     }
     // TODO post 销毁
     // if(this.props.source != 'story'){
-    //   console.log('post 销毁');
+    //  
       
      RNEditorKitModule.release();
     // }

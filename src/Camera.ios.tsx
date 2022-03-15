@@ -45,7 +45,7 @@ const Camera = React.forwardRef((props, ref) => {
     },
 
     release: () => {
-      console.log("ios camera release")
+      
       return CKCameraManager.destroyRecorder();
     },
   }));
@@ -53,10 +53,9 @@ const Camera = React.forwardRef((props, ref) => {
   React.useEffect(() => {
     const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
       //{ target: 65, duration: 5.769999980926514 }
-      // console.log('---- recordProgress: ', duration);
+      //
     });
     return () => {
-      // console.info("ios camera destroyRecorder")
       // CKCameraManager?.destroyRecorder();
       subscription.remove();
     };

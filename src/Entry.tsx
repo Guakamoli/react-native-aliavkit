@@ -87,14 +87,14 @@ const Entry = (props) => {
       }, 0);
 
       if (i.type === 'story' && !initStory) {
-        console.info("setInitStory true:");
+       
         setInitStory(true)
       }
 
     },
     { wait: 0 },
   );
-  // console.info("types111", type);
+  //
 
   const PostView = () => {
     return (

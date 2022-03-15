@@ -126,7 +126,7 @@ class PreviewBack extends React.Component {
         );
       }, 0);
     } catch (e) {
-      console.info(e, '拍摄错误');
+     
     }
   };
   shouldComponentUpdate(nextProps, nextState) {
@@ -196,13 +196,13 @@ class RenderCamera extends Component {
     // }
   };
   componentDidMount() {
-    // console.log("Story 录制初始化 componentDidMount");
+    //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
     // }
   }
   componentWillUnmount() {
-    // console.log("Story 录制销毁 componentWillUnmount");
+    //
     this.props.camera?.current?.release();
     // if (Platform.OS === 'ios') {
     //   AppState.removeEventListener('change', this.handleAppStateChange);
@@ -211,20 +211,20 @@ class RenderCamera extends Component {
 
   //恢复录制，用于 post 重新切换成  post, 或者 story 编辑 退出到 story
   resumeCamera = () => {
-    console.info("resumeCamera");
+   
     this.props.camera.current?.resumeCamera();
   }
 
   //暂停录制，用于 story 切换成 post 或者 story 进入 story 编辑
   pauseCamera = () => {
-    console.info("pauseCamera");
+   
     this.props.camera.current?.pauseCamera();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
 
     if (this.props.type != nextProps.type && this.props.initStory) {
-      // console.log("initStory  ", this.props.initStory, "type", nextProps.type);
+      //
       if (nextProps.type == "story") {
         this.resumeCamera();
       }
@@ -298,7 +298,7 @@ class RenderCamera extends Component {
     if (CameraFixHeight > fixHeight) {
       CameraFixHeight = fixHeight;
     }
-    // console.info("Camera CameraFixHeight", CameraFixHeight, height, this.props.insets.top, this.props.insets.bottom);
+    //
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
@@ -332,7 +332,7 @@ class RenderCamera extends Component {
     );
   };
   render() {
-    // console.log("bottomToolsVisibility 222",this.props.bottomToolsVisibility);
+    //
     return (
       <View>
         <Pressable

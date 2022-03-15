@@ -139,7 +139,7 @@ class RenderswitchModule extends React.PureComponent {
   }
   render() {
     let marginBottom = this.props.toolsInsetBottom + 5
-    // console.info("RenderswitchModule marginBottom", marginBottom);
+    //
     return (
       <View style={styles.BottomBox}>
         <Pressable
@@ -150,7 +150,7 @@ class RenderswitchModule extends React.PureComponent {
               try {
                 this.props.camera.current?.setPasterInfo?.(this.props.facePasterInfo);
               } catch (e) {
-                console.info('eeee', e);
+               
               }
             }, 100);
             AVService.enableHapticIfExist();
@@ -401,7 +401,7 @@ class CameraScreen extends Component<Props, State> {
     if (this.props.initStory != nextProps.initStory) {
       return true;
     }
-    // console.info(nextProps.initStory, nextProps.type);
+    //
     if (this.state.loadedPermissions != nextState.loadedPermissions) {
       return true;
     }
@@ -499,7 +499,7 @@ class CameraScreen extends Component<Props, State> {
         }
       }
     } catch (e) {
-      console.info(e);
+     
     }
   };
 
@@ -508,7 +508,7 @@ class CameraScreen extends Component<Props, State> {
       this.setState(data);
       this.props.setType('storyedit');
     } catch (e) {
-      console.info(e, '拍摄出错');
+     
     }
   };
   // 底部渲染

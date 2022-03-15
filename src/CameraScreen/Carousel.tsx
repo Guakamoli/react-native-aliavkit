@@ -201,7 +201,7 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-            console.log("LongPressGestureHandler", nativeEvent.state);
+           
             if (nativeEvent.state === State.ACTIVE) {
               this.props.longPress();
             } else if (nativeEvent.state === State.END) {
@@ -317,7 +317,7 @@ class CarouselWrapper extends Component<Props, State> {
         }
       });
     } catch (e) {
-      console.info(e, 'eeee');
+     
     }
   };
   shotCamera = async () => {
