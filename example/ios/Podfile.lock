@@ -45,15 +45,15 @@ PODS:
   - libwebp/mux (1.2.1):
     - libwebp/demux
   - libwebp/webp (1.2.1)
-  - Permission-Camera (3.2.0):
+  - Permission-Camera (3.3.1):
     - RNPermissions
-  - Permission-Microphone (3.2.0):
+  - Permission-Microphone (3.3.1):
     - RNPermissions
-  - Permission-Notifications (3.2.0):
+  - Permission-Notifications (3.3.1):
     - RNPermissions
-  - Permission-PhotoLibrary (3.2.0):
+  - Permission-PhotoLibrary (3.3.1):
     - RNPermissions
-  - Permission-PhotoLibraryAddOnly (3.2.0):
+  - Permission-PhotoLibraryAddOnly (3.3.1):
     - RNPermissions
   - QuCore-ThirdParty (4.3.1)
   - Queen (1.9.0-official-pro)
@@ -349,7 +349,7 @@ PODS:
     - SDWebImageWebPCoder (~> 0.4.1)
   - RNGestureHandler (1.10.3):
     - React-Core
-  - RNPermissions (3.2.0):
+  - RNPermissions (3.3.1):
     - React-Core
   - RNReanimated (2.4.1):
     - DoubleConversion
@@ -382,8 +382,8 @@ PODS:
   - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
-  - RNSVG (12.1.1):
-    - React
+  - RNSVG (12.3.0):
+    - React-Core
   - SDWebImage (5.12.3):
     - SDWebImage/Core (= 5.12.3)
   - SDWebImage/Core (5.12.3)
@@ -569,16 +569,16 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: e686045572151edef46010a6f819ade377dfeb4b
-  FBReactNativeSpec: 86153ff2624bcf8b4b61e6e2573429f8c7185045
+  FBReactNativeSpec: 3aabbcf576d965fac12809f3478aba42a58b8b8e
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   JSONModel: 02ab723958366a3fd27da57ea2af2113658762e9
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
-  Permission-Camera: 53efcbb755b0e8bdf253dbb27cc7559ccfce8480
-  Permission-Microphone: db557c64f7e9ad41bff6b3f6d93df3b67311855b
-  Permission-Notifications: bb420c3d28328df24de1b476b41ed8249ccf2537
-  Permission-PhotoLibrary: 7bec836dcdd04a0bfb200c314f1aae06d4476357
-  Permission-PhotoLibraryAddOnly: 06fb0cdb1d35683b235ad8c464ef0ecc88859ea3
+  Permission-Camera: bae27a8503530770c35aadfecbb97ec71823382a
+  Permission-Microphone: 13922195a81b9d46d2df8050c225006eae126d49
+  Permission-Notifications: 4b21cfdd5e8aab2cbb1f117aaa17b44e1f5736c4
+  Permission-PhotoLibrary: ddb5a158725b29cb12e9e477e8a5f5151c66cc3c
+  Permission-PhotoLibraryAddOnly: 104e42dbe894b0fccb370be26dd1b4a3c23578eb
   QuCore-ThirdParty: 837fa2cff865c468fd16b5b72ef092350a7073a9
   Queen: 793f369401b64f19aab1e9ae0ee7414607f2a1e6
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
@@ -614,10 +614,10 @@ SPEC CHECKSUMS:
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNFastImage: f40d202ea2367239f71bc7cf11315f4bebab85b4
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  RNPermissions: f7ebe52db07c00901127966ca080b4ec6a6ceb0a
+  RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
   RNReanimated: 58e7b950e0172235ff8296dd39ec145f9577e301
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
-  RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
+  RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   SDWebImage: 53179a2dba77246efa8a9b85f5c5b21f8f43e38f
   SDWebImageWebPCoder: 36f8f47bd9879a8aea6044765c1351120fd8e3a8
   SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
