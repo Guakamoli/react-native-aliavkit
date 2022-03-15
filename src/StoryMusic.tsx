@@ -75,7 +75,7 @@ const StoryMusic = (props) => {
 
   useEffect(() => {
     //初始化获取
-    // console.log('初始化', currentIndex, songData.length, carouselFirstItem);
+    //
     if (!songData || songData.length == 0 || !setMusicState) {
       getSong({});
     } else {
@@ -86,14 +86,14 @@ const StoryMusic = (props) => {
     }
     return () => {
       initialNum = mSelectedMusicPosition
-      console.log('音乐销毁');
+     
     };
   }, []);
 
   const onLengthHandle = useCallback(
     (e) => {
       // 歌曲搜索
-      // console.log("name", e.nativeEvent.text);
+      //
       getSearchSong(e.nativeEvent.text ? e.nativeEvent.text.trim() : "");
       setMusicSearchValue(e.nativeEvent.text);
     },
@@ -106,11 +106,11 @@ const StoryMusic = (props) => {
     const songa = await AVService.playMusic(song.songID);
     getMusicOn(songa);
     getmusicInfo(songa);
-    console.info('播放音乐', song.songID, song.name);
+   
     // getmusicInfo(song)
   };
   const pauseMusic = async (song) => {
-    console.info('暂停音乐', song.songID, song.name);
+   
     if (!song) {
       return;
     }
@@ -203,10 +203,10 @@ const StoryMusic = (props) => {
           setpage(page);
         }}
         onBeforeSnapToItem={(slideIndex = 0) => {
-          console.info("onBeforeSnapToItem", slideIndex);
+         
         }}
         onSnapToItem={(slideIndex = 0) => {
-          console.info("onSnapToItem", slideIndex);
+         
           playMusic(songData[slideIndex]);
           !setMusicState && props.setMusic(true);
           setCurrentPlayMusic(songData[slideIndex]);
@@ -341,7 +341,7 @@ const StoryMusic = (props) => {
                   <TouchableOpacity
                     key={item.songID}
                     onPress={async () => {
-                      console.log('搜索列表点击', item);
+                     
                       if (!isPlayMusic) {
                         playMusic(item);
                       }

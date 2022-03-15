@@ -211,7 +211,7 @@ class PostContent extends Component {
         minScale: 0,
       });
     } else if (nextProps.multipleData?.length > this.props.multipleData?.length) {
-      // console.log("多选删除");
+      //
     }
   }
 
@@ -303,7 +303,7 @@ class PostContent extends Component {
 
     //没有选择照片时，不更新
     if (!nextProps.multipleData || nextProps.multipleData.length <= 0) {
-      console.log("multipleData 为空");
+     
       return 0;
     }
 
@@ -315,7 +315,7 @@ class PostContent extends Component {
     }
 
     if (!imageItem) {
-      console.log("imageItem 为空");
+     
       return 0;
     }
 
@@ -420,7 +420,7 @@ class PostContent extends Component {
   }
 
   render() {
-    // console.log("render", this.state.positionX, this.state.positionY, this.state.cropScale, this.state.minScale);
+    //
     return (
       <View
         style={{
@@ -501,7 +501,7 @@ class PostContent extends Component {
                 let newKey = this.state.imageItem.uri;
                 cropDataRow[newKey] = cropperParams;
                 this.moveScale = cropperParams.scale;
-                // console.log("cropperParams", cropperParams);
+                //
               }}
             />
           </View>
@@ -599,7 +599,7 @@ class GridItemCover extends Component {
 
 
   clickItem = async (selectType: any) => {
-    // console.info("clickItem", "selectType", selectType);
+    //
     const { item, multipleData, selectMultiple, index } = this.props;
     const { type } = item;
     let fileType = item.playableDuration || type.split('/')[0] === 'video' ? 'video' : 'image';
@@ -630,13 +630,13 @@ class GridItemCover extends Component {
       //  多选
       let fileSelectType = multipleData[multipleData.length - 1].type;
       // if (fileSelectType != fileType && selectMultiple) {
-      //   console.info('选择不一致 无效');
+      //  
       //   return;
       // }
 
       // android 返回的 fileSelectType 是   video/mp4 |  image/jpeg
       if (fileSelectType.indexOf(fileType) === -1 && selectMultiple) {
-        console.info('选择不一致 无效');
+       
         return;
       }
     }
@@ -693,7 +693,7 @@ class GridItemCover extends Component {
           }
         });
       } catch (error) {
-        console.info('至少选择一张图片');
+       
       }
       if (datalist.length >= 10) {
         this.props.toastRef.current.show('最多选择十张图片', 1000);
@@ -1059,7 +1059,7 @@ class PostFileUpload extends Component {
         if (AsyncStorage) {
           await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
         }
-        // console.info("photos", photos[1]);
+        //
         this.setState({
           CameraRollList: photos,
         });
@@ -1077,7 +1077,7 @@ class PostFileUpload extends Component {
       this.getPhotos();
       // 在这里重新获取数据
 
-      console.log('App has come to the foreground!');
+     
       this.props.setVideoPlayer(true)
     } else {
       this.props.setVideoPlayer(false)
@@ -1433,9 +1433,9 @@ export default class CameraScreen extends Component<Props, State> {
 
         // // //TODO  视频压缩
         // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-        //   console.log("post 视频裁剪中......", progress);
+        //  
         // });
-        // console.info("trimVideoData 0", trimVideoData);
+        //
         // CameraRoll.save(trimVideoData, { type: 'video' })
         
         resultData.push(trimVideoData);
@@ -1500,10 +1500,10 @@ export default class CameraScreen extends Component<Props, State> {
             // });
           }),
         );
-        // console.info('------裁剪数据回调233', results);
+        //
         resultData = results;
       }
-      // console.info('-xx multipleData', multipleData);
+      //
 
       if (this.props.selectMultiple) {
         let selectData = null;
@@ -1530,10 +1530,10 @@ export default class CameraScreen extends Component<Props, State> {
       //TODO
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
-        // console.info("onUploadVideo", resultData, multipleData);
+        //
         this.onUploadVideo(multipleData, resultData);
       } else {
-        // console.info("onUploadPhoto", editImageData);
+        //
         this.onUploadPhoto(editImageData)
       }
       this.mClickLock = false;
@@ -1569,7 +1569,7 @@ export default class CameraScreen extends Component<Props, State> {
       this.mClickLock = false;
       return;
     } catch (e) {
-      console.info(e, '错误');
+     
       this.mClickLock = false;
     }
   };
@@ -1607,7 +1607,7 @@ export default class CameraScreen extends Component<Props, State> {
         height: item.image.height,
       }
     }
-    // console.info("uploadData", uploadData);
+    //
     this.props.getUploadFile(uploadData);
   }
 
@@ -1653,7 +1653,7 @@ export default class CameraScreen extends Component<Props, State> {
         }
       }
     }
-    // console.info("uploadData", uploadData);
+    //
     this.props.getUploadFile(uploadData);
   }
 

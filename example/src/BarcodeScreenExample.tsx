@@ -17,7 +17,7 @@ export default class BarcodeScreenExample extends Component {
     Alert.alert(
       `"${event.type}" Button Pressed`,
       `${captureImages}`,
-      [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+      [{ text: 'OK', onPress: () => {} }],
       { cancelable: false },
     );
   }

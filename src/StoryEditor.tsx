@@ -113,7 +113,7 @@ export default class StoryEditor extends Component<Props, State> {
     this.musicInfo = {};
   }
   startExportVideo() {
-    console.log('发布快拍 startExportVideo');
+   
     if (this.state.startExportVideo) {
       return;
     }
@@ -128,7 +128,7 @@ export default class StoryEditor extends Component<Props, State> {
     // }, 1000);
   }
   pauseMusic(song) {
-    console.log('暂停音乐', song);
+   
     if (song) {
       AVService.pauseMusic(song?.songID);
     }
@@ -137,7 +137,7 @@ export default class StoryEditor extends Component<Props, State> {
   onExportVideo = async (event) => {
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
-      console.log('发布快拍 onExportVideo',  event.videoParams);
+     
 
       // //TODO 测试代码：保存到相册
       // CameraRoll.save(event.outputPath, { type: 'video' })
@@ -181,7 +181,7 @@ export default class StoryEditor extends Component<Props, State> {
       RNEditViewManager.stop();
     }
     // 结束编辑页面
-    console.log('拍摄编辑销毁');
+   
     this.setState = () => false;
   }
 
@@ -211,7 +211,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 编辑头部按钮
   renderUpdateTop() {
-    // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
+    //
     const { showFilterLens, musicOpen } = this.state;
     const imglist = [
       // 'filter':
@@ -280,7 +280,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄进度
   _onRecordingDuration(event) {
-    // console.log('duration: ', event.duration);
+    //
   }
 
   // 拍摄内容渲染
@@ -298,7 +298,7 @@ export default class StoryEditor extends Component<Props, State> {
 
       //TODO 测试代码：保存到相册 
       // CameraRoll.save(this.props.imagePath, { type: 'photo' })
-      // console.info("this.props.imagePath", this.props.imagePath);
+      //
       return (
         <View
           style={{
