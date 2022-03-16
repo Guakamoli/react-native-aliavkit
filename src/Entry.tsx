@@ -59,11 +59,11 @@ const Entry = (props) => {
   const types = [
     {
       type: 'post',
-      name: '作品',
+      name: `${I18n.t('work')}`,
     },
     {
       type: 'story',
-      name: '快拍',
+      name: `${I18n.t('Snapshot')}`,
     },
   ];
 

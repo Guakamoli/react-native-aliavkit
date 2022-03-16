@@ -290,7 +290,7 @@ class CarouselWrapper extends Component<Props, State> {
       const success = await this.props.camera.current?.startRecording?.();
       this.props.hideBottomTools();
       if (!success) {
-        this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
+        this.props.myRef?.current?.show?.(`${I18n.t('Camera_failed_please_try_again')}`, 2000);
         this.pressLock = false;
 
         return;
