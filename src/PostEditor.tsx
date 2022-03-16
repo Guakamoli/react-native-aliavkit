@@ -26,6 +26,8 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
+import I18n from './i18n';
+
 import {
   Grayscale,
   Temperature,

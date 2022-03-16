@@ -23,6 +23,7 @@ import Reanimated, { Easing } from 'react-native-reanimated';
 
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
+import I18n from '../i18n';
 
 import AVService from '../AVService';
 import { connect } from 'react-redux';

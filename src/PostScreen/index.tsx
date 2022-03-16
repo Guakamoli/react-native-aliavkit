@@ -34,6 +34,7 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
+import I18n from '../i18n';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
@@ -1166,8 +1167,8 @@ class PostFileUpload extends Component {
 
   showToSettingAlert = () =>
     Alert.alert(
-      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相册权限" : "",
-      Platform.OS === 'ios' ? "" : "“拍鸭”需要读取您的存储权限",
+      Platform.OS === 'ios' ? I18n.t('Need_album_permission') : "",
+      Platform.OS === 'ios' ? "" :I18n.t('Need_album_permission') ,
       [
         {
           text: `${I18n.t('Not_set_yet')}`,

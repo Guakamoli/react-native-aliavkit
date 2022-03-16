@@ -28,6 +28,7 @@ import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
 import CameraRoll from '@react-native-community/cameraroll';
+import I18n from './i18n';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;

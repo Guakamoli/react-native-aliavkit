@@ -16,6 +16,7 @@ import {
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect } from 'react-redux';
+import I18n from '../i18n';
 
 import _ from 'lodash';
 import Camera from '../Camera';

@@ -23,6 +23,7 @@ import { connect, useSelector, useDispatch } from 'react-redux';
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import I18n from '../i18n';
 
 import _ from 'lodash';
 import Camera from '../Camera';

@@ -20,6 +20,8 @@ import AVService from './AVService';
 import { Button } from 'react-native-elements';
 import ImageMap from '../images';
 import { concat } from 'lodash';
+import I18n from './i18n';
+
 import { ForceTouchGestureHandler } from 'react-native-gesture-handler';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
