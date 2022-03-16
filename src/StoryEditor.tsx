@@ -200,7 +200,7 @@ export default class StoryEditor extends Component<Props, State> {
             }}
           >
             <View style={styles.uploadBox}>
-              <Text style={styles.uploadTitle}>发布快拍</Text>
+              <Text style={styles.uploadTitle}>{`${I18n.t('Post_story')}`}</Text>
             </View>
           </TouchableOpacity>
         </>
@@ -367,7 +367,7 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <View style={{ height: 189, backgroundColor: '#000' }}>
         <View style={styles.beautifyBoxHead}>
-          <Text style={styles.beautifyTitle}>滤镜</Text>
+          <Text style={styles.beautifyTitle}>{`${I18n.t('filter')}`}</Text>
         </View>
         {this.state.showFilterLens && (
           <View style={{ paddingHorizontal: 20 }}>

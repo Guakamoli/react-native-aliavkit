@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 const resultMap = {};
-const reg = /'[\u4e00-\u9fa5].*?'/g;
+// const reg = /'[\u4e00-\u9fa5].*?'/g;
 const likereg = /action: '(.*)'/g;
-// const reg = />[\u4e00-\u9fa5].*?</g;
+const reg = />[\u4e00-\u9fa5].*?</g;
 const angleRegleft = />[\u4e00-\u9fa5].*/g;
 
 const likeMap = {
@@ -78,9 +78,9 @@ const getChinese = (filePath, stat) => {
 		const data = fs.readFileSync(filePath, 'utf8');
         const resdata = data.replace(reg, (res,)=> {
             console.info(res, '哈哈哈')
-            const rep = b[res.replace(/\'/g, '')]
+            const rep = b[res.replace(/\'/g, '').replace('>', '').replace('<', '')]
             if (!rep || likeMap[rep]) return res
-            return `\{\`\${I18n.t('${rep}')}\`\}`
+            return `>\{\`\${I18n.t('${rep}')}\`\}<`
         })
         fs.writeFileSync(filePath, resdata)
 		const res = data.match(reg);

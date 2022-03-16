@@ -128,7 +128,7 @@ const PostHead = React.memo((props) => {
           alignItems: 'flex-end',
         }}
       >
-        <Text style={styles.continueText}>继续</Text>
+        <Text style={styles.continueText}>{`${I18n.t('continue')}`}</Text>
       </Pressable>
     </View>
   );
@@ -1053,7 +1053,7 @@ const PostEditor = (props) => {
           },
         ]}
       >
-        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>请修剪视频,视频时长不能超过5分钟。</Text>
+        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>{`${I18n.t('Please_trim_the_video_the_length_of_the_video_cannot_exceed_5_minutes_')}`}</Text>
         <View style={styles.toastShow}></View>
       </Animated.View>
     );

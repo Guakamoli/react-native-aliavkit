@@ -162,7 +162,7 @@ const PostFileUploadHead = React.memo((props) => {
       }}
     >
       <TouchableOpacity>
-        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
+        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>{`${I18n.t('Recent_Albums')}`}</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
@@ -929,7 +929,7 @@ const PostHead = React.memo((props) => {
       >
         <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
-      <Text style={styles.textCenter}>新作品</Text>
+      <Text style={styles.textCenter}>{`${I18n.t('New_product')}`}</Text>
 
       <Pressable
         onPress={postEditor}
@@ -1678,7 +1678,7 @@ export default class CameraScreen extends Component<Props, State> {
           }}
         >
           <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
-          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>{`${I18n.t('No_internet_connection')}`}</Text>
         </View>,
         1000,
       );
