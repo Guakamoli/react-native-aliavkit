@@ -942,7 +942,7 @@ const PostHead = React.memo((props) => {
         }}
       >
         <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
-          继续
+          {I18n.t('continue')}
         </Text>
       </Pressable>
     </View>
