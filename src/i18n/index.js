@@ -27,7 +27,7 @@ export const setLanguage = (l) => {
 	if (!locale) {
 		locale = 'en';
 	}
-	// locale = 'zh-CN'
+	locale = 'zh-CN'
 	// don't go forward if it's the same language and default language (en) was setup already
 	if (i18n.locale === locale && i18n.translations?.en) {
 		return;
