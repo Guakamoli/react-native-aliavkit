@@ -18,7 +18,7 @@ target 'CameraKitExample' do
   pod 'ReactNativeAliAVKit', :path => '../..'
   pod 'react-native-image-editor', :path => '../../node_modules/@react-native-community/image-editor'
   pod 'RNFastImage', :path => '../../node_modules/@rocket.chat/react-native-fast-image'
-
+  pod 'RNLocalize', :path => '../../node_modules/react-native-localize'
   
   pod 'RNPermissions', :path => "../../node_modules/react-native-permissions"
   permissions_path = '../../node_modules/react-native-permissions/ios'

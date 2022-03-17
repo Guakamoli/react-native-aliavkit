@@ -20,6 +20,8 @@ import AVService from './AVService';
 import { Button } from 'react-native-elements';
 import ImageMap from '../images';
 import { concat } from 'lodash';
+import I18n from './i18n';
+
 import { ForceTouchGestureHandler } from 'react-native-gesture-handler';
 const { useMusic } = ImageMap;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
@@ -272,9 +274,9 @@ const StoryMusic = (props) => {
               hitSlop={{ left: 10, top: 5, right: 10, bottom: 5 }}
               onPress={closeMusicSearch}
             >
-              <Text style={styles.findMusicCancel}>取消</Text>
+              <Text style={styles.findMusicCancel}>{`${I18n.t('Cancel')}`}</Text>
             </TouchableOpacity>
-            <Text style={styles.findMusicHeadTitle}>背景音乐</Text>
+            <Text style={styles.findMusicHeadTitle}>{`${I18n.t('Background_music')}`}</Text>
             <TouchableOpacity
               hitSlop={{ left: 10, top: 5, right: 10, bottom: 5 }}
               onPress={() => {
@@ -315,7 +317,7 @@ const StoryMusic = (props) => {
                 setMmusicChoice(false);
               }}
             >
-              <Text style={[styles.musicFindSuccess, { color: '#fff' }]}>完成</Text>
+              <Text style={[styles.musicFindSuccess, { color: '#fff' }]}>{`${I18n.t('Finish')}`}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.searchMusic}>
@@ -387,7 +389,7 @@ const StoryMusic = (props) => {
               height: 12,
               marginRight: 5,
             }} />
-            <Text style={styles.musicSearchText}>搜索</Text>
+            <Text style={styles.musicSearchText}>{`${I18n.t('search')}`}</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -416,7 +418,7 @@ const StoryMusic = (props) => {
             ) : (
               <View style={styles.musicUnSelect}></View>
             )}
-            <Text style={styles.musicSelectTitle}>配乐</Text>
+            <Text style={styles.musicSelectTitle}>{`${I18n.t('Soundtrack')}`}</Text>
           </TouchableOpacity>
         </View>
       )}

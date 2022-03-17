@@ -23,6 +23,7 @@ import { connect, useSelector, useDispatch } from 'react-redux';
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import I18n from '../i18n';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -327,15 +328,15 @@ class CameraScreen extends Component<Props, State> {
 
   showToSettingAlert = () =>
     Alert.alert(
-      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相机和麦克风权限" : "",
-      Platform.OS === 'ios' ? "" : "“拍鸭”需要获取您的相机和麦克风权限",
+      Platform.OS === 'ios' ? I18n.t('Need_camera_permission') : "",
+      Platform.OS === 'ios' ? "" : I18n.t('Need_camera_permission') ,
       [
         {
-          text: "暂不设置",
+          text: `${I18n.t('Not_set_yet')}`,
           style: "default",
         },
         {
-          text: "去设置",
+          text: `${I18n.t('go_to_settings')}`,
           onPress: () => openSettings(),
           style: "default",
         },
@@ -394,7 +395,7 @@ class CameraScreen extends Component<Props, State> {
 
   }
   componentDidUpdate(props, state) {
-    // this.myRef?.current?.show?.('点击拍照，长按拍视频', 1000);
+    // this.myRef?.current?.show?.(`${I18n.t('Tap_to_take_a_photo_long_press_to_take_a_video')}`, 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
 
@@ -429,7 +430,7 @@ class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
-      this.myRef?.current?.show?.('无法在你的设备使用此贴纸！', 2000);
+      this.myRef?.current?.show?.(`${I18n.t('Cannot_use_this_sticker_on_your_device')}`, 2000);
       return true;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {

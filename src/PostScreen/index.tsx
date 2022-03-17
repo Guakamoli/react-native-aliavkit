@@ -34,6 +34,7 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
+import I18n from '../i18n';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
@@ -162,7 +163,7 @@ const PostFileUploadHead = React.memo((props) => {
       }}
     >
       <TouchableOpacity>
-        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
+        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>{`${I18n.t('Recent_Albums')}`}</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
@@ -644,7 +645,7 @@ class GridItemCover extends Component {
     const itemCopy = { ...item };
 
     if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
-      return this.props.toastRef.current.show('视频时长不能超过5分钟', 1000);
+      return this.props.toastRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 1000);
     }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
@@ -696,7 +697,7 @@ class GridItemCover extends Component {
        
       }
       if (datalist.length >= 10) {
-        this.props.toastRef.current.show('最多选择十张图片', 1000);
+        this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 1000);
         // 无效 注意
         return;
       }
@@ -929,7 +930,7 @@ const PostHead = React.memo((props) => {
       >
         <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
-      <Text style={styles.textCenter}>新作品</Text>
+      <Text style={styles.textCenter}>{`${I18n.t('New_product')}`}</Text>
 
       <Pressable
         onPress={postEditor}
@@ -941,7 +942,7 @@ const PostHead = React.memo((props) => {
         }}
       >
         <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
-          继续
+          {I18n.t('continue')}
         </Text>
       </Pressable>
     </View>
@@ -1065,7 +1066,6 @@ class PostFileUpload extends Component {
         });
       },
       function (err) {
-        // alert( '获取照片失败！' );
       },
     );
   };
@@ -1167,15 +1167,15 @@ class PostFileUpload extends Component {
 
   showToSettingAlert = () =>
     Alert.alert(
-      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相册权限" : "",
-      Platform.OS === 'ios' ? "" : "“拍鸭”需要读取您的存储权限",
+      Platform.OS === 'ios' ? I18n.t('Need_album_permission') : "",
+      Platform.OS === 'ios' ? "" :I18n.t('Need_album_permission') ,
       [
         {
-          text: "暂不设置",
+          text: `${I18n.t('Not_set_yet')}`,
           style: "default",
         },
         {
-          text: "去设置",
+          text: `${I18n.t('go_to_settings')}`,
           onPress: () => openSettings(),
           style: "default",
         },
@@ -1365,7 +1365,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
 
     if (multipleData.length < 1) {
-      return this.myRef.current.show('请至少选择一个上传文件', 1000);
+      return this.myRef.current.show(`${I18n.t('Please_select_at_least_one_upload_file')}`, 1000);
     }
 
     const imageItem = multipleData[multipleData.length - 1].image;
@@ -1373,7 +1373,7 @@ export default class CameraScreen extends Component<Props, State> {
     let type = multipleData[multipleData.length - 1]?.type;
 
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
-      return this.myRef.current.show('视频时长不能超过5分钟', 1000);
+      return this.myRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 1000);
     }
 
     this.mClickLock = true;
@@ -1679,7 +1679,7 @@ export default class CameraScreen extends Component<Props, State> {
           }}
         >
           <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
-          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>{`${I18n.t('No_internet_connection')}`}</Text>
         </View>,
         1000,
       );
@@ -1707,7 +1707,7 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
 
-  loadingView = (text = '加载中...', isShow = true) => {
+  loadingView = (text = `${I18n.t('Loading')}`, isShow = true) => {
     return isShow && (<View style={{
       position: 'absolute',
       left: 0,
@@ -1781,7 +1781,7 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           />
         ) : null}
-        {this.loadingView("视频处理中...", this.state.isShowLoading)}
+        {this.loadingView(`${I18n.t('Video_processing')}`, this.state.isShowLoading)}
       </View>
     );
   }
