@@ -328,8 +328,8 @@ class CameraScreen extends Component<Props, State> {
 
   showToSettingAlert = () =>
     Alert.alert(
-      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相机和麦克风权限" : "",
-      Platform.OS === 'ios' ? "" : "“拍鸭”需要获取您的相机和麦克风权限",
+      Platform.OS === 'ios' ? I18n.t('Need_camera_permission') : "",
+      Platform.OS === 'ios' ? "" : I18n.t('Need_camera_permission') ,
       [
         {
           text: `${I18n.t('Not_set_yet')}`,

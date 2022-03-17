@@ -7,7 +7,7 @@ export const LANGUAGES = [
 		value: 'en',
 		file: () => require('./locales/en.json')
 	}, {
-		label: `${I18n.t('Simplified_Chinese')}`,
+		label: '简体中文',
 		value: 'zh-CN',
 		file: () => require('./locales/zh-CN.json')
 	}
