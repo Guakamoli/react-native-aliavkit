@@ -31,5 +31,7 @@
     "Finish": "完成",
     "search": "搜索",
     "Soundtrack": "配乐",
-    "Need_album_permission": "“拍鸭”需要获取您的相册权限"
+    "Need_album_permission": "“拍鸭”需要获取您的相册权限",
+    "Need_camera_permission": "“拍鸭”需要获取您的相机和麦克风权限"
+
 }

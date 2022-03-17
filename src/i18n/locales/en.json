@@ -31,6 +31,7 @@
     "Finish": "Finish",
     "search": "search",
     "Soundtrack": "Soundtrack",
-    "Need_album_permission": "Paiya needs to get your album permission"
+    "Need_album_permission": "Paiya needs to get your album permission",
+    "Need_camera_permission": "Paiya requires access to your camera and microphone"
 
 }
