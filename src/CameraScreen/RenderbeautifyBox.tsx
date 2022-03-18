@@ -16,6 +16,7 @@ import {
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect } from 'react-redux';
+import I18n from '../i18n';
 
 import _ from 'lodash';
 import Camera from '../Camera';
@@ -49,7 +50,7 @@ class RenderbeautifyBox extends React.PureComponent {
         style={{ height: 200, backgroundColor: 'black', width: width, zIndex: 999, position: 'absolute', bottom: 0 }}
       >
         <View style={styles.beautifyBoxHead}>
-          <Text style={styles.beautifyTitle}>{`美颜`}</Text>
+          <Text style={styles.beautifyTitle}>{`${I18n.t('beauty')}`}</Text>
           {/* <FastImage style={styles.beautyAdjustIcon} source={this.props.beautyAdjustImag} resizeMode='contain' /> */}
         </View>
         <View style={styles.beautifyBoxContent}>

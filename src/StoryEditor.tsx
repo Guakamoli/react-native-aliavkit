@@ -28,6 +28,7 @@ import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
 import CameraRoll from '@react-native-community/cameraroll';
+import I18n from './i18n';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -117,7 +118,7 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.startExportVideo) {
       return;
     }
-    this.props.myRef.current.show('快拍作品将在24小时后消失', 2000);
+    this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
     this.setState({ musicExport: true }, () => {
       this.setState({ startExportVideo: true });
     });
@@ -145,7 +146,7 @@ export default class StoryEditor extends Component<Props, State> {
       this.setState({ startExportVideo: false });
 
 
-      // //TODO 测试代码：保存到相册
+      // // 测试代码：保存到相册
       // CameraRoll.save(event.outputPath, { type: 'video' })
 
       uploadFile.push(event.videoParams);
@@ -211,7 +212,7 @@ export default class StoryEditor extends Component<Props, State> {
             }}
           >
             <View style={styles.uploadBox}>
-              <Text style={styles.uploadTitle}>发布快拍</Text>
+              <Text style={styles.uploadTitle}>{`${I18n.t('Post_story')}`}</Text>
             </View>
           </TouchableOpacity>
         </>
@@ -296,7 +297,7 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
-      //TODO
+      //
       // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
       // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
       let CameraFixHeight = width * 16 / 9;
@@ -306,7 +307,7 @@ export default class StoryEditor extends Component<Props, State> {
       }
 
 
-      //TODO 测试代码：保存到相册 
+      // 测试代码：保存到相册
       // CameraRoll.save(this.props.imagePath, { type: 'photo' })
       //
       return (
@@ -327,7 +328,7 @@ export default class StoryEditor extends Component<Props, State> {
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
             editHeight={CameraFixHeight}
-            //TODO
+            //
             editStyle={{
               width: width,
               height: CameraFixHeight,
@@ -340,7 +341,7 @@ export default class StoryEditor extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
-            // TODO 安卓兼容
+            // 安卓兼容
             onPlayProgress={() => { }}
           // source={"story"}
           />
@@ -378,7 +379,7 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <View style={{ height: 189, backgroundColor: '#000' }}>
         <View style={styles.beautifyBoxHead}>
-          <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
+          <Text style={styles.beautifyTitle}>{`${I18n.t('filter')}`}</Text>
         </View>
         {this.state.showFilterLens && (
           <View style={{ paddingHorizontal: 20 }}>
@@ -454,7 +455,7 @@ export default class StoryEditor extends Component<Props, State> {
           opacity={0.8}
         />
         {this.renderCamera()}
-        {/* TODO */}
+        {/*  */}
         {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen ? (

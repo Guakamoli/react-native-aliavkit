@@ -350,6 +350,9 @@ PODS:
   - RNGestureHandler (1.10.3):
     - React-Core
   - RNPermissions (3.3.1):
+  - RNLocalize (2.1.1):
+    - React-Core
+  - RNPermissions (3.2.0):
     - React-Core
   - RNReanimated (2.4.1):
     - DoubleConversion
@@ -440,6 +443,7 @@ DEPENDENCIES:
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNFastImage (from `../../node_modules/@rocket.chat/react-native-fast-image`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
+  - RNLocalize (from `../../node_modules/react-native-localize`)
   - RNPermissions (from `../../node_modules/react-native-permissions`)
   - RNReanimated (from `../../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -549,6 +553,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@rocket.chat/react-native-fast-image"
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
+  RNLocalize:
+    :path: "../../node_modules/react-native-localize"
   RNPermissions:
     :path: "../../node_modules/react-native-permissions"
   RNReanimated:
@@ -616,6 +622,9 @@ SPEC CHECKSUMS:
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
   RNReanimated: 58e7b950e0172235ff8296dd39ec145f9577e301
+  RNLocalize: 82a569022724d35461e2dc5b5d015a13c3ca995b
+  RNPermissions: f7ebe52db07c00901127966ca080b4ec6a6ceb0a
+  RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   SDWebImage: 53179a2dba77246efa8a9b85f5c5b21f8f43e38f
@@ -624,6 +633,6 @@ SPEC CHECKSUMS:
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
-PODFILE CHECKSUM: decb2ae117526a3211daa6d0ca4c5944e723add5
+PODFILE CHECKSUM: 390127fc71d54e21590e5f42a27cb90ce88662fa
 
 COCOAPODS: 1.10.2

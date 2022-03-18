@@ -7,6 +7,7 @@ import PostUpload from './PostScreen';
 import { useThrottleFn } from 'ahooks';
 import { useSelector, useDispatch } from 'react-redux';
 import { setType } from './actions/container';
+import I18n from './i18n';
 const { width, height } = Dimensions.get('window');
 
 const Entry = (props) => {
@@ -59,11 +60,11 @@ const Entry = (props) => {
   const types = [
     {
       type: 'post',
-      name: '作品',
+      name: `${I18n.t('work')}`,
     },
     {
       type: 'story',
-      name: '快拍',
+      name: `${I18n.t('Snapshot')}`,
     },
   ];
 
