@@ -34,6 +34,7 @@ import PostEditor from '../PostEditor';
 import { connect } from 'react-redux';
 import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
+import I18n from '../i18n';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
@@ -123,6 +124,23 @@ class MultipleSelectButton extends Component {
     }
     this.props.setSelectMultiple();
   };
+
+  /**
+   * setState 刷新时触发
+   * @returns true 会继续更新； false 不会执行 render
+   */
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (nextProps.isDrawerOpen) {
+        //这里刷新，重置ppost状态  TODOWUYQ
+        if (this.props.selectMultiple) {
+          this.props.setSelectMultiple();
+        }
+      }
+    }
+    return true
+  }
+
   render() {
     // return null;
     return (
@@ -162,7 +180,7 @@ const PostFileUploadHead = React.memo((props) => {
       }}
     >
       <TouchableOpacity>
-        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>最近相册</Text>
+        <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>{`${I18n.t('Recent_Albums')}`}</Text>
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <MultipleSelectButton {...props} key={'MultipleSelectButton'} />
@@ -303,7 +321,7 @@ class PostContent extends Component {
 
     //没有选择照片时，不更新
     if (!nextProps.multipleData || nextProps.multipleData.length <= 0) {
-     
+
       return 0;
     }
 
@@ -315,7 +333,6 @@ class PostContent extends Component {
     }
 
     if (!imageItem) {
-     
       return 0;
     }
 
@@ -636,7 +653,7 @@ class GridItemCover extends Component {
 
       // android 返回的 fileSelectType 是   video/mp4 |  image/jpeg
       if (fileSelectType.indexOf(fileType) === -1 && selectMultiple) {
-       
+
         return;
       }
     }
@@ -644,7 +661,7 @@ class GridItemCover extends Component {
     const itemCopy = { ...item };
 
     if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
-      return this.props.toastRef.current.show('视频时长不能超过5分钟', 1000);
+      return this.props.toastRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 1000);
     }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
@@ -693,10 +710,10 @@ class GridItemCover extends Component {
           }
         });
       } catch (error) {
-       
+
       }
       if (datalist.length >= 10) {
-        this.props.toastRef.current.show('最多选择十张图片', 1000);
+        this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 1000);
         // 无效 注意
         return;
       }
@@ -929,7 +946,7 @@ const PostHead = React.memo((props) => {
       >
         <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
-      <Text style={styles.textCenter}>新作品</Text>
+      <Text style={styles.textCenter}>{`${I18n.t('New_product')}`}</Text>
 
       <Pressable
         onPress={postEditor}
@@ -941,7 +958,7 @@ const PostHead = React.memo((props) => {
         }}
       >
         <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
-          继续
+          {I18n.t('continue')}
         </Text>
       </Pressable>
     </View>
@@ -1065,7 +1082,6 @@ class PostFileUpload extends Component {
         });
       },
       function (err) {
-        // alert( '获取照片失败！' );
       },
     );
   };
@@ -1076,8 +1092,6 @@ class PostFileUpload extends Component {
       clickItemLock = false;
       this.getPhotos();
       // 在这里重新获取数据
-
-     
       this.props.setVideoPlayer(true)
     } else {
       this.props.setVideoPlayer(false)
@@ -1167,15 +1181,15 @@ class PostFileUpload extends Component {
 
   showToSettingAlert = () =>
     Alert.alert(
-      Platform.OS === 'ios' ? "“拍鸭”需要获取您的相册权限" : "",
-      Platform.OS === 'ios' ? "" : "“拍鸭”需要读取您的存储权限",
+      Platform.OS === 'ios' ? I18n.t('Need_album_permission') : "",
+      Platform.OS === 'ios' ? "" : I18n.t('Need_album_permission'),
       [
         {
-          text: "暂不设置",
+          text: `${I18n.t('Not_set_yet')}`,
           style: "default",
         },
         {
-          text: "去设置",
+          text: `${I18n.t('go_to_settings')}`,
           onPress: () => openSettings(),
           style: "default",
         },
@@ -1195,6 +1209,10 @@ class PostFileUpload extends Component {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
         this.props.setVideoPlayer(true);
+        //TODOWUYQ
+        if (this.state.CameraRollList) {
+          this.props.setMultipleData([this.state.CameraRollList[0]]);
+        }
       } else {
         this.props.setVideoPlayer(false);
       }
@@ -1340,7 +1358,6 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     this.messageRef = React.createRef();
     this.appState = '';
-    this.cropData = {};
     this.state = {
       postEditorParams: null,
       page: 'main',
@@ -1365,7 +1382,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
 
     if (multipleData.length < 1) {
-      return this.myRef.current.show('请至少选择一个上传文件', 1000);
+      return this.myRef.current.show(`${I18n.t('Please_select_at_least_one_upload_file')}`, 1000);
     }
 
     const imageItem = multipleData[multipleData.length - 1].image;
@@ -1373,7 +1390,7 @@ export default class CameraScreen extends Component<Props, State> {
     let type = multipleData[multipleData.length - 1]?.type;
 
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
-      return this.myRef.current.show('视频时长不能超过5分钟', 1000);
+      return this.myRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 1000);
     }
 
     this.mClickLock = true;
@@ -1384,18 +1401,6 @@ export default class CameraScreen extends Component<Props, State> {
       let resultData = [];
       let editImageData = new Array;
 
-      // const result = await ImageCropper.crop({
-      //   ...cropDataRow[imageItem?.uri],
-      //   imageUri: imageItem.uri,
-      //   cropSize: {
-      //     width: width,
-      //     height: width,
-      //   },
-      //   cropAreaSize: {
-      //     width: width,
-      //     height: width,
-      //   },
-      // });
       // 循环选中的图片 取出裁剪数据
       const result = await Promise.all(
         multipleData.map(async (item) => {
@@ -1437,7 +1442,7 @@ export default class CameraScreen extends Component<Props, State> {
         // });
         //
         // CameraRoll.save(trimVideoData, { type: 'video' })
-        
+
         resultData.push(trimVideoData);
 
         this.setState({
@@ -1482,22 +1487,9 @@ export default class CameraScreen extends Component<Props, State> {
               heightScale: imageHeightScale,
               translateXScale: translateXScale,
               translateYScale: translateYScale,
-
-              //如果是视频，还需要以下两个参数
-              // playableDuration:item?.image?.playableDuration,
-              // playableDuration:item?.image?.playableDurationFormat,
             };
 
             return item.image.uri;
-
-            // // 等待异步操作完成，返回执行结果
-            // return await AVService.crop({
-            //   source: item.image.uri,
-            //   cropOffsetX: cropData[index].offset.x,
-            //   cropOffsetY: cropData[index].offset.y,
-            //   cropWidth: cropData[index].size.width,
-            //   cropHeight: cropData[index].size.height,
-            // });
           }),
         );
         //
@@ -1569,7 +1561,7 @@ export default class CameraScreen extends Component<Props, State> {
       this.mClickLock = false;
       return;
     } catch (e) {
-     
+
       this.mClickLock = false;
     }
   };
@@ -1679,7 +1671,7 @@ export default class CameraScreen extends Component<Props, State> {
           }}
         >
           <Image source={errorAlertIconPng} style={{ width: 22, height: 22, marginRight: 14 }} />
-          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>无网络连接</Text>
+          <Text style={{ color: '#fff', fontSize: 14, fontWeight: '400' }}>{`${I18n.t('No_internet_connection')}`}</Text>
         </View>,
         1000,
       );
@@ -1692,6 +1684,17 @@ export default class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (!nextProps.isDrawerOpen) {
+        //这里刷新，重置ppost状态 TODOWUYQ
+        this.appState = '';
+        this.setState({
+          postEditorParams: null,
+          page: 'main',
+          isVidoePlayer: true,
+          isShowLoading: false,
+        });
+        this.mClickLock = false;
+      }
       return true;
     }
     return false;
@@ -1707,7 +1710,7 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
 
-  loadingView = (text = '加载中...', isShow = true) => {
+  loadingView = (text = `${I18n.t('Loading')}`, isShow = true) => {
     return isShow && (<View style={{
       position: 'absolute',
       left: 0,
@@ -1781,7 +1784,7 @@ export default class CameraScreen extends Component<Props, State> {
             }}
           />
         ) : null}
-        {this.loadingView("视频处理中...", this.state.isShowLoading)}
+        {this.loadingView(`${I18n.t('Video_processing')}`, this.state.isShowLoading)}
       </View>
     );
   }

@@ -26,6 +26,8 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
+import I18n from './i18n';
+
 import {
   Grayscale,
   Temperature,
@@ -128,7 +130,7 @@ const PostHead = React.memo((props) => {
           alignItems: 'flex-end',
         }}
       >
-        <Text style={styles.continueText}>继续</Text>
+        <Text style={styles.continueText}>{`${I18n.t('continue')}`}</Text>
       </Pressable>
     </View>
   );
@@ -361,7 +363,7 @@ const PostEditor = (props) => {
   const [coverList, setcoverList] = useState([]);
   // const [coverImage, setcoverImage] = useState('');
   const coverImage = useRef(null);
-  const [selectBottomModel, setselectBottomModel] = useState('滤镜');
+  const [selectBottomModel, setselectBottomModel] = useState(`${I18n.t('Filter')}`);
 
 
   const [trimmerLeftHandlePosition, settrimmerLeftHandlePosition] = useState(0);
@@ -442,7 +444,7 @@ const PostEditor = (props) => {
       // }
       if (continueRef.current) return;
       continueRef.current = true;
-      // toast.current.show('正在导出, 请不要离开', 0);
+      // toast.current.show(`${I18n.t('Exporting_please_dont_leave')}`, 0);
       if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
         return onExportVideo({ outputPath: multipleSandBoxData[0], exportProgress: 1 });
       }
@@ -494,11 +496,11 @@ const PostEditor = (props) => {
   let editor = null;
   let scrubberInterval = null;
   const getFilters = async () => {
-    //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
+    //{iconPath: '.../柔柔/icon.png', filterName: `${I18n.t('soft')}`}
 
     const infos = await AVService.getFilterIcons({});
 
-    infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+    infos.unshift({ filterName: null, iconPath: '', title: `${I18n.t('no_effect')}` });
     setfilterList(infos);
   };
 
@@ -1053,7 +1055,7 @@ const PostEditor = (props) => {
           },
         ]}
       >
-        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>请修剪视频,视频时长不能超过5分钟。</Text>
+        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>{`${I18n.t('Please_trim_the_video_the_length_of_the_video_cannot_exceed_5_minutes_')}`}</Text>
         <View style={styles.toastShow}></View>
       </Animated.View>
     );
@@ -1062,9 +1064,9 @@ const PostEditor = (props) => {
   const switchProps = () => {
     let switchProps;
     if (fileType !== 'image') {
-      switchProps = ['滤镜', '修剪'];
+      switchProps = [`${I18n.t('Filter')}`, `${I18n.t('prune')}`];
     } else {
-      switchProps = ['滤镜'];
+      switchProps = [`${I18n.t('Filter')}`];
     }
 
     return (
@@ -1313,10 +1315,10 @@ const PostEditor = (props) => {
       />
       {postEditorViewData()}
 
-      {selectBottomModel === '滤镜' && filterEditorFilter()}
-      {selectBottomModel === '修剪' && postTrimer()}
+      {selectBottomModel === `${I18n.t('Filter')}` && filterEditorFilter()}
+      {selectBottomModel === `${I18n.t('prune')}` && postTrimer()}
       {/* {
-        selectBottomModel === '封面' && postCover()
+        selectBottomModel === `${I18n.t('cover')}` && postCover()
       } */}
       {fileType !== 'image' && switchProps()}
     </View>

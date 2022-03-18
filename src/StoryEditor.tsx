@@ -28,6 +28,7 @@ import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
 import CameraRoll from '@react-native-community/cameraroll';
+import I18n from './i18n';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -117,7 +118,7 @@ export default class StoryEditor extends Component<Props, State> {
     if (this.state.startExportVideo) {
       return;
     }
-    this.props.myRef.current.show('快拍作品将在24小时后消失', 2000);
+    this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
     this.setState({ musicExport: true }, () => {
       this.setState({ startExportVideo: true });
     });
@@ -166,14 +167,13 @@ export default class StoryEditor extends Component<Props, State> {
   };
 
   getFilters = async () => {
-    //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if (this.state.filterList.length < 1) {
       if (Platform.OS === 'android') {
         const filterList = await this.editor.getColorFilterList();
         this.setState({ filterList: filterList });
       } else {
         const infos = await AVService.getFilterIcons({});
-        infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+        infos.unshift({ filterName: null, iconPath: '', title: `${I18n.t('no_effect')}` });
         this.setState({ filterList: infos });
       }
     }
@@ -208,7 +208,7 @@ export default class StoryEditor extends Component<Props, State> {
             }}
           >
             <View style={styles.uploadBox}>
-              <Text style={styles.uploadTitle}>发布快拍</Text>
+              <Text style={styles.uploadTitle}>{`${I18n.t('Post_story')}`}</Text>
             </View>
           </TouchableOpacity>
         </>
@@ -375,7 +375,7 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <View style={{ height: 189, backgroundColor: '#000' }}>
         <View style={styles.beautifyBoxHead}>
-          <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
+          <Text style={styles.beautifyTitle}>{`${I18n.t('filter')}`}</Text>
         </View>
         {this.state.showFilterLens && (
           <View style={{ paddingHorizontal: 20 }}>
