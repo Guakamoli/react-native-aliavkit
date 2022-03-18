@@ -28,15 +28,12 @@ export const setLanguage = (l) => {
 	if (!locale) {
 		locale = 'en';
 	}
-	console.info('gaga')
 	locale = 'zh-CN'
 	// don't go forward if it's the same language and default language (en) was setup already
-	console.info('有执行到吗')
 
 	// if (i18n.locale === locale && i18n.translations?.en) {
 	// 	return;
 	// }
-	console.info('有执行到吗222', i18n.translations)
 	if (i18n.translations) {
 		if (i18n.translations[locale]) {
 			i18n.translations[locale] = Object.assign(i18n.translations[locale], translations[locale]?.())
