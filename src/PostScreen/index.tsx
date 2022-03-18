@@ -124,6 +124,23 @@ class MultipleSelectButton extends Component {
     }
     this.props.setSelectMultiple();
   };
+
+  /**
+   * setState 刷新时触发
+   * @returns true 会继续更新； false 不会执行 render
+   */
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (nextProps.isDrawerOpen) {
+        //这里刷新，重置ppost状态  TODOWUYQ
+        if (this.props.selectMultiple) {
+          this.props.setSelectMultiple();
+        }
+      }
+    }
+    return true
+  }
+
   render() {
     // return null;
     return (
@@ -304,7 +321,7 @@ class PostContent extends Component {
 
     //没有选择照片时，不更新
     if (!nextProps.multipleData || nextProps.multipleData.length <= 0) {
-     
+
       return 0;
     }
 
@@ -316,7 +333,6 @@ class PostContent extends Component {
     }
 
     if (!imageItem) {
-     
       return 0;
     }
 
@@ -637,7 +653,7 @@ class GridItemCover extends Component {
 
       // android 返回的 fileSelectType 是   video/mp4 |  image/jpeg
       if (fileSelectType.indexOf(fileType) === -1 && selectMultiple) {
-       
+
         return;
       }
     }
@@ -694,7 +710,7 @@ class GridItemCover extends Component {
           }
         });
       } catch (error) {
-       
+
       }
       if (datalist.length >= 10) {
         this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 1000);
@@ -1076,8 +1092,6 @@ class PostFileUpload extends Component {
       clickItemLock = false;
       this.getPhotos();
       // 在这里重新获取数据
-
-     
       this.props.setVideoPlayer(true)
     } else {
       this.props.setVideoPlayer(false)
@@ -1168,7 +1182,7 @@ class PostFileUpload extends Component {
   showToSettingAlert = () =>
     Alert.alert(
       Platform.OS === 'ios' ? I18n.t('Need_album_permission') : "",
-      Platform.OS === 'ios' ? "" :I18n.t('Need_album_permission') ,
+      Platform.OS === 'ios' ? "" : I18n.t('Need_album_permission'),
       [
         {
           text: `${I18n.t('Not_set_yet')}`,
@@ -1195,6 +1209,10 @@ class PostFileUpload extends Component {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
         this.props.setVideoPlayer(true);
+        //TODOWUYQ
+        if (this.state.CameraRollList) {
+          this.props.setMultipleData([this.state.CameraRollList[0]]);
+        }
       } else {
         this.props.setVideoPlayer(false);
       }
@@ -1340,7 +1358,6 @@ export default class CameraScreen extends Component<Props, State> {
     this.myRef = React.createRef();
     this.messageRef = React.createRef();
     this.appState = '';
-    this.cropData = {};
     this.state = {
       postEditorParams: null,
       page: 'main',
@@ -1384,18 +1401,6 @@ export default class CameraScreen extends Component<Props, State> {
       let resultData = [];
       let editImageData = new Array;
 
-      // const result = await ImageCropper.crop({
-      //   ...cropDataRow[imageItem?.uri],
-      //   imageUri: imageItem.uri,
-      //   cropSize: {
-      //     width: width,
-      //     height: width,
-      //   },
-      //   cropAreaSize: {
-      //     width: width,
-      //     height: width,
-      //   },
-      // });
       // 循环选中的图片 取出裁剪数据
       const result = await Promise.all(
         multipleData.map(async (item) => {
@@ -1437,7 +1442,7 @@ export default class CameraScreen extends Component<Props, State> {
         // });
         //
         // CameraRoll.save(trimVideoData, { type: 'video' })
-        
+
         resultData.push(trimVideoData);
 
         this.setState({
@@ -1482,22 +1487,9 @@ export default class CameraScreen extends Component<Props, State> {
               heightScale: imageHeightScale,
               translateXScale: translateXScale,
               translateYScale: translateYScale,
-
-              //如果是视频，还需要以下两个参数
-              // playableDuration:item?.image?.playableDuration,
-              // playableDuration:item?.image?.playableDurationFormat,
             };
 
             return item.image.uri;
-
-            // // 等待异步操作完成，返回执行结果
-            // return await AVService.crop({
-            //   source: item.image.uri,
-            //   cropOffsetX: cropData[index].offset.x,
-            //   cropOffsetY: cropData[index].offset.y,
-            //   cropWidth: cropData[index].size.width,
-            //   cropHeight: cropData[index].size.height,
-            // });
           }),
         );
         //
@@ -1569,7 +1561,7 @@ export default class CameraScreen extends Component<Props, State> {
       this.mClickLock = false;
       return;
     } catch (e) {
-     
+
       this.mClickLock = false;
     }
   };
@@ -1692,6 +1684,17 @@ export default class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
+      if (!nextProps.isDrawerOpen) {
+        //这里刷新，重置ppost状态 TODOWUYQ
+        this.appState = '';
+        this.setState({
+          postEditorParams: null,
+          page: 'main',
+          isVidoePlayer: true,
+          isShowLoading: false,
+        });
+        this.mClickLock = false;
+      }
       return true;
     }
     return false;
