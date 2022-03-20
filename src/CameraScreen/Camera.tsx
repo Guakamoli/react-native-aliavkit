@@ -454,7 +454,7 @@ class RenderCamera extends Component {
                           styles.beautifySelect,
                           this.state.filterPath == item.path && styles.beautifySelecin,
                         ]}
-                        source={!item.iconPath ? require('../../images/ic_color_filter_empty.png'): { uri: item.iconPath }}
+                        source={!item.iconPath ? require('../../images/ic_color_filter_empty.png') : { uri: item.iconPath }}
                       />
                       <Text
                         style={[
@@ -529,6 +529,47 @@ class RenderCamera extends Component {
           {this.renderCamera()}
 
           {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} setShowColorFilter={this.setShowColorFilter} key={'RenderLeftButtons'} />}
+
+
+          <View style={{
+            position: "absolute", top: 100, left: 0, right: 0, height: 50, backgroundColor: 'red',
+            paddingLeft: 30,
+            paddingRight: 30,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+            <TouchableOpacity onPress={async () => {
+              const videoPath = await this.props.camera.current?.startMultiRecording((duration: number) => {
+                console.info("startMultiRecording duration", duration);
+              });
+              console.info("startMultiRecording videoPath", videoPath);
+            }}>
+              <Text style={{
+                color: '#fff',
+                lineHeight: 50
+              }}>开始录制</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={async () => {
+              const videoPath = await this.props.camera.current?.stopMultiRecording();
+              console.info("stopMultiRecording videoPath", videoPath);
+            }}>
+              <Text style={{
+                color: '#fff',
+                lineHeight: 50
+              }}>停止录制</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={async () => {
+              const videoPath = await this.props.camera.current?.finishMultiRecording();
+              console.info("finishMultiRecording videoPath", videoPath);
+            }}>
+              <Text style={{
+                color: '#fff',
+                lineHeight: 50
+              }}>完成录制</Text>
+            </TouchableOpacity>
+          </View>
+
+
         </Pressable>
         {this.state.showFilterLens && this.renderFilterBox()}
       </View>

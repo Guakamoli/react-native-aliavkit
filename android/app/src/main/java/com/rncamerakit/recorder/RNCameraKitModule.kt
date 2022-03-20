@@ -73,6 +73,21 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         mView?.mRecorderManage?.stopRecording(reactContext, promise)
     }
 
+    @ReactMethod
+    fun startMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.startMultiRecording(reactContext, promise)
+    }
+
+    @ReactMethod
+    fun stopMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.stopMultiRecording(reactContext, promise)
+    }
+
+    @ReactMethod
+    fun finishMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.finishMultiRecording(reactContext, promise)
+    }
+
     /**
      * 获取贴纸列表
      */
