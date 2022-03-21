@@ -27,6 +27,7 @@
 #import "RNAVDeviceHelper.h"
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
+#import "AliAVServiceBridge.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -77,6 +78,13 @@
     return self.recorder.preview;
 }
 
+//- (NSArray<NSString *> *)supportedEvents
+//{
+//    return @[
+//        @"startMultiRecording"
+//    ];
+//}
+//
 #pragma mark - GET
 - (AliyunIRecorder *)recorder
 {
@@ -444,7 +452,8 @@
         self.recordStartHandler(duration);
     }
     if(self.isMultiRecording){
-//        [[RCTEventEmitter<RCTBridgeModule> alloc] sendEventWithName :@"startMultiRecording" body:@{@"duration":@(duration)}];
+//        [[AliAVServiceBridge alloc] sendEventWithName:@"startMultiRecording" body:@{@"duration":@(duration)}];
+//        [self sendEventWithName:@"startMultiRecording" body:@{@"duration":@(duration)}];
     }
 }
 /// recording stopped

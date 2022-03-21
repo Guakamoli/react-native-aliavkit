@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import React from 'react';
-import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager,NativeEventEmitter } from 'react-native';
+import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager, NativeEventEmitter } from 'react-native';
 import AVService from './AVService';
 
 const { CKCameraManager } = NativeModules;
@@ -8,7 +8,7 @@ const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
 
-  var startMultiRecordingListener;
+  var startMultiRecordingListener: any;
 
   React.useImperativeHandle(ref, () => ({
 
@@ -59,12 +59,14 @@ const Camera = React.forwardRef((props, ref) => {
       //     recordingListener(duration);
       //   }
       // });
-      const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
-      startMultiRecordingListener = managerEmitter.addListener('startMultiRecording', (duration) => {
-        if (recordingListener) {
-          recordingListener(duration);
-        }
-      });
+      // const managerEmitter = new NativeEventEmitter(AliCameraAction);
+      // const carpListener = managerEmitter.addListener('startMultiRecording', (duration) => {
+      //   console.info("startVideoRecord duration", duration);
+      //   // //
+      //   // if (recordingListener) {
+      //   //   recordingListener(duration);
+      //   // }
+      // });
       return await CKCameraManager.startMultiRecording({});
     },
 
@@ -82,13 +84,15 @@ const Camera = React.forwardRef((props, ref) => {
   }));
 
   React.useEffect(() => {
-    const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
-      //{ target: 65, duration: 5.769999980926514 }
-      //
-    });
+    // const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
+    //   //{ target: 65, duration: 5.769999980926514 }
+
+    //   console.info("startVideoRecord duration", duration);
+    //   //
+    // });
     return () => {
       // CKCameraManager?.destroyRecorder();
-      subscription.remove();
+      // subscription.remove();
     };
   }, []);
 

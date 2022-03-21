@@ -17,6 +17,7 @@ typedef void(^VideoRecordStartBlk_t)(CGFloat duration);
 typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
 @interface AliCameraAction : NSObject;
+//@interface AliCameraAction : RCTEventEmitter<RCTBridgeModule>;
 
 @property (nonatomic, strong) AliyunMediaConfig *mediaConfig;
 

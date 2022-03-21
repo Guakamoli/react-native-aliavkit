@@ -609,7 +609,7 @@ class CameraScreen extends Component<Props, State> {
 
   CameraView() {
     return (
-      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
+      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}  setShootData={this.setShootData}/>
     );
   }
 

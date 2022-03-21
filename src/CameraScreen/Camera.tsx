@@ -517,6 +517,57 @@ class RenderCamera extends Component {
       </View>
     );
   };
+
+
+  MultiRecording = () => {
+    return (
+      <View style={{
+        position: "absolute", top: 100, left: 0, right: 0, height: 50, backgroundColor: 'red',
+        paddingLeft: 30,
+        paddingRight: 30,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      }}>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.startMultiRecording((duration: number) => {
+            console.info("startMultiRecording duration", duration);
+          });
+          console.info("startMultiRecording videoPath", videoPath);
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>开始录制</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.stopMultiRecording();
+          console.info("stopMultiRecording videoPath", videoPath);
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>停止录制</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.finishMultiRecording();
+          console.info("finishMultiRecording videoPath", videoPath);
+          this.props.setShootData({
+            fileType: 'video',
+            videoPath,
+            ShootSuccess: true,
+          });
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>完成录制</Text>
+        </TouchableOpacity>
+      </View>
+
+    )
+  }
+
+
   render() {
     return (
       <View style={{ position: 'relative', height: '100%', width: '100%', backgroundColor: '#000' }}>
@@ -530,45 +581,7 @@ class RenderCamera extends Component {
 
           {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} setShowColorFilter={this.setShowColorFilter} key={'RenderLeftButtons'} />}
 
-
-          <View style={{
-            position: "absolute", top: 100, left: 0, right: 0, height: 50, backgroundColor: 'red',
-            paddingLeft: 30,
-            paddingRight: 30,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-            <TouchableOpacity onPress={async () => {
-              const videoPath = await this.props.camera.current?.startMultiRecording((duration: number) => {
-                console.info("startMultiRecording duration", duration);
-              });
-              console.info("startMultiRecording videoPath", videoPath);
-            }}>
-              <Text style={{
-                color: '#fff',
-                lineHeight: 50
-              }}>开始录制</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={async () => {
-              const videoPath = await this.props.camera.current?.stopMultiRecording();
-              console.info("stopMultiRecording videoPath", videoPath);
-            }}>
-              <Text style={{
-                color: '#fff',
-                lineHeight: 50
-              }}>停止录制</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={async () => {
-              const videoPath = await this.props.camera.current?.finishMultiRecording();
-              console.info("finishMultiRecording videoPath", videoPath);
-            }}>
-              <Text style={{
-                color: '#fff',
-                lineHeight: 50
-              }}>完成录制</Text>
-            </TouchableOpacity>
-          </View>
-
+          {this.MultiRecording()}
 
         </Pressable>
         {this.state.showFilterLens && this.renderFilterBox()}

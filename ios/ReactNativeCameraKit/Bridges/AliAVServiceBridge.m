@@ -371,11 +371,17 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
 - (NSArray<NSString *> *)supportedEvents
 {
     return @[
+        @"startMultiRecording",
         @"postVideoCrop",
         @"cropProgress",
         @"icloudImageDownloadProgress",
         @"icloudVideoDownloadProgress"
     ];
+}
+
+- (void)startMultiRecording:(CGFloat)duration
+{
+    [self sendEventWithName:@"startMultiRecording" body:@{@"duration":@(duration)}];
 }
 
 - (void)cropVideo:(NSString *)sourcePath

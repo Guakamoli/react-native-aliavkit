@@ -523,7 +523,6 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [self.cameraAction pauseCamera];
 }
 
-
 - (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
     [self.cameraAction startMultiRecording:resolve  reject:reject];
