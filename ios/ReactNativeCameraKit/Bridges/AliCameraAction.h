@@ -7,13 +7,16 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+
 @class AliyunMediaConfig;
 @class AliyunPasterInfo;
 
 typedef void(^VideoRecordStartBlk_t)(CGFloat duration);
 typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
-@interface AliCameraAction : NSObject
+@interface AliCameraAction : NSObject;
 
 @property (nonatomic, strong) AliyunMediaConfig *mediaConfig;
 
@@ -54,6 +57,13 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)resumeCamera;
 - (void)pauseCamera;
 - (void)setFilterPath:(NSString*)filterPath;
+
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
 @end
 
 

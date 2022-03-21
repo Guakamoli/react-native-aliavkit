@@ -130,6 +130,26 @@ RCT_EXPORT_METHOD(pauseCamera)
     [self.camera pauseCamera];
 }
 
+RCT_EXPORT_METHOD(startMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera startMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(stopMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera stopMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(finishMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera finishMultiRecording:resolve  reject:reject];
+}
+
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();

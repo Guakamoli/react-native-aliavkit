@@ -17,7 +17,7 @@ PODS:
   - AlivcConan (1.0.5):
     - AlivcConan/AlivcConan (= 1.0.5)
   - AlivcConan/AlivcConan (1.0.5)
-  - AliyunOSSiOS (2.10.11)
+  - AliyunOSSiOS (2.10.12)
   - AliyunVideoSDKPro (3.28.0):
     - QuCore-ThirdParty (~> 4.3.1)
   - Bolts/Tasks (1.9.0)
@@ -55,7 +55,7 @@ PODS:
     - RNPermissions
   - Permission-PhotoLibraryAddOnly (3.3.1):
     - RNPermissions
-  - QuCore-ThirdParty (4.3.1)
+  - QuCore-ThirdParty (4.3.2)
   - Queen (1.9.0-official-pro)
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
@@ -349,10 +349,9 @@ PODS:
     - SDWebImageWebPCoder (~> 0.4.1)
   - RNGestureHandler (1.10.3):
     - React-Core
-  - RNPermissions (3.3.1):
   - RNLocalize (2.1.1):
     - React-Core
-  - RNPermissions (3.2.0):
+  - RNPermissions (3.3.1):
     - React-Core
   - RNReanimated (2.4.1):
     - DoubleConversion
@@ -387,13 +386,13 @@ PODS:
     - React-RCTImage
   - RNSVG (12.3.0):
     - React-Core
-  - SDWebImage (5.12.3):
-    - SDWebImage/Core (= 5.12.3)
-  - SDWebImage/Core (5.12.3)
+  - SDWebImage (5.12.5):
+    - SDWebImage/Core (= 5.12.5)
+  - SDWebImage/Core (5.12.5)
   - SDWebImageWebPCoder (0.4.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.5)
-  - SSZipArchive (2.4.2)
+  - SSZipArchive (2.4.3)
   - VODUpload (1.6.1):
     - AliyunOSSiOS
   - Yoga (1.14.0)
@@ -569,7 +568,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
   AlivcConan: 4248bd59c22be01633650e3d8a538dc73f144613
-  AliyunOSSiOS: 7bc7ca588207ce536c1dffe732c3d4fe342e23cf
+  AliyunOSSiOS: b8e5838b52f0e37b0cd2a593c487bb4a73148033
   AliyunVideoSDKPro: 0c1a3d9cfc326cbd3a7efd9fd1cdfc90961971bc
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -585,7 +584,7 @@ SPEC CHECKSUMS:
   Permission-Notifications: 4b21cfdd5e8aab2cbb1f117aaa17b44e1f5736c4
   Permission-PhotoLibrary: ddb5a158725b29cb12e9e477e8a5f5151c66cc3c
   Permission-PhotoLibraryAddOnly: 104e42dbe894b0fccb370be26dd1b4a3c23578eb
-  QuCore-ThirdParty: 837fa2cff865c468fd16b5b72ef092350a7073a9
+  QuCore-ThirdParty: 201bfb993e75197a8eff9d2c814f9d729d407d1f
   Queen: 793f369401b64f19aab1e9ae0ee7414607f2a1e6
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: 6d3e854f0e7260a648badd0d44fc364bc9da9728
@@ -620,19 +619,17 @@ SPEC CHECKSUMS:
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNFastImage: f40d202ea2367239f71bc7cf11315f4bebab85b4
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
+  RNLocalize: 82a569022724d35461e2dc5b5d015a13c3ca995b
   RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
   RNReanimated: 58e7b950e0172235ff8296dd39ec145f9577e301
-  RNLocalize: 82a569022724d35461e2dc5b5d015a13c3ca995b
-  RNPermissions: f7ebe52db07c00901127966ca080b4ec6a6ceb0a
-  RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
-  SDWebImage: 53179a2dba77246efa8a9b85f5c5b21f8f43e38f
+  SDWebImage: 0905f1b7760fc8ac4198cae0036600d67478751e
   SDWebImageWebPCoder: 36f8f47bd9879a8aea6044765c1351120fd8e3a8
-  SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
+  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   VODUpload: 2c8ac654ceda839dda97a92023a270041dd9901e
   Yoga: 575c581c63e0d35c9a83f4b46d01d63abc1100ac
 
 PODFILE CHECKSUM: 390127fc71d54e21590e5f42a27cb90ce88662fa
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.3

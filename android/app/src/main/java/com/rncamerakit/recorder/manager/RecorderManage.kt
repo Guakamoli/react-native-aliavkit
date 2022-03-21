@@ -313,6 +313,7 @@ class RecorderManage(
                 promise.resolve(outputPath)
                 isRecording = false
             }
+
             override fun onError(errorCode: Int) {
                 promise.reject("startRecording", "errorCode:$errorCode")
                 isRecording = false

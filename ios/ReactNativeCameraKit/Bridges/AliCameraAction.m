@@ -25,12 +25,17 @@
 #import "AliyunDownloadManager.h"
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
     NSString *_videoSavePath;
     VideoRecordEndBlk_t _complete;
     AliyunIRecorderCameraPosition mRecorderCamerPosition;
+    
+    RCTPromiseResolveBlock _finishMultiRecordingResolve;
+    RCTPromiseRejectBlock _finishMultiRecordingReject;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -40,6 +45,7 @@
 @property (nonatomic, copy) VideoRecordStartBlk_t recordStartHandler;
 @property (nonatomic, copy) VideoRecordEndBlk_t recordEndHandler;
 @property (nonatomic, readwrite) BOOL isRecording;
+@property (nonatomic) BOOL isMultiRecording;
 @property (nonatomic) BOOL isPauseCamera;
 @property (nonatomic, strong) AliyunDownloadManager *downloadManager;
 @property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //current face paster
@@ -426,13 +432,19 @@
     });
 }
 
-/// record progress
+/**
+ * 录制回调
+ */
+/// record progress TODO
 - (void)recorderVideoDuration:(CGFloat)duration
 {
     //    AVDLog(@"----- recording：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
+    }
+    if(self.isMultiRecording){
+//        [[RCTEventEmitter<RCTBridgeModule> alloc] sendEventWithName :@"startMultiRecording" body:@{@"duration":@(duration)}];
     }
 }
 /// recording stopped
@@ -448,6 +460,11 @@
     AVDLog(@"✅ finish all record ✅");
     if (_complete) {
         _complete(_videoSavePath);
+    }
+    
+    if (_finishMultiRecordingResolve) {
+        _finishMultiRecordingResolve(_videoSavePath);
+        _finishMultiRecordingResolve = nil;
     }
 }
 
@@ -563,6 +580,38 @@
                                                              thinNose:thinNose
                                                          thinMandible:thinMandible
                                                              cutCheek:cutCheek];
+}
+
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    self.isMultiRecording = YES;
+    int recordInt = [self.recorder startRecording];
+    resolve(@(recordInt));
+}
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    self.isMultiRecording = NO;
+    [self.recorder stopRecording];
+    
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    NSInteger partCount = clipManager.partCount;
+    NSArray *videoAbsolutePaths = clipManager.videoAbsolutePaths;
+    if(videoAbsolutePaths && partCount>0){
+        NSString *video=  [videoAbsolutePaths objectAtIndex:partCount-1];
+        resolve(video);
+    }else{
+        resolve(@"");
+    }
+}
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    _finishMultiRecordingResolve = resolve;
+    _finishMultiRecordingReject = reject;
+    self.isMultiRecording = NO;
+    [self.recorder finishRecording];
 }
 
 @end
