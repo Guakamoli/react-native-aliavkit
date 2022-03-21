@@ -17,8 +17,9 @@ const translations = LANGUAGES.reduce((ret, item) => {
 	ret[item.value] = item.file;
 	return ret;
 }, {});
-
+let hasSet = false
 export const setLanguage = (l) => {
+	console.info('Youma ', l)
 	if (!l) {
 		return;
 	}
@@ -29,14 +30,26 @@ export const setLanguage = (l) => {
 	}
 	locale = 'zh-CN'
 	// don't go forward if it's the same language and default language (en) was setup already
-	if (i18n.locale === locale && i18n.translations?.en) {
-		return;
+	// if (i18n.locale === locale && i18n.translations?.en) {
+	// 	return;
+	// }
+	if (hasSet) {
+		return 
 	}
-	i18n.locale = locale;
-	i18n.translations = { ...i18n.translations, [locale]: translations[locale]?.() };
+	if (i18n.translations) {
+		if (i18n.translations[locale]) {
+			i18n.translations[locale] = Object.assign(i18n.translations[locale], translations[locale]?.())
+		} else {
+			i18n.locale = locale;
+			i18n.translations = { ...i18n.translations, [locale]: translations[locale]?.() };
+		}
+	}
+	hasSet = true
+	// i18n.locale = locale;
+	// i18n.translations = { ...i18n.translations, [locale]: translations[locale]?.() };
 };
 
-i18n.translations = { en: translations.en?.() };
+// i18n.translations = { en: translations.en?.() };
 const defaultLanguage = { languageTag: 'en', isRTL: false };
 const availableLanguages = Object.keys(translations);
 const { languageTag } = RNLocalize.findBestAvailableLanguage(availableLanguages) || defaultLanguage;

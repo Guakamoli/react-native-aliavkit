@@ -1210,7 +1210,7 @@ class PostFileUpload extends Component {
       if (nextProps.isDrawerOpen) {
         this.props.setVideoPlayer(true);
         //TODOWUYQ
-        if (this.state.CameraRollList) {
+        if (this.state.CameraRollList?.length > 0) {
           this.props.setMultipleData([this.state.CameraRollList[0]]);
         }
       } else {
