@@ -17,7 +17,7 @@ import {
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { useInterval, useThrottleFn } from 'ahooks';
-import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler } from 'react-native-gesture-handler';
+import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler, NativeViewGestureHandler } from 'react-native-gesture-handler';
 import { setFacePasterInfo } from '../actions/story';
 import Reanimated, { EasingNode, interpolateNode } from 'react-native-reanimated';
 
@@ -94,14 +94,27 @@ class TopReset extends Component<PropsType> {
             },
           ]}
         >
-          <Pressable
+          <NativeViewGestureHandler
+            disallowInterruption={true}
+            shouldActivateOnStart={true}
+            onHandlerStateChange={(event) => {
+              if (event.nativeEvent.state === State.END) {
+                this.props.snapToItem?.(0);
+              }
+            }}
+          >
+            <View style={styles.clearIcon}>
+              <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+            </View>
+          </NativeViewGestureHandler>
+          {/* <Pressable
             style={styles.clearIcon}
             onPress={() => {
               this.props.snapToItem?.(0);
             }}
           >
             <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-          </Pressable>
+          </Pressable> */}
         </Animated.View>
       </Reanimated.View>
     );
@@ -177,6 +190,8 @@ class RenderChildren extends Component {
   constructor(props) {
     super(props);
     this.longPressRef = React.createRef();
+
+    this.isLongPress = false;
   }
   shouldComponentUpdate(nextProps) {
     if (nextProps.pasterList !== this.props.pasterList) {
@@ -205,20 +220,28 @@ class RenderChildren extends Component {
            
             if (nativeEvent.state === State.ACTIVE) {
               this.props.longPress();
+              this.isLongPress = true;
             } else if (nativeEvent.state === State.END) {
+              this.isLongPress = false;
               this.props.stopAnimate();
+            } else {
+              if (this.isLongPress) {
+                this.isLongPress = false;
+                this.props.stopAnimate();
+              }
             }
           }}
-          minDurationMs={500}
+          minDurationMs={300}
           maxDist={30}
         >
           <Animated.View
             style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
           >
             <TapGestureHandler
-               shouldCancelWhenOutside={false}
+              shouldCancelWhenOutside={true}
               onHandlerStateChange={({ nativeEvent }) => {
-                if (nativeEvent.state === State.ACTIVE) {
+                console.log("TapGestureHandler", nativeEvent.state);
+                if (nativeEvent.state === State.END) {
                   this.props.singlePress();
                 }
               }}
@@ -241,7 +264,7 @@ const RenderItem = React.memo((props) => {
   };
 
   return (
-    <Pressable delayLongPress={500} onPress={toItem}>
+    <Pressable delayLongPress={300} onPress={toItem}>
       <View>
         <View style={[styles.propStyle, styles.img]}>
           <FastImage style={styles.img} source={{ uri: item.icon }} />

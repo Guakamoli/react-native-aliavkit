@@ -11,6 +11,8 @@
 
 @interface AliAVServiceBridge : RCTEventEmitter<RCTBridgeModule>
 
+- (void)startMultiRecording:(CGFloat)duration;
+
 
 //RCT_EXTERN_METHOD(postCropVideo:(NSString*)videoPath
 //                  resolve:(RCTPromiseResolveBlock)resolve

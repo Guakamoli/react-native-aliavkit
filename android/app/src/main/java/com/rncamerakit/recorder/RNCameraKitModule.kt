@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.editor.CKEditor
+import com.rncamerakit.editor.RNEditorKitModule
 import com.rncamerakit.recorder.manager.EffectPasterManage
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.DownloadUtils
@@ -37,9 +38,18 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         mView?.pauseCamera()
     }
 
+
+    //获取滤镜列表
+    @ReactMethod
+    fun getRecordColorFilter(promise: Promise) {
+        reactContext.runOnUiQueueThread {
+            mView?.getRecordColorFilter(promise)
+        }
+    }
+
     //设置滤镜
     @ReactMethod
-    fun setColorFilter(position: Int, viewTag: Int, promise: Promise) {
+    fun setColorFilter(position: Int, promise: Promise) {
         mView?.mRecorderManage?.setColorFilter()
     }
 
@@ -63,14 +73,29 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         mView?.mRecorderManage?.stopRecording(reactContext, promise)
     }
 
+    @ReactMethod
+    fun startMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.startMultiRecording(reactContext, promise)
+    }
+
+    @ReactMethod
+    fun stopMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.stopMultiRecording(reactContext, promise)
+    }
+
+    @ReactMethod
+    fun finishMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.finishMultiRecording(reactContext, promise)
+    }
+
     /**
      * 获取贴纸列表
      */
     @ReactMethod
     fun getPasterInfos(promise: Promise) {
-//        reactContext.runOnUiQueueThread {
-        EffectPasterManage.instance.getPasterInfos(promise,reactContext)
-//        }
+        reactContext.runOnUiQueueThread {
+            EffectPasterManage.instance.getPasterInfos(promise, reactContext)
+        }
     }
 
     @ReactMethod
@@ -95,7 +120,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun getMusicPath(songID: String, promise: Promise) {
-        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID,reactContext.applicationContext)
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID, reactContext.applicationContext)
         if (musicInfo?.isDbContain == 1 && FileUtils.fileIsExists((musicInfo.localPath))) {
             promise.resolve(musicInfo.localPath)
             return
@@ -138,10 +163,11 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
                 if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-            EffectPasterManage.instance.downloadPaster(previewPaster,reactContext, promise)
+            EffectPasterManage.instance.downloadPaster(previewPaster, reactContext, promise)
 //            }
         }
     }
+
 
     @ReactMethod
     fun release(promise: Promise) {

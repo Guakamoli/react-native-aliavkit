@@ -18,6 +18,7 @@ import com.brentvatne.react.ReactVideoPackage;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.facebook.react.bridge.JSIModulePackage;
 import com.rncamerakit.AliAVkitManager;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 
@@ -35,6 +36,7 @@ import com.zoontek.rnpermissions.RNPermissionsPackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import com.swmansion.reanimated.ReanimatedJSIModulePackage; // <- add
 
 public class MainApplication extends MultiDexApplication implements ReactApplication {
 
@@ -45,10 +47,10 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     return BuildConfig.DEBUG;
                 }
 
-//                @Override
-//                protected JSIModulePackage getJSIModulePackage() {
-//                    return new ReanimatedJSIModulePackage();
-//                }
+                @Override
+                protected JSIModulePackage getJSIModulePackage() {
+                    return new ReanimatedJSIModulePackage();
+                }
 
                 @Override
                 protected List<ReactPackage> getPackages() {

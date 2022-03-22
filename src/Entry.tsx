@@ -88,7 +88,7 @@ const Entry = (props) => {
       }, 0);
 
       if (i.type === 'story' && !initStory) {
-       
+
         setInitStory(true)
       }
 
@@ -193,28 +193,60 @@ const Entry = (props) => {
     )
   }
 
+  const isShowStory = type === 'story' || type === 'storyedit';
 
   return (
-    <View style={{ width: "100%", height: "100%", backgroundColor: '#000' }}>
-      {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
-      {PostView()}
-      {/* <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', height: '100%', }}>
-        {PostView()}
-      </View>
+    <View style={{ width: "100%", height: "100%", backgroundColor: '#000', position: 'relative' }}>
+      {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
 
-      {(initStory && (props.isDrawerOpen || props.isExample)) ?
-        <View style={{ display: (type === 'story' || type === 'storyedit') ? 'flex' : 'none', height: '100%' }}>
-          {StoryView()}
+
+      {PostView()}
+
+      {/* {Platform.OS === 'ios' ?
+        <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
+          {PostView()}
         </View>
         :
-        ((type === 'story' || type === 'storyedit') &&
-          <View style={{ height: '100%', }}>
-            {StoryView()}
-          </View>
-        )
+        <View style={{ width: '100%', height: '100%' }}>
+          {PostView()}
+        </View>
       }
 
-      {bottomToolsVisibility && (type === 'story' || type === 'post') &&
+      {Platform.OS === 'ios' ?
+        ((initStory && (props.isDrawerOpen || props.isExample)) ?
+          <View style={{ display: (type === 'story' || type === 'storyedit') ? 'flex' : 'none', height: '100%' }}>
+            {StoryView()}
+          </View>
+          :
+          ((type === 'story' || type === 'storyedit') &&
+            <View style={{ height: '100%', }}>
+              {StoryView()}
+            </View>
+          )
+        )
+        :
+        (
+          (initStory && (props.isDrawerOpen || props.isExample)) ?
+            <View style={[styles.storyViewStyles, {
+              width: isShowStory ? "100%" : 0,
+              height: isShowStory ? "100%" : 0,
+              position: isShowStory ? 'absolute' : 'relative',
+            }]}>
+              {StoryView()}
+            </View>
+            :
+            ((type === 'story' || type === 'storyedit') &&
+              <View style={[styles.storyViewStyles, {
+                width: isShowStory ? "100%" : 0,
+                height: isShowStory ? "100%" : 0,
+                position: isShowStory ? 'absolute' : 'relative',
+              }]}>
+                {StoryView()}
+              </View>
+            )
+        )
+      } */}
+      {/* {bottomToolsVisibility && (type === 'story' || type === 'post') &&
         <Animated.View
           style={[
             styles.tools,
@@ -266,6 +298,14 @@ const styles = StyleSheet.create({
   curretnText: {
     color: 'rgba(126, 126, 126, 1)',
   },
+
+  storyViewStyles: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  }
 });
 
 export default Entry;

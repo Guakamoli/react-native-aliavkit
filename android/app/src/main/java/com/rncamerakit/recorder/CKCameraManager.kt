@@ -1,5 +1,6 @@
 package com.rncamerakit.recorder
 
+import android.text.TextUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideosdk.common.struct.form.PreviewPasterForm
 import com.facebook.react.bridge.ReadableMap
@@ -21,7 +22,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 //        MusicFileInfoDao.instance.closeDB()
     }
 
-    private var mReactContext:ThemedReactContext? = null
+    private var mReactContext: ThemedReactContext? = null
     private var mWidth = 0
     private var mHeight = 0
 
@@ -94,7 +95,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
 
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
-            view.mRecorderManage?.setFaceEffectPaster(previewPaster,mReactContext)
+            view.mRecorderManage?.setFaceEffectPaster(previewPaster, mReactContext)
         }
 
     }
@@ -140,7 +141,7 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
             this.mWidth = if (readableMap.hasKey("width")) readableMap.getInt("width") else ScreenUtils.getWidth(view.context)
             this.mHeight = if (readableMap.hasKey("height")) readableMap.getInt("height") else this.mWidth*16/9
 //            view.reactContext.runOnUiQueueThread {
-                view.setLayout(this.mWidth, this.mHeight)
+            view.setLayout(this.mWidth, this.mHeight)
 //                view.initCamera()
 //            }
         }
@@ -185,10 +186,17 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
             bean.url = url
 
 //            view.reactContext.runOnUiQueueThread {
-                view.mRecorderManage?.setMusicInfo(bean)
+            view.mRecorderManage?.setMusicInfo(bean)
 //            }
         }
 
+    }
+
+
+    //设置滤镜
+    @ReactProp(name = "filterPath")
+    fun setColorFilter(view: CKCamera, filterPath: String?) {
+        view.setColorFilter(filterPath)
     }
 
 

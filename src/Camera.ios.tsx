@@ -1,12 +1,15 @@
 import * as _ from 'lodash';
 import React from 'react';
-import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager } from 'react-native';
+import { requireNativeComponent, NativeModules, processColor, NativeAppEventEmitter, UIManager, NativeEventEmitter } from 'react-native';
 import AVService from './AVService';
 
 const { CKCameraManager } = NativeModules;
 const NativeCamera = requireNativeComponent('CKCamera');
 
 const Camera = React.forwardRef((props, ref) => {
+
+  var startMultiRecordingListener: any;
+
   React.useImperativeHandle(ref, () => ({
 
     resumeCamera: async () => {
@@ -45,19 +48,51 @@ const Camera = React.forwardRef((props, ref) => {
     },
 
     release: () => {
-      
+
       return CKCameraManager.destroyRecorder();
     },
+
+    //开启多段录制（录制一个片段）
+    startMultiRecording: async (recordingListener: (duration: number) => void) => {
+      // startMultiRecordingListener = NativeAppEventEmitter.addListener('startMultiRecording', (duration) => {
+      //   if (recordingListener) {
+      //     recordingListener(duration);
+      //   }
+      // });
+      // const managerEmitter = new NativeEventEmitter(AliCameraAction);
+      // const carpListener = managerEmitter.addListener('startMultiRecording', (duration) => {
+      //   console.info("startVideoRecord duration", duration);
+      //   // //
+      //   // if (recordingListener) {
+      //   //   recordingListener(duration);
+      //   // }
+      // });
+      return await CKCameraManager.startMultiRecording({});
+    },
+
+    //停止多段录制（停止一个片段）
+    stopMultiRecording: async () => {
+      startMultiRecordingListener?.remove();
+      return await CKCameraManager.stopMultiRecording({});
+    },
+
+    //合成：结束录制多段视频合成一个视频
+    finishMultiRecording: async () => {
+      return await CKCameraManager.finishMultiRecording({});
+    }
+
   }));
 
   React.useEffect(() => {
-    const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
-      //{ target: 65, duration: 5.769999980926514 }
-      //
-    });
+    // const subscription = NativeAppEventEmitter.addListener('startVideoRecord', ({ duration }) => {
+    //   //{ target: 65, duration: 5.769999980926514 }
+
+    //   console.info("startVideoRecord duration", duration);
+    //   //
+    // });
     return () => {
       // CKCameraManager?.destroyRecorder();
-      subscription.remove();
+      // subscription.remove();
     };
   }, []);
 

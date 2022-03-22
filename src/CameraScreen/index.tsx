@@ -129,6 +129,7 @@ type State = {
 
   fileType: String;
   musicOpen: Boolean;
+  showRenderBottom: Boolean,
 };
 
 /**
@@ -249,8 +250,18 @@ class CameraScreen extends Component<Props, State> {
       previewImage: {},
       relaloadFlag: null,
       loadedPermissions: false,
+      showRenderBottom: true,
     };
     this.initPermissions();
+
+  }
+
+  setShowRenderBottom = (isShow) => {
+    if (isShow) {
+      this.setState({ showRenderBottom: true });
+    } else {
+      this.setState({ showRenderBottom: false });
+    }
 
   }
 
@@ -399,6 +410,9 @@ class CameraScreen extends Component<Props, State> {
   }
   shouldComponentUpdate(nextProps, nextState) {
 
+    if (this.props.showRenderBottom != nextProps.showRenderBottom) {
+      return true;
+    }
     if (this.props.initStory != nextProps.initStory) {
       return true;
     }
@@ -524,10 +538,10 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+      <View style={{ position: 'absolute', bottom: 0, width: '100%', zIndex: 99 }}>
         <RenderbeautifyBox {...this.props} />
         <View
-          style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)' }}
+          style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}
         >
           <Carousel
             {...this.props}
@@ -595,7 +609,7 @@ class CameraScreen extends Component<Props, State> {
 
   CameraView() {
     return (
-      <RenderCamera {...this.props} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} />
+      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}  setShootData={this.setShootData}/>
     );
   }
 
@@ -614,17 +628,21 @@ class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        <View style={{ height: '100%', }}>
+        <View style={{ width: "100%", height: '100%', display: !this.state.ShootSuccess ? 'flex' : 'none' }}>
           {this.CameraView()}
-          {this.renderBottom()}
+          <View style={{}}>
+            {this.renderBottom()}
+          </View>
         </View>
 
-        {this.state.ShootSuccess &&
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: '100%' }}>
+
+        {
+          this.state.ShootSuccess &&
+          <View style={{ width: "100%", height: '100%' }}>
             {this.CameraEditorView()}
           </View>
         }
-      </View>
+      </View >
     );
   }
 }

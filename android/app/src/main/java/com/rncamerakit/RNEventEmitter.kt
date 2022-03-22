@@ -14,6 +14,13 @@ class RNEventEmitter {
         /**
          * 录制进度
          */
+        fun startMultiRecording(reactContext: ReactContext?, duration: Long) {
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("startMultiRecording", "" + duration)
+        }
+        /**
+         * 录制进度
+         */
         fun startVideoRecord(reactContext: ReactContext?, duration: Long) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 ?.emit("startVideoRecord", "" + duration)

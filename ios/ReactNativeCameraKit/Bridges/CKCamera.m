@@ -84,6 +84,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @property (nonatomic, strong) AliCameraAction *cameraAction;
 
+@property (nonatomic) NSString* filterPath;
 @property (nonatomic) NSUInteger normalBeautyLevel;
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
@@ -224,6 +225,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
         CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
         self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
+    }
+}
+
+- (void)setFilterPath:(NSString*)filterPath
+{
+    if (filterPath != _filterPath) {
+        _filterPath = filterPath;
+        [self.cameraAction setFilterPath:filterPath];
     }
 }
 
@@ -512,6 +521,21 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)pauseCamera
 {
     [self.cameraAction pauseCamera];
+}
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction startMultiRecording:resolve  reject:reject];
+}
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction stopMultiRecording:resolve  reject:reject];
+}
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction finishMultiRecording:resolve  reject:reject];
 }
 
 @end

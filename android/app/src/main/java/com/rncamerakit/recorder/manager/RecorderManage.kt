@@ -5,7 +5,6 @@ import android.text.TextUtils
 import android.util.Log
 import com.aliyun.common.utils.CommonUtil
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.recorder.mixrecorder.AlivcRecorder
 import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideo.recorder.util.RecordCommon
@@ -32,7 +31,6 @@ import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.VideoConst
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
-import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
 import com.rncamerakit.utils.DownloadUtils
@@ -225,6 +223,11 @@ class RecorderManage(
                 }
             })
             isRecording = true
+//            val videoPath = File(
+//                CropManager.getCameraDirs(mContext.applicationContext),
+//                "" + System.currentTimeMillis() + "-record.mp4"
+//            ).absolutePath
+//            mRecorder?.setOutputPath(videoPath)
             mRecorder?.startRecording()
             promise.resolve(true)
         } else {
@@ -262,6 +265,68 @@ class RecorderManage(
         mRecorder?.stopRecording()
     }
 
+    //开始多段录制
+    fun startMultiRecording(reactContext: ReactApplicationContext, promise: Promise) {
+        if (CommonUtil.SDFreeSize() < 50*1000*1000) {
+            promise.reject(
+                "startRecording",
+                "error:" + reactContext.resources.getString(R.string.alivc_music_no_free_memory)
+            )
+            FixedToastUtils.show(
+                reactContext,
+                reactContext.resources.getString(R.string.alivc_music_no_free_memory)
+            )
+            isRecording = false
+            return
+        }
+        if (mRecorder != null) {
+            if (isRecording) {
+                return
+            }
+            mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
+                override fun onProgress(duration: Long) {
+                    RNEventEmitter.startMultiRecording(reactContext, duration)
+                }
+            })
+            mRecorder?.startRecording()
+            promise.resolve(true)
+        } else {
+            isRecording = false
+            promise.reject("startRecording", "recorder is null")
+        }
+    }
+
+    //停止多段录制
+    fun stopMultiRecording(context: Context, promise: Promise) {
+        mRecorder?.stopRecording()
+        mClipManager?.let {
+            if (it.videoPathList != null && it.videoPathList.size > 0) {
+                promise.resolve(it.videoPathList[it.videoPathList.size - 1])
+            }
+        }
+    }
+
+    //完成多段录制
+    fun finishMultiRecording(context: Context, promise: Promise) {
+        mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
+            override fun onFinish(outputPath: String?) {
+                promise.resolve(outputPath)
+                isRecording = false
+            }
+
+            override fun onError(errorCode: Int) {
+                promise.reject("startRecording", "errorCode:$errorCode")
+                isRecording = false
+            }
+        })
+        doAsync {
+            //结束录制合成视频
+            mRecorder?.finishRecording()
+            uiThread {
+            }
+        }
+    }
+
     private var colorFilterPosition = 0
 
     /**
@@ -281,7 +346,6 @@ class RecorderManage(
         }
     }
 
-
     fun getBeautyLevel(context: Context?): Int {
         return SharedPreferenceUtils.getBeautyFaceLevel(context)
     }
@@ -291,6 +355,20 @@ class RecorderManage(
      */
     fun setBeautyLevel(level: Int) {
         mRecorderQueenManage?.setBeautyLevel(level)
+    }
+
+    /**
+     * 设置滤镜
+     */
+    fun setColorFilter(filterPath: String?) {
+        //设置滤镜 ,参数路径设置为null表示移除滤镜效果
+        if (TextUtils.isEmpty(filterPath)) {
+            val effect = EffectFilter("")
+            mRecorder?.applyFilter(effect)
+        } else {
+            val effect = EffectFilter(Source(filterPath))
+            mRecorder?.applyFilter(effect)
+        }
     }
 
     /**
@@ -355,7 +433,7 @@ class RecorderManage(
         mRecorder?.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
         mClipManager = mRecorder?.clipManager
         //最大时间必须设置，否则设置录制背景音乐无效
-        mClipManager?.maxDuration = 30*1000
+        mClipManager?.maxDuration = 180*1000
         mRecordCallback = ImplRecordCallback(mContext)
         mRecorder?.setRecordCallback(mRecordCallback)
         mRecorderQueenManage = RecorderQueenManage(mContext, mRecorder as AlivcRecorder, this)

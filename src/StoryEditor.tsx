@@ -114,7 +114,7 @@ export default class StoryEditor extends Component<Props, State> {
     this.musicInfo = {};
   }
   startExportVideo() {
-   
+
     if (this.state.startExportVideo) {
       return;
     }
@@ -129,7 +129,7 @@ export default class StoryEditor extends Component<Props, State> {
     // }, 1000);
   }
   pauseMusic(song) {
-   
+
     if (song) {
       AVService.pauseMusic(song?.songID);
     }
@@ -138,9 +138,15 @@ export default class StoryEditor extends Component<Props, State> {
   onExportVideo = async (event) => {
     const { fileType } = this.props;
     if (event.exportProgress === 1) {
-     
+      // if(!event?.videoParams?.path.startsWith("file://") ){
+      //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
+      // }
+      let uploadData = [event.videoParams];
+      console.info('发布快拍 onExportVideo',  uploadData);
+      this.setState({ startExportVideo: false });
 
-      // //TODO 测试代码：保存到相册
+
+      // // 测试代码：保存到相册
       // CameraRoll.save(event.outputPath, { type: 'video' })
 
       uploadFile.push(event.videoParams);
@@ -156,19 +162,24 @@ export default class StoryEditor extends Component<Props, State> {
       //   size: 0,
       //   Name: outputPath,
       // });
-      this.props.getUploadFile(uploadFile);
+      this.props.getUploadFile(uploadData);
     }
   };
+
   getFilters = async () => {
+    //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if (this.state.filterList.length < 1) {
-      if (Platform.OS === 'android') {
-        const filterList = await this.editor.getColorFilterList();
-        this.setState({ filterList: filterList });
-      } else {
-        const infos = await AVService.getFilterIcons({});
-        infos.unshift({ filterName: null, iconPath: '', title: `${I18n.t('no_effect')}` });
-        this.setState({ filterList: infos });
-      }
+      // if (Platform.OS === 'android') {
+      //   const filterList = await this.editor.getColorFilterList();
+      //   this.setState({ filterList: filterList });
+      // } else {
+      //   const infos = await AVService.getFilterIcons({});
+      //   infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+      //   this.setState({ filterList: infos });
+      // }
+      const infos = await AVService.getFilterIcons({});
+      infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+      this.setState({ filterList: infos });
     }
   };
   componentDidMount() {
@@ -181,7 +192,7 @@ export default class StoryEditor extends Component<Props, State> {
       RNEditViewManager.stop();
     }
     // 结束编辑页面
-   
+
     this.setState = () => false;
   }
 
@@ -286,7 +297,7 @@ export default class StoryEditor extends Component<Props, State> {
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
-      //TODO
+      //
       // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
       // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
       let CameraFixHeight = width * 16 / 9;
@@ -296,7 +307,7 @@ export default class StoryEditor extends Component<Props, State> {
       }
 
 
-      //TODO 测试代码：保存到相册 
+      // 测试代码：保存到相册
       // CameraRoll.save(this.props.imagePath, { type: 'photo' })
       //
       return (
@@ -317,7 +328,7 @@ export default class StoryEditor extends Component<Props, State> {
             ref={(edit) => (this.editor = edit)}
             editWidth={width}
             editHeight={CameraFixHeight}
-            //TODO
+            //
             editStyle={{
               width: width,
               height: CameraFixHeight,
@@ -330,7 +341,7 @@ export default class StoryEditor extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
-            // TODO 安卓兼容
+            // 安卓兼容
             onPlayProgress={() => { }}
           // source={"story"}
           />
@@ -444,7 +455,7 @@ export default class StoryEditor extends Component<Props, State> {
           opacity={0.8}
         />
         {this.renderCamera()}
-        {/* TODO */}
+        {/*  */}
         {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen ? (

@@ -30,6 +30,7 @@ RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(filterPath, NSString*)
 RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 
 /// 0 10 20 30 40 50, default 30
@@ -128,6 +129,26 @@ RCT_EXPORT_METHOD(pauseCamera)
 {
     [self.camera pauseCamera];
 }
+
+RCT_EXPORT_METHOD(startMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera startMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(stopMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera stopMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(finishMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera finishMultiRecording:resolve  reject:reject];
+}
+
 
 - (dispatch_queue_t)methodQueue
 {

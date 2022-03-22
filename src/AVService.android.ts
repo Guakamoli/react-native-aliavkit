@@ -25,6 +25,16 @@ export default class AVService {
     return cropVideoPath;
   }
 
+
+  /**
+   *
+   * @returns 获取录制的滤镜列表
+   */
+  static async getRecordColorFilter() {
+    let colorFilterList = await RNCameraKitModule.getRecordColorFilter();
+    return JSON.parse(colorFilterList)
+  }
+
   static async getFilterIcons() {
     const colorFilterList = await RNEditorKitModule.getColorFilterList();
     return JSON.parse(colorFilterList);

@@ -28,13 +28,22 @@ export default class AVService {
     });
     let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
     managerEmitter.removeSubscription(carpListener);
-    //
     return cropVideoPath;
+  }
+
+  /**
+ *
+ * @returns 获取录制的滤镜列表
+ */
+  static async getRecordColorFilter() {
+    let colorFilterList = await AliAVServiceBridge.getRecordColorFilter({});
+    return colorFilterList
   }
 
 
   static async getFilterIcons() {
-    return await AliAVServiceBridge.getFilterIcons({});
+    let colorFilterList = await AliAVServiceBridge.getFilterIcons({});
+    return colorFilterList
   }
 
   static async getFacePasterInfos({ }) {

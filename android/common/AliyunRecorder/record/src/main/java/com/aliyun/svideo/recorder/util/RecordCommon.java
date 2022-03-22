@@ -199,6 +199,12 @@ public class RecordCommon {
         return getFileListByDir(QU_DIR + QU_COLOR_FILTER);
     }
 
+    public static List<String> getColorFilterList(Context context) {
+        SD_DIR = getExtFileDir(context);
+        QU_DIR = SD_DIR + QU_NAME + File.separator;
+        return getFileListByDir(QU_DIR + QU_COLOR_FILTER);
+    }
+
     /**
      * 获取动效滤镜
      * @return List<String>
