@@ -12,6 +12,8 @@ import FastImage from '@rocket.chat/react-native-fast-image';
 
 import AVService from '../AVService.ios';
 
+import Toast, { DURATION } from 'react-native-easy-toast';
+
 const { width, height } = Dimensions.get('window');
 
 const photoItemWidth = (width - 2) / 3.0;
@@ -41,6 +43,7 @@ class StoryPhoto extends React.Component {
             multipleSelectList: [],
         };
         this.bottomSheetRef;
+        this.toastRef;
     }
 
     /**
@@ -151,14 +154,16 @@ class StoryPhoto extends React.Component {
     }
 
     PototItemView = (index, item) => {
-        console.info("PototItemView", item.image.playableDuration);
-
+        // console.info("PototItemView", item.image.playableDuration);
         let videoDuration = this.formatSeconds(Math.ceil(item.image.playableDuration ?? 0));
-
         return (
             <View style={[styles.bottomSheetItem, { marginStart: index % 3 === 0 ? 0 : 1 }]}>
                 <Pressable
                     onPress={async () => {
+                        if (item.type === 'video' && item.image.playableDuration && item.image.playableDuration > 60.0) {
+                            this.toastRef.show("请选择60秒以内的视频", 1000);
+                            return;
+                        }
                         let selectUri = item.image.uri;
                         let myAssetId = selectUri.slice(5);
                         selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
@@ -244,6 +249,11 @@ class StoryPhoto extends React.Component {
     render() {
         return (
             <View style={styles.container}>
+                <Toast
+                    ref={(ref) => (this.toastRef = ref)}
+                    position='center'
+                    opacity={0.8}
+                />
                 <View style={[styles.btnContainer, { bottom: this.props.toolsInsetBottom + 5 }]}>
                     <TouchableOpacity
                         hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
@@ -263,7 +273,7 @@ class StoryPhoto extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%', height: '100%'
+        width: '100%', height: '100%', position: 'relative',
     },
     btnContainer: {
         position: 'absolute', left: 20, bottom: 0, width: 25, height: 25, borderRadius: 4, overflow: 'hidden'
