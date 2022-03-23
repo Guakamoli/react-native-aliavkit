@@ -345,6 +345,8 @@
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
 {
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
     self.recordStartHandler = handler;
     return ([self.recorder startRecording]) == 0; // ==0 YES
 }
