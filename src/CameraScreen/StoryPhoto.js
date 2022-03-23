@@ -184,8 +184,6 @@ class StoryPhoto extends React.Component {
             });
     }
 
-
-
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
         this.resetToolsBotton(false);
