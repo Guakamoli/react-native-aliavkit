@@ -75,6 +75,7 @@
         "react-native-safe-area-context": "^3.3.2",
         "react-native-snap-carousel": "^3.9.1",
         "react-native-svg": "^12.1.1",
+        "react-native-scroll-bottom-sheet": "^0.7.0",
         "react-native-toast-message": "^2.0.2",
         "react-native-vector-icons": "^9.0.0",
         "react-native-video": "^5.1.1",
@@ -82,6 +83,7 @@
         "typescript": "^4.1.2"
     },
     "peerDependencies": {
+        "@babel/preset-typescript": "^7.16.7",
         "@react-native-community/async-storage": "1.12.1",
         "@react-native-community/cameraroll": "Guakamoli/react-native-cameraroll#feat/request-photo-access",
         "@react-navigation/native": "6.0.2",
@@ -98,10 +100,10 @@
         "react-native-localize": "2.1.1",
         "react-native-progress": "^5.0.0",
         "react-native-reanimated": "^2.3.0",
-        "@babel/preset-typescript": "^7.16.7",
         "react-native-safe-area-context": "^3.3.2",
         "react-native-snap-carousel": "^3.9.1",
         "react-native-svg": "^12.1.1",
+        "react-native-scroll-bottom-sheet": "^0.7.0",
         "react-native-toast-message": "^2.0.2",
         "react-native-vector-icons": "^9.0.0",
         "react-native-video": "^5.1.1",

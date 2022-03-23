@@ -144,24 +144,8 @@ export default class StoryEditor extends Component<Props, State> {
       let uploadData = [event.videoParams];
       console.info('发布快拍 onExportVideo',  uploadData);
       this.setState({ startExportVideo: false });
-
-
       // // 测试代码：保存到相册
       // CameraRoll.save(event.outputPath, { type: 'video' })
-
-      uploadFile.push(event.videoParams);
-
-      // let outputPath = event.outputPath;
-      // this.setState({ startExportVideo: false });
-      // let uploadFile = [];
-      // //
-      // let type = outputPath.split('.');
-      // uploadFile.push({
-      //   Type: `video/${type[type.length - 1]}`,
-      //   path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
-      //   size: 0,
-      //   Name: outputPath,
-      // });
       this.props.getUploadFile(uploadData);
     }
   };

@@ -13,6 +13,7 @@ import {
   Easing,
   InteractionManager,
   Pressable,
+  TouchableOpacity,
   Alert,
   AppState,
 } from 'react-native';
@@ -37,6 +38,7 @@ import AVService from '../AVService';
 import { BoxBlur } from 'react-native-image-filter-kit';
 import RenderbeautifyBox from './RenderbeautifyBox';
 import RenderCamera from './Camera';
+import StoryPhoto from './StoryPhoto';
 import { setCameraType, setShowBeautify, setFacePasterInfo } from '../actions/story';
 const FLASH_MODE_AUTO = 'auto';
 const FLASH_MODE_ON = 'on';
@@ -143,24 +145,24 @@ class RenderswitchModule extends React.PureComponent {
     let marginBottom = this.props.toolsInsetBottom + 5
     //
     return (
-      <View style={styles.BottomBox}>
-        <Pressable
-          hitSlop={{ left: 20, top: 10, right: 20, bottom: 10 }}
+      <View style={[styles.BottomBox, {}]}>
+        <TouchableOpacity
+          hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
           onPress={() => {
             this.props.setCameraType();
             setTimeout(() => {
               try {
                 this.props.camera.current?.setPasterInfo?.(this.props.facePasterInfo);
               } catch (e) {
-               
+
               }
             }, 100);
             AVService.enableHapticIfExist();
             this.props.haptics?.impactAsync(this.props.haptics.ImpactFeedbackStyle.Medium);
           }}
         >
-          <FastImage style={{ width: 32, height: 26, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
-        </Pressable>
+          <FastImage style={{ width: 30, height: 25, marginBottom: marginBottom, marginRight: 20, }} source={this.props.cameraFlipImage} resizeMode='contain' />
+        </TouchableOpacity>
       </View>
     );
   }
@@ -340,7 +342,7 @@ class CameraScreen extends Component<Props, State> {
   showToSettingAlert = () =>
     Alert.alert(
       Platform.OS === 'ios' ? I18n.t('Need_camera_permission') : "",
-      Platform.OS === 'ios' ? "" : I18n.t('Need_camera_permission') ,
+      Platform.OS === 'ios' ? "" : I18n.t('Need_camera_permission'),
       [
         {
           text: `${I18n.t('Not_set_yet')}`,
@@ -514,7 +516,7 @@ class CameraScreen extends Component<Props, State> {
         }
       }
     } catch (e) {
-     
+
     }
   };
 
@@ -523,7 +525,7 @@ class CameraScreen extends Component<Props, State> {
       this.setState(data);
       this.props.setType('storyedit');
     } catch (e) {
-     
+
     }
   };
   // 底部渲染
@@ -538,7 +540,7 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, width: '100%', zIndex: 99 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 99, }}>
         <RenderbeautifyBox {...this.props} />
         <View
           style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}
@@ -552,7 +554,7 @@ class CameraScreen extends Component<Props, State> {
             setShootData={this.setShootData}
           />
         </View>
-
+        {/* { <StoryPhoto {...this.props} />} */}
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
@@ -609,7 +611,7 @@ class CameraScreen extends Component<Props, State> {
 
   CameraView() {
     return (
-      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef}  setShootData={this.setShootData}/>
+      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} setShootData={this.setShootData} />
     );
   }
 
@@ -628,11 +630,9 @@ class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
-        <View style={{ width: "100%", height: '100%', display: !this.state.ShootSuccess ? 'flex' : 'none' }}>
+        <View style={{ position: 'relative', width: "100%", height: '100%', display: !this.state.ShootSuccess ? 'flex' : 'none' }}>
           {this.CameraView()}
-          <View style={{}}>
-            {this.renderBottom()}
-          </View>
+          {this.renderBottom()}
         </View>
 
 
@@ -665,10 +665,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   BottomBox: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    width: '100%',
+    // flexDirection: 'row',
+    // justifyContent: 'flex-end',
+    // alignItems: 'flex-end',
+    // height:'auto'
+    // width: '100%',
+    // backgroundColor:'red'
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
   },
 
   cameraContainer: {},
