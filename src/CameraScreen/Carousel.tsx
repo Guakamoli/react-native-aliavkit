@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  // Pressable,
   Image,
   Dimensions,
   Platform,
@@ -94,27 +93,31 @@ class TopReset extends Component<PropsType> {
             },
           ]}
         >
-          <NativeViewGestureHandler
-            disallowInterruption={true}
-            shouldActivateOnStart={true}
-            onHandlerStateChange={(event) => {
-              if (event.nativeEvent.state === State.END) {
+          {Platform.OS === 'android' ?
+            <NativeViewGestureHandler
+              disallowInterruption={true}
+              shouldActivateOnStart={true}
+              onHandlerStateChange={(event) => {
+                //
+                console.info("NativeViewGestureHandler", event.nativeEvent.state);
+                if (event.nativeEvent.state === State.END) {
+                  this.props.snapToItem?.(0);
+                }
+              }}
+            >
+              <View style={styles.clearIcon}>
+                <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+              </View>
+            </NativeViewGestureHandler>
+            :
+            <Pressable
+              style={styles.clearIcon}
+              onPress={() => {
                 this.props.snapToItem?.(0);
-              }
-            }}
-          >
-            <View style={styles.clearIcon}>
+              }}
+            >
               <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-            </View>
-          </NativeViewGestureHandler>
-          {/* <Pressable
-            style={styles.clearIcon}
-            onPress={() => {
-              this.props.snapToItem?.(0);
-            }}
-          >
-            <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-          </Pressable> */}
+            </Pressable>}
         </Animated.View>
       </Reanimated.View>
     );
@@ -217,7 +220,7 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-           
+
             if (nativeEvent.state === State.ACTIVE) {
               this.props.longPress();
               this.isLongPress = true;
@@ -341,7 +344,7 @@ class CarouselWrapper extends Component<Props, State> {
         }
       });
     } catch (e) {
-     
+
     }
   };
   shotCamera = async () => {
