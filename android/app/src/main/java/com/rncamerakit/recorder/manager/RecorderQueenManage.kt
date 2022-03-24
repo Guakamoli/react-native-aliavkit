@@ -214,8 +214,8 @@ class RecorderQueenManage(
         recorderInterface.setOnTextureIdCallback(this)
         orientationDetector = OrientationDetector(mContext)
         orientationDetector?.setOrientationChangedListener {
-//            val rotation = getCameraRotation();
-//            recorderInterface.setRotation(rotation)
+            val rotation = getCameraRotation();
+            recorderInterface.setRotation(rotation)
             Camera.getCameraInfo(mCameraInfo.facing, mCameraInfo)
             mQueenManager?.setDeviceOrientation(0, ActivityUtil.getDegrees(mContext.currentActivity))
         }

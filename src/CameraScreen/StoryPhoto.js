@@ -10,6 +10,10 @@ import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
+import I18n from '../i18n';
+
+import Toast, { DURATION } from 'react-native-easy-toast';
+
 const { width, height } = Dimensions.get('window');
 
 const photoItemWidth = (width - 2) / 3.0;
@@ -21,14 +25,74 @@ class PototItemView extends React.Component {
         super(props)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return false;
+    }
+
+    formatSeconds = (s) => {
+        let t = '';
+        if (s > -1) {
+            let min = Math.floor(s / 60) % 60;
+            let sec = s % 60;
+            if (min < 10) {
+                t += '0';
+            }
+            t += min + ':';
+            if (sec < 10) {
+                t += '0';
+            }
+            t += sec;
+        }
+        return t;
+    };
+    render() {
+        let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
+        return (
+            <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
+                <Pressable
+                    onPress={async () => {
+                        if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
+                            this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
+                            return;
+                        }
+                        let selectUri = this.props.item.image.uri;
+                        let myAssetId = selectUri.slice(5);
+                        selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+                        this.props.selectedPhoto(selectUri, this.props.item.type);
+                        setTimeout(() => {
+                            this.props.hideBottomSheet();
+                        }, 250);
+                    }}>
+                    <Image style={{ width: '100%', height: '100%' }} resizeMode='center'  source={{ uri: this.props.item?.image?.uri }} />
+                </Pressable>
+
+                {this.props.item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
+
+                {/* {!this.state.singleSelect && (
+                    <Pressable
+                        style={[styles.bottomSheetItemCheckbox, {}]}
+                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
+                        onPress={() => {
+                            item.isSelected = !item.isSelected;
+                            this.forceUpdate()
+                        }}>
+                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
+                            {item?.isSelected &&
+                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
+                            }
+                        </View>
+                    </Pressable>
+                )} */}
+            </View>
+        )
+    }
+
 }
 
 class StoryPhoto extends React.Component {
 
     constructor(props) {
         super(props)
-        console.info("初始化:")
-
         this.multipleSelectNumber = props.multipleSelectNumber ? props.multipleSelectNumber : 5;
 
         this.state = {
@@ -37,17 +101,17 @@ class StoryPhoto extends React.Component {
             firstPhotoUri: '',
             photoList: [],
             multipleSelectList: [],
+            bottomSheetRefreshing: false,
         };
-        this.appChangeEventListener = null;
         this.bottomSheetRef;
+        this.toastRef;
+        this.getPhotosNum = 36;
     }
 
     /**
-     * 
+     * 在第一次绘制 render() 之后执行
      */
     componentDidMount() {
-        console.info("在第一次绘制 render() 之后, componentDidMount", this.props.insets.top)
-        this.appChangeEventListener = AppState.addEventListener('change', this.onAppChangeEventListener);
         this.getPhotos();
     }
 
@@ -71,6 +135,9 @@ class StoryPhoto extends React.Component {
         if (this.state.multipleSelectList !== nextState.multipleSelectList) {
             return true;
         }
+        if (this.state.bottomSheetRefreshing !== nextState.bottomSheetRefreshing) {
+            return true;
+        }
         return false;
     }
 
@@ -79,17 +146,8 @@ class StoryPhoto extends React.Component {
      */
     componentWillUnmount() {
         //当组件要被从界面上移除的时候调用 ,可以做组件相关的清理工作
-        this.appChangeEventListener?.remove('change', this.onAppChangeEventListener);
     }
 
-    onAppChangeEventListener = (nextAppState) => {
-        // if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-        if (nextAppState === 'active') {
-            //进入前台
-        } else {
-            //进入后台
-        }
-    }
 
     getPhotos = async () => {
         if (!(await RNGetPermissions.checkStoragePermissions())) {
@@ -99,7 +157,7 @@ class StoryPhoto extends React.Component {
             return;
         }
         CameraRoll.getPhotos({
-            first: 40,
+            first: this.getPhotosNum,
             assetType: 'All',
             include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
         })
@@ -113,10 +171,11 @@ class StoryPhoto extends React.Component {
                     photoList.push(data.edges[i].node);
                 }
                 let firstPhotoUri = photoList[0]?.image?.uri
-                console.info("firstPhotoUri", photoList[0]);
+                // console.info("firstPhotoUri", photoList[0]);
                 this.setState({
                     firstPhotoUri: firstPhotoUri,
-                    photoList: photoList
+                    photoList: photoList,
+                    bottomSheetRefreshing: false
                 });
             })
             .catch((err) => {
@@ -124,14 +183,17 @@ class StoryPhoto extends React.Component {
             });
     }
 
+
+
     openBottomSheet = () => {
         this.setState({ openPhotos: true });
         this.bottomSheetRef?.snapTo(0);
         this.resetToolsBotton(false);
     }
+
     hideBottomSheet = () => {
         this.bottomSheetRef?.snapTo(1);
-        // this.resetToolsBotton(true);
+        this.resetToolsBotton(true);
     }
 
     resetToolsBotton = (isShow = false) => {
@@ -140,30 +202,6 @@ class StoryPhoto extends React.Component {
         } else {
             this.props.hideBottomTools()
         }
-    }
-
-    PototItemView = (index, item) => {
-        console.info(index, item.image.uri);
-        return (
-            <View style={[styles.bottomSheetItem, { marginStart: index % 3 === 0 ? 0 : 1 }]}>
-                <Image style={{ width: '100%', height: '100%' }} resizeMode='contain' resizeMethod='resize' source={{ uri: item?.image?.uri }} />
-                {!this.state.singleSelect && (
-                    <Pressable
-                        style={[styles.bottomSheetItemCheckbox, {}]}
-                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
-                        onPress={() => {
-                            item.isSelected = !item.isSelected;
-                            this.forceUpdate()
-                        }}>
-                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
-                            {item?.isSelected &&
-                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
-                            }
-                        </View>
-                    </Pressable>
-                )}
-            </View>
-        )
     }
 
     PhotoView = () => {
@@ -178,13 +216,13 @@ class StoryPhoto extends React.Component {
                     initialSnapIndex={1}
                     data={this.state.photoList}
                     keyExtractor={(item, index) => {
-                        return item.image.uri
+                        return index
                     }}
                     friction={0.8}
                     animationType={'spring'}
                     numColumns={3}
-                    initialNumToRender={12}
-                    refreshing={true}
+                    initialNumToRender={9}
+                    refreshing={this.state.bottomSheetRefreshing}
                     enableOverScroll={true}
                     contentContainerStyle={styles.contentContainerStyle}
                     onSettle={(index) => {
@@ -192,6 +230,14 @@ class StoryPhoto extends React.Component {
                             this.setState({ openPhotos: false });
                             this.resetToolsBotton(true);
                         }
+                    }}
+
+                    onEndReachedThreshold={0.5}
+                    onEndReached={() => {
+                        //上拉加载更多
+                        this.getPhotosNum += 18;
+                        this.setState({ bottomSheetRefreshing: true });
+                        this.getPhotos();
                     }}
                     renderHandle={() => (
                         <View style={styles.bottomSheetHead}>
@@ -207,7 +253,13 @@ class StoryPhoto extends React.Component {
                         </View>
                     )}
                     renderItem={({ index, item }) => (
-                        this.PototItemView(index, item)
+                        <PototItemView
+                            {...this.props}
+                            index={index}
+                            item={item}
+                            hideBottomSheet={this.hideBottomSheet}
+                        />
+
                     )}
                 />
             </View>
@@ -218,6 +270,11 @@ class StoryPhoto extends React.Component {
     render() {
         return (
             <View style={styles.container}>
+                <Toast
+                    ref={(ref) => (this.toastRef = ref)}
+                    position='center'
+                    opacity={0.8}
+                />
                 <View style={[styles.btnContainer, { bottom: this.props.toolsInsetBottom + 5 }]}>
                     <TouchableOpacity
                         hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
@@ -237,7 +294,7 @@ class StoryPhoto extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%', height: '100%'
+        width: '100%', height: '100%', position: 'relative',
     },
     btnContainer: {
         position: 'absolute', left: 20, bottom: 0, width: 25, height: 25, borderRadius: 4, overflow: 'hidden'
@@ -278,8 +335,9 @@ const styles = StyleSheet.create({
 
     bottomSheetItem: {
         width: photoItemWidth,
+        height: photoItemHeight,
         marginBottom: 1,
-        height: 219,
+        position: 'relative',
     },
 
     bottomSheetItemCheckbox: {
@@ -301,6 +359,17 @@ const styles = StyleSheet.create({
         width: 22,
         height: 22,
     },
+
+    bottonSheetItemVideoTime: {
+        position: 'absolute',
+        bottom: 6,
+        right: 6,
+        lineHeight: 17,
+        fontSize: 12,
+        color: 'rgba(255,255,255,1)',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+
+    }
 
 
 });

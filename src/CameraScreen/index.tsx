@@ -520,6 +520,23 @@ class CameraScreen extends Component<Props, State> {
     }
   };
 
+  selectedPhoto = (uri, type) => {
+    if (type === 'video') {
+      this.setState({
+        fileType: 'video',
+        videoPath: uri,
+        ShootSuccess: true,
+      });
+    } else {
+      this.setState({
+        fileType: 'image',
+        imageCaptured: uri,
+        ShootSuccess: true,
+      });
+    }
+    this.props.setType('storyedit');
+  }
+
   setShootData = (data) => {
     try {
       this.setState(data);
@@ -540,7 +557,7 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.toolsInsetBottom + 200, width: '100%', zIndex: 99 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight+120, width: '100%', zIndex: 99 }}>
         <RenderbeautifyBox {...this.props} />
         <View style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}>
           <Carousel
@@ -552,7 +569,7 @@ class CameraScreen extends Component<Props, State> {
             setShootData={this.setShootData}
           />
         </View>
-        {/* { <StoryPhoto {...this.props} />} */}
+        {/* {<StoryPhoto {...this.props} selectedPhoto={this.selectedPhoto} />} */}
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
