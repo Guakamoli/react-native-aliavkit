@@ -286,7 +286,6 @@ class StoryPhoto extends React.Component {
 
 
     render() {
-        console.info("openPhotos 11",this.props.openPhotos);
         return (
             <View style={[styles.container, { height:  height  }]}>
                 <Toast
@@ -303,7 +302,7 @@ class StoryPhoto extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%', height: '100%', position: 'absolute', zIndex: 1 , //backgroundColor: 'red',
+        width: '100%', height: '100%', position: 'relative',
     },
     btnContainer: {
         position: 'absolute', left: 20, bottom: 0, width: 25, height: 25, borderRadius: 4, overflow: 'hidden'

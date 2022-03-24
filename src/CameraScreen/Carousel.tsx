@@ -350,7 +350,7 @@ class CarouselWrapper extends Component<Props, State> {
     const recordingTime = this.endTime - this.startTime;
 
     this.props.showBottomTools();
-   
+
     setTimeout(() => {
       this.reset();
       this.pressLock = false;

@@ -565,7 +565,7 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight + 120, width: '100%', zIndex: 99, backgroundColor: 'rgba(255,0,0,0)' }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight + 120, width: '100%', zIndex: 99 }}>
         <RenderbeautifyBox {...this.props} />
         <View style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}>
           <Carousel
@@ -577,7 +577,7 @@ class CameraScreen extends Component<Props, State> {
             setShootData={this.setShootData}
           />
         </View>
-        
+
         {/* <View style={{ position: 'absolute', left: 20, width: 25, height: 25, borderRadius: 4, overflow: 'hidden', bottom: this.props.toolsInsetBottom + 5 }} >
           <TouchableOpacity
             hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
