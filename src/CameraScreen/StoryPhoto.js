@@ -25,6 +25,70 @@ class PototItemView extends React.Component {
         super(props)
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return false;
+    }
+
+    formatSeconds = (s) => {
+        let t = '';
+        if (s > -1) {
+            let min = Math.floor(s / 60) % 60;
+            let sec = s % 60;
+            if (min < 10) {
+                t += '0';
+            }
+            t += min + ':';
+            if (sec < 10) {
+                t += '0';
+            }
+            t += sec;
+        }
+        return t;
+    };
+    render() {
+        console.info("PototItemView Component", this.props.index, this.props.item);
+        let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
+        return (
+            <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
+                <Pressable
+                    onPress={async () => {
+                        if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
+                            this.toastRef.show("请选择60秒以内的视频", 1000);
+                            return;
+                        }
+                        let selectUri = this.props.item.image.uri;
+                        let myAssetId = selectUri.slice(5);
+                        selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+                        console.info("select photo uri", selectUri, this.props.item.type);
+                        this.props.selectedPhoto(selectUri, this.props.item.type);
+                        setTimeout(() => {
+                            this.props.hideBottomSheet();
+                        }, 250);
+                    }}>
+                    <Image style={{ width: '100%', height: '100%' }} resizeMode='center'  source={{ uri: this.props.item?.image?.uri }} />
+                </Pressable>
+
+                {this.props.item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
+
+                {/* {!this.state.singleSelect && (
+                    <Pressable
+                        style={[styles.bottomSheetItemCheckbox, {}]}
+                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
+                        onPress={() => {
+                            item.isSelected = !item.isSelected;
+                            this.forceUpdate()
+                        }}>
+                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
+                            {item?.isSelected &&
+                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
+                            }
+                        </View>
+                    </Pressable>
+                )} */}
+            </View>
+        )
+    }
+
 }
 
 class StoryPhoto extends React.Component {
@@ -41,9 +105,11 @@ class StoryPhoto extends React.Component {
             firstPhotoUri: '',
             photoList: [],
             multipleSelectList: [],
+            bottomSheetRefreshing: false,
         };
         this.bottomSheetRef;
         this.toastRef;
+        this.getPhotosNum = 36;
     }
 
     /**
@@ -74,6 +140,9 @@ class StoryPhoto extends React.Component {
         if (this.state.multipleSelectList !== nextState.multipleSelectList) {
             return true;
         }
+        if (this.state.bottomSheetRefreshing !== nextState.bottomSheetRefreshing) {
+            return true;
+        }
         return false;
     }
 
@@ -93,7 +162,7 @@ class StoryPhoto extends React.Component {
             return;
         }
         CameraRoll.getPhotos({
-            first: 40,
+            first: this.getPhotosNum,
             assetType: 'All',
             include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
         })
@@ -110,7 +179,8 @@ class StoryPhoto extends React.Component {
                 console.info("firstPhotoUri", photoList[0]);
                 this.setState({
                     firstPhotoUri: firstPhotoUri,
-                    photoList: photoList
+                    photoList: photoList,
+                    bottomSheetRefreshing: false
                 });
             })
             .catch((err) => {
@@ -118,28 +188,14 @@ class StoryPhoto extends React.Component {
             });
     }
 
-    formatSeconds = (s) => {
-        let t = '';
-        if (s > -1) {
-            let min = Math.floor(s / 60) % 60;
-            let sec = s % 60;
-            if (min < 10) {
-                t += '0';
-            }
-            t += min + ':';
-            if (sec < 10) {
-                t += '0';
-            }
-            t += sec;
-        }
-        return t;
-    };
+
 
     openBottomSheet = () => {
         this.setState({ openPhotos: true });
         this.bottomSheetRef?.snapTo(0);
         this.resetToolsBotton(false);
     }
+
     hideBottomSheet = () => {
         this.bottomSheetRef?.snapTo(1);
         this.resetToolsBotton(true);
@@ -151,50 +207,6 @@ class StoryPhoto extends React.Component {
         } else {
             this.props.hideBottomTools()
         }
-    }
-
-    PototItemView = (index, item) => {
-        // console.info("PototItemView", item.image.playableDuration);
-        let videoDuration = this.formatSeconds(Math.ceil(item.image.playableDuration ?? 0));
-        return (
-            <View style={[styles.bottomSheetItem, { marginStart: index % 3 === 0 ? 0 : 1 }]}>
-                <Pressable
-                    onPress={async () => {
-                        if (item.type === 'video' && item.image.playableDuration && item.image.playableDuration > 60.0) {
-                            this.toastRef.show("请选择60秒以内的视频", 1000);
-                            return;
-                        }
-                        let selectUri = item.image.uri;
-                        let myAssetId = selectUri.slice(5);
-                        selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-                        console.info("select photo uri", selectUri, item.type);
-                        this.props.selectedPhoto(selectUri, item.type);
-                        setTimeout(() => {
-                            this.hideBottomSheet();
-                        }, 250);
-                    }}>
-                    <Image style={{ width: '100%', height: '100%' }} resizeMode='contain' resizeMethod='resize' source={{ uri: item?.image?.uri }} />
-                </Pressable>
-
-                {item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
-
-                {/* {!this.state.singleSelect && (
-                    <Pressable
-                        style={[styles.bottomSheetItemCheckbox, {}]}
-                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
-                        onPress={() => {
-                            item.isSelected = !item.isSelected;
-                            this.forceUpdate()
-                        }}>
-                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
-                            {item?.isSelected &&
-                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
-                            }
-                        </View>
-                    </Pressable>
-                )} */}
-            </View>
-        )
     }
 
     PhotoView = () => {
@@ -214,8 +226,8 @@ class StoryPhoto extends React.Component {
                     friction={0.8}
                     animationType={'spring'}
                     numColumns={3}
-                    initialNumToRender={12}
-                    refreshing={true}
+                    initialNumToRender={9}
+                    refreshing={this.state.bottomSheetRefreshing}
                     enableOverScroll={true}
                     contentContainerStyle={styles.contentContainerStyle}
                     onSettle={(index) => {
@@ -223,6 +235,14 @@ class StoryPhoto extends React.Component {
                             this.setState({ openPhotos: false });
                             this.resetToolsBotton(true);
                         }
+                    }}
+
+                    onEndReachedThreshold={0.5}
+                    onEndReached={() => {
+                        console.info("onEndReached");
+                        this.getPhotosNum += 18;
+                        this.setState({ bottomSheetRefreshing: true });
+                        this.getPhotos();
                     }}
                     renderHandle={() => (
                         <View style={styles.bottomSheetHead}>
@@ -238,7 +258,13 @@ class StoryPhoto extends React.Component {
                         </View>
                     )}
                     renderItem={({ index, item }) => (
-                        this.PototItemView(index, item)
+                        <PototItemView
+                            {...this.props}
+                            index={index}
+                            item={item}
+                            hideBottomSheet={this.hideBottomSheet}
+                        />
+
                     )}
                 />
             </View>
@@ -314,8 +340,8 @@ const styles = StyleSheet.create({
 
     bottomSheetItem: {
         width: photoItemWidth,
+        height: photoItemHeight,
         marginBottom: 1,
-        height: 219,
         position: 'relative',
     },
 
