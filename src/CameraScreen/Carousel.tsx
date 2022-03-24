@@ -220,10 +220,9 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-
             if (nativeEvent.state === State.ACTIVE) {
-              this.props.longPress();
               this.isLongPress = true;
+              this.props.longPress();
             } else if (nativeEvent.state === State.END) {
               this.isLongPress = false;
               this.props.stopAnimate();
@@ -243,7 +242,6 @@ class RenderChildren extends Component {
             <TapGestureHandler
               shouldCancelWhenOutside={true}
               onHandlerStateChange={({ nativeEvent }) => {
-                console.log("TapGestureHandler", nativeEvent.state);
                 if (nativeEvent.state === State.END) {
                   this.props.singlePress();
                 }
@@ -348,19 +346,28 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-    const videoPath = await this.props.camera.current?.stopRecording?.();
+
+    const recordingTime = this.endTime - this.startTime;
+
     this.props.showBottomTools();
-    setTimeout(() => {
-      this.reset();
-    }, 50);
-    this.props.setShootData({
-      fileType: 'video',
-      videoPath,
-      ShootSuccess: true,
-    });
+    this.reset();
     setTimeout(() => {
       this.pressLock = false;
-    }, 2500);
+    }, 500);
+
+    if (recordingTime <= 500) {
+      //ios 录制时间过短stopRecording 不会返回 videoPath。这里不能 return ，必须执行 stopRecording，否则不能再次 startRecording
+      this.props.myRef?.current?.show?.(`${I18n.t('record_time_small')}`, 500);
+    }
+    const videoPath = await this.props.camera.current?.stopRecording?.();
+    if (recordingTime >= 500) {
+      //安卓端目前小于500ms也会返回videoPath，这里统一处理，小于500ms 不进入编辑
+      this.props.setShootData({
+        fileType: 'video',
+        videoPath,
+        ShootSuccess: true,
+      });
+    }
   };
   reset = () => {
     this.ani?.stop();
@@ -379,8 +386,6 @@ class CarouselWrapper extends Component<Props, State> {
     }
     this.endTime = Date.now();
     this.shotCamera();
-
-    // 在这里做结算
   };
   handleAppStateChange = (e) => {
     if (this.props.isDrawerOpen && this.props.type === 'story') {

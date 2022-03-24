@@ -10,7 +10,7 @@ import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
-import AVService from '../AVService.ios';
+import I18n from '../i18n';
 
 import Toast, { DURATION } from 'react-native-easy-toast';
 
@@ -46,20 +46,18 @@ class PototItemView extends React.Component {
         return t;
     };
     render() {
-        console.info("PototItemView Component", this.props.index, this.props.item);
         let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
         return (
             <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
                 <Pressable
                     onPress={async () => {
                         if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-                            this.toastRef.show("请选择60秒以内的视频", 1000);
+                            this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
                             return;
                         }
                         let selectUri = this.props.item.image.uri;
                         let myAssetId = selectUri.slice(5);
                         selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-                        console.info("select photo uri", selectUri, this.props.item.type);
                         this.props.selectedPhoto(selectUri, this.props.item.type);
                         setTimeout(() => {
                             this.props.hideBottomSheet();
@@ -95,8 +93,6 @@ class StoryPhoto extends React.Component {
 
     constructor(props) {
         super(props)
-        console.info("初始化:")
-
         this.multipleSelectNumber = props.multipleSelectNumber ? props.multipleSelectNumber : 5;
 
         this.state = {
@@ -113,10 +109,9 @@ class StoryPhoto extends React.Component {
     }
 
     /**
-     * 
+     * 在第一次绘制 render() 之后执行
      */
     componentDidMount() {
-        console.info("在第一次绘制 render() 之后, componentDidMount", this.props.insets.top)
         this.getPhotos();
     }
 
@@ -176,7 +171,7 @@ class StoryPhoto extends React.Component {
                     photoList.push(data.edges[i].node);
                 }
                 let firstPhotoUri = photoList[0]?.image?.uri
-                console.info("firstPhotoUri", photoList[0]);
+                // console.info("firstPhotoUri", photoList[0]);
                 this.setState({
                     firstPhotoUri: firstPhotoUri,
                     photoList: photoList,
@@ -239,7 +234,7 @@ class StoryPhoto extends React.Component {
 
                     onEndReachedThreshold={0.5}
                     onEndReached={() => {
-                        console.info("onEndReached");
+                        //上拉加载更多
                         this.getPhotosNum += 18;
                         this.setState({ bottomSheetRefreshing: true });
                         this.getPhotos();

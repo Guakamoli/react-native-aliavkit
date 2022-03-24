@@ -569,7 +569,7 @@ class CameraScreen extends Component<Props, State> {
             setShootData={this.setShootData}
           />
         </View>
-        {<StoryPhoto {...this.props} selectedPhoto={this.selectedPhoto} />}
+        {/* {<StoryPhoto {...this.props} selectedPhoto={this.selectedPhoto} />} */}
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
