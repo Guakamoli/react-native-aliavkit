@@ -557,7 +557,7 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', zIndex: 99 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight+120, width: '100%', zIndex: 99, backgroundColor: 'red' }}>
         <RenderbeautifyBox {...this.props} />
         <View style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}>
           <Carousel
