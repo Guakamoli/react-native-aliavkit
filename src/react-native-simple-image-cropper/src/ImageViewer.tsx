@@ -544,7 +544,7 @@ class ImageViewer extends Component<IProps> {
                           resizeMode={"cover"}
                           paused={videoPaused}
                           repeat={true}
-                          muted={true}
+                          muted={false}
                           source={{ uri: videoFile }}
                           style={[videoStyle]}
                         />
