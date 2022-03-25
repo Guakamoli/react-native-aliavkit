@@ -372,7 +372,7 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   reset = () => {
-    this.ani?.stop();
+    // this.ani?.stop();
     this.arcAngle?.setValue(0);
     this.startTime = null;
     this.endTime = null;
