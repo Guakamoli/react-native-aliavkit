@@ -351,6 +351,7 @@ class CarouselWrapper extends Component<Props, State> {
 
     this.props.showBottomTools();
 
+    this.ani?.stop();
     setTimeout(() => {
       this.reset();
       this.pressLock = false;
