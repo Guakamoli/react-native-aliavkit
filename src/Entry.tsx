@@ -76,7 +76,7 @@ const Entry = (props) => {
         props?.setAudioMode?.();
       }
     }
-  }, [props.isDrawerOpen]);
+  }, [props.isDrawerOpen,type]);
 
   const { run: changeType } = useThrottleFn(
     (i) => {
