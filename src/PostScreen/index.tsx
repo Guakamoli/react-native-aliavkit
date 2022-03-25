@@ -92,6 +92,7 @@ type State = {
   cropOffsetX: any;
   cropOffsetY: any;
   videoPaused: boolean;
+  videoMuted: boolean;
   isVidoePlayer: boolean;
 };
 
@@ -200,6 +201,7 @@ class PostContent extends Component {
       imageItem: "",
       cropScale: 0,
       videoPaused: false,
+      videoMuted: true,
       isChangeScale: false,
       minScale: 0,
       positionX: 0,
@@ -235,6 +237,20 @@ class PostContent extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState) {
+
+    if(nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type){
+      if(!!nextProps.isDrawerOpen && nextProps.type === 'post'){
+         console.info("不静音");
+         this.setState({
+          videoMuted: false,
+        });
+      }else{
+        console.info("静音");
+        this.setState({
+          videoMuted: true,
+        });
+      }
+    }
 
     if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
       if (nextProps.isVidoePlayer) {
@@ -496,6 +512,7 @@ class PostContent extends Component {
               imageUri={this.state.imageItem?.uri ? this.state.imageItem?.uri : ""}
               videoFile={this.state.imageItem?.videoFile ? this.state.imageItem?.videoFile : ""}
               videoPaused={this.state.videoPaused}
+              videoMuted={this.state.videoMuted}
 
               srcSize={{
                 width: this.state.imageItem.width,
@@ -1209,12 +1226,22 @@ class PostFileUpload extends Component {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
         this.props.setVideoPlayer(true);
-        //TODOWUYQ
-        if (this.state.CameraRollList?.length > 0) {
-          this.props.setMultipleData([this.state.CameraRollList[0]]);
-        }
+        // if (this.state.CameraRollList?.length > 0) {
+        //   this.props.setMultipleData([this.state.CameraRollList[0]]);
+        // }
       } else {
         this.props.setVideoPlayer(false);
+        //TODOWUYT
+        try {
+          if (this.props?.selectMultiple && multipleData?.length) {
+            // console.info("拍摄器多选关闭",  multipleData.length);
+            const selectData = multipleData[multipleData.length - 1];
+            this.props.setMultipleData([selectData]);
+            multipleData = [selectData];
+          }
+        } catch (error) {
+
+        }
       }
     }
 

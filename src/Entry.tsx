@@ -71,8 +71,12 @@ const Entry = (props) => {
   useEffect(() => {
     if (!props.isDrawerOpen) {
       setInitStory(false)
+    } else {
+      if (type === 'post') {
+        props?.setAudioMode?.();
+      }
     }
-  }, [props.isDrawerOpen]);
+  }, [props.isDrawerOpen,type]);
 
   const { run: changeType } = useThrottleFn(
     (i) => {
