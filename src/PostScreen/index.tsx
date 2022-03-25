@@ -238,7 +238,7 @@ class PostContent extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
 
-    if(nextProps.isDrawerOpen != this.props.isDrawerOpen || nextProps.type !== this.props.type){
+    if(nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type){
       if(!!nextProps.isDrawerOpen && nextProps.type === 'post'){
          console.info("不静音");
          this.setState({
