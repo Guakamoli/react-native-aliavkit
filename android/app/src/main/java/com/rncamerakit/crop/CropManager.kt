@@ -26,6 +26,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.google.gson.GsonBuilder
 import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.VideoConst
 import kotlinx.coroutines.*
 import java.io.File
 import kotlin.coroutines.resume
@@ -115,11 +116,11 @@ class CropManager {
                 }
             }
 
-            var mVideoWidth = 720
-            var mVideoHeight = 1280
+            var mVideoWidth = VideoConst.mCropVideoWidth
+            var mVideoHeight = VideoConst.mCropVideoHeight
             var mDuration = 0L
             //设置一个默认码率
-            var mBitrate = 4*1000
+            var mBitrate = VideoConst.mCropBitrate
             var mFps = 60
             var mRect: Rect? = null
             try {

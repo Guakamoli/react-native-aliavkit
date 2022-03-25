@@ -10,6 +10,8 @@ import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
+import { State, NativeViewGestureHandler } from 'react-native-gesture-handler';
+
 import I18n from '../i18n';
 
 import Toast, { DURATION } from 'react-native-easy-toast';
@@ -63,7 +65,7 @@ class PototItemView extends React.Component {
                             this.props.hideBottomSheet();
                         }, 250);
                     }}>
-                    <Image style={{ width: '100%', height: '100%' }} resizeMode='center'  source={{ uri: this.props.item?.image?.uri }} />
+                    <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
                 </Pressable>
 
                 {this.props.item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
@@ -97,8 +99,6 @@ class StoryPhoto extends React.Component {
 
         this.state = {
             singleSelect: props.singleSelect ? props.singleSelect : true,
-            openPhotos: false,
-            firstPhotoUri: '',
             photoList: [],
             multipleSelectList: [],
             bottomSheetRefreshing: false,
@@ -120,10 +120,12 @@ class StoryPhoto extends React.Component {
      * @returns true 会继续更新； false 不会执行 render
      */
     shouldComponentUpdate(nextProps, nextState) {
-        if (this.state.openPhotos !== nextState.openPhotos) {
-            return true;
-        }
-        if (this.state.firstPhotoUri !== nextState.firstPhotoUri) {
+        if (this.props.openPhotos !== nextProps.openPhotos) {
+            if (nextProps.openPhotos) {
+                this.openBottomSheet();
+            } else {
+                this.hideBottomSheet();
+            }
             return true;
         }
         if (this.state.photoList !== nextState.photoList) {
@@ -171,9 +173,8 @@ class StoryPhoto extends React.Component {
                     photoList.push(data.edges[i].node);
                 }
                 let firstPhotoUri = photoList[0]?.image?.uri
-                // console.info("firstPhotoUri", photoList[0]);
+                this.props.setFirstPhotoUri(firstPhotoUri);
                 this.setState({
-                    firstPhotoUri: firstPhotoUri,
                     photoList: photoList,
                     bottomSheetRefreshing: false
                 });
@@ -186,7 +187,6 @@ class StoryPhoto extends React.Component {
 
 
     openBottomSheet = () => {
-        this.setState({ openPhotos: true });
         this.bottomSheetRef?.snapTo(0);
         this.resetToolsBotton(false);
     }
@@ -206,7 +206,7 @@ class StoryPhoto extends React.Component {
 
     PhotoView = () => {
         return (
-            <View style={[styles.photoView, { height: this.state.openPhotos ? height : 0 }]}>
+            <View style={[styles.photoView, { height: height ,backgroundColor:'rgba(255,0,0,0.2)' }]}>
                 <ScrollBottomSheet
                     ref={(ref) => (this.bottomSheetRef = ref)}
                     componentType="FlatList"
@@ -227,9 +227,10 @@ class StoryPhoto extends React.Component {
                     contentContainerStyle={styles.contentContainerStyle}
                     onSettle={(index) => {
                         if (index === 1) {
-                            this.setState({ openPhotos: false });
                             this.resetToolsBotton(true);
+                            this.props.onCloseView();
                         }
+                        console.info("onSettle",index);
                     }}
 
                     onEndReachedThreshold={0.5}
@@ -241,14 +242,31 @@ class StoryPhoto extends React.Component {
                     }}
                     renderHandle={() => (
                         <View style={styles.bottomSheetHead}>
-                            <TouchableOpacity
-                                style={styles.bottomSheetHeadClose}
-                                hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
-                                onPress={() => {
-                                    this.hideBottomSheet();
-                                }}>
-                                <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
-                            </TouchableOpacity>
+                            {Platform.OS === 'android' ?
+                                <NativeViewGestureHandler
+                                    disallowInterruption={true}
+                                    shouldActivateOnStart={true}
+                                    onHandlerStateChange={(event) => {
+                                        if (event.nativeEvent.state === State.END) {
+                                            this.hideBottomSheet();
+                                        }
+                                    }}
+                                >
+                                    <View style={styles.bottomSheetHeadClose}>
+                                        <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                                    </View>
+                                </NativeViewGestureHandler>
+                                :
+                                <TouchableOpacity
+                                    style={styles.bottomSheetHeadClose}
+                                    hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
+                                    onPress={() => {
+                                        console.info("renderHandle");
+                                        this.hideBottomSheet();
+                                    }}>
+                                    <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                                </TouchableOpacity>
+                            }
 
                         </View>
                     )}
@@ -268,23 +286,14 @@ class StoryPhoto extends React.Component {
 
 
     render() {
+        console.info("openPhotos 11",this.props.openPhotos);
         return (
-            <View style={styles.container}>
+            <View style={[styles.container, { height:  height  }]}>
                 <Toast
                     ref={(ref) => (this.toastRef = ref)}
                     position='center'
                     opacity={0.8}
                 />
-                <View style={[styles.btnContainer, { bottom: this.props.toolsInsetBottom + 5 }]}>
-                    <TouchableOpacity
-                        hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
-                        onPress={() => {
-                            this.openBottomSheet();
-                        }}>
-                        <Image key={!!this.state.firstPhotoUri ? 'firstPhotoUri' : 'require'} style={{ width: 25, height: 25 }} resizeMode='stretch' resizeMethod='resize'
-                            source={!!this.state.firstPhotoUri ? { uri: this.state.firstPhotoUri } : require('../../images/ic_story_photo.png')} />
-                    </TouchableOpacity>
-                </View>
                 {this.PhotoView()}
             </View >
         );
@@ -294,7 +303,7 @@ class StoryPhoto extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%', height: '100%', position: 'relative',
+        width: '100%', height: '100%', position: 'absolute', zIndex: 1 , //backgroundColor: 'red',
     },
     btnContainer: {
         position: 'absolute', left: 20, bottom: 0, width: 25, height: 25, borderRadius: 4, overflow: 'hidden'

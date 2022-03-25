@@ -25,10 +25,14 @@ class ImportManager(val reactContext: ThemedReactContext) {
         mAliyunIImport = AliyunImportCreator.getImportInstance(mContext)
     }
 
-    private fun getVideoParam(isVideo: Boolean, rotation: Int): AliyunVideoParam {
+    private fun getVideoParam(isVideo: Boolean, rotation: Int, bitRate: Float): AliyunVideoParam {
         if (isVideo) {
             var videoWidth: Int = VideoConst.mVideoWidth
             var videoHeight: Int = VideoConst.mVideoHeight
+            var bitRate = bitRate.toInt()
+            if(bitRate>VideoConst.mVideoBitrate){
+                bitRate = VideoConst.mVideoBitrate
+            }
 //            if (rotation == 90 || rotation == 270) {
 //                videoWidth = VideoConst.mVideoHeight
 //                videoHeight = VideoConst.mVideoWidth
@@ -37,7 +41,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
 //                videoHeight = VideoConst.mVideoHeight
 //            }
             return AliyunVideoParam.Builder()
-                .bitrate(VideoConst.mVideoBitrate)
+                .bitrate(bitRate)
                 .frameRate(30)
                 .gop(30)
                 .crf(23)
@@ -71,11 +75,14 @@ class ImportManager(val reactContext: ThemedReactContext) {
     fun importVideo(filePath: String?): String? {
         val aliyunCrop = AliyunCropCreator.createCropInstance(mContext)
         val duration = aliyunCrop.getVideoDuration(filePath)
+
         val nativeParser = NativeParser()
         nativeParser.init(filePath)
         val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+        val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
+
         Log.e("AAA", "duration：$duration")
-        mAliyunIImport?.setVideoParam(getVideoParam(true, rotation))
+        mAliyunIImport?.setVideoParam(getVideoParam(true, rotation, bitRate))
         mAliyunIImport?.addMediaClip(
             AliyunVideoClip.Builder()
                 .source(filePath)
@@ -93,7 +100,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
      * 导入图片
      */
     fun importImage(filePath: String?): String? {
-        mAliyunIImport?.setVideoParam(getVideoParam(false,0))
+        mAliyunIImport?.setVideoParam(getVideoParam(false, 0, 0F))
         mAliyunIImport?.addMediaClip(
             AliyunImageClip.Builder()
                 .source(filePath)

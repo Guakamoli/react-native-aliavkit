@@ -188,7 +188,6 @@ const Entry = (props) => {
         musicSearch={musicSearchPng}
         selectBeautify={selectBeautifyPng}
         noResultPng={noResultPng}
-        cameraModule={true}
       />
     )
   }

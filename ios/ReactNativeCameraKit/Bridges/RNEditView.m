@@ -92,8 +92,10 @@ AliyunCropDelegate
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-        _mediaConfig.videoQuality = AliyunMediaQualityHight;
-        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+//        _mediaConfig.videoQuality = AliyunMediaQualityHight;
+//        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
+        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
     }
     return _mediaConfig;
 }
@@ -171,10 +173,12 @@ AliyunCropDelegate
     
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     if ([RNAVDeviceHelper isBelowIphone_11]) {
-        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
+//        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
+        param.videoQuality = AliyunVideoQualityHight;// 视频质量
     } else {
-        param.bitrate = 10*1000*1000; // 10Mbps
+//        param.bitrate = 10*1000*1000; // 10Mbps
     }
+    param.bitrate = 4*1000*1000; // 720P 4Mbps
     param.fps = self.mediaConfig.fps; // 帧率
     param.gop = self.mediaConfig.gop; // 关键帧间隔
     param.scaleMode = AliyunScaleModeFill; // 缩放模式
@@ -199,10 +203,12 @@ AliyunCropDelegate
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
     if ([RNAVDeviceHelper isBelowIphone_11]) {
-        param.videoQuality = AliyunVideoQualityMedium;
+//        param.videoQuality = AliyunVideoQualityMedium;
+        param.videoQuality = AliyunVideoQualityHight;// 视频质量
     } else {
-        param.bitrate = 10*1000*1000; // 10Mbps
+//        param.bitrate = 10*1000*1000; // 10Mbps
     }
+    param.bitrate = 4*1000*1000; // 720P 4Mbps
     param.scaleMode = AliyunScaleModeFill;
     // 编码模式
     param.codecType = AliyunVideoCodecHardware;
@@ -735,6 +741,11 @@ AliyunCropDelegate
     id videoParams = @{@"width":@(frameWidth), @"height":@(frameHeight),@"path":path,@"size":@(fileSize),@"type":fileType,@"name":fileName};
     
     id event = @{@"exportProgress": @(1.0), @"outputPath":path, @"videoParams":videoParams};
+     
+//                AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:path];
+//                NSInteger frameWidth2 = nativeParser.getVideoWidth;
+//                NSInteger frameHeight2 = nativeParser.getVideoHeight;
+//                NSInteger bitRate2 = nativeParser.getVideoBitrate;
     
     _onExportVideo(event);
 }

@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  // Pressable,
   Image,
   Dimensions,
   Platform,
@@ -253,6 +252,10 @@ class CameraScreen extends Component<Props, State> {
       relaloadFlag: null,
       loadedPermissions: false,
       showRenderBottom: true,
+
+      //相册是否展开
+      openPhotos: false,
+      firstPhotoUri: '',
     };
     this.initPermissions();
 
@@ -411,7 +414,12 @@ class CameraScreen extends Component<Props, State> {
     // this.myRef?.current?.show?.(`${I18n.t('Tap_to_take_a_photo_long_press_to_take_a_video')}`, 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
-
+    if (this.state.openPhotos != nextState.openPhotos) {
+      return true;
+    }
+    if (this.state.firstPhotoUri != nextState.firstPhotoUri) {
+      return true;
+    }
     if (this.props.showRenderBottom != nextProps.showRenderBottom) {
       return true;
     }
@@ -557,7 +565,7 @@ class CameraScreen extends Component<Props, State> {
     }
 
     return (
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight+120, width: '100%', zIndex: 99 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight + 120, width: '100%', zIndex: 99, backgroundColor: 'rgba(255,0,0,0)' }}>
         <RenderbeautifyBox {...this.props} />
         <View style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}>
           <Carousel
@@ -569,7 +577,19 @@ class CameraScreen extends Component<Props, State> {
             setShootData={this.setShootData}
           />
         </View>
-        {/* {<StoryPhoto {...this.props} selectedPhoto={this.selectedPhoto} />} */}
+        
+        {/* <View style={{ position: 'absolute', left: 20, width: 25, height: 25, borderRadius: 4, overflow: 'hidden', bottom: this.props.toolsInsetBottom + 5 }} >
+          <TouchableOpacity
+            hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
+            onPress={() => {
+              this.setState({ openPhotos: true });
+            }}>
+            <Image style={{ width: 25, height: 25 }} resizeMode='stretch' resizeMethod='resize'
+              key={this.state.firstPhotoUri ? "firstPhotoUri" : "require"}
+              source={this.state.firstPhotoUri ? { uri: this.state.firstPhotoUri } : require('../../images/ic_story_photo.png')} />
+          </TouchableOpacity>
+        </View> */}
+
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
     );
@@ -634,6 +654,7 @@ class CameraScreen extends Component<Props, State> {
     if (!this.state.loadedPermissions) {
       return null;
     }
+
     return (
       <View style={{ backgroundColor: '#000', flex: 1, position: 'relative' }}>
         <Toast
@@ -645,12 +666,28 @@ class CameraScreen extends Component<Props, State> {
           opacity={0.8}
         />
 
+
+
         <View style={{ position: 'relative', width: "100%", height: '100%', display: !this.state.ShootSuccess ? 'flex' : 'none' }}>
           {this.CameraView()}
-          {this.renderBottom()}
+          <View style={{ display: this.props.type === 'story' ? 'flex' : 'none' }}>
+            {this.renderBottom()}
+          </View>
+          {/* {<StoryPhoto
+            {...this.props} selectedPhoto={this.selectedPhoto} openPhotos={this.state.openPhotos}
+            setFirstPhotoUri={(uri: string) => {
+              if (uri) {
+                this.setState({
+                  firstPhotoUri: uri,
+                });
+              }
+            }}
+            //关闭时执行
+            onCloseView={() => {
+              this.setState({ openPhotos: false });
+            }}
+          />} */}
         </View>
-
-
         {
           this.state.ShootSuccess &&
           <View style={{ width: "100%", height: '100%' }}>
