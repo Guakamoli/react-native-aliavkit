@@ -76,7 +76,7 @@ const Entry = (props) => {
         props?.setAudioMode?.();
       }
     }
-  }, [props.isDrawerOpen,type]);
+  }, [props.isDrawerOpen, type]);
 
   const { run: changeType } = useThrottleFn(
     (i) => {
@@ -201,7 +201,7 @@ const Entry = (props) => {
 
   return (
     <View style={{ width: "100%", height: "100%", backgroundColor: '#000', position: 'relative' }}>
-      {props?.isDrawerOpen || props.isExample && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
+      {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
 
 
       {PostView()}
