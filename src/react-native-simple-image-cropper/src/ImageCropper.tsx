@@ -254,6 +254,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       scale,
       disablePin,
       videoPaused,
+      videoMuted,
       srcSize,
       positionX,
       positionY,
@@ -297,6 +298,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
             overlay={areaOverlay}
             disablePin={disablePin}
             videoPaused={videoPaused}
+            videoMuted={videoMuted}
           />
         ) : null}
       </GestureHandlerRootView>

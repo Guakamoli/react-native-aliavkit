@@ -404,6 +404,7 @@ class ImageViewer extends Component<IProps> {
       videoFile,
       minScale,
       videoPaused,
+      videoMuted,
       srcSize,
     } = this.props;
     const imageSrc = {
@@ -544,7 +545,8 @@ class ImageViewer extends Component<IProps> {
                           resizeMode={"cover"}
                           paused={videoPaused}
                           repeat={true}
-                          muted={true}
+                          muted={videoMuted}
+                          // muted={false}
                           source={{ uri: videoFile }}
                           style={[videoStyle]}
                         />
