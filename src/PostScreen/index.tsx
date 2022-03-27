@@ -239,19 +239,20 @@ class PostContent extends Component {
   shouldComponentUpdate(nextProps, nextState) {
 
     if(nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type){
-      if(!!nextProps.isDrawerOpen && nextProps.type === 'post'){
-         console.info("不静音");
+      if((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post'){
+        //  console.info("不静音");
          this.setState({
           videoMuted: false,
+          videoPaused: false,
         });
       }else{
-        console.info("静音");
+        // console.info("静音");
         this.setState({
           videoMuted: true,
+          videoPaused: true,
         });
       }
     }
-
     if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
       if (nextProps.isVidoePlayer) {
         this.setState({
@@ -1679,6 +1680,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.type !== this.props.type) {
+      return true;
+    }
     if (nextState.isShowLoading !== this.state.isShowLoading) {
       return true;
     }
