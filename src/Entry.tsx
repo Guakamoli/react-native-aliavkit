@@ -249,7 +249,7 @@ const Entry = (props) => {
             )
         )
       }
-      {bottomToolsVisibility && (type === 'story' || type === 'post') &&
+      {(bottomToolsVisibility && (type === 'story' || type === 'post')) &&
         <Animated.View
           style={[
             styles.tools,

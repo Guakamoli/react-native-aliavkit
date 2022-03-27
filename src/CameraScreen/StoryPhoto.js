@@ -47,26 +47,49 @@ class PototItemView extends React.Component {
         }
         return t;
     };
+
+    onItemClick = async () => {
+        if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
+            this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
+            return;
+        }
+        let selectUri = this.props.item.image.uri;
+
+        if (Platform.OS === 'ios') {
+            let myAssetId = selectUri.slice(5);
+            selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+        }
+        this.props.selectedPhoto(selectUri, this.props.item.type);
+        setTimeout(() => {
+            this.props.hideBottomSheet();
+        }, 250);
+    }
+
     render() {
         let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
         return (
             <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
-                <Pressable
-                    onPress={async () => {
-                        if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-                            this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
-                            return;
-                        }
-                        let selectUri = this.props.item.image.uri;
-                        let myAssetId = selectUri.slice(5);
-                        selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-                        this.props.selectedPhoto(selectUri, this.props.item.type);
-                        setTimeout(() => {
-                            this.props.hideBottomSheet();
-                        }, 250);
-                    }}>
-                    <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
-                </Pressable>
+
+                {Platform.OS === 'android' ?
+                    <NativeViewGestureHandler
+                        disallowInterruption={false}
+                        shouldActivateOnStart={false}
+                        onHandlerStateChange={(event) => {
+                            if (event.nativeEvent.state === State.END) {
+                                this.onItemClick();
+                            }
+                        }}
+                    >
+                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
+                    </NativeViewGestureHandler>
+                    :
+                    <TouchableOpacity
+                        onPress={() => {
+                            this.onItemClick();
+                        }}>
+                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
+                    </TouchableOpacity>
+                }
 
                 {this.props.item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
 
@@ -124,7 +147,7 @@ class StoryPhoto extends React.Component {
             if (nextProps.openPhotos) {
                 this.openBottomSheet();
             } else {
-                this.hideBottomSheet();
+                // this.hideBottomSheet();
             }
             return true;
         }
@@ -186,7 +209,9 @@ class StoryPhoto extends React.Component {
 
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
-        this.resetToolsBotton(false);
+        setTimeout(() => {
+            this.resetToolsBotton(false);
+        }, 100);
     }
 
     hideBottomSheet = () => {
@@ -204,12 +229,12 @@ class StoryPhoto extends React.Component {
 
     PhotoView = () => {
         return (
-            <View style={[styles.photoView, { height: height ,backgroundColor:'rgba(255,0,0,0.2)' }]}>
+            <View style={[styles.photoView, { height: this.props.openPhotos ? height : 0 }]}>
                 <ScrollBottomSheet
                     ref={(ref) => (this.bottomSheetRef = ref)}
                     componentType="FlatList"
                     //snapPoints 是组件距离屏幕顶部的距离
-                    snapPoints={[this.props.insets.top + this.props.insets.bottom, height]}
+                    snapPoints={[0, height]}
                     //初始显示对应 snapPoints 中的下标
                     initialSnapIndex={1}
                     data={this.state.photoList}
@@ -224,11 +249,11 @@ class StoryPhoto extends React.Component {
                     enableOverScroll={true}
                     contentContainerStyle={styles.contentContainerStyle}
                     onSettle={(index) => {
+                        console.info("onSettle", index);
                         if (index === 1) {
-                            this.resetToolsBotton(true);
+                            this.hideBottomSheet();
                             this.props.onCloseView();
                         }
-                        console.info("onSettle",index);
                     }}
 
                     onEndReachedThreshold={0.5}
@@ -259,7 +284,6 @@ class StoryPhoto extends React.Component {
                                     style={styles.bottomSheetHeadClose}
                                     hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
                                     onPress={() => {
-                                        console.info("renderHandle");
                                         this.hideBottomSheet();
                                     }}>
                                     <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
@@ -284,9 +308,9 @@ class StoryPhoto extends React.Component {
 
 
     render() {
-        console.info("openPhotos 11",this.props.openPhotos);
+        console.info("openPhotos 11", this.props.openPhotos);
         return (
-            <View style={[styles.container, { height:  height  }]}>
+            <View style={[styles.container, { height: this.props.openPhotos ? height : 0 }]}>
                 <Toast
                     ref={(ref) => (this.toastRef = ref)}
                     position='center'
@@ -301,7 +325,7 @@ class StoryPhoto extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%', height: '100%', position: 'absolute', zIndex: 1 , //backgroundColor: 'red',
+        width: '100%', height: '100%', position: 'absolute', zIndex: 999, //backgroundColor: 'red',
     },
     btnContainer: {
         position: 'absolute', left: 20, bottom: 0, width: 25, height: 25, borderRadius: 4, overflow: 'hidden'
@@ -377,7 +401,6 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0,0,0,0.5)',
 
     }
-
 
 });
 

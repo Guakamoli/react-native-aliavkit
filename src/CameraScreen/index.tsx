@@ -578,17 +578,23 @@ class CameraScreen extends Component<Props, State> {
           />
         </View>
 
-        {/* <View style={{ position: 'absolute', left: 20, width: 25, height: 25, borderRadius: 4, overflow: 'hidden', bottom: this.props.toolsInsetBottom + 5 }} >
-          <TouchableOpacity
-            hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
-            onPress={() => {
-              this.setState({ openPhotos: true });
-            }}>
-            <Image style={{ width: 25, height: 25 }} resizeMode='stretch' resizeMethod='resize'
-              key={this.state.firstPhotoUri ? "firstPhotoUri" : "require"}
-              source={this.state.firstPhotoUri ? { uri: this.state.firstPhotoUri } : require('../../images/ic_story_photo.png')} />
-          </TouchableOpacity>
-        </View> */}
+        {/* TODOWUYQ */}
+        {this.props.bottomToolsVisibility &&
+          <View style={{ position: 'absolute', left: 20, width: 25, height: 25, borderRadius: 4, overflow: 'hidden', bottom: this.props.toolsInsetBottom + 5 }} >
+            <TouchableOpacity
+              hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
+              onPress={() => {
+                this.setState({ openPhotos: true });
+              }}>
+              {(!!this.state?.firstPhotoUri) ?
+                <Image key={"firstPhotoUri"} style={{ width: 25, height: 25 }} resizeMode='cover' source={{ uri: this.state.firstPhotoUri }} />
+                :
+                <Image key={"requireUri"} style={{ width: 25, height: 25 }} resizeMode='cover' source={require('../../images/ic_story_photo.png')} />
+              }
+
+            </TouchableOpacity>
+          </View>}
+
 
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
       </View>
@@ -673,7 +679,8 @@ class CameraScreen extends Component<Props, State> {
           <View style={{ display: this.props.type === 'story' ? 'flex' : 'none' }}>
             {this.renderBottom()}
           </View>
-          {/* {<StoryPhoto
+          {/* TODOWUYQ */}
+          {<StoryPhoto
             {...this.props} selectedPhoto={this.selectedPhoto} openPhotos={this.state.openPhotos}
             setFirstPhotoUri={(uri: string) => {
               if (uri) {
@@ -686,7 +693,7 @@ class CameraScreen extends Component<Props, State> {
             onCloseView={() => {
               this.setState({ openPhotos: false });
             }}
-          />} */}
+          />}
         </View>
         {
           this.state.ShootSuccess &&
@@ -701,21 +708,6 @@ class CameraScreen extends Component<Props, State> {
 export default connect(null, RDSMMapDispatchToProps)(CameraScreen);
 
 const styles = StyleSheet.create({
-  bottomButtons: {
-    flex: 1,
-  },
-  textStyle: {
-    color: 'white',
-    fontSize: 20,
-  },
-  ratioBestText: {
-    color: 'white',
-    fontSize: 18,
-  },
-  ratioText: {
-    color: '#ffc233',
-    fontSize: 18,
-  },
   BottomBox: {
     // flexDirection: 'row',
     // justifyContent: 'flex-end',
