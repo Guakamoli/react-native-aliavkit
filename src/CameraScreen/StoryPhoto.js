@@ -22,7 +22,7 @@ const photoItemWidth = (width - 2) / 3.0;
 const photoItemHeight = photoItemWidth * 16 / 9;
 
 
-class PototItemView extends React.Component {
+class PhotoItemView extends React.Component {
     constructor(props) {
         super(props)
     }
@@ -49,7 +49,10 @@ class PototItemView extends React.Component {
     };
 
     onItemClick = async () => {
-        if (this.props.item.type === 'video' && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
+
+        const videoType = this.props.item?.type?.indexOf('video') !== -1;
+
+        if (!!videoType && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
             this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
@@ -67,6 +70,9 @@ class PototItemView extends React.Component {
 
     render() {
         let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
+
+        const videoType = this.props.item?.type?.indexOf('video') !== -1;
+
         return (
             <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
 
@@ -91,7 +97,7 @@ class PototItemView extends React.Component {
                     </TouchableOpacity>
                 }
 
-                {this.props.item.type === 'video' && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
+                {!!videoType && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
 
                 {/* {!this.state.singleSelect && (
                     <Pressable
@@ -127,6 +133,8 @@ class StoryPhoto extends React.Component {
             bottomSheetRefreshing: false,
         };
         this.bottomSheetRef;
+        this.bottomSheetInnerRef;
+
         this.toastRef;
         this.getPhotosNum = 36;
     }
@@ -227,11 +235,43 @@ class StoryPhoto extends React.Component {
         }
     }
 
+    PhotoHandleView = () => {
+        return (
+            <View style={styles.bottomSheetHead}>
+                {Platform.OS === 'android' ?
+                    <NativeViewGestureHandler
+                        disallowInterruption={true}
+                        shouldActivateOnStart={true}
+                        onHandlerStateChange={(event) => {
+                            if (event.nativeEvent.state === State.END) {
+                                this.hideBottomSheet();
+                            }
+                        }}
+                    >
+                        <View style={styles.bottomSheetHeadClose}>
+                            <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                        </View>
+                    </NativeViewGestureHandler>
+                    :
+                    <TouchableOpacity
+                        style={styles.bottomSheetHeadClose}
+                        hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
+                        onPress={() => {
+                            this.hideBottomSheet();
+                        }}>
+                        <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                    </TouchableOpacity>
+                }
+            </View>)
+    }
+
     PhotoView = () => {
         return (
             <View style={[styles.photoView, { height: this.props.openPhotos ? height : 0 }]}>
                 <ScrollBottomSheet
+                    testID='action-sheet'
                     ref={(ref) => (this.bottomSheetRef = ref)}
+                    innerRef={(ref) => (this.bottomSheetInnerRef = ref)}
                     componentType="FlatList"
                     //snapPoints 是组件距离屏幕顶部的距离
                     snapPoints={[0, height]}
@@ -242,14 +282,13 @@ class StoryPhoto extends React.Component {
                         return index
                     }}
                     friction={0.8}
-                    animationType={'spring'}
                     numColumns={3}
                     initialNumToRender={9}
                     refreshing={this.state.bottomSheetRefreshing}
                     enableOverScroll={true}
+                    containerStyle={styles.contentContainerStyle}
                     contentContainerStyle={styles.contentContainerStyle}
                     onSettle={(index) => {
-                        console.info("onSettle", index);
                         if (index === 1) {
                             this.hideBottomSheet();
                             this.props.onCloseView();
@@ -263,37 +302,9 @@ class StoryPhoto extends React.Component {
                         this.setState({ bottomSheetRefreshing: true });
                         this.getPhotos();
                     }}
-                    renderHandle={() => (
-                        <View style={styles.bottomSheetHead}>
-                            {Platform.OS === 'android' ?
-                                <NativeViewGestureHandler
-                                    disallowInterruption={true}
-                                    shouldActivateOnStart={true}
-                                    onHandlerStateChange={(event) => {
-                                        if (event.nativeEvent.state === State.END) {
-                                            this.hideBottomSheet();
-                                        }
-                                    }}
-                                >
-                                    <View style={styles.bottomSheetHeadClose}>
-                                        <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
-                                    </View>
-                                </NativeViewGestureHandler>
-                                :
-                                <TouchableOpacity
-                                    style={styles.bottomSheetHeadClose}
-                                    hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
-                                    onPress={() => {
-                                        this.hideBottomSheet();
-                                    }}>
-                                    <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
-                                </TouchableOpacity>
-                            }
-
-                        </View>
-                    )}
+                    renderHandle={() => this.PhotoHandleView()}
                     renderItem={({ index, item }) => (
-                        <PototItemView
+                        <PhotoItemView
                             {...this.props}
                             index={index}
                             item={item}
@@ -301,6 +312,9 @@ class StoryPhoto extends React.Component {
                         />
 
                     )}
+                    ListEmptyComponent={() => {
+                        return null;
+                    }}
                 />
             </View>
         )
@@ -308,7 +322,6 @@ class StoryPhoto extends React.Component {
 
 
     render() {
-        console.info("openPhotos 11", this.props.openPhotos);
         return (
             <View style={[styles.container, { height: this.props.openPhotos ? height : 0 }]}>
                 <Toast
