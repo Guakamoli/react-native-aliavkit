@@ -203,9 +203,9 @@ const Entry = (props) => {
       {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
 
 
-      {/* {PostView()} */}
+      {PostView()}
 
-      {Platform.OS === 'ios' ?
+      {/* {Platform.OS === 'ios' ?
         <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
           {PostView()}
         </View>
@@ -213,9 +213,9 @@ const Entry = (props) => {
         <View style={{ width: '100%', height: '100%' }}>
           {PostView()}
         </View>
-      }
+      } */}
 
-      {Platform.OS === 'ios' ?
+      {/* {Platform.OS === 'ios' ?
         ((initStory && (props.isDrawerOpen || props.isExample)) ?
           <View style={{ display: (type === 'story' || type === 'storyedit') ? 'flex' : 'none', height: '100%' }}>
             {StoryView()}
@@ -248,8 +248,8 @@ const Entry = (props) => {
               </View>
             )
         )
-      }
-      {(bottomToolsVisibility && (type === 'story' || type === 'post')) &&
+      } */}
+      {/* {(bottomToolsVisibility && (type === 'story' || type === 'post')) &&
         <Animated.View
           style={[
             styles.tools,
@@ -273,7 +273,7 @@ const Entry = (props) => {
             );
           })}
         </Animated.View>
-      }
+      } */}
     </View>
   );
 };
