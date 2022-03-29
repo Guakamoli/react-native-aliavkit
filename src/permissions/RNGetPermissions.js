@@ -29,6 +29,13 @@ export default class RNGetPermissions {
                 }
             } else if (statuses === RESULTS.LIMITED) {
                 //受限，iOS 只可以访问指定选中的照片
+                if (isCheckLimited) {
+                    await new Promise((resolved) => {
+                        setTimeout(() => {
+                            resolved()
+                        }, 300);
+                    })
+                }
                 return isCheckLimited;
             }
         }

@@ -1029,14 +1029,14 @@ class PostFileUpload extends Component {
       return;
     }
 
-    if (this.isFirstLoad) {
-      await new Promise((resolved) => {
-        setTimeout(() => {
-          resolved()
-        }, 300);
-      })
-      this.isFirstLoad = false;
-    }
+    // if (this.isFirstLoad) {
+    //   await new Promise((resolved) => {
+    //     setTimeout(() => {
+    //       resolved()
+    //     }, 300);
+    //   })
+    //   this.isFirstLoad = false;
+    // }
 
     //获取照片
 
@@ -1062,23 +1062,11 @@ class PostFileUpload extends Component {
           node.image.playableDurationFormat = this.formatSeconds(Math.ceil(node.image.playableDuration ?? 0));
           photos.push(node);
         }
-        let firstData = photos[0];
 
-        let selectedValid = false;
-        if (multipleData[0]) {
-          let localUri;
-          if (Platform.OS === 'ios') {
-            let myAssetId = firstData?.image?.uri.slice(5);
-            localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-          } else {
-            localUri = firstData?.image?.uri;
-          }
-          if (localUri) {
-            selectedValid = true;
-          }
-        }
-        if (!selectedValid) {
-          if (firstData.type.indexOf("video") !== -1) {
+        setTimeout(async() => {
+          let firstData = photos[0];
+          let selectedValid = false;
+          if (multipleData[0]) {
             let localUri;
             if (Platform.OS === 'ios') {
               let myAssetId = firstData?.image?.uri.slice(5);
@@ -1086,14 +1074,28 @@ class PostFileUpload extends Component {
             } else {
               localUri = firstData?.image?.uri;
             }
-            firstData.image.videoFile = localUri;
+            if (localUri) {
+              selectedValid = true;
+            }
           }
-          this.props.setMultipleData([firstData]);
-        }
-
-        if (AsyncStorage) {
-          await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
-        }
+          if (!selectedValid) {
+            if (firstData.type.indexOf("video") !== -1) {
+              let localUri;
+              if (Platform.OS === 'ios') {
+                let myAssetId = firstData?.image?.uri.slice(5);
+                localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+              } else {
+                localUri = firstData?.image?.uri;
+              }
+              firstData.image.videoFile = localUri;
+            }
+            this.props.setMultipleData([firstData]);
+          }
+  
+          if (AsyncStorage) {
+            await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
+          }
+        }, 0);
         //
         this.setState({
           CameraRollList: photos,
@@ -1161,6 +1163,13 @@ class PostFileUpload extends Component {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
+        if (isCheckLimited) {
+          await new Promise((resolved) => {
+              setTimeout(() => {
+                  resolved()
+              }, 300);
+          })
+      }
         return isCheckLimited;
       }
     }
