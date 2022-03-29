@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  // Pressable,
   Image,
   Dimensions,
   Platform,
@@ -94,27 +93,31 @@ class TopReset extends Component<PropsType> {
             },
           ]}
         >
-          <NativeViewGestureHandler
-            disallowInterruption={true}
-            shouldActivateOnStart={true}
-            onHandlerStateChange={(event) => {
-              if (event.nativeEvent.state === State.END) {
+          {Platform.OS === 'android' ?
+            <NativeViewGestureHandler
+              disallowInterruption={true}
+              shouldActivateOnStart={true}
+              onHandlerStateChange={(event) => {
+                //
+                console.info("NativeViewGestureHandler", event.nativeEvent.state);
+                if (event.nativeEvent.state === State.END) {
+                  this.props.snapToItem?.(0);
+                }
+              }}
+            >
+              <View style={styles.clearIcon}>
+                <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+              </View>
+            </NativeViewGestureHandler>
+            :
+            <Pressable
+              style={styles.clearIcon}
+              onPress={() => {
                 this.props.snapToItem?.(0);
-              }
-            }}
-          >
-            <View style={styles.clearIcon}>
+              }}
+            >
               <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-            </View>
-          </NativeViewGestureHandler>
-          {/* <Pressable
-            style={styles.clearIcon}
-            onPress={() => {
-              this.props.snapToItem?.(0);
-            }}
-          >
-            <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
-          </Pressable> */}
+            </Pressable>}
         </Animated.View>
       </Reanimated.View>
     );
@@ -217,10 +220,9 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-           
             if (nativeEvent.state === State.ACTIVE) {
-              this.props.longPress();
               this.isLongPress = true;
+              this.props.longPress();
             } else if (nativeEvent.state === State.END) {
               this.isLongPress = false;
               this.props.stopAnimate();
@@ -240,7 +242,6 @@ class RenderChildren extends Component {
             <TapGestureHandler
               shouldCancelWhenOutside={true}
               onHandlerStateChange={({ nativeEvent }) => {
-                console.log("TapGestureHandler", nativeEvent.state);
                 if (nativeEvent.state === State.END) {
                   this.props.singlePress();
                 }
@@ -341,26 +342,37 @@ class CarouselWrapper extends Component<Props, State> {
         }
       });
     } catch (e) {
-     
+
     }
   };
   shotCamera = async () => {
-    const videoPath = await this.props.camera.current?.stopRecording?.();
+
+    const recordingTime = this.endTime - this.startTime;
+
     this.props.showBottomTools();
+
+    this.ani?.stop();
     setTimeout(() => {
       this.reset();
-    }, 50);
-    this.props.setShootData({
-      fileType: 'video',
-      videoPath,
-      ShootSuccess: true,
-    });
-    setTimeout(() => {
       this.pressLock = false;
-    }, 2500);
+    }, 500);
+
+    if (recordingTime <= 500) {
+      //ios 录制时间过短stopRecording 不会返回 videoPath。这里不能 return ，必须执行 stopRecording，否则不能再次 startRecording
+      this.props.myRef?.current?.show?.(`${I18n.t('record_time_small')}`, 500);
+    }
+    const videoPath = await this.props.camera.current?.stopRecording?.();
+    if (recordingTime >= 500) {
+      //安卓端目前小于500ms也会返回videoPath，这里统一处理，小于500ms 不进入编辑
+      this.props.setShootData({
+        fileType: 'video',
+        videoPath,
+        ShootSuccess: true,
+      });
+    }
   };
   reset = () => {
-    this.ani?.stop();
+    // this.ani?.stop();
     this.arcAngle?.setValue(0);
     this.startTime = null;
     this.endTime = null;
@@ -376,8 +388,6 @@ class CarouselWrapper extends Component<Props, State> {
     }
     this.endTime = Date.now();
     this.shotCamera();
-
-    // 在这里做结算
   };
   handleAppStateChange = (e) => {
     if (this.props.isDrawerOpen && this.props.type === 'story') {
@@ -419,7 +429,6 @@ class CarouselWrapper extends Component<Props, State> {
       if (index == 0) {
         return;
       }
-      //TODO
       if (item.icon) {
         item.icon = item.icon.replace('http://', 'https://');
       }
@@ -504,7 +513,6 @@ class CarouselWrapper extends Component<Props, State> {
                   extrapolate: 'clamp',
                 }),
               },
-              // TODO
             ],
             zIndex: 200,
           }}

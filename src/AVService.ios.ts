@@ -32,9 +32,8 @@ export default class AVService {
   }
 
   /**
- *
- * @returns 获取录制的滤镜列表
- */
+   * @returns 获取录制的滤镜列表
+   */
   static async getRecordColorFilter() {
     let colorFilterList = await AliAVServiceBridge.getRecordColorFilter({});
     return colorFilterList

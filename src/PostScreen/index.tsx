@@ -238,20 +238,24 @@ class PostContent extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
 
-    if(nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type){
-      if(!!nextProps.isDrawerOpen && nextProps.type === 'post'){
-         console.info("不静音");
-         this.setState({
-          videoMuted: false,
-        });
-      }else{
-        console.info("静音");
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type) {
+      if ((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post') {
+        //  console.info("不静音");
+       //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
+        setTimeout(() => {
+          this.setState({
+            videoMuted: false,
+            videoPaused: false,
+          });
+        }, 500);
+      } else {
+        // console.info("静音");
         this.setState({
           videoMuted: true,
+          videoPaused: true,
         });
       }
     }
-
     if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
       if (nextProps.isVidoePlayer) {
         this.setState({
@@ -1028,14 +1032,14 @@ class PostFileUpload extends Component {
       return;
     }
 
-    if (this.isFirstLoad) {
-      await new Promise((resolved) => {
-        setTimeout(() => {
-          resolved()
-        }, 300);
-      })
-      this.isFirstLoad = false;
-    }
+    // if (this.isFirstLoad) {
+    //   await new Promise((resolved) => {
+    //     setTimeout(() => {
+    //       resolved()
+    //     }, 300);
+    //   })
+    //   this.isFirstLoad = false;
+    // }
 
     //获取照片
 
@@ -1061,23 +1065,11 @@ class PostFileUpload extends Component {
           node.image.playableDurationFormat = this.formatSeconds(Math.ceil(node.image.playableDuration ?? 0));
           photos.push(node);
         }
-        let firstData = photos[0];
 
-        let selectedValid = false;
-        if (multipleData[0]) {
-          let localUri;
-          if (Platform.OS === 'ios') {
-            let myAssetId = firstData?.image?.uri.slice(5);
-            localUri = await CameraRoll.requestPhotoAccess(myAssetId);
-          } else {
-            localUri = firstData?.image?.uri;
-          }
-          if (localUri) {
-            selectedValid = true;
-          }
-        }
-        if (!selectedValid) {
-          if (firstData.type.indexOf("video") !== -1) {
+        setTimeout(async () => {
+          let firstData = photos[0];
+          let selectedValid = false;
+          if (multipleData[0]) {
             let localUri;
             if (Platform.OS === 'ios') {
               let myAssetId = firstData?.image?.uri.slice(5);
@@ -1085,14 +1077,28 @@ class PostFileUpload extends Component {
             } else {
               localUri = firstData?.image?.uri;
             }
-            firstData.image.videoFile = localUri;
+            if (localUri) {
+              selectedValid = true;
+            }
           }
-          this.props.setMultipleData([firstData]);
-        }
+          if (!selectedValid) {
+            if (firstData.type.indexOf("video") !== -1) {
+              let localUri;
+              if (Platform.OS === 'ios') {
+                let myAssetId = firstData?.image?.uri.slice(5);
+                localUri = await CameraRoll.requestPhotoAccess(myAssetId);
+              } else {
+                localUri = firstData?.image?.uri;
+              }
+              firstData.image.videoFile = localUri;
+            }
+            this.props.setMultipleData([firstData]);
+          }
 
-        if (AsyncStorage) {
-          await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
-        }
+          if (AsyncStorage) {
+            await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
+          }
+        }, 0);
         //
         this.setState({
           CameraRollList: photos,
@@ -1160,6 +1166,13 @@ class PostFileUpload extends Component {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
+        if (isCheckLimited) {
+          await new Promise((resolved) => {
+            setTimeout(() => {
+              resolved()
+            }, 300);
+          })
+        }
         return isCheckLimited;
       }
     }
@@ -1679,6 +1692,9 @@ export default class CameraScreen extends Component<Props, State> {
   componentDidMount() { }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.type !== this.props.type) {
+      return true;
+    }
     if (nextState.isShowLoading !== this.state.isShowLoading) {
       return true;
     }

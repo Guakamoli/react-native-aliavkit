@@ -100,11 +100,11 @@ const RenderLeftButtons = React.memo((props) => {
         <FastImage style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
 
-      <Pressable onPress={() => {
+      {/* <Pressable onPress={() => {
         props.setShowColorFilter();
       }}>
         <FastImage style={styles.closeIcon} source={props.filterImage} resizeMode='contain' />
-      </Pressable>
+      </Pressable> */}
 
       <BeautyButton {...props} />
     </View>
@@ -581,7 +581,7 @@ class RenderCamera extends Component {
 
           {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} setShowColorFilter={this.setShowColorFilter} key={'RenderLeftButtons'} />}
 
-          {this.MultiRecording()}
+          {/* {this.MultiRecording()} */}
 
         </Pressable>
         {this.state.showFilterLens && this.renderFilterBox()}

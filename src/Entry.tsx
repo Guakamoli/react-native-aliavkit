@@ -192,28 +192,24 @@ const Entry = (props) => {
         musicSearch={musicSearchPng}
         selectBeautify={selectBeautifyPng}
         noResultPng={noResultPng}
-        cameraModule={true}
       />
     )
   }
 
   const isShowStory = type === 'story' || type === 'storyedit';
 
-  return (
-    <View style={{ width: "100%", height: "100%", backgroundColor: '#000', position: 'relative' }}>
-      {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
 
-
-      {PostView()}
-
-      {/* {Platform.OS === 'ios' ?
-        <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
-          {PostView()}
-        </View>
-        :
-        <View style={{ width: '100%', height: '100%' }}>
-          {PostView()}
-        </View>
+  const StoryViews = () => {
+    return (<>
+      {
+        Platform.OS === 'ios' ?
+          <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
+            {PostView()}
+          </View>
+          :
+          <View style={{ width: '100%', height: '100%' }}>
+            {PostView()}
+          </View>
       }
 
       {Platform.OS === 'ios' ?
@@ -249,8 +245,9 @@ const Entry = (props) => {
               </View>
             )
         )
-      } */}
-      {/* {bottomToolsVisibility && (type === 'story' || type === 'post') &&
+      }
+
+      {(bottomToolsVisibility && (type === 'story' || type === 'post')) &&
         <Animated.View
           style={[
             styles.tools,
@@ -274,7 +271,19 @@ const Entry = (props) => {
             );
           })}
         </Animated.View>
-      } */}
+      }
+
+    </>)
+  }
+
+  return (
+    <View style={{ width: "100%", height: "100%", backgroundColor: '#000', position: 'relative' }}>
+      {(props?.isDrawerOpen || props.isExample) && <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />}
+
+      {PostView()}
+
+      {/* {StoryViews()} */}
+
     </View>
   );
 };

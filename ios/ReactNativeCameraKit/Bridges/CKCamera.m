@@ -19,6 +19,7 @@
 #import "AliyunPhotoLibraryManager.h"
 #import "ShortCut.h"
 #import "BeautyEngineManager.h"
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
 
 @implementation RCTConvert(CKCameraType)
 
@@ -352,6 +353,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
         if (videoSavePath) {
+//            AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoSavePath];
+//            NSInteger frameWidth = nativeParser.getVideoWidth;
+//            NSInteger frameHeight = nativeParser.getVideoHeight;
+//            NSInteger bitRate = nativeParser.getVideoBitrate;
             onSuccess(videoSavePath);
         } else {
             onError(@"no path exist");

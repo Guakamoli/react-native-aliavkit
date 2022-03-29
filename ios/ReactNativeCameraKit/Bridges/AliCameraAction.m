@@ -102,8 +102,10 @@
             _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
         } else {
             //iphone 11
-            _recorder.bitrate = 15*1000*1000; // 15Mbps
-            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
+//            _recorder.bitrate = 15*1000*1000; // 15Mbps
+//            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
+            _recorder.bitrate = 4*1000*1000; // 702P 4Mbps
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
         }
         _recorder.recordFps = self.mediaConfig.fps;
         
@@ -126,8 +128,10 @@
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-        _mediaConfig.videoQuality =  AliyunMediaQualityVeryHight;
-        _mediaConfig.outputSize =  CGSizeMake(1080, 1920);
+//        _mediaConfig.videoQuality =  AliyunMediaQualityVeryHight;
+//        _mediaConfig.outputSize =  CGSizeMake(1080, 1920);
+        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
+        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
     }
     return _mediaConfig;
 }
@@ -345,6 +349,8 @@
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
 {
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
     self.recordStartHandler = handler;
     return ([self.recorder startRecording]) == 0; // ==0 YES
 }
