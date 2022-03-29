@@ -201,7 +201,7 @@ class PostContent extends Component {
       imageItem: "",
       cropScale: 0,
       videoPaused: false,
-      videoMuted: false,
+      videoMuted: true,
       isChangeScale: false,
       minScale: 0,
       positionX: 0,
@@ -238,14 +238,17 @@ class PostContent extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
 
-    if(nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type){
-      if((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post'){
+    if (nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type) {
+      if ((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post') {
         //  console.info("不静音");
-         this.setState({
-          videoMuted: false,
-          videoPaused: false,
-        });
-      }else{
+       //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
+        setTimeout(() => {
+          this.setState({
+            videoMuted: false,
+            videoPaused: false,
+          });
+        }, 500);
+      } else {
         // console.info("静音");
         this.setState({
           videoMuted: true,
@@ -1063,7 +1066,7 @@ class PostFileUpload extends Component {
           photos.push(node);
         }
 
-        setTimeout(async() => {
+        setTimeout(async () => {
           let firstData = photos[0];
           let selectedValid = false;
           if (multipleData[0]) {
@@ -1091,7 +1094,7 @@ class PostFileUpload extends Component {
             }
             this.props.setMultipleData([firstData]);
           }
-  
+
           if (AsyncStorage) {
             await AsyncStorage.setItem('AvKitCameraRollList', JSON.stringify(photos));
           }
@@ -1165,11 +1168,11 @@ class PostFileUpload extends Component {
       } else if (statuses === RESULTS.LIMITED) {
         if (isCheckLimited) {
           await new Promise((resolved) => {
-              setTimeout(() => {
-                  resolved()
-              }, 300);
+            setTimeout(() => {
+              resolved()
+            }, 300);
           })
-      }
+        }
         return isCheckLimited;
       }
     }
