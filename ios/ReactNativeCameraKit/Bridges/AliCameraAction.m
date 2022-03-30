@@ -629,4 +629,18 @@
     [self.recorder finishRecording];
 }
 
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deletePart];
+}
+
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
+}
+
 @end

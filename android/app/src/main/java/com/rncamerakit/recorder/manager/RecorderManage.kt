@@ -327,6 +327,22 @@ class RecorderManage(
         }
     }
 
+
+    //删除最后一段片段
+    fun deleteLastMultiRecording(context: Context, promise: Promise) {
+        mRecorder?.stopRecording()
+        mClipManager?.deletePart()
+        promise.resolve(true)
+    }
+
+
+    //删除所有录制片段
+    fun deleteAllMultiRecording(context: Context, promise: Promise) {
+        mRecorder?.stopRecording()
+        mClipManager?.deleteAllPart()
+        promise.resolve(true)
+    }
+
     private var colorFilterPosition = 0
 
     /**

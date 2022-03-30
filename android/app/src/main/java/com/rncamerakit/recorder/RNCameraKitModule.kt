@@ -88,6 +88,16 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         mView?.mRecorderManage?.finishMultiRecording(reactContext, promise)
     }
 
+    @ReactMethod
+    fun deleteLastMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.deleteLastMultiRecording(reactContext, promise)
+    }
+
+    @ReactMethod
+    fun deleteAllMultiRecording(promise: Promise) {
+        mView?.mRecorderManage?.deleteAllMultiRecording(reactContext, promise)
+    }
+
     /**
      * 获取贴纸列表
      */

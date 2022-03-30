@@ -543,5 +543,15 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     [self.cameraAction finishMultiRecording:resolve  reject:reject];
 }
 
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteLastMultiRecording:resolve  reject:reject];
+}
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteAllMultiRecording:resolve  reject:reject];
+}
+
 @end
 

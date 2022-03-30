@@ -61,6 +61,17 @@ export default class Camera extends Component<Props, State> {
     return await RNCameraKitModule.stopMultiRecording();
   }
 
+
+  //删除最近录制的视频片段
+  deleteLastMultiRecording = async () => {
+    return await RNCameraKitModule.deleteLastMultiRecording();
+  }
+
+  //删除所有录制片段
+  deleteAllMultiRecording = async () => {
+    return await RNCameraKitModule.deleteAllMultiRecording();
+  }
+
   //合成：结束录制多段视频合成一个视频
   finishMultiRecording = async () => {
     return await RNCameraKitModule.finishMultiRecording();
