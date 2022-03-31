@@ -122,7 +122,7 @@
 {
     if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 0.5f;
+        _mediaConfig.minDuration = 0.0f;
         _mediaConfig.maxDuration = 180.f; //3min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;

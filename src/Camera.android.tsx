@@ -47,6 +47,8 @@ export default class Camera extends Component<Props, State> {
 
   //开启多段录制（录制一个片段）
   startMultiRecording = async (recordingListener: (duration: number) => void) => {
+    //开启多段录制
+    console.info("startMultiRecording");
     this.startMultiRecordingListener = DeviceEventEmitter.addListener('startMultiRecording', (duration) => {
       //0~1
       if (recordingListener) {
@@ -57,6 +59,7 @@ export default class Camera extends Component<Props, State> {
   }
   //停止多段录制（停止一个片段）
   stopMultiRecording = async () => {
+    console.info("stopMultiRecording");
     this.startMultiRecordingListener?.remove();
     return await RNCameraKitModule.stopMultiRecording();
   }

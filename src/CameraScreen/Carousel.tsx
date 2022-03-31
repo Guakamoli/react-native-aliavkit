@@ -43,6 +43,7 @@ export type Props = {
 
 type State = {
   pasterList: any[];
+  recordType: number,
 };
 
 type PropsType = {
@@ -98,8 +99,6 @@ class TopReset extends Component<PropsType> {
               disallowInterruption={true}
               shouldActivateOnStart={true}
               onHandlerStateChange={(event) => {
-                //
-                console.info("NativeViewGestureHandler", event.nativeEvent.state);
                 if (event.nativeEvent.state === State.END) {
                   this.props.snapToItem?.(0);
                 }
@@ -220,6 +219,7 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
+            // console.info("LongPressGestureHandler", nativeEvent.state);
             if (nativeEvent.state === State.ACTIVE) {
               this.isLongPress = true;
               this.props.longPress();
@@ -284,15 +284,24 @@ class CarouselWrapper extends Component<Props, State> {
     this.scrollPos = new Animated.Value(0);
     this.state = {
       pasterList: [],
+      // 录制状态  0：未录制 \完成录制  1：录制中  2：暂停录制
+      recordType: 0,
     };
     this.arcAngle = new Reanimated.Value(0);
     this.ani = null;
     this.startTime = null;
     this.endTime = null;
+    this.recordTime = 0;
+    this.multiRecordTimeArray = [];
+    this.isStopAnimated = false;
     this.scaleAnimated = new Reanimated.Value(0);
   }
 
   longPress = () => {
+
+    this.setState({ recordType: 1 });
+
+
     if (this.pressLock) {
       return;
     }
@@ -311,8 +320,9 @@ class CarouselWrapper extends Component<Props, State> {
     }, 2500);
   };
   startAnimate = async () => {
+    this.isStopAnimated = false;
     try {
-      const success = await this.props.camera.current?.startRecording?.();
+      const success = await this.props.camera.current?.startMultiRecording?.();
       this.props.hideBottomTools();
       if (!success) {
         this.props.myRef?.current?.show?.(`${I18n.t('Camera_failed_please_try_again')}`, 2000);
@@ -322,21 +332,24 @@ class CarouselWrapper extends Component<Props, State> {
       }
       this.startTime = Date.now();
 
+      console.info("finished recordTime", this.recordTime);
+
       Reanimated.timing(this.scaleAnimated, {
         toValue: 1,
         easing: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
+        const recordAngle = this.recordTime / 15000.0 * 360;
         if (finished) {
+          this.arcAngle?.setValue(recordAngle);
           this.ani = Reanimated.timing(this.arcAngle, {
             toValue: 360,
             easing: EasingNode.linear,
-            duration: 1000 * 15,
+            duration: 1000 * (15 - this.recordTime / 1000.0),
           });
           this.ani.start(({ finished }) => {
             if (finished) {
-              this.endTime = Date.now();
-              this.shotCamera();
+              this.stopAnimate();
             }
           });
         }
@@ -349,27 +362,33 @@ class CarouselWrapper extends Component<Props, State> {
 
     const recordingTime = this.endTime - this.startTime;
 
-    this.props.showBottomTools();
+    this.recordTime += recordingTime;
+
+    this.multiRecordTimeArray.push( this.recordTime);
+
+    this.props.showBottomTools(2);
 
     this.ani?.stop();
-    setTimeout(() => {
-      this.reset();
-      this.pressLock = false;
-    }, 500);
 
-    if (recordingTime <= 500) {
-      //ios 录制时间过短stopRecording 不会返回 videoPath。这里不能 return ，必须执行 stopRecording，否则不能再次 startRecording
-      this.props.myRef?.current?.show?.(`${I18n.t('record_time_small')}`, 500);
-    }
-    const videoPath = await this.props.camera.current?.stopRecording?.();
-    if (recordingTime >= 500) {
-      //安卓端目前小于500ms也会返回videoPath，这里统一处理，小于500ms 不进入编辑
-      this.props.setShootData({
-        fileType: 'video',
-        videoPath,
-        ShootSuccess: true,
-      });
-    }
+    this.pressLock = false;
+    // setTimeout(() => {
+    //   // this.reset();
+    //   this.pressLock = false;
+    // }, 500);
+
+    // if (recordingTime <= 500) {
+    //   //ios 录制时间过短stopRecording 不会返回 videoPath。这里不能 return ，必须执行 stopRecording，否则不能再次 startRecording
+    //   this.props.myRef?.current?.show?.(`${I18n.t('record_time_small')}`, 500);
+    // }
+    const videoPath = await this.props.camera.current?.stopMultiRecording?.();
+    // if (recordingTime >= 500) {
+    //   //安卓端目前小于500ms也会返回videoPath，这里统一处理，小于500ms 不进入编辑
+    //   this.props.setShootData({
+    //     fileType: 'video',
+    //     videoPath,
+    //     ShootSuccess: true,
+    //   });
+    // }
   };
   reset = () => {
     // this.ani?.stop();
@@ -383,12 +402,66 @@ class CarouselWrapper extends Component<Props, State> {
     }).start();
   };
   stopAnimate = async () => {
+    this.setState({ recordType: 2 });
+    if (this.isStopAnimated) {
+      return
+    }
+    this.isStopAnimated = true;
+
     if (!this.startTime) {
       this.pressLock = false;
     }
     this.endTime = Date.now();
     this.shotCamera();
   };
+
+  /**
+   * 删除最近录制片段，如果只有一段，那么删除后退出录制状态
+   */
+  deleteLastMultiRecording = async () => {
+    this.props.camera.current?.deleteLastMultiRecording?.();
+    if (!!this.multiRecordTimeArray) {
+      if (this.multiRecordTimeArray.length > 1) {
+        this.multiRecordTimeArray.pop();
+        this.recordTime = this.multiRecordTimeArray[this.multiRecordTimeArray.length - 1];
+        const recordAngle = this.recordTime / 15000.0 * 360;
+        this.arcAngle?.setValue(recordAngle);
+      } else {
+        this.multiRecordTimeArray = [];
+        this.recordTime = 0;
+        this.arcAngle?.setValue(0);
+
+        this.props.showBottomTools();
+
+        setTimeout(() => {
+          this.setState({ recordType: 0 });
+          this.reset();
+          this.pressLock = false;
+        }, 250);
+      }
+    }
+  }
+
+  /**
+   * 合成所有片段，并且进入编辑
+   */
+  finishMultiRecording = async () => {
+    const videoPath = await this.props.camera.current?.finishMultiRecording?.();
+
+    this.props.setShootData({
+      fileType: 'video',
+      videoPath,
+      ShootSuccess: true,
+    });
+
+    setTimeout(() => {
+      this.setState({ recordType: 0 });
+      this.reset();
+      this.pressLock = false;
+    }, 500);
+  }
+
+
   handleAppStateChange = (e) => {
     if (this.props.isDrawerOpen && this.props.type === 'story') {
       if (e.match(/inactive|background/)) {
@@ -413,6 +486,11 @@ class CarouselWrapper extends Component<Props, State> {
     AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (this.state.recordType !== nextState.recordType) {
+      return true;
+    }
+
     const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
     if (stateUpdated) {
       setTimeout(() => {
@@ -496,7 +574,7 @@ class CarouselWrapper extends Component<Props, State> {
     }
     if (!pasterList.length) return null;
     return (
-      <View style={{ justifyContent: 'center' }}>
+      <View style={{ justifyContent: 'center', position: 'relative' }}>
         <TopReset
           {...this.props}
           snapToItem={this.snapToItem}
@@ -557,9 +635,16 @@ class CarouselWrapper extends Component<Props, State> {
           </Carousel>
         </Reanimated.View>
 
-        <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} />
-
-        {/* 临时方案  安卓 拍摄不会触发 */}
+        {/* TODOWUYQ */}
+        {this.state.recordType !== 0 &&
+          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} longPress={this.longPress}
+            singlePress={this.singlePress}
+            startAnimate={this.startAnimate}
+            stopAnimate={this.stopAnimate}
+            deleteLastMultiRecording={this.deleteLastMultiRecording}
+            finishMultiRecording={this.finishMultiRecording}
+          />
+        }
       </View>
     );
   }

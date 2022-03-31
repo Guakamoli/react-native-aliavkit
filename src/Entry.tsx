@@ -36,17 +36,19 @@ const Entry = (props) => {
   } = props;
 
   const [bottomToolsVisibility, setBottomToolsVisibility] = useState(true);
-
+  const [bottomToolsVisibilityType, setBottomToolsVisibilityType] = useState(1);
   //story 是否初始化过，切换过，后续仅暂停拍摄器，不销毁
   const [initStory, setInitStory] = useState(false);
 
 
-  const showBottomTools = () => {
+  const showBottomTools = (visibilityType = 1) => {
     setBottomToolsVisibility(true);
+    setBottomToolsVisibilityType(visibilityType);
   }
 
   const hideBottomTools = () => {
     setBottomToolsVisibility(false);
+    setBottomToolsVisibilityType(0);
   }
 
   const { server, user, item, navigation, sendfile = () => { }, goBack = () => { }, haptics } = props;
@@ -151,6 +153,7 @@ const Entry = (props) => {
       <CameraScreen
         initStory={initStory}
         bottomToolsVisibility={bottomToolsVisibility}
+        bottomToolsVisibilityType={bottomToolsVisibilityType}
         showBottomTools={showBottomTools}
         hideBottomTools={hideBottomTools}
         toolsInsetBottom={toolsInsetBottom}
@@ -247,7 +250,7 @@ const Entry = (props) => {
         )
       }
 
-      {(bottomToolsVisibility && (type === 'story' || type === 'post')) &&
+      {((bottomToolsVisibilityType === 1) && (type === 'story' || type === 'post')) &&
         <Animated.View
           style={[
             styles.tools,
