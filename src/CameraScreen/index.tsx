@@ -579,7 +579,7 @@ class CameraScreen extends Component<Props, State> {
         </View>
 
         {/* TODOWUYQ */}
-        {this.props.bottomToolsVisibility &&
+        {/* {this.props.bottomToolsVisibility &&
           <View style={{ position: 'absolute', left: 20, width: 25, height: 25, borderRadius: 4, overflow: 'hidden', bottom: this.props.toolsInsetBottom + 5 }} >
             <TouchableOpacity
               hitSlop={{ left: 10, top: 10, right: 20, bottom: 10 }}
@@ -593,7 +593,7 @@ class CameraScreen extends Component<Props, State> {
               }
 
             </TouchableOpacity>
-          </View>}
+          </View>} */}
 
 
         {this.props.bottomToolsVisibility && <RenderswitchModule {...this.props} camera={this.cameraBox} />}
