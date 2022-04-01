@@ -102,6 +102,7 @@ class TopReset extends Component<PropsType> {
                 console.info("NativeViewGestureHandler", event.nativeEvent.state);
                 if (event.nativeEvent.state === State.END) {
                   this.props.snapToItem?.(0);
+                  this.props.setFacePasterInfo(this.props.pasterList[0]);
                 }
               }}
             >
@@ -114,6 +115,7 @@ class TopReset extends Component<PropsType> {
               style={styles.clearIcon}
               onPress={() => {
                 this.props.snapToItem?.(0);
+                this.props.setFacePasterInfo(this.props.pasterList[0]);
               }}
             >
               <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
@@ -502,6 +504,7 @@ class CarouselWrapper extends Component<Props, State> {
           snapToItem={this.snapToItem}
           scrollPos={this.scrollPos}
           scaleAnimated={this.scaleAnimated}
+          pasterList={pasterList}
         />
         <Reanimated.View
           style={{
