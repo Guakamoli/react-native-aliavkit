@@ -133,7 +133,7 @@ class MultipleSelectButton extends Component {
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
-        //这里刷新，重置ppost状态  
+        //这里刷新，重置ppost状态
         if (this.props.selectMultiple) {
           this.props.setSelectMultiple();
         }
@@ -1690,7 +1690,7 @@ export default class CameraScreen extends Component<Props, State> {
       if (Platform.OS === 'ios') {
         type = item.name.split('.');
         type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
- 
+
       } else {
         type = item.type;
         localUri = item.uri;
@@ -1760,7 +1760,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (!nextProps.isDrawerOpen) {
-        //这里刷新，重置ppost状态 
+        //这里刷新，重置ppost状态
         this.appState = '';
         this.setState({
           postEditorParams: null,
