@@ -270,12 +270,14 @@ class CameraScreen extends Component<Props, State> {
 
   }
 
-  initPermissions = async () => {
+  initPermissions = async (isActive = false) => {
     if (await this.checkCameraPermissions(false, true)) {
       this.setState({ loadedPermissions: true });
     } else {
-      if (await this.getStoragePermissions(true)) {
-        this.setState({ loadedPermissions: true });
+      if (!isActive) {//RECORD
+        if (await this.getRecordPermissions(true)) {
+          this.setState({ loadedPermissions: true });
+        }
       }
     }
   }
@@ -315,7 +317,7 @@ class CameraScreen extends Component<Props, State> {
  *  获取权限
  * @param isToSetting  是否展示去设置的 Alert
  */
-  getStoragePermissions = async (isToSetting: boolean = false) => {
+   getRecordPermissions = async (isToSetting: boolean = false) => {
     if (Platform.OS === 'android') {
       const permissions = [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
       const statuses = await requestMultiple(permissions);
@@ -396,7 +398,7 @@ class CameraScreen extends Component<Props, State> {
     }
     if (nextAppState === 'active') {
       this.mAppState = 'active';
-      this.initPermissions();
+      this.initPermissions(true);
     } else {
       this.mAppState = 'background';
     }
@@ -439,6 +441,9 @@ class CameraScreen extends Component<Props, State> {
       return true;
     }
     if (nextProps.type !== this.props.type) {
+      if (nextProps.type === 'story') {
+        this.initPermissions();
+      }
       // this.cameraBox = { current: null }
       InteractionManager.runAfterInteractions(() => {
         if (this.rt) {
@@ -680,7 +685,7 @@ class CameraScreen extends Component<Props, State> {
             {this.renderBottom()}
           </View>
           {/* TODOWUYQ */}
-          {<StoryPhoto
+          {/* {<StoryPhoto
             {...this.props} selectedPhoto={this.selectedPhoto} openPhotos={this.state.openPhotos}
             setFirstPhotoUri={(uri: string) => {
               if (uri) {
@@ -693,7 +698,7 @@ class CameraScreen extends Component<Props, State> {
             onCloseView={() => {
               this.setState({ openPhotos: false });
             }}
-          />}
+          />} */}
         </View>
         {
           this.state.ShootSuccess &&

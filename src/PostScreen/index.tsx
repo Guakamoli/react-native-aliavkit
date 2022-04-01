@@ -241,7 +241,7 @@ class PostContent extends Component {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type) {
       if ((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post') {
         //  console.info("不静音");
-       //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
+        //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
         setTimeout(() => {
           this.setState({
             videoMuted: false,
@@ -1021,13 +1021,14 @@ class PostFileUpload extends Component {
 
 
   getPhotos = async (isGetPermissions = false) => {
+    console.info("getPhotos isGetPermissions", isGetPermissions);
     if (!await this.checkStoragePermissions(false, true)) {
       if (isGetPermissions) {
-        setTimeout(async () => {
-          if (await this.getStoragePermissions(true)) {
-            this.getPhotos();
-          }
-        }, 300);
+        // setTimeout(async () => {
+        if (await this.getStoragePermissions(true)) {
+          this.getPhotos();
+        }
+        // }, 500);
       }
       return;
     }
@@ -1166,13 +1167,13 @@ class PostFileUpload extends Component {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
-        if (isCheckLimited) {
-          await new Promise((resolved) => {
-            setTimeout(() => {
-              resolved()
-            }, 300);
-          })
-        }
+        // if (isCheckLimited) {
+        //   await new Promise((resolved) => {
+        //     setTimeout(() => {
+        //       resolved()
+        //     }, 500);
+        //   })
+        // }
         return isCheckLimited;
       }
     }
@@ -1260,7 +1261,9 @@ class PostFileUpload extends Component {
 
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
-        this.getPhotos(true);
+        setTimeout(async () => {
+          this.getPhotos(true);
+        }, 500);
       }
       return false;
     }
