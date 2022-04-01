@@ -63,8 +63,8 @@ export default class AVService {
   }
 
   //path ph://02C321FF-5B7B-4C3F-83E3-3D66BD9EDD78/L0/001
-  static async saveToSandBox({ path }) {
-    return await AliAVServiceBridge.saveToSandBox({ path });
+  static async saveToSandBox(uri: string) {
+    return await AliAVServiceBridge.saveToSandBox({ path: uri });
   }
 
   static async playMusic(songID: string) {
