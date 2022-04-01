@@ -142,6 +142,7 @@ export default class StoryEditor extends Component<Props, State> {
       //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
       // }
       let uploadData = [event.videoParams];
+      this.pauseMusic(this.musicOn);
       console.info('发布快拍 onExportVideo',  uploadData);
       this.setState({ startExportVideo: false });
       // // 测试代码：保存到相册
@@ -176,7 +177,7 @@ export default class StoryEditor extends Component<Props, State> {
       RNEditViewManager.stop();
     }
     // 结束编辑页面
-
+    this.pauseMusic(this.musicOn);
     this.setState = () => false;
   }
 

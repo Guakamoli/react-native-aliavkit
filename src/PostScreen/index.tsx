@@ -133,7 +133,7 @@ class MultipleSelectButton extends Component {
   shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
-        //这里刷新，重置ppost状态  TODOWUYQ
+        //这里刷新，重置ppost状态  
         if (this.props.selectMultiple) {
           this.props.setSelectMultiple();
         }
@@ -241,7 +241,7 @@ class PostContent extends Component {
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen || nextProps.type !== this.props.type) {
       if ((!!nextProps.isDrawerOpen || !!this.props.isExample) && nextProps.type === 'post') {
         //  console.info("不静音");
-       //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
+        //延迟，相册第一个为视频时，延迟一会，否则会出现页面还没打开，声音先出现的问题
         setTimeout(() => {
           this.setState({
             videoMuted: false,
@@ -1021,13 +1021,14 @@ class PostFileUpload extends Component {
 
 
   getPhotos = async (isGetPermissions = false) => {
+    // console.info("getPhotos isGetPermissions", isGetPermissions);
     if (!await this.checkStoragePermissions(false, true)) {
       if (isGetPermissions) {
-        setTimeout(async () => {
-          if (await this.getStoragePermissions(true)) {
-            this.getPhotos();
-          }
-        }, 300);
+        // setTimeout(async () => {
+        if (await this.getStoragePermissions(true)) {
+          this.getPhotos();
+        }
+        // }, 500);
       }
       return;
     }
@@ -1166,13 +1167,13 @@ class PostFileUpload extends Component {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
-        if (isCheckLimited) {
-          await new Promise((resolved) => {
-            setTimeout(() => {
-              resolved()
-            }, 300);
-          })
-        }
+        // if (isCheckLimited) {
+        //   await new Promise((resolved) => {
+        //     setTimeout(() => {
+        //       resolved()
+        //     }, 500);
+        //   })
+        // }
         return isCheckLimited;
       }
     }
@@ -1260,7 +1261,9 @@ class PostFileUpload extends Component {
 
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen && nextProps.isDrawerOpen) {
       if (this.props.type === 'post') {
-        this.getPhotos(true);
+        setTimeout(async () => {
+          this.getPhotos(true);
+        }, 500);
       }
       return false;
     }
@@ -1465,15 +1468,24 @@ export default class CameraScreen extends Component<Props, State> {
         })
         trimVideoData = imageItem.uri;
 
+        //TODOWUYQ
         if (Platform.OS === 'ios') {
-          //url 授权, ios url  需要特殊处理
-          let myAssetId = imageItem.uri.slice(5);
-          trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
-
-          //裁剪 file://
-          if (!!trimVideoData && trimVideoData.startsWith("file://")) {
-            trimVideoData = trimVideoData.slice(7)
+          var videoIndex = imageItem.videoFile.lastIndexOf(".");
+          //获取后缀
+          var videoType = imageItem.videoFile.substr(videoIndex + 1).toLowerCase();
+          if (videoType !== 'mp4') {
+            //保存到沙盒
+            trimVideoData = await AVService.saveToSandBox(imageItem.uri);
+          } else {
+            //url 授权, ios url  需要特殊处理
+            let myAssetId = imageItem.uri.slice(5);
+            trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+            //裁剪 file://
+            if (!!trimVideoData && trimVideoData.startsWith("file://")) {
+              trimVideoData = trimVideoData.slice(7)
+            }
           }
+
         }
 
         // // //TODO  视频压缩
@@ -1510,13 +1522,34 @@ export default class CameraScreen extends Component<Props, State> {
             let translateXScale = translateX / width;
             let translateYScale = translateY / width;
 
+
+            let imageUri = item.image.uri;
+
+            let imageName = item.image.filename;
+
+            //TODOWUYQ
+            if (Platform.OS === 'ios') {
+              const videoIndex = imageUri.lastIndexOf(".");
+              //获取后缀
+              const imageType = imageUri.substr(videoIndex + 1).toLowerCase();
+
+              if (imageType !== 'jpg' || imageType !== 'png') {
+                //保存到沙盒
+                imageUri = await AVService.saveToSandBox(imageUri);
+                imageName = imageUri.substring(imageUri.lastIndexOf('/') + 1); //文件名
+
+              } else {
+                imageUri = await CameraRoll.requestPhotoAccess(imageUri.slice(5));
+              }
+            }
+
             //TODO 新增图片选中数据接口，包含裁剪参数、下标、uri 等等
             editImageData[index] = {
               index: index,
               type: item.type,
-              name: item?.image?.filename,
+              name: imageName,
               size: item?.image?.fileSize,
-              uri: item.image.uri,
+              uri: imageUri,
 
               //图片原始宽高
               srcWidth: item.image.width,
@@ -1652,12 +1685,12 @@ export default class CameraScreen extends Component<Props, State> {
         return;
       }
 
-      let localUri;
+      let localUri = item.uri;
       let type;
       if (Platform.OS === 'ios') {
         type = item.name.split('.');
         type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
-        localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+ 
       } else {
         type = item.type;
         localUri = item.uri;
@@ -1665,7 +1698,6 @@ export default class CameraScreen extends Component<Props, State> {
       if (!localUri) {
         return;
       }
-
       uploadData[i] = {
         index: item.index,
         type: type,
@@ -1728,7 +1760,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (!nextProps.isDrawerOpen) {
-        //这里刷新，重置ppost状态 TODOWUYQ
+        //这里刷新，重置ppost状态 
         this.appState = '';
         this.setState({
           postEditorParams: null,
