@@ -766,7 +766,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
                                 resultHandler:^(AVAssetExportSession * _Nullable exportSession, NSDictionary * _Nullable info) {
             
             exportSession.outputURL = [NSURL fileURLWithPath:outputVideoPath];
-            exportSession.shouldOptimizeForNetworkUse = NO;
+            exportSession.shouldOptimizeForNetworkUse = YES;
             exportSession.outputFileType = AVFileTypeMPEG4; // mp4
             [exportSession exportAsynchronouslyWithCompletionHandler:^{
                 switch ([exportSession status]) {
