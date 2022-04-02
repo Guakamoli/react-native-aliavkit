@@ -19,7 +19,7 @@ import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carouse
 import AVService from '../AVService';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
-import { ReanimatedArcBase } from '@callstack/reanimated-arc';
+import { ReanimatedArcBase, ReanimatedArc } from '@callstack/reanimated-arc';
 import Reanimated from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
@@ -44,35 +44,37 @@ class CircleProgress extends Component {
         alignItems: 'center',
       }}>
 
-        <NativeViewGestureHandler
-          disallowInterruption={true}
-          shouldActivateOnStart={true}
-          onHandlerStateChange={(event) => {
-            if (event.nativeEvent.state === State.END) {
+
+        {Platform.OS === 'android' ?
+          <NativeViewGestureHandler
+            disallowInterruption={true}
+            shouldActivateOnStart={true}
+            onHandlerStateChange={(event) => {
+              if (event.nativeEvent.state === State.END) {
+                console.info("回撤录制");
+                this.props?.deleteLastMultiRecording?.()
+              }
+            }}
+          >
+            <Image style={{ marginLeft: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_back.png')} />
+          </NativeViewGestureHandler>
+          :
+          <Pressable
+            onPress={() => {
               console.info("回撤录制");
               this.props?.deleteLastMultiRecording?.()
-            }
-          }}
-        >
-          <Text style={{ marginLeft: 26, width: 38, height: 38, alignContent: 'center', justifyContent: 'center', backgroundColor: 'blue', lineHeight: 38 }}>回撤</Text>
-        </NativeViewGestureHandler>
+            }}
+          >
+            <Image style={{ marginLeft: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_back.png')} />
+          </Pressable>
+        }
 
-        {/* <Pressable
-          style={{ marginLeft: 26, width: 38, height: 38, alignContent: 'center', justifyContent: 'center', backgroundColor: 'blue' }}
-          onPress={() => {
-            console.info("回撤录制");
-          }}
-        >
-          <Text>回撤</Text>
-        </Pressable> */}
 
         <LongPressGestureHandler
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
             //TODOWUYQ
-            // console.info("LongPressGestureHandler 1111 ", nativeEvent.state);
-
             if (nativeEvent.state === State.ACTIVE) {
               this.isLongPress = true;
               this.props.longPress();
@@ -103,17 +105,17 @@ class CircleProgress extends Component {
                 })}
               /> */}
             <View style={styles.centerBox} />
-            <ReanimatedArcBase
-              color='rgba(255, 255, 255, 0)'
+            {/* <ReanimatedArcBase
+              color='rgba(255, 255, 255, 1)'
               diameter={122}
               width={6}
-              arcSweepAngle={360}
+              arcSweepAngle={(this.props.arcAngleBg)}
               lineCap='round'
               rotation={360}
               style={styles.absolute}
-            />
+            /> */}
             <ReanimatedArcBase
-              color='rgba(234, 54, 0, 1)'
+              color='#F54E54'
               diameter={122}
               width={6}
               arcSweepAngle={this.props.arcAngle}
@@ -121,30 +123,34 @@ class CircleProgress extends Component {
               rotation={360}
               style={styles.absolute}
             />
+
           </Reanimated.View>
         </LongPressGestureHandler>
 
-        {/* <Pressable
-          style={{ marginRight: 26, width: 38, height: 38, alignContent: 'center', justifyContent: 'center', backgroundColor: 'blue' }}
-          onPress={() => {
-            console.info("完成录制");
-          }}
-        >
-          <Text>完成</Text>
-        </Pressable> */}
-
-        <NativeViewGestureHandler
-          disallowInterruption={true}
-          shouldActivateOnStart={true}
-          onHandlerStateChange={(event) => {
-            if (event.nativeEvent.state === State.END) {
+        {Platform.OS === 'android' ?
+          <NativeViewGestureHandler
+            disallowInterruption={true}
+            shouldActivateOnStart={true}
+            onHandlerStateChange={(event) => {
+              if (event.nativeEvent.state === State.END) {
+                console.info("完成录制");
+                this.props?.finishMultiRecording?.()
+              }
+            }}
+          >
+            <Image style={{ marginRight: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_complete.png')} />
+          </NativeViewGestureHandler>
+          :
+          <Pressable
+            onPress={() => {
               console.info("完成录制");
               this.props?.finishMultiRecording?.()
-            }
-          }}
-        >
-          <Text style={{ marginRight: 26, width: 38, height: 38, alignContent: 'center', justifyContent: 'center', backgroundColor: 'blue', lineHeight: 38 }}>完成</Text>
-        </NativeViewGestureHandler>
+            }}
+          >
+            <Image style={{ marginRight: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_complete.png')} />
+
+          </Pressable>
+        }
 
       </View>
     );
