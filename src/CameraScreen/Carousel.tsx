@@ -288,6 +288,7 @@ class CarouselWrapper extends Component<Props, State> {
       recordType: 0,
     };
     this.arcAngle = new Reanimated.Value(0);
+    this.arcAngleBg = new Reanimated.Value(0);
     this.ani = null;
     this.startTime = null;
     this.endTime = null;
@@ -322,6 +323,11 @@ class CarouselWrapper extends Component<Props, State> {
   startAnimate = async () => {
     this.isStopAnimated = false;
     try {
+
+      if (!this.multiRecordTimeArray || !this.multiRecordTimeArray?.length) {
+        this.props.camera.current?.deleteAllMultiRecording?.();
+      }
+
       const success = await this.props.camera.current?.startMultiRecording?.();
       this.props.hideBottomTools();
       if (!success) {
@@ -339,8 +345,11 @@ class CarouselWrapper extends Component<Props, State> {
         easing: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
-        const recordAngle = this.recordTime / 15000.0 * 360;
+        let recordAngle = this.recordTime / 15000.0 * 360;
         if (finished) {
+          if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
+            recordAngle += 0.1;
+          }
           this.arcAngle?.setValue(recordAngle);
           this.ani = Reanimated.timing(this.arcAngle, {
             toValue: 360,
@@ -359,16 +368,14 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-
+    this.ani?.stop();
     const recordingTime = this.endTime - this.startTime;
 
     this.recordTime += recordingTime;
 
-    this.multiRecordTimeArray.push( this.recordTime);
+    this.multiRecordTimeArray.push(this.recordTime);
 
     this.props.showBottomTools(2);
-
-    this.ani?.stop();
 
     this.pressLock = false;
     // setTimeout(() => {
@@ -402,7 +409,6 @@ class CarouselWrapper extends Component<Props, State> {
     }).start();
   };
   stopAnimate = async () => {
-    this.setState({ recordType: 2 });
     if (this.isStopAnimated) {
       return
     }
@@ -413,6 +419,11 @@ class CarouselWrapper extends Component<Props, State> {
     }
     this.endTime = Date.now();
     this.shotCamera();
+
+    setTimeout(() => {
+      this.setState({ recordType: 2 });
+    }, 0);
+
   };
 
   /**
@@ -430,14 +441,13 @@ class CarouselWrapper extends Component<Props, State> {
         this.multiRecordTimeArray = [];
         this.recordTime = 0;
         this.arcAngle?.setValue(0);
+        this.arcAngleBg?.setValue(0);
 
         this.props.showBottomTools();
 
-        setTimeout(() => {
-          this.setState({ recordType: 0 });
-          this.reset();
-          this.pressLock = false;
-        }, 250);
+        this.setState({ recordType: 0 });
+        this.reset();
+        this.pressLock = false;
       }
     }
   }
@@ -454,11 +464,15 @@ class CarouselWrapper extends Component<Props, State> {
       ShootSuccess: true,
     });
 
-    setTimeout(() => {
-      this.setState({ recordType: 0 });
-      this.reset();
-      this.pressLock = false;
-    }, 500);
+    this.multiRecordTimeArray = [];
+    this.recordTime = 0;
+    this.arcAngle?.setValue(0);
+    this.arcAngleBg?.setValue(0);
+
+    this.props.showBottomTools();
+    this.setState({ recordType: 0 });
+    this.reset();
+    this.pressLock = false;
   }
 
 
@@ -637,7 +651,7 @@ class CarouselWrapper extends Component<Props, State> {
 
         {/* TODOWUYQ */}
         {this.state.recordType !== 0 &&
-          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} longPress={this.longPress}
+          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} arcAngleBg={this.arcAngleBg} longPress={this.longPress}
             singlePress={this.singlePress}
             startAnimate={this.startAnimate}
             stopAnimate={this.stopAnimate}
