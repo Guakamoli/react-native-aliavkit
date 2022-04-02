@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     height: height * 0.6,
     position: 'absolute',
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   musicFindSuccess: {
     marginRight: 15,
