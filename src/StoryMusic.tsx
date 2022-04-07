@@ -206,7 +206,6 @@ const StoryMusic = (props) => {
 
         }}
         onSnapToItem={(slideIndex = 0) => {
-
           playMusic(songData[slideIndex]);
           !setMusicState && props.setMusic(true);
           setCurrentPlayMusic(songData[slideIndex]);
@@ -227,6 +226,7 @@ const StoryMusic = (props) => {
                   setCurrentPlayMusic(item);
                   !setMusicState && props.setMusic(true);
                 }
+                carouselRef.current?.snapToItem(index);
               }}
             >
               <View style={[styles.musicCarouselBox, IsPlayMusic && { backgroundColor: 'rgba(255,255,255,0.98)' }]}>

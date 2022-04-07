@@ -329,7 +329,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         info = [[AliyunPasterInfo alloc] initWithBundleFile:bundlePath];
     }
 
-    [self.cameraAction prepearForAddPasterInfo:info];
+    [self.cameraAction prepearForAddPasterInfo:info]; 
 }
 
 - (void)startRecording:(NSDictionary *)options

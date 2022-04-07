@@ -221,7 +221,7 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-            // console.info("LongPressGestureHandler", nativeEvent.state);
+            console.info("LongPressGestureHandler", nativeEvent.state);
             if (nativeEvent.state === State.ACTIVE) {
               this.isLongPress = true;
               this.props.longPress();
@@ -370,7 +370,7 @@ class CarouselWrapper extends Component<Props, State> {
     }
   };
   shotCamera = async () => {
-    this.ani?.stop();
+    this.endTime = Date.now();
     const recordingTime = this.endTime - this.startTime;
 
     this.recordTime += recordingTime;
@@ -414,15 +414,26 @@ class CarouselWrapper extends Component<Props, State> {
     if (this.isStopAnimated) {
       return
     }
+
+    try {
+      this.ani?.stop();
+    } catch (e) {
+      setTimeout(() => {
+        try {
+          this.ani?.stop();
+        } catch {
+        }
+      }, 500);
+    }
+
     this.isStopAnimated = true;
 
     if (!this.startTime) {
       this.pressLock = false;
     }
-    this.endTime = Date.now();
-    this.shotCamera();
 
     setTimeout(() => {
+      this.shotCamera();
       this.setState({ recordType: 2 });
     }, 0);
 

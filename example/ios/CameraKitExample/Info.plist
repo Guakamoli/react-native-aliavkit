@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AlivcLicenseKey</key>
+	<string>YoSuxXO0nm4Vcg5B9bc74fff0d96a4b5c98f57cb4cbeddee2</string>
+	<key>AlivcLicenseFile</key>
+	<string>goduck.crt</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
