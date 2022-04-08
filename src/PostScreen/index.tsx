@@ -1529,11 +1529,11 @@ export default class CameraScreen extends Component<Props, State> {
 
             //TODOWUYQ
             if (Platform.OS === 'ios') {
-              const videoIndex = imageUri.lastIndexOf(".");
+              const videoIndex = imageName.lastIndexOf(".");
               //获取后缀
-              const imageType = imageUri.substr(videoIndex + 1).toLowerCase();
+              const imageType = imageName.substr(videoIndex + 1).toLowerCase();
 
-              if (imageType !== 'jpg' || imageType !== 'png') {
+              if (!!imageType && (imageType !== 'jpg' || imageType !== 'png')) {
                 //保存到沙盒
                 imageUri = await AVService.saveToSandBox(imageUri);
                 imageName = imageUri.substring(imageUri.lastIndexOf('/') + 1); //文件名
