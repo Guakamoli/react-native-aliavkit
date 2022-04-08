@@ -439,6 +439,14 @@ class CarouselWrapper extends Component<Props, State> {
 
   };
 
+
+  /**
+   * 获取录制状态
+   */
+  getMultiType = () => {
+    return this.state.recordType;
+  }
+
   /**
    * 删除最近录制片段，如果只有一段，那么删除后退出录制状态
    */
@@ -451,18 +459,21 @@ class CarouselWrapper extends Component<Props, State> {
         const recordAngle = this.recordTime / 15000.0 * 360;
         this.arcAngle?.setValue(recordAngle);
       } else {
-        this.multiRecordTimeArray = [];
-        this.recordTime = 0;
-        this.arcAngle?.setValue(0);
-        this.arcAngleBg?.setValue(0);
-
-        this.props.showBottomTools();
-
-        this.setState({ recordType: 0 });
-        this.reset();
-        this.pressLock = false;
+        this.stopMulti();
       }
     }
+  }
+
+  stopMulti = async () => {
+    this.multiRecordTimeArray = [];
+    this.recordTime = 0;
+    this.arcAngle?.setValue(0);
+    this.arcAngleBg?.setValue(0);
+
+    this.props.showBottomTools();
+    this.setState({ recordType: 0 });
+    this.reset();
+    this.pressLock = false;
   }
 
   /**
@@ -476,16 +487,7 @@ class CarouselWrapper extends Component<Props, State> {
       videoPath,
       ShootSuccess: true,
     });
-
-    this.multiRecordTimeArray = [];
-    this.recordTime = 0;
-    this.arcAngle?.setValue(0);
-    this.arcAngleBg?.setValue(0);
-
-    this.props.showBottomTools();
-    this.setState({ recordType: 0 });
-    this.reset();
-    this.pressLock = false;
+    this.stopMulti();
   }
 
 
@@ -514,7 +516,12 @@ class CarouselWrapper extends Component<Props, State> {
   }
   shouldComponentUpdate(nextProps, nextState) {
 
+    if (this.props.stopMulti !== nextProps.stopMulti) {
+      this.stopMulti();
+    }
+
     if (this.state.recordType !== nextState.recordType) {
+      this.props.setMultiType(nextState.recordType);
       return true;
     }
 

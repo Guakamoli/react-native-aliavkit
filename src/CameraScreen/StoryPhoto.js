@@ -14,8 +14,6 @@ import { State, NativeViewGestureHandler } from 'react-native-gesture-handler';
 
 import I18n from '../i18n';
 
-import Toast, { DURATION } from 'react-native-easy-toast';
-
 const { width, height } = Dimensions.get('window');
 
 const photoItemWidth = (width - 2) / 3.0;
@@ -52,8 +50,11 @@ class PhotoItemView extends React.Component {
 
         const videoType = this.props.item?.type?.indexOf('video') !== -1;
 
+      
+
         if (!!videoType && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-            this.toastRef?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
+            console.info("onItemClick",videoType,this.props.item.image.playableDuration);
+            this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
         let selectUri = this.props.item.image.uri;
@@ -135,7 +136,6 @@ class StoryPhoto extends React.Component {
         this.bottomSheetRef;
         this.bottomSheetInnerRef;
 
-        this.toastRef;
         this.getPhotosNum = 36;
     }
 
@@ -324,11 +324,6 @@ class StoryPhoto extends React.Component {
     render() {
         return (
             <View style={[styles.container, { height: this.props.openPhotos ? height : 0 }]}>
-                <Toast
-                    ref={(ref) => (this.toastRef = ref)}
-                    position='center'
-                    opacity={0.8}
-                />
                 {this.PhotoView()}
             </View >
         );

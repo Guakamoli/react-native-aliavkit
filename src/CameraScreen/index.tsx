@@ -27,7 +27,7 @@ import I18n from '../i18n';
 
 import _ from 'lodash';
 import Camera from '../Camera';
-import Carousel from './Carousel';
+import CarouselWrapper from './Carousel';
 import * as Progress from 'react-native-progress';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -130,7 +130,8 @@ type State = {
 
   fileType: String;
   musicOpen: Boolean;
-  showRenderBottom: Boolean,
+  showRenderBottom: Boolean;
+  stopMulti: Boolean;
 };
 
 /**
@@ -188,6 +189,7 @@ class CameraScreen extends Component<Props, State> {
   flashArray: any[];
   camera: any;
   myRef: any;
+  multiType: number;
   FlatListRef: any;
   scrollPos: Animated.Value;
   editor: any;
@@ -195,6 +197,7 @@ class CameraScreen extends Component<Props, State> {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.multiType = 0;
     this.FlatListRef = React.createRef();
     this.scrollPos = new Animated.Value(0);
     this.enableCount = { count: 0 };
@@ -256,9 +259,15 @@ class CameraScreen extends Component<Props, State> {
       //相册是否展开
       openPhotos: false,
       firstPhotoUri: '',
+      stopMulti: false,
     };
     this.initPermissions();
 
+  }
+
+  setMultiType = (multiType) => {
+    this.multiType = multiType;
+    this.setState({ stopMulti: false });
   }
 
   setShowRenderBottom = (isShow) => {
@@ -416,6 +425,9 @@ class CameraScreen extends Component<Props, State> {
     // this.myRef?.current?.show?.(`${I18n.t('Tap_to_take_a_photo_long_press_to_take_a_video')}`, 1000);
   }
   shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.stopMulti != nextState.stopMulti) {
+      return true;
+    }
     if (this.state.openPhotos != nextState.openPhotos) {
       return true;
     }
@@ -573,8 +585,10 @@ class CameraScreen extends Component<Props, State> {
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: this.props.bottomSpaceHeight + 120, width: '100%', zIndex: 99 }}>
         <RenderbeautifyBox {...this.props} />
         <View style={{ position: 'absolute', bottom: bottomHeight, backgroundColor: 'rgba(255,0,0,0)', height: this.state.showRenderBottom ? 'auto' : 0 }}>
-          <Carousel
+          <CarouselWrapper
             {...this.props}
+            stopMulti={this.state.stopMulti}
+            setMultiType={this.setMultiType}
             myRef={this.myRef}
             onCaptureImagePressed={this.onCaptureImagePressed}
             camera={this.cameraBox}
@@ -654,10 +668,27 @@ class CameraScreen extends Component<Props, State> {
     )
   }
 
+  bassGoBadck = () => {
+    if (this.multiType === 0) {
+      this.props.goback();
+    } else {
+      //清空多选录制
+      this.setState({ stopMulti: true });
+    }
+  }
+
 
   CameraView() {
     return (
-      <RenderCamera {...this.props} setShowRenderBottom={this.setShowRenderBottom} camera={this.cameraBox} enableCount={this.enableCount} myRef={this.myRef} setShootData={this.setShootData} />
+      <RenderCamera
+        {...this.props}
+        setShowRenderBottom={this.setShowRenderBottom}
+        bassGoBadck={this.bassGoBadck}
+        camera={this.cameraBox}
+        enableCount={this.enableCount}
+        myRef={this.myRef}
+
+        setShootData={this.setShootData} />
     );
   }
 
@@ -686,6 +717,7 @@ class CameraScreen extends Component<Props, State> {
           </View>
           {/* TODOWUYQ */}
           {<StoryPhoto
+            myRef={this.myRef}
             {...this.props} selectedPhoto={this.selectedPhoto} openPhotos={this.state.openPhotos}
             setFirstPhotoUri={(uri: string) => {
               if (uri) {

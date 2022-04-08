@@ -94,7 +94,7 @@ const RenderLeftButtons = React.memo((props) => {
     }}>
       {/* 取消 */}
       <Pressable onPress={() => {
-        props.goback();
+        props.bassGoBadck();
       }}>
         {/* <FastImage style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
         <FastImage style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
