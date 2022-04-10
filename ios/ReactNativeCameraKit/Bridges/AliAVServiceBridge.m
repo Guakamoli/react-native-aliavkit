@@ -787,6 +787,10 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         }];
         
     } else if (asset.mediaType == PHAssetResourceTypePhoto) {
+        NSString *compositionRootDir = [AliyunPathManager compositionRootDir];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:compositionRootDir]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:compositionRootDir withIntermediateDirectories:YES attributes:nil error:nil];
+        }
         CGSize maxSize = CGSizeMake(1080, 1920);
         NSString *outputPhotoPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString] ] stringByAppendingPathExtension:@"jpg"];
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
