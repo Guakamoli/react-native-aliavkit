@@ -51,7 +51,7 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
     }
 
     fun setColorFilter(filterName: String?, mAliyunIEditor: AliyunIEditor?) {
-        if (filterName != null && filterName == "无效果") {
+        if (filterName == null || filterName == "无效果" || filterName == "") {
             val effect = EffectBean()
             effect.path = null
             mAliyunIEditor?.applyFilter(effect)

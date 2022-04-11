@@ -19,7 +19,7 @@ const { width, height } = Dimensions.get('window');
 const photoItemWidth = (width - 2) / 3.0;
 const photoItemHeight = photoItemWidth * 16 / 9;
 
-
+import AVService from '../AVService';
 class PhotoItemView extends React.Component {
     constructor(props) {
         super(props)
@@ -50,20 +50,35 @@ class PhotoItemView extends React.Component {
 
         const videoType = this.props.item?.type?.indexOf('video') !== -1;
 
-      
-
         if (!!videoType && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-            console.info("onItemClick",videoType,this.props.item.image.playableDuration);
+            console.info("onItemClick", videoType, this.props.item.image.playableDuration);
             this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
         let selectUri = this.props.item.image.uri;
 
         if (Platform.OS === 'ios') {
-            let myAssetId = selectUri.slice(5);
-            selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            if ("image" === this.props.item.type) {
+                const imageIndex = this.props.item?.image?.filename?.lastIndexOf(".");
+                //获取后缀
+                const imageType = this.props.item?.image?.filename?.substr(imageIndex + 1).toLowerCase();
+
+                console.info("imageType", imageType);
+
+                //不是通用格式，需要先转换
+                if (!!imageType && (imageType !== 'jpg' || imageType !== 'png')) {
+                    selectUri = await AVService.saveToSandBox(selectUri);
+                } else {
+                    let myAssetId = selectUri.slice(5);
+                    selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+                }
+            } else {
+                let myAssetId = selectUri.slice(5);
+                selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
+            }
         }
-        this.props.selectedPhoto(selectUri, this.props.item.type);
+        console.info("selectUri", selectUri, "item type", this.props.item.type.includes('video'), this.props.item.type, this.props.item.image);
+        this.props.selectedPhoto(selectUri, this.props.item.type.includes('video') ? 'video' : 'image');
         setTimeout(() => {
             this.props.hideBottomSheet();
         }, 250);

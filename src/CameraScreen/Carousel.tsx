@@ -44,6 +44,7 @@ export type Props = {
 type State = {
   pasterList: any[];
   recordType: number,
+  multiRecordAngle: any[],
 };
 
 type PropsType = {
@@ -288,9 +289,9 @@ class CarouselWrapper extends Component<Props, State> {
       pasterList: [],
       // 录制状态  0：未录制 \完成录制  1：录制中  2：暂停录制
       recordType: 0,
+      multiRecordAngle: [],
     };
     this.arcAngle = new Reanimated.Value(0);
-    this.arcAngleBg = new Reanimated.Value(0);
     this.ani = null;
     this.startTime = null;
     this.endTime = null;
@@ -339,8 +340,6 @@ class CarouselWrapper extends Component<Props, State> {
         return;
       }
       this.startTime = Date.now();
-
-      console.info("finished recordTime", this.recordTime);
 
       Reanimated.timing(this.scaleAnimated, {
         toValue: 1,
@@ -434,7 +433,14 @@ class CarouselWrapper extends Component<Props, State> {
 
     setTimeout(() => {
       this.shotCamera();
-      this.setState({ recordType: 2 });
+
+      let recordAngle = this.recordTime / 15000.0 * 360;
+      let angleArray = this.state.multiRecordAngle.concat();
+      angleArray.push(recordAngle);
+
+      this.arcAngle?.setValue(angleArray);
+
+      this.setState({ recordType: 2, multiRecordAngle: angleArray });
     }, 0);
 
   };
@@ -458,6 +464,10 @@ class CarouselWrapper extends Component<Props, State> {
         this.recordTime = this.multiRecordTimeArray[this.multiRecordTimeArray.length - 1];
         const recordAngle = this.recordTime / 15000.0 * 360;
         this.arcAngle?.setValue(recordAngle);
+
+        let angleArray = this.state.multiRecordAngle.concat();
+        angleArray.pop();
+        this.setState({ multiRecordAngle: angleArray });
       } else {
         this.stopMulti();
       }
@@ -468,12 +478,12 @@ class CarouselWrapper extends Component<Props, State> {
     this.multiRecordTimeArray = [];
     this.recordTime = 0;
     this.arcAngle?.setValue(0);
-    this.arcAngleBg?.setValue(0);
 
     this.props.showBottomTools();
-    this.setState({ recordType: 0 });
+    this.setState({ recordType: 0, multiRecordAngle: [] });
     this.reset();
     this.pressLock = false;
+    this.props.camera.current?.deleteAllMultiRecording?.();
   }
 
   /**
@@ -515,6 +525,9 @@ class CarouselWrapper extends Component<Props, State> {
     AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.multiRecordAngle?.length && this.state.multiRecordAngle !== nextState.multiRecordAngle) {
+      return true;
+    }
 
     if (this.props.stopMulti !== nextProps.stopMulti) {
       this.stopMulti();
@@ -672,12 +685,14 @@ class CarouselWrapper extends Component<Props, State> {
 
         {/* TODOWUYQ */}
         {this.state.recordType !== 0 &&
-          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} arcAngleBg={this.arcAngleBg} longPress={this.longPress}
+          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} longPress={this.longPress}
             singlePress={this.singlePress}
             startAnimate={this.startAnimate}
             stopAnimate={this.stopAnimate}
             deleteLastMultiRecording={this.deleteLastMultiRecording}
             finishMultiRecording={this.finishMultiRecording}
+            multiRecordAngle={this.state.multiRecordAngle}
+            recordType={this.state.recordType}
           />
         }
       </View>

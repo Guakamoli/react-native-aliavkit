@@ -109,7 +109,7 @@ class CircleProgress extends Component {
               color='rgba(255, 255, 255, 1)'
               diameter={122}
               width={6}
-              arcSweepAngle={(this.props.arcAngleBg)}
+              arcSweepAngle={(this.props.arcAngle)}
               lineCap='round'
               rotation={360}
               style={styles.absolute}
@@ -121,9 +121,39 @@ class CircleProgress extends Component {
               arcSweepAngle={this.props.arcAngle}
               lineCap='round'
               rotation={360}
+              hideSmallAngle={false}
               style={styles.absolute}
             />
 
+            {/* <ReanimatedArcBase
+              color='#FFF'
+              lineCap='round'
+              diameter={122}
+              width={6}
+              arcSweepAngle={150}
+              rotation={360}
+              hideSmallAngle={false}
+            /> */}
+
+            {this.props.multiRecordAngle?.map((item, index) => {
+              return (
+                <Reanimated.View
+                  key={index}
+                  style={{
+                    position: 'absolute',
+                  }}>
+                  <ReanimatedArcBase
+                     color='#FFF'
+                    lineCap='round'
+                    diameter={122}
+                    width={6}
+                    arcSweepAngle={0}
+                    rotation={item}
+                    hideSmallAngle={false}
+                  />
+                </Reanimated.View>
+              )
+            })}
           </Reanimated.View>
         </LongPressGestureHandler>
 
@@ -179,6 +209,12 @@ const styles = StyleSheet.create({
   },
   absolute: {
     position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
+    height: '100%'
   },
   centerBox: {
     position: 'absolute',
