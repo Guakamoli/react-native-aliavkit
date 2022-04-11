@@ -20,8 +20,7 @@ import AVService from '../AVService';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
 import { ReanimatedArcBase, ReanimatedArc } from '@callstack/reanimated-arc';
-import Reanimated from 'react-native-reanimated';
-
+import Reanimated, { Easing } from 'react-native-reanimated';
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
@@ -32,6 +31,7 @@ const captureIcon2 = (width - 20) / 2;
 class CircleProgress extends Component {
   constructor(props) {
     super(props);
+    this.easing = Easing.inOut(Easing.quad);
   }
 
   componentDidMount() { }
@@ -125,17 +125,8 @@ class CircleProgress extends Component {
               style={styles.absolute}
             />
 
-            {/* <ReanimatedArcBase
-              color='#FFF'
-              lineCap='round'
-              diameter={122}
-              width={6}
-              arcSweepAngle={150}
-              rotation={360}
-              hideSmallAngle={false}
-            /> */}
-
             {this.props.multiRecordAngle?.map((item, index) => {
+              const rotate = item + 'deg';
               return (
                 <Reanimated.View
                   key={index}
@@ -143,13 +134,19 @@ class CircleProgress extends Component {
                     position: 'absolute',
                   }}>
                   <ReanimatedArcBase
-                     color='#FFF'
+                    color='#FFF'
                     lineCap='round'
                     diameter={122}
                     width={6}
                     arcSweepAngle={0}
-                    rotation={item}
+                    // 安卓上 rotation 必须设置 360
+                    rotation={360}
                     hideSmallAngle={false}
+                    style={[{}, {
+                      transform: [
+                        { rotate: rotate },
+                      ]
+                    }]}
                   />
                 </Reanimated.View>
               )
