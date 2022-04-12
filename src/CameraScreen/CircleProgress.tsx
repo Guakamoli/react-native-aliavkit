@@ -45,7 +45,7 @@ class CircleProgress extends Component {
       }}>
 
 
-        {Platform.OS === 'android' ?
+        {this.props.recordType === 2 && (Platform.OS === 'android' ?
           <NativeViewGestureHandler
             disallowInterruption={true}
             shouldActivateOnStart={true}
@@ -66,7 +66,7 @@ class CircleProgress extends Component {
             }}
           >
             <Image style={{ marginLeft: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_back.png')} />
-          </Pressable>
+          </Pressable>)
         }
 
 
@@ -154,7 +154,7 @@ class CircleProgress extends Component {
           </Reanimated.View>
         </LongPressGestureHandler>
 
-        {Platform.OS === 'android' ?
+        {this.props.recordType === 2 && (Platform.OS === 'android' ?
           <NativeViewGestureHandler
             disallowInterruption={true}
             shouldActivateOnStart={true}
@@ -176,7 +176,7 @@ class CircleProgress extends Component {
           >
             <Image style={{ marginRight: 26, width: 38, height: 38 }} resizeMode='cover' source={require('../../images/ic_record_complete.png')} />
 
-          </Pressable>
+          </Pressable>)
         }
 
       </View>
