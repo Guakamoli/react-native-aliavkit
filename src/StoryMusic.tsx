@@ -50,7 +50,7 @@ const StoryMusic = (props) => {
   //音乐列表
   const [songData, setSongData] = useState(setMusicState ? mMusicList : []);
   //音乐列表是否选择第一条item
-  const [carouselFirstItem, setCarouselFirstItem] = useState(setMusicState ? mSelectedMusicPosition : 0);
+  const [carouselFirstItem, setCarouselFirstItem] = useState(mSelectedMusicPosition);
 
   //搜索框内容
   const [musicSearchValue, setMusicSearchValue] = useState('');
@@ -60,7 +60,7 @@ const StoryMusic = (props) => {
   const [searchSelectedMusic, setSearchSelectedMusic] = useState(null);
 
   //选中音乐下标
-  const [currentIndex, setCurrentIndex] = useState(setMusicState ? mSelectedMusicPosition : 0);
+  const [currentIndex, setCurrentIndex] = useState(mSelectedMusicPosition);
   //正在播放的音乐
   const [currentPlayMusic, setCurrentPlayMusic] = useState({});
 
@@ -76,7 +76,10 @@ const StoryMusic = (props) => {
   useEffect(() => {
     //初始化获取
     //
-    if (!songData || songData.length == 0 || !setMusicState) {
+    if (!songData || songData.length == 0) {
+      // if (!songData || songData.length == 0 || !setMusicState) {
+      mMusicList = [];
+      mSelectedMusicPosition = 0;
       getSong({});
     } else {
       if (setMusicState) {
@@ -181,18 +184,14 @@ const StoryMusic = (props) => {
 
     return (
       <Carousel
-
-
         enableMomentum={false}
         decelerationRate={'fast'}
-
         ref={(carouselRef)}
         data={songData}
         itemWidth={300}
-        snapToInterval={300}
+        snapToInterval={50}
         lockScrollWhileSnapping={true}
         sliderWidth={width}
-        // initialNumToRender={initialNum < 5 ? 5 : initialNum + 1}
         initialNumToRender={5}
         firstItem={carouselFirstItem}
         // activeAnimationType={'timing'}
@@ -546,7 +545,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   musicFindSearchInput: {
-    flex:1,
+    flex: 1,
     height: '100%',
     borderRadius: 12,
     marginLeft: 8,
