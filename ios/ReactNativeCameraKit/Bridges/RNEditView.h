@@ -41,6 +41,7 @@ typedef NS_ENUM(NSUInteger, RNAVAssetType) {
 - (int)seekToTime:(CGFloat)time;
 - (void)trimVideoFromTime:(CGFloat)startTime toTime:(CGFloat)endTime;
 
+- (NSString *)getTaskPath;
 @end
 
 
