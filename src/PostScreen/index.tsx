@@ -1496,12 +1496,12 @@ export default class CameraScreen extends Component<Props, State> {
             trimVideoData = trimVideoData.slice(7)
           }
         }
-        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-          console.info("postCropVideo progress", progress);
-        });
+        // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+        //   console.info("postCropVideo progress", progress);
+        // });
 
-        console.info("trimVideoData save", trimVideoData);
-        CameraRoll.save(trimVideoData, { type: 'video' })
+        // console.info("trimVideoData save", trimVideoData);
+        // CameraRoll.save(trimVideoData, { type: 'video' })
 
         resultData.push(trimVideoData);
 
