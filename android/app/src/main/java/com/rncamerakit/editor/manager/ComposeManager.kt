@@ -1,9 +1,7 @@
 package com.rncamerakit.editor.manager
 
 import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import android.util.Log
-import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.DateTimeUtils
 import com.aliyun.svideo.common.utils.FileUtils
@@ -22,9 +20,11 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.utils.AliFileUtils
-import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.random.Random
+import kotlin.random.nextInt
+import kotlin.random.nextUBytes
 
 
 class ComposeManager(private val mContext: ThemedReactContext) {
