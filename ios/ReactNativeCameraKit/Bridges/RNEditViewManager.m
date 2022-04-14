@@ -7,6 +7,7 @@
 
 #import "RNEditViewManager.h"
 #import "RNEditView.h"
+#import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
 
 @interface RNEditViewManager ()<RCTInvalidating>
 
@@ -48,7 +49,7 @@ RCT_EXPORT_METHOD(resume)
 }
 
 RCT_EXPORT_METHOD(replay)
-{
+{ 
     [self.editView replay];
 }
 
@@ -75,6 +76,14 @@ RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
     CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
     CGFloat endTime = [[options objectForKey:@"endTime"] floatValue];
     [self.editView trimVideoFromTime:startTime toTime:endTime];
+}
+
+RCT_EXPORT_METHOD(getTaskPath:(NSDictionary *)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    NSString *taskPath = [self.editView getTaskPath];
+    resolve(taskPath);
 }
 
 - (dispatch_queue_t)methodQueue

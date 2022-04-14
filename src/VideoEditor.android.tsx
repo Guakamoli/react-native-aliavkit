@@ -29,6 +29,11 @@ export default class Editor extends Component<Props, State> {
     this.nativeRef = React.createRef();
   };
 
+  getVideoEditorJsonPath = async () => {
+    const jsonPath = await RNEditorKitModule.getVideoEditorJsonPath();
+    return jsonPath;
+  };
+
   /**
    * 获取音乐列表
    */
@@ -98,30 +103,30 @@ export default class Editor extends Component<Props, State> {
 
   async componentDidMount() {
 
-    let list = await this.getMusicList("", 2, 10);
+    // let list = await this.getMusicList("", 2, 10);
     //
-    //播放回调
-    this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
-      //
-      this.props.onPlayProgress({ nativeEvent: params });
-    });
+    // //播放回调
+    // this.startVideoPlayListener = DeviceEventEmitter.addListener('startVideoEditor', (params) => {
+    //   //
+    //   this.props.onPlayProgress({ nativeEvent: params });
+    // });
 
     // //视频裁剪进度
     // this.startVideoCropListener = DeviceEventEmitter.addListener('startVideoCrop', (progress) => {
     //  
     // });
 
-    //导出视频 合成回调
-    this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
-      // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
-      //
-      this.props.onExportVideo(param);
-    });
+    // //导出视频 合成回调
+    // this.startVideoComposeListener = DeviceEventEmitter.addListener('startVideoCompose', (param) => {
+    //   // param = {{"exportProgress": 1, "outputPath": "....jpg"}}
+    //   //
+    //   this.props.onExportVideo(param);
+    // });
 
-    //音乐下载进度
-    this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
+    // //音乐下载进度
+    // this.downloadMusicListener = DeviceEventEmitter.addListener('downloadMusic', (progress) => {
      
-    });
+    // });
   }
 
   componentWillUnmount() {

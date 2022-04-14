@@ -1,6 +1,6 @@
 import React from 'react';
 import { NativeModules, NativeEventEmitter, } from 'react-native';
-const { AliAVServiceBridge, RNMusicService } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNEditViewManager } = NativeModules;
 
 type MusicRequestType = {
   name: string;
@@ -10,6 +10,26 @@ type MusicRequestType = {
 };
 
 export default class AVService {
+
+  static async getVideoEditorJsonPath() {
+    const jsonPath = await RNEditViewManager.getTaskPath({});
+    return jsonPath;
+  }
+
+  static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
+
+    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+
+    const listener = managerEmitter.addListener('storyComposeVideo', (reminder) => {
+      //0~1
+      if (progressListener) {
+        progressListener(reminder?.progress);
+      }
+    });
+    const videoPath = await AliAVServiceBridge.storyComposeVideo(jsonPath);
+    managerEmitter.removeSubscription(listener);
+    return videoPath;
+  }
 
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {

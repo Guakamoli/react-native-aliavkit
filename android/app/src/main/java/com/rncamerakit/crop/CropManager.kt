@@ -74,7 +74,7 @@ class CropManager {
 
             param.inputPath = videoPath
             val file = File(videoPath)
-            val fileName = "crop_" + file.name
+            val fileName = "Crop_" + System.currentTimeMillis() + "_" + file.name
             val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
             Log.e("AAA", "视频输出路径：$outputPath")
             param.outputPath = outputPath

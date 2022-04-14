@@ -122,7 +122,7 @@
 {
     if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 0.5f;
+        _mediaConfig.minDuration = 0.0f;
         _mediaConfig.maxDuration = 180.f; //3min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
@@ -364,9 +364,9 @@
 #pragma mark - face paster
 - (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
-        return;
-    }
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
+//        return;
+//    }
     if (pasterInfo.eid <= 0 || [pasterInfo.bundlePath isEqualToString:@"icon"]) {//remove
         [self deletePreviousEffectPaster];
         return;
@@ -602,7 +602,8 @@
 {
     self.isMultiRecording = YES;
     int recordInt = [self.recorder startRecording];
-    resolve(@(recordInt));
+    BOOL isRecord = recordInt == 0; // ==0 YES
+    resolve(@(isRecord));
 }
 
 - (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
@@ -627,6 +628,20 @@
     _finishMultiRecordingReject = reject;
     self.isMultiRecording = NO;
     [self.recorder finishRecording];
+}
+
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deletePart];
+}
+
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
 }
 
 @end

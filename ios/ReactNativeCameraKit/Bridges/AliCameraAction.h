@@ -65,6 +65,11 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
 
 - (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
 @end
 
 

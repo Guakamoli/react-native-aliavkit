@@ -47,6 +47,8 @@ export default class Camera extends Component<Props, State> {
 
   //开启多段录制（录制一个片段）
   startMultiRecording = async (recordingListener: (duration: number) => void) => {
+    //开启多段录制
+    console.info("startMultiRecording");
     this.startMultiRecordingListener = DeviceEventEmitter.addListener('startMultiRecording', (duration) => {
       //0~1
       if (recordingListener) {
@@ -57,8 +59,20 @@ export default class Camera extends Component<Props, State> {
   }
   //停止多段录制（停止一个片段）
   stopMultiRecording = async () => {
+    console.info("stopMultiRecording");
     this.startMultiRecordingListener?.remove();
     return await RNCameraKitModule.stopMultiRecording();
+  }
+
+
+  //删除最近录制的视频片段
+  deleteLastMultiRecording = async () => {
+    return await RNCameraKitModule.deleteLastMultiRecording();
+  }
+
+  //删除所有录制片段
+  deleteAllMultiRecording = async () => {
+    return await RNCameraKitModule.deleteAllMultiRecording();
   }
 
   //合成：结束录制多段视频合成一个视频

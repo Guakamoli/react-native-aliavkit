@@ -2,26 +2,18 @@ package com.rncamerakit.editor
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
-import android.util.ArrayMap
-import android.util.Log
 import com.aliyun.svideo.base.http.EffectService
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.downloader.FileDownloaderCallback
 import com.aliyun.svideo.downloader.FileDownloaderModel
-import com.aliyun.svideo.recorder.util.RecordCommon
-import com.blankj.utilcode.util.SPUtils
 import com.facebook.react.bridge.*
-import com.facebook.react.uimanager.UIManagerModule
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.GsonManage
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.db.MusicFileInfoDao
-import com.rncamerakit.editor.manager.ColorFilterManager
+import com.rncamerakit.editor.manager.ComposeManager
 import com.rncamerakit.font.FontManager
-import com.rncamerakit.recorder.CKCamera
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
@@ -29,14 +21,12 @@ import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import org.json.JSONObject
 import java.net.FileNameMap
 import java.net.URLConnection
 import java.util.ArrayList
 
 @DelicateCoroutinesApi
-class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext) {
+class RNEditorKitModule(private val reactContext: ReactApplicationContext) :  ReactContextBaseJavaModule(reactContext) {
 
 
     companion object {
@@ -201,6 +191,18 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :
     fun postCropVideo(videoPath: String, promise: Promise) {
         val context = reactContext
         CropManager.cropPostVideo(context, videoPath, promise)
+    }
+
+    @ReactMethod
+    fun getVideoEditorJsonPath(promise: Promise) {
+        val jsonPath = mView?.getVideoEditorJsonPath()
+        promise.resolve(jsonPath)
+    }
+
+    @ReactMethod
+    fun storyComposeVideo(jsonPath: String, promise: Promise) {
+        val mComposeManager = ComposeManager(reactContext)
+        mComposeManager.startCompose(jsonPath, promise, isVideo = true, isSaveToPhotoLibrary = false,isStoryCompose = true)
     }
 
     /**

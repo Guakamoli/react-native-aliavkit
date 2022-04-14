@@ -108,6 +108,10 @@ typedef NS_ENUM(NSInteger, CKCameraZoomMode) {
 
 - (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
 
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
 
 /**
  释放录制资源

@@ -1469,30 +1469,38 @@ export default class CameraScreen extends Component<Props, State> {
         trimVideoData = imageItem.uri;
 
         //TODOWUYQ
+        // if (Platform.OS === 'ios') {
+        //   var videoIndex = imageItem.videoFile.lastIndexOf(".");
+        //   //获取后缀
+        //   var videoType = imageItem.videoFile.substr(videoIndex + 1).toLowerCase();
+        //   if (videoType !== 'mp4') {
+        //     //保存到沙盒
+        //     trimVideoData = await AVService.saveToSandBox(imageItem.uri);
+        //   } else {
+        //     //url 授权, ios url  需要特殊处理
+        //     let myAssetId = imageItem.uri.slice(5);
+        //     trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+        //     //裁剪 file://
+        //     if (!!trimVideoData && trimVideoData.startsWith("file://")) {
+        //       trimVideoData = trimVideoData.slice(7)
+        //     }
+        //   }
+        // }
+
+
+        // TODOWUYQ  视频压缩
         if (Platform.OS === 'ios') {
-          var videoIndex = imageItem.videoFile.lastIndexOf(".");
-          //获取后缀
-          var videoType = imageItem.videoFile.substr(videoIndex + 1).toLowerCase();
-          if (videoType !== 'mp4') {
-            //保存到沙盒
-            trimVideoData = await AVService.saveToSandBox(imageItem.uri);
-          } else {
-            //url 授权, ios url  需要特殊处理
-            let myAssetId = imageItem.uri.slice(5);
-            trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
-            //裁剪 file://
-            if (!!trimVideoData && trimVideoData.startsWith("file://")) {
-              trimVideoData = trimVideoData.slice(7)
-            }
+          let myAssetId = trimVideoData.slice(5);
+          trimVideoData = await CameraRoll.requestPhotoAccess(myAssetId);
+          if (!!trimVideoData && trimVideoData.startsWith("file://")) {
+            trimVideoData = trimVideoData.slice(7)
           }
-
         }
+        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+          console.info("postCropVideo progress", progress);
+        });
 
-        // // //TODO  视频压缩
-        // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-        //  
-        // });
-        //
+        // console.info("trimVideoData save", trimVideoData);
         // CameraRoll.save(trimVideoData, { type: 'video' })
 
         resultData.push(trimVideoData);

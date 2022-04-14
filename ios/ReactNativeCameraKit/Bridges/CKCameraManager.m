@@ -149,6 +149,20 @@ RCT_EXPORT_METHOD(finishMultiRecording:(NSDictionary*)options
     [self.camera finishMultiRecording:resolve  reject:reject];
 }
 
+RCT_EXPORT_METHOD(deleteLastMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera deleteLastMultiRecording:resolve  reject:reject];
+}
+
+RCT_EXPORT_METHOD(deleteAllMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera deleteAllMultiRecording:resolve  reject:reject];
+}
+
 
 - (dispatch_queue_t)methodQueue
 {

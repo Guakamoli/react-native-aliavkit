@@ -10,6 +10,26 @@ type MusicRequestType = {
 };
 
 export default class AVService {
+
+
+  static async getVideoEditorJsonPath() {
+    const jsonPath = await RNEditorKitModule.getVideoEditorJsonPath();
+    return jsonPath;
+  }
+  
+
+  static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
+    const listener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(progress);
+      }
+    });
+    const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);
+    listener.remove();
+    return JSON.parse(videoParam);
+  }
+
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
     const carpListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {

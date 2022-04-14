@@ -113,43 +113,75 @@ export default class StoryEditor extends Component<Props, State> {
     };
     this.musicInfo = {};
   }
-  startExportVideo() {
+  async startExportVideo() {
 
-    if (this.state.startExportVideo) {
-      return;
-    }
-    this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
-    this.setState({ musicExport: true }, () => {
-      this.setState({ startExportVideo: true });
-    });
+    // if (this.state.startExportVideo) {
+    //   return;
+    // }
+    // this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
+    // this.setState({ musicExport: true }, () => {
+    //   this.setState({ startExportVideo: true });
+    // });
+    // this.pauseMusic(this.musicOn);
+    // // //发布快拍，关闭页面
+    // // setTimeout(() => {
+    // //   this.props.goback();
+    // // }, 1000);
+
     this.pauseMusic(this.musicOn);
-    // //发布快拍，关闭页面
+
+    const jsonPath = await AVService.getVideoEditorJsonPath();
+    console.info("startExportVideo jsonPath", jsonPath);
+
+    //story 去做导出
+    let videoParams = await AVService.storyComposeVideo(jsonPath, (progress: number) => {
+      console.info("storyComposeVideo progress", progress);
+    });
+    console.info("storyComposeVideo videoParams", videoParams);
+    //需求：story 发布时要同事保存到相册
+    CameraRoll.save(videoParams.path, { type: 'video' })
+    this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
+    let uploadData = [videoParams];
+    this.props.getUploadFile(uploadData);
+    //story 去做导出
+  
+
+    //外部去做导出，这里返回 json 文件，外部去调用 await AVService.storyComposeVideo
+    // const storyParam = {
+    //   uploadType:'story',
+    //   jsonPath:jsonPath
+    // }
+    // this.props.getUploadFile(storyParam);
+    //外部去做导出，这里返回 json 文件，外部去调用 await AVService.storyComposeVideo
+
     // setTimeout(() => {
     //   this.props.goback();
-    // }, 1000);
+    // }, 500);
   }
+
+  // //  发布快拍   导出视频 
+  // onExportVideo = async (event) => {
+  //   const { fileType } = this.props;
+  //   if (event.exportProgress === 1) {
+  //     // if(!event?.videoParams?.path.startsWith("file://") ){
+  //     //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
+  //     // }
+  //     let uploadData = [event.videoParams];
+  //     this.pauseMusic(this.musicOn);
+  //     console.info('发布快拍 onExportVideo', uploadData);
+  //     this.setState({ startExportVideo: false });
+  //     // // 测试代码：保存到相册
+  //     // CameraRoll.save(event.outputPath, { type: 'video' })
+  //     this.props.getUploadFile(uploadData);
+  //   }
+  // }
+
   pauseMusic(song) {
 
     if (song) {
       AVService.pauseMusic(song?.songID);
     }
   }
-  //  发布快拍   导出视频 
-  onExportVideo = async (event) => {
-    const { fileType } = this.props;
-    if (event.exportProgress === 1) {
-      // if(!event?.videoParams?.path.startsWith("file://") ){
-      //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
-      // }
-      let uploadData = [event.videoParams];
-      this.pauseMusic(this.musicOn);
-      console.info('发布快拍 onExportVideo',  uploadData);
-      this.setState({ startExportVideo: false });
-      // // 测试代码：保存到相册
-      // CameraRoll.save(event.outputPath, { type: 'video' })
-      this.props.getUploadFile(uploadData);
-    }
-  };
 
   getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}

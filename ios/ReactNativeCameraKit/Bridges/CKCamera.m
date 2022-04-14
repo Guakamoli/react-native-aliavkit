@@ -329,7 +329,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         info = [[AliyunPasterInfo alloc] initWithBundleFile:bundlePath];
     }
 
-    [self.cameraAction prepearForAddPasterInfo:info];
+    [self.cameraAction prepearForAddPasterInfo:info]; 
 }
 
 - (void)startRecording:(NSDictionary *)options
@@ -541,6 +541,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
     [self.cameraAction finishMultiRecording:resolve  reject:reject];
+}
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteLastMultiRecording:resolve  reject:reject];
+}
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteAllMultiRecording:resolve  reject:reject];
 }
 
 @end

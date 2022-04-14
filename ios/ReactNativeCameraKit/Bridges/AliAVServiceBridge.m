@@ -20,20 +20,24 @@
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
 #import <React/RCTConvert.h>
+#import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
-@interface AliAVServiceBridge ()<AliyunCropDelegate>
+@interface AliAVServiceBridge ()<AliyunIExporterCallback,AliyunCropDelegate>
 {
     BOOL _hasListeners;
     RCTPromiseResolveBlock _videoCropResolve;
     RCTPromiseRejectBlock _videoCropReject;
+    RCTPromiseResolveBlock _videoComposeResolve;
+    RCTPromiseRejectBlock _videoComposeReject;
     NSString *_videoCropOutputPath;
     // 裁剪模式， 1：原裁剪 2：post 压缩裁剪
     NSInteger _videoCropType;
 }
 
 @property (nonatomic, strong) AliyunCrop *cutPanel;
+@property (nonatomic, strong) AliyunVodPublishManager *publishManager;
 
 @end
 
@@ -81,6 +85,79 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
        return count == 0;
    }
    return NO;
+}
+
+- (NSString *)fileMIMETypeURLSessionWithPath:(NSString*)path {
+    //1.确定请求路径
+    NSURL *url = [NSURL fileURLWithPath:path];
+    //2.创建可变的请求对象
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block NSString *mimeType = nil;
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        mimeType = response.MIMEType;
+        dispatch_semaphore_signal(semaphore);
+    }];
+    [task resume];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return mimeType;
+}
+#pragma mark - AliyunIExporterCallback
+- (void)exportProgress:(float)progress
+{
+    [self sendEventWithName:@"storyComposeVideo" body:@{@"progress":@(progress)}];
+}
+- (void)exporterDidEnd:(NSString *)outputPath
+{
+    [self sendEventWithName:@"storyComposeVideo" body:@{@"progress":@(1.0)}];
+    
+    __block NSString *path = outputPath;
+    if(_videoComposeResolve != nil){
+        AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
+        CGSize size = [asset avAssetNaturalSize];
+        CGFloat frameWidth = size.width;
+        CGFloat frameHeight = size.height;
+        NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil].fileSize;
+        NSString *fileType =[self fileMIMETypeURLSessionWithPath:path];
+        NSString *fileName = [path lastPathComponent];
+        id videoParams = @{@"width":@(frameWidth), @"height":@(frameHeight),@"path":path,@"size":@(fileSize),@"type":fileType,@"name":fileName};
+        _videoComposeResolve(videoParams);
+    }
+    
+}
+- (void)exporterDidCancel
+{
+    
+}
+- (void)exportError:(int)errorCode
+{
+    
+}
+#pragma mark - AliyunIExporterCallback
+
+/**
+ * story 视频导出接口
+ */
+RCT_EXPORT_METHOD(storyComposeVideo:(NSString *)taskPath
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    _videoComposeResolve = resolve;
+    _videoComposeReject = reject;
+    
+    _publishManager = [[AliyunVodPublishManager alloc]init];
+    _publishManager.exportCallback = self;
+    
+    NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+
+    
+    int result = [self.publishManager exportWithTaskPath:taskPath outputPath:outputPath];
+    if (result != 0) {
+        AVDLog(@"合成失败");
+    }
+//    if (result != 0) {
+//        [self showAlertWithTitle:[@"合成失败" localString] message:[@"合成失败,请返回重试" localString]];
+//    }
 }
 
 
@@ -371,6 +448,7 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
 - (NSArray<NSString *> *)supportedEvents
 {
     return @[
+        @"storyComposeVideo",
         @"startMultiRecording",
         @"postVideoCrop",
         @"cropProgress",

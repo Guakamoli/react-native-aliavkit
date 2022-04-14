@@ -1,9 +1,7 @@
 package com.rncamerakit.editor.manager
 
 import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import android.util.Log
-import com.aliyun.common.utils.BitmapUtil
 import com.aliyun.svideo.base.Constants
 import com.aliyun.svideo.common.utils.DateTimeUtils
 import com.aliyun.svideo.common.utils.FileUtils
@@ -18,22 +16,22 @@ import com.aliyun.svideosdk.editor.AliyunIVodCompose
 import com.aliyun.svideosdk.editor.impl.AliyunComposeFactory
 import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
-import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.bridge.ReactContext
+import com.google.gson.GsonBuilder
 import com.rncamerakit.RNEventEmitter
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.utils.AliFileUtils
-import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 
-class ComposeManager(private val mContext: ThemedReactContext) {
+class ComposeManager(private val mContext: ReactContext) {
 
     private var mVodCompose: AliyunIVodCompose? = null
     private var mOutputPath = ""
 
     init {
-        mVodCompose = AliyunComposeFactory.createAliyunVodCompose();
+        mVodCompose = AliyunComposeFactory.createAliyunVodCompose()
         mVodCompose?.init(mContext.applicationContext)
     }
 
@@ -107,7 +105,8 @@ class ComposeManager(private val mContext: ThemedReactContext) {
         configPath: String?,
         promise: Promise?,
         isVideo: Boolean,
-        isSaveToPhotoLibrary: Boolean
+        isSaveToPhotoLibrary: Boolean,
+        isStoryCompose: Boolean
     ) {
         val time = DateTimeUtils.getDateTimeFromMillisecond(System.currentTimeMillis())
 
@@ -130,7 +129,7 @@ class ComposeManager(private val mContext: ThemedReactContext) {
 
                 override fun onComposeProgress(progress: Int) {
                     Log.e("AAA", "onComposeProgress:$progress")
-                    RNEventEmitter.startVideoCompose(mContext, progress, "")
+                    RNEventEmitter.startVideoCompose(mContext, progress, "", isStoryCompose)
                 }
 
                 override fun onComposeCompleted() {
@@ -139,8 +138,9 @@ class ComposeManager(private val mContext: ThemedReactContext) {
                     if (isSaveToPhotoLibrary) {
                         AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath)
                     }
-                    RNEventEmitter.startVideoCompose(mContext, 100, mOutputPath)
-                    promise?.resolve(mOutputPath)
+                    val videoParam = RNEventEmitter.startVideoCompose(mContext, 100, mOutputPath, isStoryCompose)
+                    val videoParamJson = GsonBuilder().create().toJson(videoParam)
+                    promise?.resolve(videoParamJson)
 //                    } else {
 //                        getCoverImager(promise,isSaveToPhotoLibrary)
 //                    }

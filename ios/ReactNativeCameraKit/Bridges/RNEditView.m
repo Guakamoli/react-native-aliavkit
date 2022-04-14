@@ -797,6 +797,7 @@ AliyunCropDelegate
 {
     [self.player stop];
     [_editor stopEdit];
+    [_editor getExporter];
 }
 
 /// 尝试播放视频
@@ -897,6 +898,10 @@ AliyunCropDelegate
     [[self.editor getClipConstructor] updateMediaClip:clip atIndex:0];
     [self.editor startEdit];
     [self play];
+}
+
+- (NSString *)getTaskPath{
+    return _taskPath;
 }
 
 @end

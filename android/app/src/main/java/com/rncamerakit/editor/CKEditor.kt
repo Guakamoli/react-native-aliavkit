@@ -76,6 +76,11 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     private lateinit var mProjectConfigure: String
 
+
+    fun getVideoEditorJsonPath(): String {
+       return mProjectConfigure
+    }
+
     //视频导入
     private var mImportManager: ImportManager? = null
 
@@ -274,7 +279,8 @@ class CKEditor(val reactContext: ThemedReactContext) :
             mProjectConfigure,
             promise,
             this.isVideo,
-            isSaveToPhotoLibrary
+            isSaveToPhotoLibrary,
+            false
         )
     }
 

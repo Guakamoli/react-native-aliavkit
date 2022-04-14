@@ -44,9 +44,9 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
     //设置滤镜
     @ReactProp(name = "filterName")
     fun setColorFilter(view: CKEditor, filterName: String?) {
-        if (TextUtils.isEmpty(filterName)) {
-            return
-        }
+//        if (TextUtils.isEmpty(filterName)) {
+//            return
+//        }
 //        view.reactContext.runOnUiQueueThread {
         view.setColorFilter(filterName)
 //        }
