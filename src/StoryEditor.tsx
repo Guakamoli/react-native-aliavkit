@@ -138,7 +138,7 @@ export default class StoryEditor extends Component<Props, State> {
       console.info("storyComposeVideo progress", progress);
     });
     console.info("storyComposeVideo videoParams", videoParams);
-    //需求：story 发布时要同事保存到相册
+    //需求：story 发布时要同时保存到相册
     CameraRoll.save(videoParams.path, { type: 'video' })
     this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
     let uploadData = [videoParams];

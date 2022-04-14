@@ -201,7 +201,7 @@ class PostContent extends Component {
       imageItem: "",
       cropScale: 0,
       videoPaused: false,
-      videoMuted: true,
+      videoMuted: this.props.isExample ? false : true,
       isChangeScale: false,
       minScale: 0,
       positionX: 0,

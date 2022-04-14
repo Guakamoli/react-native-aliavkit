@@ -222,7 +222,7 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-            console.info("LongPressGestureHandler", nativeEvent.state);
+            // console.info("LongPressGestureHandler", nativeEvent.state);
             if (nativeEvent.state === State.ACTIVE) {
               this.isLongPress = true;
               this.props.longPress();
@@ -340,29 +340,45 @@ class CarouselWrapper extends Component<Props, State> {
         return;
       }
       this.startTime = Date.now();
+      let recordAngle = this.recordTime / 15000.0 * 360;
+      if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
+        recordAngle += 0.1;
+      }
+      this.arcAngle?.setValue(recordAngle);
+      this.ani = Reanimated.timing(this.arcAngle, {
+        toValue: 360,
+        easing: EasingNode.linear,
+        duration: 1000 * (15 - this.recordTime / 1000.0),
+      });
+      this.ani.start(({ finished }) => {
+        if (finished) {
+          this.stopAnimate();
+        }
+      });
 
       Reanimated.timing(this.scaleAnimated, {
         toValue: 1,
         easing: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
-        let recordAngle = this.recordTime / 15000.0 * 360;
-        if (finished) {
-          if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
-            recordAngle += 0.1;
-          }
-          this.arcAngle?.setValue(recordAngle);
-          this.ani = Reanimated.timing(this.arcAngle, {
-            toValue: 360,
-            easing: EasingNode.linear,
-            duration: 1000 * (15 - this.recordTime / 1000.0),
-          });
-          this.ani.start(({ finished }) => {
-            if (finished) {
-              this.stopAnimate();
-            }
-          });
-        }
+        //这里有bug。 this.ani 会延迟初始化，手指一触摸立即松开，导致  this.ani.stop 无效，动画一直跑
+        // let recordAngle = this.recordTime / 15000.0 * 360;
+        // if (finished) {
+        //   if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
+        //     recordAngle += 0.1;
+        //   }
+        //   this.arcAngle?.setValue(recordAngle);
+        //   this.ani = Reanimated.timing(this.arcAngle, {
+        //     toValue: 360,
+        //     easing: EasingNode.linear,
+        //     duration: 1000 * (15 - this.recordTime / 1000.0),
+        //   });
+        //   this.ani.start(({ finished }) => {
+        //     if (finished) {
+        //       this.stopAnimate();
+        //     }
+        //   });
+        // }
       });
     } catch (e) {
 
@@ -422,7 +438,7 @@ class CarouselWrapper extends Component<Props, State> {
           this.ani?.stop();
         } catch {
         }
-      }, 500);
+      }, 50);
     }
 
     this.isStopAnimated = true;

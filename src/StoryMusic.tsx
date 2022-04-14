@@ -184,7 +184,10 @@ const StoryMusic = (props) => {
 
     return (
       <Carousel
-        enableMomentum={false}
+        scrollEnabled={true}
+        lockScrollWhileSnapping={true}
+        lockScrollTimeoutDuration={300}
+        enableMomentum={true}
         decelerationRate={'fast'}
         ref={(carouselRef)}
         data={songData}
@@ -221,9 +224,10 @@ const StoryMusic = (props) => {
                   setCurrentPlayMusic({});
                   props.setMusic(false);
                 } else {
-                  playMusic(item);
+                  // playMusic(item);
                   setCurrentPlayMusic(item);
                   !setMusicState && props.setMusic(true);
+
                 }
                 carouselRef.current?.snapToItem(index);
               }}
