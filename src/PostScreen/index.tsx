@@ -1496,9 +1496,9 @@ export default class CameraScreen extends Component<Props, State> {
             trimVideoData = trimVideoData.slice(7)
           }
         }
-        trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-          console.info("postCropVideo progress", progress);
-        });
+        // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+        //   console.info("postCropVideo progress", progress);
+        // });
 
         // console.info("trimVideoData save", trimVideoData);
         // CameraRoll.save(trimVideoData, { type: 'video' })
@@ -1660,10 +1660,11 @@ export default class CameraScreen extends Component<Props, State> {
 
       let type;
       let path;
+      let localPath = item.image.uri;
+
       if (Platform.OS === 'ios') {
-        path = `file://${encodeURI(resultData[i])}`
-        type = resultData[i].split('.');
-        type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+        path = resultData[i];
+        type = `video/mp4`;
       } else {
         type = item.type;
         path = resultData[i];
@@ -1678,6 +1679,7 @@ export default class CameraScreen extends Component<Props, State> {
         coverImage: '',
         width: item.image.width,
         height: item.image.height,
+        localPath,
       }
     }
     //
