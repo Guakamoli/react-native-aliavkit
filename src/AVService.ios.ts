@@ -16,6 +16,14 @@ export default class AVService {
     return jsonPath;
   }
 
+  /**
+   * 
+   * @returns story 取消导出
+   */
+  static async storyCancelCompose() {
+    AliAVServiceBridge.storyCancelCompose({});
+  }
+
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
 
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
@@ -29,6 +37,14 @@ export default class AVService {
     const videoPath = await AliAVServiceBridge.storyComposeVideo(jsonPath);
     managerEmitter.removeSubscription(listener);
     return videoPath;
+  }
+
+  /**
+   * 
+   * @returns post 取消裁剪
+   */
+  static async postCancelCrop() {
+    AliAVServiceBridge.postCancelCrop({});
   }
 
   //Post 视频上传压缩裁剪

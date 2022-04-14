@@ -17,6 +17,7 @@ import com.aliyun.svideosdk.common.struct.common.MediaType
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.common.VideoQuality
 import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
+import com.aliyun.svideosdk.crop.AliyunICrop
 import com.aliyun.svideosdk.crop.CropCallback
 import com.aliyun.svideosdk.crop.CropParam
 import com.aliyun.svideosdk.crop.impl.AliyunCropCreator
@@ -104,10 +105,10 @@ class CropManager {
         }
 
 
-        fun cropPostVideo(reactContext: ReactContext, videoPath: String, promise: Promise) {
+        fun cropPostVideo(reactContext: ReactContext, videoPath: String, promise: Promise): AliyunICrop? {
             if (TextUtils.isEmpty(videoPath)) {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
-                return
+                return null
             }
             var videoPath = videoPath
             if (videoPath != null) {
@@ -159,7 +160,7 @@ class CropManager {
                         //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
                         if (bitRate < mBitrate*1000) {
                             promise.resolve(videoPath)
-                            return
+                            return null
                         }
                         mVideoWidth = frameWidth
                         mVideoHeight = frameHeight
@@ -219,6 +220,8 @@ class CropManager {
 
             })
             aliyunCrop.startCrop()
+
+            return aliyunCrop
         }
 
 

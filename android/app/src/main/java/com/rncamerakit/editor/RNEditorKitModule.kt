@@ -5,6 +5,7 @@ import android.text.TextUtils
 import com.aliyun.svideo.base.http.EffectService
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.downloader.FileDownloaderModel
+import com.aliyun.svideosdk.crop.AliyunICrop
 import com.facebook.react.bridge.*
 import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
@@ -26,12 +27,16 @@ import java.net.URLConnection
 import java.util.ArrayList
 
 @DelicateCoroutinesApi
-class RNEditorKitModule(private val reactContext: ReactApplicationContext) :  ReactContextBaseJavaModule(reactContext) {
+class RNEditorKitModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         var mView: CKEditor? = null
+
+        var mPostAliyunICrop: AliyunICrop? = null
+
+        var mComposeManager: ComposeManager? = null
     }
 
     override fun getName(): String {
@@ -188,9 +193,16 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :  Re
     }
 
     @ReactMethod
+    fun postCancelCrop(promise: Promise) {
+        mPostAliyunICrop?.cancel()
+        mPostAliyunICrop?.dispose()
+        mPostAliyunICrop = null
+    }
+
+    @ReactMethod
     fun postCropVideo(videoPath: String, promise: Promise) {
         val context = reactContext
-        CropManager.cropPostVideo(context, videoPath, promise)
+        mPostAliyunICrop = CropManager.cropPostVideo(context, videoPath, promise)
     }
 
     @ReactMethod
@@ -201,8 +213,13 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) :  Re
 
     @ReactMethod
     fun storyComposeVideo(jsonPath: String, promise: Promise) {
-        val mComposeManager = ComposeManager(reactContext)
-        mComposeManager.startCompose(jsonPath, promise, isVideo = true, isSaveToPhotoLibrary = false,isStoryCompose = true)
+        mComposeManager = ComposeManager(reactContext)
+        mComposeManager?.startCompose(jsonPath, promise, isVideo = true, isSaveToPhotoLibrary = false, isStoryCompose = true)
+    }
+
+    @ReactMethod
+    fun storyCancelCompose( promise: Promise) {
+        mComposeManager?.onRelease()
     }
 
     /**
