@@ -135,6 +135,19 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
 }
 #pragma mark - AliyunIExporterCallback
 
+
+/**
+ *  取消视频导出
+ */
+RCT_EXPORT_METHOD(storyCancelCompose:(NSString *)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if(![self isBlankObject:self.publishManager]){
+        [self.publishManager cancelExport];
+    }
+}
+
 /**
  * story 视频导出接口
  */
@@ -160,6 +173,15 @@ RCT_EXPORT_METHOD(storyComposeVideo:(NSString *)taskPath
 //    }
 }
 
+
+RCT_EXPORT_METHOD(postCancelCrop:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if(![self isBlankObject:self.cutPanel]){
+        [self.cutPanel cancel];
+    }
+}
 
 RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
                   resolve:(RCTPromiseResolveBlock)resolve

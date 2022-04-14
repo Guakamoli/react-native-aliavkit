@@ -16,7 +16,15 @@ export default class AVService {
     const jsonPath = await RNEditorKitModule.getVideoEditorJsonPath();
     return jsonPath;
   }
-  
+
+
+  /**
+   * 
+   * @returns story 取消导出
+   */
+  static async storyCancelCompose() {
+    RNEditorKitModule.storyCancelCompose();
+  }
 
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
     const listener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
@@ -28,6 +36,15 @@ export default class AVService {
     const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);
     listener.remove();
     return JSON.parse(videoParam);
+  }
+
+
+  /**
+   * 
+   * @returns post 取消裁剪
+   */
+  static async postCancelCrop() {
+    RNEditorKitModule.postCancelCrop();
   }
 
   //Post 视频上传压缩裁剪
@@ -60,7 +77,7 @@ export default class AVService {
     return JSON.parse(colorFilterList);
   }
 
-  static async getFacePasterInfos({}) {
+  static async getFacePasterInfos({ }) {
     var pasterInfos = await RNCameraKitModule.getPasterInfos();
     return JSON.parse(pasterInfos);
   }
