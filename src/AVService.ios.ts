@@ -4,10 +4,6 @@ const { AliAVServiceBridge, RNMusicService, RNEditViewManager } = NativeModules;
 
 const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
 
-var postCropListener: any = null;
-
-var storyComposeListener: any = null;
-
 type MusicRequestType = {
   name: string;
   songID: string;
@@ -30,23 +26,18 @@ export default class AVService {
   static async storyCancelCompose() {
     console.info("storyCancelCompose");
     AliAVServiceBridge.storyCancelCompose({});
-    if (storyComposeListener) {
-      managerEmitter?.removeSubscription(storyComposeListener);
-    }
+    managerEmitter?.removeAllListeners('storyComposeVideo');
   }
 
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
-    storyComposeListener = managerEmitter.addListener('storyComposeVideo', (reminder) => {
+    const storyComposeListener = managerEmitter.addListener('storyComposeVideo', (reminder) => {
       //0~1
       if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
     const videoPath = await AliAVServiceBridge.storyComposeVideo(jsonPath);
-    if (storyComposeListener) {
-      managerEmitter?.removeSubscription(storyComposeListener);
-    }
-    storyComposeListener = null;
+    managerEmitter?.removeAllListeners('storyComposeVideo');
     return videoPath;
   }
 
@@ -55,10 +46,9 @@ export default class AVService {
    * @returns post 取消裁剪
    */
   static async postCancelCrop() {
+    console.info("postCancelCrop");
     AliAVServiceBridge.postCancelCrop({});
-    if (postCropListener) {
-      managerEmitter?.removeSubscription(postCropListener);
-    }
+    managerEmitter?.removeAllListeners("postVideoCrop");
   }
 
   //Post 视频上传压缩裁剪
@@ -67,17 +57,14 @@ export default class AVService {
     if (!!videoPath && videoPath.startsWith("file://")) {
       videoPath = videoPath.slice(7)
     }
-    postCropListener = managerEmitter?.addListener('postVideoCrop', (reminder) => {
+    const postCropListener = managerEmitter?.addListener('postVideoCrop', (reminder) => {
       //
       if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
     let cropParam = await AliAVServiceBridge.postCropVideo(videoPath);
-    if (postCropListener) {
-      managerEmitter?.removeSubscription(postCropListener);
-    }
-    postCropListener = null;
+    managerEmitter?.removeAllListeners("postVideoCrop");
     return cropParam;
   }
 

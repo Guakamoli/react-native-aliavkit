@@ -9,6 +9,7 @@ type MusicRequestType = {
   pageSize: number;
 };
 
+let postCaopListener: any = null;
 export default class AVService {
 
 
@@ -24,17 +25,18 @@ export default class AVService {
    */
   static async storyCancelCompose() {
     RNEditorKitModule.storyCancelCompose();
+    DeviceEventEmitter.removeAllListeners("storyComposeVideo");
   }
 
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
-    const listener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
+    const storyComposeListener = DeviceEventEmitter.addListener('storyComposeVideo', (reminder) => {
       //0~1
       if (progressListener) {
-        progressListener(progress);
+        progressListener(reminder.progress);
       }
     });
     const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);
-    listener.remove();
+    DeviceEventEmitter.removeAllListeners("storyComposeVideo");
     return JSON.parse(videoParam);
   }
 
@@ -45,18 +47,21 @@ export default class AVService {
    */
   static async postCancelCrop() {
     RNEditorKitModule.postCancelCrop();
+    DeviceEventEmitter.removeAllListeners("postVideoCrop");
   }
 
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
-    const carpListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
+    postCaopListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
       //0~1
       if (progressListener) {
         progressListener(progress);
       }
     });
     const cropParam = await RNEditorKitModule.postCropVideo(videoPath);
-    carpListener.remove();
+
+    DeviceEventEmitter.removeAllListeners("postVideoCrop");
+
     return JSON.parse(cropParam);
   }
 

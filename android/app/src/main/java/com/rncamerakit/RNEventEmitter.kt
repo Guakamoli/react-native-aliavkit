@@ -78,7 +78,11 @@ class RNEventEmitter {
         fun startVideoCompose(reactContext: ReactContext?, progress: Int, outputPath: String, isStoryCompose: Boolean): HashMap<String, Any> {
             val videoParamMap: HashMap<String, Any> = HashMap<String, Any>()
             val obj = Arguments.createMap()
-            obj.putDouble("exportProgress", progress.toDouble()/100)
+            if(isStoryCompose){
+                obj.putDouble("progress", progress.toDouble()/100)
+            }else{
+                obj.putDouble("exportProgress", progress.toDouble()/100)
+            }
             if (progress == 100) {
                 obj.putString("outputPath", outputPath)
                 val response: WritableMap = WritableNativeMap()
