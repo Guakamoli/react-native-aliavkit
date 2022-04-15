@@ -1496,12 +1496,20 @@ export default class CameraScreen extends Component<Props, State> {
             trimVideoData = trimVideoData.slice(7)
           }
         }
-        // trimVideoData = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-        //   console.info("postCropVideo progress", progress);
-        // });
 
-        // console.info("trimVideoData save", trimVideoData);
+        // // TODO 测试代码
+        // AVService.postCancelCrop();
+        // // cropParam: {"isCrop": number, "path": String}   isCroped:是否裁剪，isCroped = 0 时不需要删除 path
+        // const cropParam = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+        //   console.info("postCropVideo progress", progress);
+        //   if (progress === 0.5) {
+        //     AVService.postCancelCrop();
+        //   }
+        // });
+        // trimVideoData = cropParam.path
+        // console.info("trimVideoData save", cropParam);
         // CameraRoll.save(trimVideoData, { type: 'video' })
+        // // TODO 测试代码
 
         resultData.push(trimVideoData);
 

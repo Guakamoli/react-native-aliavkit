@@ -159,7 +159,10 @@ class CropManager {
                     } else {
                         //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
                         if (bitRate < mBitrate*1000) {
-                            promise.resolve(videoPath)
+                            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+                            cropMap["path"] = videoPath
+                            cropMap["isCroped"] = 0
+                            promise.resolve(GsonBuilder().create().toJson(cropMap))
                             return null
                         }
                         mVideoWidth = frameWidth
@@ -210,7 +213,11 @@ class CropManager {
                 override fun onComplete(duration: Long) {
                     RNEventEmitter.postVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
-                    promise.resolve(videoParam.outputPath)
+
+                    val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+                    cropMap["path"] = videoParam.outputPath
+                    cropMap["isCroped"] = 1
+                    promise.resolve(GsonBuilder().create().toJson(cropMap))
                 }
 
                 override fun onCancelComplete() {

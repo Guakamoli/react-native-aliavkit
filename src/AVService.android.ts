@@ -51,15 +51,13 @@ export default class AVService {
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
     const carpListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
       //0~1
-      //
       if (progressListener) {
         progressListener(progress);
       }
     });
-    const cropVideoPath = await RNEditorKitModule.postCropVideo(videoPath);
+    const cropParam = await RNEditorKitModule.postCropVideo(videoPath);
     carpListener.remove();
-    //
-    return cropVideoPath;
+    return JSON.parse(cropParam);
   }
 
 

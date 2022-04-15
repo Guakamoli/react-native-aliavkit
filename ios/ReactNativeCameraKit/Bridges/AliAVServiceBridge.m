@@ -139,7 +139,7 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
 /**
  *  取消视频导出
  */
-RCT_EXPORT_METHOD(storyCancelCompose:(NSString *)options
+RCT_EXPORT_METHOD(storyCancelCompose:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -243,7 +243,9 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         } else {
             //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
             if (bitRate < mBitrate) {
-                resolve(videoPath);
+                //TODO
+                id cropParam = @{@"path":videoPath, @"isCroped":@(FALSE)};
+                resolve(cropParam);
                 return;
             }
             mVideoWidth = frameWidth;
@@ -800,7 +802,8 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
     }
     
     if(_videoCropType == 2 && _videoCropResolve != nil && _videoCropOutputPath){
-        _videoCropResolve(_videoCropOutputPath);
+        id cropParam = @{@"path":_videoCropOutputPath, @"isCroped":@(TRUE)};
+        _videoCropResolve(cropParam);
     }
     
     _videoCropOutputPath = nil;
