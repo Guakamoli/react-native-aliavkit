@@ -2,6 +2,12 @@ import React from 'react';
 import { NativeModules, NativeEventEmitter, } from 'react-native';
 const { AliAVServiceBridge, RNMusicService, RNEditViewManager } = NativeModules;
 
+const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+
+var postCropListener: any = null;
+
+var storyComposeListener: any = null;
+
 type MusicRequestType = {
   name: string;
   songID: string;
@@ -10,6 +16,7 @@ type MusicRequestType = {
 };
 
 export default class AVService {
+
 
   static async getVideoEditorJsonPath() {
     const jsonPath = await RNEditViewManager.getTaskPath({});
@@ -21,21 +28,25 @@ export default class AVService {
    * @returns story 取消导出
    */
   static async storyCancelCompose() {
+    console.info("storyCancelCompose");
     AliAVServiceBridge.storyCancelCompose({});
+    if (storyComposeListener) {
+      managerEmitter?.removeSubscription(storyComposeListener);
+    }
   }
 
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
-
-    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
-
-    const listener = managerEmitter.addListener('storyComposeVideo', (reminder) => {
+    storyComposeListener = managerEmitter.addListener('storyComposeVideo', (reminder) => {
       //0~1
       if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
     const videoPath = await AliAVServiceBridge.storyComposeVideo(jsonPath);
-    managerEmitter.removeSubscription(listener);
+    if (storyComposeListener) {
+      managerEmitter?.removeSubscription(storyComposeListener);
+    }
+    storyComposeListener = null;
     return videoPath;
   }
 
@@ -45,26 +56,29 @@ export default class AVService {
    */
   static async postCancelCrop() {
     AliAVServiceBridge.postCancelCrop({});
+    if (postCropListener) {
+      managerEmitter?.removeSubscription(postCropListener);
+    }
   }
 
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
-
     //裁剪 file://
     if (!!videoPath && videoPath.startsWith("file://")) {
       videoPath = videoPath.slice(7)
     }
-
-    const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
-    const carpListener = managerEmitter.addListener('postVideoCrop', (reminder) => {
+    postCropListener = managerEmitter?.addListener('postVideoCrop', (reminder) => {
       //
       if (progressListener) {
         progressListener(reminder?.progress);
       }
     });
-    let cropVideoPath = await AliAVServiceBridge.postCropVideo(videoPath);
-    managerEmitter.removeSubscription(carpListener);
-    return cropVideoPath;
+    let cropParam = await AliAVServiceBridge.postCropVideo(videoPath);
+    if (postCropListener) {
+      managerEmitter?.removeSubscription(postCropListener);
+    }
+    postCropListener = null;
+    return cropParam;
   }
 
   /**

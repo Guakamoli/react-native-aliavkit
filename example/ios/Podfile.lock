@@ -331,7 +331,7 @@ PODS:
     - React-cxxreact (= 0.64.2)
     - React-jsi (= 0.64.2)
     - React-perflogger (= 0.64.2)
-  - ReactNativeAliAVKit (1.3.27):
+  - ReactNativeAliAVKit (1.3.36):
     - AFNetworking
     - AlivcConan (= 1.0.5)
     - AliyunVideoSDKPro (= 3.30.0)
@@ -616,7 +616,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 24600e3b1aaa77126989bc58b6747509a1ba14f3
   React-runtimeexecutor: a9904c6d0218fb9f8b19d6dd88607225927668f9
   ReactCommon: 149906e01aa51142707a10665185db879898e966
-  ReactNativeAliAVKit: 0a20ced0d89fd7f96b92f32eddf783eef75db419
+  ReactNativeAliAVKit: ba7147ad5050aadfe06a894736111d589f5acf01
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: c298b644a10c0c142055b3ae24d83879ecb13ccd
   RNFastImage: f40d202ea2367239f71bc7cf11315f4bebab85b4
