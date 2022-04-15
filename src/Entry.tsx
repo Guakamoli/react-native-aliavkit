@@ -77,18 +77,22 @@ const Entry = (props) => {
       if (type === 'post') {
         props?.setAudioMode?.();
       }
+      changeType({type}, false)
     }
   }, [props.isDrawerOpen, type]);
 
   const { run: changeType } = useThrottleFn(
-    (i) => {
+    (i, setFlag = true) => {
       changeFlagLock.current = true;
       Animated.timing(transX, {
         duration: 200,
         toValue: i.type === 'post' ? 30 : -30,
         useNativeDriver: true,
       }).start();
-      dispatch(setType(i.type));
+      if (setFlag) {
+        dispatch(setType(i.type));
+
+      }
       setTimeout(() => {
         changeFlagLock.current = false;
       }, 0);
