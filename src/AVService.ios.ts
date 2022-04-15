@@ -32,6 +32,7 @@ export default class AVService {
     AliAVServiceBridge.storyCancelCompose({});
     if (storyComposeListener) {
       managerEmitter?.removeSubscription(storyComposeListener);
+      storyComposeListener = null;
     }
   }
 
@@ -45,8 +46,8 @@ export default class AVService {
     const videoPath = await AliAVServiceBridge.storyComposeVideo(jsonPath);
     if (storyComposeListener) {
       managerEmitter?.removeSubscription(storyComposeListener);
+      storyComposeListener = null;
     }
-    storyComposeListener = null;
     return videoPath;
   }
 
@@ -58,6 +59,7 @@ export default class AVService {
     AliAVServiceBridge.postCancelCrop({});
     if (postCropListener) {
       managerEmitter?.removeSubscription(postCropListener);
+      postCropListener = null
     }
   }
 
@@ -76,8 +78,8 @@ export default class AVService {
     let cropParam = await AliAVServiceBridge.postCropVideo(videoPath);
     if (postCropListener) {
       managerEmitter?.removeSubscription(postCropListener);
+      postCropListener = null;
     }
-    postCropListener = null;
     return cropParam;
   }
 
