@@ -112,7 +112,12 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
     [self sendEventWithName:@"storyComposeVideo" body:@{@"progress":@(1.0)}];
     
     __block NSString *path = outputPath;
+
     if(_videoComposeResolve != nil){
+//        //TODO
+//        AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:path];
+//        NSInteger bitRate = nativeParser.getVideoBitrate;
+        
         AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
         CGSize size = [asset avAssetNaturalSize];
         CGFloat frameWidth = size.width;
@@ -211,14 +216,15 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
     _videoCropResolve = resolve;
     _videoCropReject = reject;
     
-    NSInteger mVideoWidth = 720;
-    NSInteger mVideoHeight = 1280;
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
     CGFloat mDuration = 0;
     NSInteger mFPS = 60;
+    NSInteger mBitrate = 10*1000*1000;
     
     CGRect mCropRect = CGRectMake(0, 0, mVideoWidth, mVideoHeight);
             
-    NSInteger mBitrate = 4*1000*1000;
+
          
     @try {
         AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
@@ -814,6 +820,15 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
             [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
         }
     }
+    
+    //TODO
+//    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:_videoCropOutputPath]];
+//    CGSize size = [asset avAssetNaturalSize];
+//    CGFloat frameWidth = size.width;
+//    CGFloat frameHeight = size.height;
+//
+//    AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:_videoCropOutputPath];
+//    NSInteger bitRate = nativeParser.getVideoBitrate;
     
     if(_videoCropType == 2 && _videoCropResolve != nil && _videoCropOutputPath){
         id cropParam = @{@"path":_videoCropOutputPath, @"isCroped":@(TRUE)};

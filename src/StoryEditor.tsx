@@ -128,6 +128,8 @@ export default class StoryEditor extends Component<Props, State> {
     // //   this.props.goback();
     // // }, 1000);
 
+    AVService.stopEdit();
+
     this.pauseMusic(this.musicOn);
 
     const jsonPath = await AVService.getVideoEditorJsonPath();

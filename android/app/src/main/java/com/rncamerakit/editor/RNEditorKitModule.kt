@@ -226,6 +226,16 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     }
 
     @ReactMethod
+    fun stopEdit(promise: Promise) {
+        val isStop = mView?.stopEdit()
+        if(isStop == true){
+            promise.resolve(isStop)
+        }else{
+            promise.resolve(false)
+        }
+    }
+
+    @ReactMethod
     fun storyComposeVideo(jsonPath: String, promise: Promise) {
         mStoryComposePromise = promise
         mComposeManager = ComposeManager(reactContext)

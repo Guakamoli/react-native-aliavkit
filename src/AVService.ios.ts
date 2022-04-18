@@ -14,6 +14,12 @@ type MusicRequestType = {
 export default class AVService {
 
 
+
+  static async stopEdit() {
+    const isStop = await RNEditViewManager.stopEdit({});
+    return isStop;
+  }
+
   static async getVideoEditorJsonPath() {
     const jsonPath = await RNEditViewManager.getTaskPath({});
     return jsonPath;

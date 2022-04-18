@@ -4,14 +4,16 @@ class VideoConst {
 
     companion object {
         //视频录制编辑
-        var mVideoBitrate = 4*1000
-        var mVideoWidth = 720
-        var mVideoHeight = 1280
+        var mVideoFps = 30
+        var mVideoBitrate = 10*1000
+        var mVideoWidth = 1080
+        var mVideoHeight = 1920
 
         //视频裁剪
-        var mCropBitrate = 4*1000
-        var mCropVideoWidth = 720
-        var mCropVideoHeight = 1280
+        var mCropBitrate = 10*1000
+        var mCropFps = 30
+        var mCropVideoWidth = 1080
+        var mCropVideoHeight = 1920
     }
 
 }

@@ -25,43 +25,50 @@ class ImportManager(val reactContext: ThemedReactContext) {
         mAliyunIImport = AliyunImportCreator.getImportInstance(mContext)
     }
 
-    private fun getVideoParam(isVideo: Boolean, rotation: Int, bitRate: Float): AliyunVideoParam {
+    private fun getVideoParam(isVideo: Boolean, filePath: String?): AliyunVideoParam {
+
+        var videoWidth: Int = VideoConst.mVideoWidth
+        var videoHeight: Int = VideoConst.mVideoHeight
+        var videoBitrate: Int = VideoConst.mVideoBitrate
+        val videoFPS: Int = VideoConst.mVideoFps
+
         if (isVideo) {
-            var videoWidth: Int = VideoConst.mVideoWidth
-            var videoHeight: Int = VideoConst.mVideoHeight
-            var bitRate = bitRate.toInt()
-            if(bitRate>VideoConst.mVideoBitrate){
-                bitRate = VideoConst.mVideoBitrate
+            val nativeParser = NativeParser()
+            nativeParser.init(filePath)
+            val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toLong()
+            val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
+            val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
+            if (frameWidth < videoWidth) {
+                videoWidth = frameWidth
             }
-//            if (rotation == 90 || rotation == 270) {
-//                videoWidth = VideoConst.mVideoHeight
-//                videoHeight = VideoConst.mVideoWidth
-//            } else {
-//                videoWidth = VideoConst.mVideoWidth
-//                videoHeight = VideoConst.mVideoHeight
-//            }
+            if (frameHeight < videoHeight) {
+                videoHeight = frameHeight
+            }
+            if (bitRate < videoBitrate*1000) {
+                videoBitrate = (bitRate/1000).toInt()
+            }
             return AliyunVideoParam.Builder()
-                .bitrate(bitRate)
-                .frameRate(30)
+                .bitrate(videoBitrate)
+                .frameRate(videoFPS)
                 .gop(30)
                 .crf(23)
                 .scaleRate(1.0f)
                 .outputWidth(videoWidth)
                 .outputHeight(videoHeight)
-                .videoQuality(VideoQuality.SSD)
+//                .videoQuality(VideoQuality.SSD)
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
         } else {
             return AliyunVideoParam.Builder()
-                .bitrate(VideoConst.mVideoBitrate)
-                .frameRate(30)
+                .bitrate(videoBitrate)
+                .frameRate(videoFPS)
                 .gop(30)
                 .crf(23)
                 .scaleRate(1.0f)
-                .outputWidth(VideoConst.mVideoWidth)
-                .outputHeight(VideoConst.mVideoHeight)
-                .videoQuality(VideoQuality.SSD)
+                .outputWidth(videoWidth)
+                .outputHeight(videoHeight)
+//                .videoQuality(VideoQuality.SSD)
                 .scaleMode(VideoDisplayMode.FILL)
                 .videoCodec(VideoCodecs.H264_HARDWARE)
                 .build()
@@ -76,13 +83,13 @@ class ImportManager(val reactContext: ThemedReactContext) {
         val aliyunCrop = AliyunCropCreator.createCropInstance(mContext)
         val duration = aliyunCrop.getVideoDuration(filePath)
 
-        val nativeParser = NativeParser()
-        nativeParser.init(filePath)
-        val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
-        val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
+//        val nativeParser = NativeParser()
+//        nativeParser.init(filePath)
+//        val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+//        val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
 
-        Log.e("AAA", "duration：$duration")
-        mAliyunIImport?.setVideoParam(getVideoParam(true, rotation, bitRate))
+//        Log.e("AAA", "duration：$duration")
+        mAliyunIImport?.setVideoParam(getVideoParam(true, filePath))
         mAliyunIImport?.addMediaClip(
             AliyunVideoClip.Builder()
                 .source(filePath)
@@ -100,7 +107,7 @@ class ImportManager(val reactContext: ThemedReactContext) {
      * 导入图片
      */
     fun importImage(filePath: String?): String? {
-        mAliyunIImport?.setVideoParam(getVideoParam(false, 0, 0F))
+        mAliyunIImport?.setVideoParam(getVideoParam(false, filePath))
         mAliyunIImport?.addMediaClip(
             AliyunImageClip.Builder()
                 .source(filePath)
