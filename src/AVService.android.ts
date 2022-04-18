@@ -9,7 +9,6 @@ type MusicRequestType = {
   pageSize: number;
 };
 
-let postCaopListener: any = null;
 export default class AVService {
 
 
@@ -52,16 +51,14 @@ export default class AVService {
 
   //Post 视频上传压缩裁剪
   static async postCropVideo(videoPath: String, progressListener: (progress: number) => void) {
-    postCaopListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
+    const postCaopListener = DeviceEventEmitter.addListener('postVideoCrop', (progress) => {
       //0~1
       if (progressListener) {
         progressListener(progress);
       }
     });
     const cropParam = await RNEditorKitModule.postCropVideo(videoPath);
-
     DeviceEventEmitter.removeAllListeners("postVideoCrop");
-
     return JSON.parse(cropParam);
   }
 
@@ -200,9 +197,7 @@ export default class AVService {
   }
 
   static async downloadFontTest() {
-    // //TODO
     const fontList = await AVService.getFontList();
-
     for (let i = 0; i < fontList.length; i++) {
       const fontInfo = await AVService.downloadFont(fontList[i]);
     }
