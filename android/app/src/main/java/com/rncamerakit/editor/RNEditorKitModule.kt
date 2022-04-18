@@ -21,6 +21,7 @@ import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import java.net.FileNameMap
 import java.net.URLConnection
@@ -37,6 +38,10 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
         var mPostAliyunICrop: AliyunICrop? = null
 
         var mComposeManager: ComposeManager? = null
+
+        var mPostCropPromise: Promise? = null
+        var mStoryComposePromise: Promise? = null
+
     }
 
     override fun getName(): String {
@@ -194,13 +199,22 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
 
     @ReactMethod
     fun postCancelCrop(promise: Promise) {
+        reactContext.runOnUiQueueThread {
+            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+            cropMap["path"] = ""
+            cropMap["isCroped"] = 0
+            val jsonString =  GsonBuilder().create().toJson(cropMap)
+            mPostCropPromise?.resolve(jsonString)
+        }
         mPostAliyunICrop?.cancel()
         mPostAliyunICrop?.dispose()
         mPostAliyunICrop = null
+        promise.resolve(true)
     }
 
     @ReactMethod
     fun postCropVideo(videoPath: String, promise: Promise) {
+        mPostCropPromise = promise
         val context = reactContext
         mPostAliyunICrop = CropManager.cropPostVideo(context, videoPath, promise)
     }
@@ -213,13 +227,20 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
 
     @ReactMethod
     fun storyComposeVideo(jsonPath: String, promise: Promise) {
+        mStoryComposePromise = promise
         mComposeManager = ComposeManager(reactContext)
         mComposeManager?.startCompose(jsonPath, promise, isVideo = true, isSaveToPhotoLibrary = false, isStoryCompose = true)
     }
 
     @ReactMethod
-    fun storyCancelCompose( promise: Promise) {
+    fun storyCancelCompose(promise: Promise) {
+        reactContext.runOnUiQueueThread {
+            val composeParamMap: HashMap<String, Any> = HashMap<String, Any>()
+            mStoryComposePromise?.resolve(GsonBuilder().create().toJson(composeParamMap))
+            mStoryComposePromise = null
+        }
         mComposeManager?.onRelease()
+        promise.resolve(true)
     }
 
     /**

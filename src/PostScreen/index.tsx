@@ -1497,19 +1497,22 @@ export default class CameraScreen extends Component<Props, State> {
           }
         }
 
-        // // TODO 测试代码
+        // TODO 测试代码
         // AVService.postCancelCrop();
-        // // cropParam: {"isCrop": number, "path": String}   isCroped:是否裁剪，isCroped = 0 时不需要删除 path
-        // const cropParam = await AVService.postCropVideo(trimVideoData, (progress: number) => {
-        //   console.info("postCropVideo progress", progress);
-        //   if (progress > 0.5) {
-        //     AVService.postCancelCrop();
-        //   }
-        // });
-        // trimVideoData = cropParam.path
-        // console.info("trimVideoData save", cropParam);
-        // CameraRoll.save(trimVideoData, { type: 'video' })
-        // // TODO 测试代码
+        // cropParam: {"isCrop": number, "path": String}   isCroped:是否裁剪，isCroped = 0 时不需要删除 path
+        const cropParam = await AVService.postCropVideo(trimVideoData, (progress: number) => {
+          console.info("postCropVideo progress", progress);
+          if (progress > 0.5) {
+            AVService.postCancelCrop();
+          }
+        });
+        this.setState({
+          isShowLoading: false,
+        })
+        console.info("trimVideoData save", cropParam);
+        trimVideoData = cropParam.path
+        CameraRoll.save(trimVideoData, { type: 'video' })
+        // TODO 测试代码
 
         resultData.push(trimVideoData);
 

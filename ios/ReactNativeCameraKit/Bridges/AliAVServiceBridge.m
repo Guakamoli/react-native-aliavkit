@@ -146,6 +146,11 @@ RCT_EXPORT_METHOD(storyCancelCompose:(NSDictionary *)options
     if(![self isBlankObject:self.publishManager]){
         [self.publishManager cancelExport];
     }
+    if(_videoComposeResolve != nil){
+        id composeParam = @{};
+        _videoComposeResolve(composeParam);
+    }
+    resolve(@(TRUE));
 }
 
 /**
@@ -181,6 +186,12 @@ RCT_EXPORT_METHOD(postCancelCrop:(NSDictionary*)options
     if(![self isBlankObject:self.cutPanel]){
         [self.cutPanel cancel];
     }
+    if(_videoCropResolve != nil){
+        id cropParam = @{@"path":@"", @"isCroped":@(FALSE)};
+        _videoCropResolve(cropParam);
+        _videoCropResolve = nil;
+    }
+    resolve(@(TRUE));
 }
 
 RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
@@ -196,6 +207,9 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
 //        reject(@"",@"no ph:// scheme",nil);
 //        return;
 //    }
+    
+    _videoCropResolve = resolve;
+    _videoCropReject = reject;
     
     NSInteger mVideoWidth = 720;
     NSInteger mVideoHeight = 1280;
@@ -812,6 +826,9 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
     _videoCropType = 0;
 }
 
+/**
+ * 主端取消或者退出到后台
+ */
 - (void)cropTaskOnCancel
 {
     AVDLog(@"--- %s",__PRETTY_FUNCTION__);
@@ -819,7 +836,7 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
         [self.cutPanel cancel];
     }
     _videoCropOutputPath = nil;
-    _videoCropResolve = nil;
+//    _videoCropResolve = nil;
     _videoCropReject = nil;
     _videoCropType = 0;
 }
