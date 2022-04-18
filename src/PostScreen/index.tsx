@@ -1000,6 +1000,7 @@ class PostFileUpload extends Component {
     this.isFirstLoad = true;
     this.state = {
       CameraRollList: [],
+      isPhotoLimited: false,
     };
   }
   formatSeconds = (s) => {
@@ -1161,11 +1162,13 @@ class PostFileUpload extends Component {
     } else if (Platform.OS === 'ios') {
       const statuses = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
       if (statuses === RESULTS.GRANTED) {
+        this.setState({ isPhotoLimited: false });
         return true;
       } else if (statuses === RESULTS.BLOCKED) {
         if (isToSetting) {
           this.showToSettingAlert();
         }
+        this.setState({ isPhotoLimited: false });
       } else if (statuses === RESULTS.LIMITED) {
         // if (isCheckLimited) {
         //   await new Promise((resolved) => {
@@ -1174,6 +1177,7 @@ class PostFileUpload extends Component {
         //     }, 500);
         //   })
         // }
+        this.setState({ isPhotoLimited: true });
         return isCheckLimited;
       }
     }
@@ -1198,12 +1202,15 @@ class PostFileUpload extends Component {
     } else if (Platform.OS === 'ios') {
       const statuses = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
       if (statuses === RESULTS.GRANTED) {
+        this.setState({ isPhotoLimited: false });
         return true;
       } else if (statuses === RESULTS.BLOCKED) {
+        this.setState({ isPhotoLimited: false });
         if (isToSetting) {
           this.showToSettingAlert();
         }
       } else if (statuses === RESULTS.LIMITED) {
+        this.setState({ isPhotoLimited: true });
         return true;
       }
     }
@@ -1236,16 +1243,15 @@ class PostFileUpload extends Component {
     if (nextState.CameraRollList !== this.state.CameraRollList) {
       return true;
     }
+    if (nextState.isPhotoLimited !== this.state.isPhotoLimited) {
+      return true;
+    }
 
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       if (nextProps.isDrawerOpen) {
         this.props.setVideoPlayer(true);
-        // if (this.state.CameraRollList?.length > 0) {
-        //   this.props.setMultipleData([this.state.CameraRollList[0]]);
-        // }
       } else {
         this.props.setVideoPlayer(false);
-        //TODOWUYT
         try {
           if (this.props?.selectMultiple && multipleData?.length) {
             // console.info("拍摄器多选关闭",  multipleData.length);
@@ -1344,6 +1350,23 @@ class PostFileUpload extends Component {
             Platform.OS === 'android' ? { paddingBottom: 10 } : { paddingBottom: 35 },
           ]}
         >
+
+          {/* isPhotoLimited */}
+
+          {this.state.isPhotoLimited && <View style={{
+            width: width, height: 54, backgroundColor: '#121212',
+            justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'
+          }}>
+            <Text style={{ fontSize: 14, color: '#A8A8A8', marginStart: 11 }}>你已允许拍鸭访问特定数量的照片和视频。</Text>
+            <Pressable onPress={() => {
+              openSettings();
+            }}>
+              <Text style={{ fontSize: 14, color: '#FFFFFF', height: 54, lineHeight: 54, paddingStart: 10, paddingEnd: 12 }}>去设置</Text>
+            </Pressable>
+
+          </View>}
+
+
           <FlatGrid
             // android上  spacing={0} 时，页面隐藏会闪退
             itemDimension={Platform.OS === 'android' ? photosItem - 4 : photosItem}
@@ -1429,7 +1452,7 @@ export default class CameraScreen extends Component<Props, State> {
     }
 
     const imageItem = multipleData[multipleData.length - 1].image;
-    // TODO  安卓type 待文件类型
+    //  安卓type 待文件类型
     let type = multipleData[multipleData.length - 1]?.type;
 
     if (type === 'video' && Math.ceil(imageItem.playableDuration) > 300) {
@@ -1497,7 +1520,7 @@ export default class CameraScreen extends Component<Props, State> {
           }
         }
 
-        // // TODO 测试代码
+        // // 测试代码
         // AVService.postCancelCrop();
         // // cropParam: {"isCrop": number, "path": String}   isCroped:是否裁剪，isCroped = 0 时不需要删除 path
         // const cropParam = await AVService.postCropVideo(trimVideoData, (progress: number) => {
@@ -1509,7 +1532,7 @@ export default class CameraScreen extends Component<Props, State> {
         // trimVideoData = cropParam.path
         // console.info("trimVideoData save", cropParam);
         // CameraRoll.save(trimVideoData, { type: 'video' })
-        // // TODO 测试代码
+        // // 测试代码
 
         resultData.push(trimVideoData);
 
@@ -1559,7 +1582,7 @@ export default class CameraScreen extends Component<Props, State> {
               }
             }
 
-            //TODO 新增图片选中数据接口，包含裁剪参数、下标、uri 等等
+            // 新增图片选中数据接口，包含裁剪参数、下标、uri 等等
             editImageData[index] = {
               index: index,
               type: item.type,
@@ -1608,7 +1631,7 @@ export default class CameraScreen extends Component<Props, State> {
 
       this.setVideoPlayer(false);
 
-      //TODO
+      //
       //选择图片视频直接上传，不进入编辑页面
       if (type === 'video') {
         //
@@ -1619,7 +1642,6 @@ export default class CameraScreen extends Component<Props, State> {
       }
       this.mClickLock = false;
       return;
-      //TODO
 
       // this.setState({ videoPaused: true });
       if (resultData.length > 0) {

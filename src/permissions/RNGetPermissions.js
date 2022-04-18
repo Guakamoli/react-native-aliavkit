@@ -9,26 +9,33 @@ export default class RNGetPermissions {
      * 检测是否有存储权限（Android）/ 相册权限（iOS）
      */
     static checkStoragePermissions = async (isToSetting = false, isCheckLimited = true) => {
+        let isGranted = false;
+        let permissionStatus = RESULTS.BLOCKED;
         if (Platform.OS === 'android') {
             const statuses = await checkMultiple([PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
             if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === RESULTS.GRANTED && statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === RESULTS.GRANTED) {
-                return true;
+                isGranted = true
+                permissionStatus = RESULTS.GRANTED;
             } else if (statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === RESULTS.BLOCKED || statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE] === RESULTS.BLOCKED) {
                 //拒绝且不再询问
                 if (isToSetting) {
                     this.showToSettingAlert();
                 }
+                permissionStatus = RESULTS.BLOCKED;
             }
         } else if (Platform.OS === 'ios') {
             const statuses = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
             if (statuses === RESULTS.GRANTED) {
-                return true;
+                isGranted = true
+                permissionStatus = RESULTS.GRANTED;
             } else if (statuses === RESULTS.BLOCKED) {
+                permissionStatus = RESULTS.BLOCKED;
                 if (isToSetting) {
                     this.showToSettingAlert();
                 }
             } else if (statuses === RESULTS.LIMITED) {
                 //受限，iOS 只可以访问指定选中的照片
+                permissionStatus = RESULTS.LIMITED;
                 if (isCheckLimited) {
                     await new Promise((resolved) => {
                         setTimeout(() => {
@@ -36,10 +43,12 @@ export default class RNGetPermissions {
                         }, 300);
                     })
                 }
-                return isCheckLimited;
+                if (isCheckLimited) {
+                    isGranted = true
+                }
             }
         }
-        return false;
+        return { isGranted: isGranted, permissionStatus: permissionStatus };
     }
 
     /**

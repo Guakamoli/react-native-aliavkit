@@ -14,6 +14,8 @@ import { State, NativeViewGestureHandler } from 'react-native-gesture-handler';
 
 import I18n from '../i18n';
 
+import { openSettings } from 'react-native-permissions';
+
 const { width, height } = Dimensions.get('window');
 
 const photoItemWidth = (width - 2) / 3.0;
@@ -147,6 +149,7 @@ class StoryPhoto extends React.Component {
             photoList: [],
             multipleSelectList: [],
             bottomSheetRefreshing: false,
+            isPhotoLimited: false,
         };
         this.bottomSheetRef;
         this.bottomSheetInnerRef;
@@ -174,6 +177,9 @@ class StoryPhoto extends React.Component {
             }
             return true;
         }
+        if (this.state.isPhotoLimited !== nextState.isPhotoLimited) {
+            return true;
+        }
         if (this.state.photoList !== nextState.photoList) {
             return true;
         }
@@ -198,7 +204,16 @@ class StoryPhoto extends React.Component {
 
 
     getPhotos = async () => {
-        if (!(await RNGetPermissions.checkStoragePermissions())) {
+        const storagePermission = await RNGetPermissions.checkStoragePermissions();
+
+        console.info("storagePermission", storagePermission);
+
+        if (storagePermission?.permissionStatus === 'limited') {
+            this.setState({ isPhotoLimited: true });
+        } else {
+            this.setState({ isPhotoLimited: false });
+        }
+        if (!storagePermission?.isGranted) {
             if (await RNGetPermissions.getStoragePermissions(true)) {
                 this.getPhotos();
             }
@@ -252,7 +267,7 @@ class StoryPhoto extends React.Component {
 
     PhotoHandleView = () => {
         return (
-            <View style={styles.bottomSheetHead}>
+            <View style={[styles.bottomSheetHead, { height: this.state.isPhotoLimited ? 120 : 55 }]}>
                 {Platform.OS === 'android' ?
                     <NativeViewGestureHandler
                         disallowInterruption={true}
@@ -277,6 +292,19 @@ class StoryPhoto extends React.Component {
                         <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
                     </TouchableOpacity>
                 }
+
+                {this.state.isPhotoLimited && <View style={{
+                    width: width, height: 54, backgroundColor: '#121212', marginTop: 10,
+                    justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'
+                }}>
+                    <Text style={{ fontSize: 14, color: '#A8A8A8', marginStart: 11 }}>你已允许拍鸭访问特定数量的照片和视频。</Text>
+                    <Pressable onPress={() => {
+                        openSettings();
+                    }}>
+                        <Text style={{ fontSize: 14, color: '#FFFFFF', height: 54, lineHeight: 54, paddingStart: 10, paddingEnd: 12 }}>去设置</Text>
+                    </Pressable>
+
+                </View>}
             </View>)
     }
 
@@ -365,7 +393,7 @@ const styles = StyleSheet.create({
     },
     bottomSheetHead: {
         width: "100%",
-        height: 55,
+        height: 120,
         backgroundColor: 'black',
         alignItems: 'flex-end',
         justifyContent: 'center',
