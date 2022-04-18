@@ -136,9 +136,6 @@ export default class StoryEditor extends Component<Props, State> {
     //story 去做导出
     let videoParams = await AVService.storyComposeVideo(jsonPath, (progress: number) => {
       console.info("storyComposeVideo progress", progress);
-      if (progress > 0.5) {
-        AVService.storyCancelCompose();
-      }
     });
     console.info("storyComposeVideo videoParams", videoParams);
     //需求：story 发布时要同时保存到相册

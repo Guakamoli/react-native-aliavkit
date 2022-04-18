@@ -58,9 +58,7 @@ export default class AVService {
       }
     });
     const cropParam = await RNEditorKitModule.postCropVideo(videoPath);
-    console.info("trimVideoData save cropParam", cropParam);
     DeviceEventEmitter.removeAllListeners("postVideoCrop");
-
     return JSON.parse(cropParam);
   }
 
@@ -199,9 +197,7 @@ export default class AVService {
   }
 
   static async downloadFontTest() {
-    // //TODO
     const fontList = await AVService.getFontList();
-
     for (let i = 0; i < fontList.length; i++) {
       const fontInfo = await AVService.downloadFont(fontList[i]);
     }
