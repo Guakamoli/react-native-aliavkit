@@ -4,7 +4,8 @@
 //
 //  Created by jimmy on 2021/9/18.
 //
-
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
+#import "AVAsset+VideoInfo.h"
 #import "AliCameraAction.h"
 #import <AliyunVideoSDKPro/AliyunIRecorder.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
@@ -28,6 +29,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import "AliAVServiceBridge.h"
+#import "RNEventEmitter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -98,14 +100,12 @@
         _recorder.encodeMode = 1;
         _recorder.GOP = self.mediaConfig.gop;
         if ([RNAVDeviceHelper isBelowIphone_11]) {
-            _recorder.videoQuality = AliyunVideoQualityMedium;
-            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
+            _recorder.videoQuality = AliyunVideoQualityHight;
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
         } else {
             //iphone 11
-//            _recorder.bitrate = 15*1000*1000; // 15Mbps
-//            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
-            _recorder.bitrate = 4*1000*1000; // 702P 4Mbps
-            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
+            _recorder.bitrate = 15*1000*1000; // 15Mbps
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
         }
         _recorder.recordFps = self.mediaConfig.fps;
         
@@ -128,10 +128,8 @@
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-//        _mediaConfig.videoQuality =  AliyunMediaQualityVeryHight;
-//        _mediaConfig.outputSize =  CGSizeMake(1080, 1920);
-        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
-        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
+        _mediaConfig.videoQuality =  AliyunMediaQualityVeryHight;
+        _mediaConfig.outputSize =  CGSizeMake(1080, 1920);
     }
     return _mediaConfig;
 }
@@ -362,7 +360,7 @@
 }
 
 #pragma mark - face paster
-- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo  index:(NSNumber *)index
 {
 //    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
 //        return;
@@ -381,10 +379,12 @@
     [self deletePreviousEffectPaster];
     
     if (![pasterInfo fileExist]) {
+        RNEventEmitter *eventEmitter = [RNEventEmitter allocWithZone: nil];
         AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
+            [eventEmitter setFacePasterDownloadProgress:pgs index:index];
 //            AVDLog(@"------download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;
@@ -478,6 +478,15 @@
     }
     
     if (_finishMultiRecordingResolve) {
+//        //TODO
+//        AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:_videoSavePath]];
+//        CGSize size = [asset avAssetNaturalSize];
+//        CGFloat frameWidth = size.width;
+//        CGFloat frameHeight = size.height;
+//
+//        AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:_videoSavePath];
+//        NSInteger bitRate = nativeParser.getVideoBitrate;
+        
         _finishMultiRecordingResolve(_videoSavePath);
         _finishMultiRecordingResolve = nil;
     }

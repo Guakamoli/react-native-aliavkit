@@ -80,11 +80,15 @@ class CircleProgress extends Component {
               this.props.longPress();
             } else if (nativeEvent.state === State.END) {
               this.isLongPress = false;
-              this.props.stopAnimate();
+              setTimeout(() => {
+                this.props.stopAnimate();
+              }, 0);
             } else {
               if (this.isLongPress) {
                 this.isLongPress = false;
-                this.props.stopAnimate();
+                setTimeout(() => {
+                  this.props.stopAnimate();
+                }, 0);
               }
             }
           }}

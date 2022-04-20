@@ -134,6 +134,16 @@ class ComposeManager(private val mContext: ReactContext) {
 
                 override fun onComposeCompleted() {
                     Log.e("AAA", "onComposeCompleted")
+
+//                    val nativeParser = NativeParser()
+//                    nativeParser.init(mOutputPath)
+//                    val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION)
+//                    val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE)
+//                    val duration = nativeParser.getValue(NativeParser.VIDEO_DURATION)
+//                    val fps = nativeParser.getValue(NativeParser.VIDEO_FPS)
+//                    val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH)
+//                    val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT)
+
 //                    if (isVideo) {
                     if (isSaveToPhotoLibrary) {
                         AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath)

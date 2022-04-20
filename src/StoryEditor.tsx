@@ -128,6 +128,8 @@ export default class StoryEditor extends Component<Props, State> {
     // //   this.props.goback();
     // // }, 1000);
 
+    AVService.stopEdit();
+
     this.pauseMusic(this.musicOn);
 
     const jsonPath = await AVService.getVideoEditorJsonPath();
@@ -186,14 +188,6 @@ export default class StoryEditor extends Component<Props, State> {
   getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if (this.state.filterList.length < 1) {
-      // if (Platform.OS === 'android') {
-      //   const filterList = await this.editor.getColorFilterList();
-      //   this.setState({ filterList: filterList });
-      // } else {
-      //   const infos = await AVService.getFilterIcons({});
-      //   infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
-      //   this.setState({ filterList: infos });
-      // }
       const infos = await AVService.getFilterIcons({});
       infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
       this.setState({ filterList: infos });

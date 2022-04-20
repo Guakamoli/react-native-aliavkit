@@ -52,7 +52,7 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)addZoomGesture;
 - (void)removeZoomGesture;
 
-- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo;
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo index:(NSNumber *)index;
 - (void)deletePreviousEffectPaster;
 
 - (void)resumeCamera;

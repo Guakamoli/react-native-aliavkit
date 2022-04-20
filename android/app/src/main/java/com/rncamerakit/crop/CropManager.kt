@@ -122,13 +122,14 @@ class CropManager {
             var mDuration = 0L
             //设置一个默认码率
             var mBitrate = VideoConst.mCropBitrate
-            var mFps = 60
+            var mFps = VideoConst.mCropFps
             var mRect: Rect? = null
             try {
                 val nativeParser = NativeParser()
                 nativeParser.init(videoPath)
                 try {
                     val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+//                    val bit = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE)
                     val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toFloat()
                     mDuration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()
                     val fps = nativeParser.getValue(NativeParser.VIDEO_FPS).toFloat()
@@ -213,6 +214,15 @@ class CropManager {
                 override fun onComplete(duration: Long) {
                     RNEventEmitter.postVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
+
+//                    val nativeParser = NativeParser()
+//                    nativeParser.init(videoParam.outputPath)
+//                    val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION)
+//                    val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE)
+//                    val duration = nativeParser.getValue(NativeParser.VIDEO_DURATION)
+//                    val fps = nativeParser.getValue(NativeParser.VIDEO_FPS)
+//                    val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH)
+//                    val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT)
 
                     val cropMap: HashMap<String, Any> = HashMap<String, Any>()
                     cropMap["path"] = videoParam.outputPath
@@ -465,7 +475,6 @@ class CropManager {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-
                     promise.resolve(outputPath)
                 }
 

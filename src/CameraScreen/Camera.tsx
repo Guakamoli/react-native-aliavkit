@@ -482,6 +482,7 @@ class RenderCamera extends Component {
     if (CameraFixHeight > fixHeight) {
       CameraFixHeight = fixHeight;
     }
+    // console.info("facePasterInfo",this.props.facePasterInfo);
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
@@ -504,7 +505,7 @@ class RenderCamera extends Component {
                 saveToCameraRoll={false}
                 focusMode={'on'}
                 normalBeautyLevel={this.props.normalBeautyLevel * 10}
-                facePasterInfo={this.props.facePasterInfo}
+                // facePasterInfo={this.props.facePasterInfo}
                 torchMode={'off'}
                 onReadCode={() => { }}
                 onRecordingProgress={() => { }}

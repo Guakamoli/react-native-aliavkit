@@ -21,6 +21,7 @@ import com.aliyun.svideosdk.common.struct.recorder.CameraType
 import com.aliyun.svideosdk.common.struct.recorder.FlashType
 import com.aliyun.svideosdk.common.struct.recorder.MediaInfo
 import com.aliyun.svideosdk.recorder.AliyunIClipManager
+import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
@@ -310,6 +311,16 @@ class RecorderManage(
     fun finishMultiRecording(context: Context, promise: Promise) {
         mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
             override fun onFinish(outputPath: String?) {
+
+                val nativeParser = NativeParser()
+                nativeParser.init(outputPath)
+                val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION)
+                val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE)
+                val duration = nativeParser.getValue(NativeParser.VIDEO_DURATION)
+                val fps = nativeParser.getValue(NativeParser.VIDEO_FPS)
+                val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH)
+                val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT)
+
                 promise.resolve(outputPath)
                 isRecording = false
             }
@@ -428,7 +439,7 @@ class RecorderManage(
 //        val mWidth = ScreenUtils.getWidth(mContext)
 //        val mHeight = mWidth*16/9
         val outputInfo = MediaInfo()
-        outputInfo.fps = 35
+        outputInfo.fps = VideoConst.mVideoFps
         outputInfo.videoWidth = VideoConst.mVideoWidth
         outputInfo.videoHeight = VideoConst.mVideoHeight
         outputInfo.videoCodec = VideoCodecs.H264_HARDWARE
@@ -439,12 +450,12 @@ class RecorderManage(
             "paiya-record.mp4"
         ).absolutePath
         mRecorder?.setOutputPath(videoPath)
-        mRecorder?.setVideoQuality(VideoQuality.SSD)
+//        mRecorder?.setVideoQuality(VideoQuality.SSD)
         //10Mbps
-        mRecorder?.setVideoBitrate(4*1000)
+        mRecorder?.setVideoBitrate(VideoConst.mVideoBitrate)
         mRecorder?.setRatioMode(AliyunSnapVideoParam.RATIO_MODE_9_16)
         mRecorder?.setGop(30)
-        mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
+//        mRecorder?.setResolutionMode(AliyunSnapVideoParam.RESOLUTION_720P)
         mRecorder?.setCamera(CameraType.FRONT)
         mRecorder?.setFocusMode(CameraParam.FOCUS_MODE_CONTINUE)
         mClipManager = mRecorder?.clipManager

@@ -86,16 +86,16 @@ AliyunCropDelegate
 {
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 0.5f;
+        _mediaConfig.minDuration = 0.1f;
         _mediaConfig.maxDuration = 600.f; //10 min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
-//        _mediaConfig.videoQuality = AliyunMediaQualityHight;
-//        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
-        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
-        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
+        _mediaConfig.videoQuality = AliyunMediaQualityHight;
+        _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+//        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
+//        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
     }
     return _mediaConfig;
 }
@@ -163,22 +163,27 @@ AliyunCropDelegate
 //    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
 //    self.taskPath = taskPath;
     
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
+    NSInteger mBitrate = 10*1000*1000;
  
     self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
     
-    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.mediaConfig.outputSize];
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:CGSizeMake(mVideoWidth, mVideoHeight)];
 
     AliyunClip *imageClip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:1];
     [importer addMediaClip:imageClip];
     
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
-    if ([RNAVDeviceHelper isBelowIphone_11]) {
-//        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
-        param.videoQuality = AliyunVideoQualityHight;// 视频质量
-    } else {
+    
+//    if ([RNAVDeviceHelper isBelowIphone_11]) {
+////        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
+//        param.videoQuality = AliyunVideoQualityHight;// 视频质量
+//    } else {
 //        param.bitrate = 10*1000*1000; // 10Mbps
-    }
-    param.bitrate = 4*1000*1000; // 720P 4Mbps
+//    }
+    param.bitrate = mBitrate;
+    
     param.fps = self.mediaConfig.fps; // 帧率
     param.gop = self.mediaConfig.gop; // 关键帧间隔
     param.scaleMode = AliyunScaleModeFill; // 缩放模式
@@ -196,19 +201,42 @@ AliyunCropDelegate
 /// 单视频接入编辑页面，生成一个新的taskPath
 - (void)setVideoTaskPathWithVideopath:(NSString *)videoPath
 {
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
+    NSInteger mBitrate = 10*1000*1000;
+    
+    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
+    CGSize size = [asset avAssetNaturalSize];
+    CGFloat frameWidth = size.width;
+    CGFloat frameHeight = size.height;
+    
+    AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoPath];
+    NSInteger bitRate = nativeParser.getVideoBitrate;
+    
+    if (bitRate < mBitrate) {
+        mBitrate = bitRate;
+    }
+    
+    if (frameWidth < mVideoWidth) {
+        mVideoWidth = frameWidth;
+    }
+    
+    if (frameHeight < mVideoHeight) {
+        mVideoHeight = frameHeight;
+    }
+    
     self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
 //    AVDLog(@"VideotaskPath: %@", self.taskPath);
-    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:CGSizeMake(mVideoWidth, mVideoHeight)];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
-    if ([RNAVDeviceHelper isBelowIphone_11]) {
-//        param.videoQuality = AliyunVideoQualityMedium;
-        param.videoQuality = AliyunVideoQualityHight;// 视频质量
-    } else {
+//    if ([RNAVDeviceHelper isBelowIphone_11]) {
+//        param.videoQuality = AliyunVideoQualityHight;// 视频质量
+//    } else {
 //        param.bitrate = 10*1000*1000; // 10Mbps
-    }
-    param.bitrate = 4*1000*1000; // 720P 4Mbps
+//    }
+    param.bitrate = mBitrate;
     param.scaleMode = AliyunScaleModeFill;
     // 编码模式
     param.codecType = AliyunVideoCodecHardware;
@@ -902,6 +930,12 @@ AliyunCropDelegate
 
 - (NSString *)getTaskPath{
     return _taskPath;
+}
+
+- (BOOL)stopEdit{
+    [self.player stop];
+    int stopCode = [_editor stopEdit];
+    return ALIVC_COMMON_RETURN_SUCCESS == stopCode;
 }
 
 @end

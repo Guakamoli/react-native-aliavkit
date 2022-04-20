@@ -17,6 +17,7 @@ import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
 import com.aliyun.svideo.editor.view.EditorVideHelper
+import com.aliyun.svideosdk.common.AliyunEditorErrorCode
 import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.effect.EffectBean
@@ -78,7 +79,12 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
 
     fun getVideoEditorJsonPath(): String {
-       return mProjectConfigure
+        return mProjectConfigure
+    }
+
+    fun stopEdit(): Boolean {
+        val stopCode = mAliyunIEditor?.stop()
+        return AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS == stopCode
     }
 
     //视频导入
@@ -360,13 +366,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
         musicEffect.duration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
         musicEffect.streamDuration = mAliyunIEditor?.duration ?: Int.MAX_VALUE.toLong()
 
-        if(this.isSilence){
+        if (this.isSilence) {
             musicEffect.weight = 100
-        }else{
+        } else {
             musicEffect.weight = 50
         }
 
-        if(this.isSilence){
+        if (this.isSilence) {
             mAliyunIEditor?.applyMusicMixWeight(1, 100)
         } else {
             mAliyunIEditor?.applyMusicMixWeight(1, 50)

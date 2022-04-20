@@ -21,6 +21,7 @@
 #import "RNAVDeviceHelper.h"
 #import <React/RCTConvert.h>
 #import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
+#import "AliyunPasterInfo.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -112,7 +113,12 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
     [self sendEventWithName:@"storyComposeVideo" body:@{@"progress":@(1.0)}];
     
     __block NSString *path = outputPath;
+
     if(_videoComposeResolve != nil){
+//        //TODO
+//        AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:path];
+//        NSInteger bitRate = nativeParser.getVideoBitrate;
+        
         AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
         CGSize size = [asset avAssetNaturalSize];
         CGFloat frameWidth = size.width;
@@ -211,14 +217,15 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
     _videoCropResolve = resolve;
     _videoCropReject = reject;
     
-    NSInteger mVideoWidth = 720;
-    NSInteger mVideoHeight = 1280;
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
     CGFloat mDuration = 0;
     NSInteger mFPS = 60;
+    NSInteger mBitrate = 10*1000*1000;
     
     CGRect mCropRect = CGRectMake(0, 0, mVideoWidth, mVideoHeight);
             
-    NSInteger mBitrate = 4*1000*1000;
+
          
     @try {
         AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
@@ -431,9 +438,31 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
         if (error) {
             reject(@"fetch remote paster fail", error.localizedDescription, nil);
         } else {
+            
             NSArray *pastList = responseObject[@"data"];
             NSMutableArray *arr = [pastList mutableCopy];
-            [arr insertObject:[self _localFacePaster] atIndex:0];
+            
+            for(int i=0; i < [arr count]; i++){
+                NSDictionary * mOptions =  arr[i];
+                NSMutableDictionary *pasterOptions = [mOptions mutableCopy];
+                
+                AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:pasterOptions];
+                
+                NSString *path = [info filePath];
+                
+                BOOL isLocalRes = [info fileExist];//本地文件是否存在
+                if(!isLocalRes){
+                    path = @"";
+                }
+                NSNumber *index = [NSNumber numberWithInt:(i+1)];
+                [pasterOptions setValue:index forKey:@"index"];
+                [pasterOptions setValue:path forKey:@"path"];
+                [pasterOptions setValue:@(isLocalRes) forKey:@"isLocalRes"];
+                
+                [arr replaceObjectAtIndex:i withObject:pasterOptions];
+            }
+          
+//            [arr insertObject:[self _localFacePaster] atIndex:0];
             resolve(arr);
         }
     }];
@@ -446,11 +475,13 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
     NSString *lastComponent = [path lastPathComponent];
     NSArray *comp = [lastComponent componentsSeparatedByString:@"-"];
     NSDictionary *localPaster = @{
+        @"index": @1.0,
         @"name": comp.firstObject,
         @"id": @([comp.lastObject integerValue]),
         @"icon": [path stringByAppendingPathComponent:@"icon.png"],
         @"type": @2,
-        @"bundlePath": path
+        @"path": path,
+        @"isLocalRes": @YES,
     };
     return localPaster;
 }
@@ -814,6 +845,15 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
             [self sendEventWithName:@"cropProgress" body:@{@"progress":@(1.0)}];
         }
     }
+    
+    //TODO
+//    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:_videoCropOutputPath]];
+//    CGSize size = [asset avAssetNaturalSize];
+//    CGFloat frameWidth = size.width;
+//    CGFloat frameHeight = size.height;
+//
+//    AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:_videoCropOutputPath];
+//    NSInteger bitRate = nativeParser.getVideoBitrate;
     
     if(_videoCropType == 2 && _videoCropResolve != nil && _videoCropOutputPath){
         id cropParam = @{@"path":_videoCropOutputPath, @"isCroped":@(TRUE)};

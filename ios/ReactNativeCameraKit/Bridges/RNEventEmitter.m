@@ -1,90 +1,60 @@
 //
-//  RNEditViewManager.m
+//  FacePasterBridge.m
 //  ReactNativeAliAVKit
 //
-//  Created by jimmy on 2021/9/24.
+//  Created by jimmy on 2021/9/29.
 //
 
-#import "RNEditViewManager.h"
-#import "RNEditView.h"
+#import "RNEventEmitter.h"
+#import <React/RCTBridge.h>
+#import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface RNEditViewManager ()<RCTInvalidating>
 
-@property (nonatomic, strong) RNEditView *editView;
+
+@interface RNEventEmitter ()
+{
+    BOOL _hasListeners;
+  
+}
+
+//@property (nonatomic, strong) AliyunCrop *cutPanel;
+
 
 @end
 
-@implementation RNEditViewManager
+@implementation RNEventEmitter
 
-RCT_EXPORT_MODULE()
+// 标记宏（必要）
+RCT_EXPORT_MODULE();
 
-- (UIView *)view
+RCT_EXPORT_METHOD(enableHapticIfExist)
 {
-    self.editView = [[RNEditView alloc] initWithBridge:self.bridge];
-    return self.editView;
+
 }
 
-RCT_EXPORT_VIEW_PROPERTY(videoPath, NSString)
-RCT_EXPORT_VIEW_PROPERTY(imagePath, NSString)
-RCT_EXPORT_VIEW_PROPERTY(onExportVideo, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(filterName, NSString)
-RCT_EXPORT_VIEW_PROPERTY(startExportVideo, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(saveToPhotoLibrary, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(videoMute, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(musicInfo, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(onPlayProgress, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(editStyle, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
-
-
-RCT_EXPORT_METHOD(play)
-{
-    [self.editView play];
++ (id)allocWithZone:(NSZone *)zone {
+    static RNEventEmitter *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [super allocWithZone:zone];
+    });
+    return sharedInstance;
 }
 
-RCT_EXPORT_METHOD(resume)
+- (NSArray<NSString *> *)supportedEvents
 {
-    [self.editView resume];
+    return @[
+        @"addFacePasterListener"
+    ];
 }
 
-RCT_EXPORT_METHOD(replay)
-{
-    [self.editView replay];
-}
-
-RCT_EXPORT_METHOD(pause)
-{
-    [self.editView pause];
-}
-
-RCT_EXPORT_METHOD(stop)
-{
-    [self.editView stop];
-}
-
-RCT_EXPORT_METHOD(seekToTime:(nonnull NSNumber *)numberTime)
-{
-    CGFloat time = [numberTime floatValue];
-    [self.editView seekToTime:time];
-}
-
-RCT_EXPORT_METHOD(trimVideo:(NSDictionary *)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-{
-    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
-    CGFloat endTime = [[options objectForKey:@"endTime"] floatValue];
-    [self.editView trimVideoFromTime:startTime toTime:endTime];
-}
-
-- (dispatch_queue_t)methodQueue
-{
-    return dispatch_get_main_queue();
-}
-
-- (void)invalidate
-{
-    
+/**
+ * 贴纸下载进度回调
+ */
+- (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index{
+    [self sendEventWithName:@"addFacePasterListener" body:@{@"progress":@(progress),@"index":index}];
 }
 
 @end

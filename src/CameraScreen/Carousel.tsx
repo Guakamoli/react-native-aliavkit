@@ -13,6 +13,8 @@ import {
   Pressable,
 } from 'react-native';
 
+import * as Progress from 'react-native-progress';
+
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -43,6 +45,7 @@ export type Props = {
 
 type State = {
   pasterList: any[];
+  pasterSelectedIndex: number,
   recordType: number,
   multiRecordAngle: any[],
 };
@@ -102,7 +105,9 @@ class TopReset extends Component<PropsType> {
               onHandlerStateChange={(event) => {
                 if (event.nativeEvent.state === State.END) {
                   this.props.snapToItem?.(0);
-                  this.props.setFacePasterInfo(this.props.pasterList[0]);
+                  AVService.setFacePasterInfo(this.props.pasterList[0]);
+                  this.setState({ pasterSelectedIndex: 0 });
+                  // this.props.setFacePasterInfo(this.props.pasterList[0]);
                 }
               }}
             >
@@ -115,7 +120,9 @@ class TopReset extends Component<PropsType> {
               style={styles.clearIcon}
               onPress={() => {
                 this.props.snapToItem?.(0);
-                this.props.setFacePasterInfo(this.props.pasterList[0]);
+                AVService.setFacePasterInfo(this.props.pasterList[0]);
+                this.setState({ pasterSelectedIndex: 0 });
+                // this.props.setFacePasterInfo(this.props.pasterList[0]);
               }}
             >
               <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
@@ -129,15 +136,46 @@ class TopReset extends Component<PropsType> {
 class RenderBigCircle extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      downloadProgress: 0
+    };
   }
-  shouldComponentUpdate(nextProps) {
+
+  componentDidMount() {
+    AVService.setFacePasterInfo(this.props.pasterList[0]);
+    AVService.addFacePasterListener((downloadInfo: any) => {
+      const position = downloadInfo?.index;
+      let progress = downloadInfo?.progress;
+
+      if (progress === 1) {
+        progress = 0
+        this.props.setLocalType(downloadInfo)
+      }
+      if (position === this.props.pasterSelectedIndex) {
+        this.setState({ downloadProgress: progress })
+      }
+
+    });
+  }
+
+  componentWillUnmount() {
+    AVService.removeFacePasterListener();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.downloadProgress !== this.state.downloadProgress) {
+      return true;
+    }
     if (nextProps.pasterList && nextProps.pasterList !== this.props.pasterList) {
+      return true;
+    }
+    if (nextProps.pasterSelectedIndex !== this.props.pasterSelectedIndex) {
       return true;
     }
     return false;
   }
   render() {
-    const { pasterList, scrollPos } = this.props;
+    const { pasterList, scrollPos, pasterSelectedIndex } = this.props;
     return (
       <Animated.View
         style={{
@@ -148,6 +186,8 @@ class RenderBigCircle extends Component {
           transform: [{ translateX: Animated.multiply(scrollPos, -1) }],
         }}
       >
+
+        {/* TODOWUYQ */}
         {pasterList.map((i, index) => {
           return (
             <View
@@ -179,10 +219,15 @@ class RenderBigCircle extends Component {
                   i.eid == 0 && { backgroundColor: '#fff' },
                 ]}
               >
-                <FastImage
+                <Image
                   style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
                   source={{ uri: i.icon }}
                 />
+                {(this.props.pasterSelectedIndex === index && !i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
+                  <Image style={{ position: 'absolute', width: 14, height: 14, right: 6, bottom: 6 }} source={require('../../images/ic_story_paster_download.png')} />
+                  :
+                  <Progress.Circle style={{ position: 'absolute', right: 6, bottom: 6 }} animated={true} size={14} progress={this.state.downloadProgress} color={"rgba(255, 255, 255, 1)"} />
+                )}
               </Animated.View>
             </View>
           );
@@ -202,6 +247,10 @@ class RenderChildren extends Component {
     if (nextProps.pasterList !== this.props.pasterList) {
       return true;
     }
+    if (nextProps.pasterSelectedIndex !== this.props.pasterSelectedIndex) {
+      return true;
+    }
+
     return false;
   }
 
@@ -222,17 +271,22 @@ class RenderChildren extends Component {
           ref={this.longPressRef}
           shouldCancelWhenOutside={false}
           onHandlerStateChange={({ nativeEvent }) => {
-            // console.info("LongPressGestureHandler", nativeEvent.state);
             if (nativeEvent.state === State.ACTIVE) {
               this.isLongPress = true;
               this.props.longPress();
             } else if (nativeEvent.state === State.END) {
               this.isLongPress = false;
-              this.props.stopAnimate();
+
+              setTimeout(() => {
+                this.props.stopAnimate();
+              }, 0);
+
             } else {
               if (this.isLongPress) {
                 this.isLongPress = false;
-                this.props.stopAnimate();
+                setTimeout(() => {
+                  this.props.stopAnimate();
+                }, 0);
               }
             }
           }}
@@ -271,7 +325,8 @@ const RenderItem = React.memo((props) => {
     <Pressable delayLongPress={300} onPress={toItem}>
       <View>
         <View style={[styles.propStyle, styles.img]}>
-          <FastImage style={styles.img} source={{ uri: item.icon }} />
+          <Image style={styles.img} source={{ uri: item.icon }} />
+          {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />}
         </View>
       </View>
     </Pressable>
@@ -287,6 +342,7 @@ class CarouselWrapper extends Component<Props, State> {
     this.scrollPos = new Animated.Value(0);
     this.state = {
       pasterList: [],
+      pasterSelectedIndex: 0,
       // 录制状态  0：未录制 \完成录制  1：录制中  2：暂停录制
       recordType: 0,
       multiRecordAngle: [],
@@ -304,7 +360,6 @@ class CarouselWrapper extends Component<Props, State> {
   longPress = () => {
 
     this.setState({ recordType: 1 });
-
 
     if (this.pressLock) {
       return;
@@ -361,32 +416,12 @@ class CarouselWrapper extends Component<Props, State> {
         easing: EasingNode.inOut(EasingNode.quad),
         duration: 200,
       }).start(({ finished }) => {
-        //这里有bug。 this.ani 会延迟初始化，手指一触摸立即松开，导致  this.ani.stop 无效，动画一直跑
-        // let recordAngle = this.recordTime / 15000.0 * 360;
-        // if (finished) {
-        //   if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
-        //     recordAngle += 0.1;
-        //   }
-        //   this.arcAngle?.setValue(recordAngle);
-        //   this.ani = Reanimated.timing(this.arcAngle, {
-        //     toValue: 360,
-        //     easing: EasingNode.linear,
-        //     duration: 1000 * (15 - this.recordTime / 1000.0),
-        //   });
-        //   this.ani.start(({ finished }) => {
-        //     if (finished) {
-        //       this.stopAnimate();
-        //     }
-        //   });
-        // }
       });
     } catch (e) {
 
     }
   };
-  shotCamera = async () => {
-    this.endTime = Date.now();
-    const recordingTime = this.endTime - this.startTime;
+  shotCamera = async (recordingTime) => {
 
     this.recordTime += recordingTime;
 
@@ -395,24 +430,8 @@ class CarouselWrapper extends Component<Props, State> {
     this.props.showBottomTools(2);
 
     this.pressLock = false;
-    // setTimeout(() => {
-    //   // this.reset();
-    //   this.pressLock = false;
-    // }, 500);
 
-    // if (recordingTime <= 500) {
-    //   //ios 录制时间过短stopRecording 不会返回 videoPath。这里不能 return ，必须执行 stopRecording，否则不能再次 startRecording
-    //   this.props.myRef?.current?.show?.(`${I18n.t('record_time_small')}`, 500);
-    // }
     const videoPath = await this.props.camera.current?.stopMultiRecording?.();
-    // if (recordingTime >= 500) {
-    //   //安卓端目前小于500ms也会返回videoPath，这里统一处理，小于500ms 不进入编辑
-    //   this.props.setShootData({
-    //     fileType: 'video',
-    //     videoPath,
-    //     ShootSuccess: true,
-    //   });
-    // }
   };
   reset = () => {
     // this.ani?.stop();
@@ -429,16 +448,21 @@ class CarouselWrapper extends Component<Props, State> {
     if (this.isStopAnimated) {
       return
     }
+    this.endTime = Date.now();
+    const recordingTime = this.endTime - this.startTime;
 
-    try {
-      this.ani?.stop();
-    } catch (e) {
+    if (recordingTime < 100) {
       setTimeout(() => {
         try {
           this.ani?.stop();
         } catch {
         }
-      }, 50);
+      }, 100);
+    } else {
+      try {
+        this.ani?.stop();
+      } catch {
+      }
     }
 
     this.isStopAnimated = true;
@@ -448,7 +472,7 @@ class CarouselWrapper extends Component<Props, State> {
     }
 
     setTimeout(() => {
-      this.shotCamera();
+      this.shotCamera(recordingTime);
 
       let recordAngle = this.recordTime / 15000.0 * 360;
       let angleArray = this.state.multiRecordAngle.concat();
@@ -541,6 +565,13 @@ class CarouselWrapper extends Component<Props, State> {
     AppState.removeEventListener('change', this.handleAppStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.pasterSelectedIndex !== nextState.pasterSelectedIndex) {
+      return true;
+    }
+    if (this.state.pasterList !== nextState.pasterList) {
+      return true;
+    }
+
     if (nextState.multiRecordAngle?.length && this.state.multiRecordAngle !== nextState.multiRecordAngle) {
       return true;
     }
@@ -577,7 +608,7 @@ class CarouselWrapper extends Component<Props, State> {
         item.url = item.url.replace('http://', 'https://');
       }
     });
-    pasters.unshift({ eid: 0 });
+    pasters.unshift({ index: 0, eid: 0, isLocalRes: true });
     this.setState({
       pasterList: pasters,
     });
@@ -626,8 +657,26 @@ class CarouselWrapper extends Component<Props, State> {
     }
     this.props.haptics?.selectionAsync();
   };
+
+  /**
+   * 
+   */
+  setLocalType = (downloadInfo) => {
+    //{"index": 43, "progress": 1}
+    const position = downloadInfo?.index;
+    const progress = downloadInfo?.progress;
+    const todoList = [...this.state.pasterList];   //浅拷贝一下
+    const list = todoList.map((item, key) => {
+      return key == position ? { ...item, isLocalRes: true } : item;
+    })
+    this.setState({
+      pasterList: list
+    });
+
+  };
+
   render() {
-    const { pasterList } = this.state;
+    const { pasterList, pasterSelectedIndex } = this.state;
 
     let firstItem = pasterList.findIndex((i) => {
       return this.props.facePasterInfo.id === i.id;
@@ -682,14 +731,18 @@ class CarouselWrapper extends Component<Props, State> {
             contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
             useScrollView={true}
             onSnapToItem={(slideIndex = 0) => {
-              this.props.setFacePasterInfo(pasterList[slideIndex]);
+              // this.props.setFacePasterInfo(pasterList[slideIndex]);
+              AVService.setFacePasterInfo(pasterList[slideIndex]);
+              this.setState({ pasterSelectedIndex: slideIndex });
             }}
             renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
           >
 
             <RenderChildren
               {...this.props}
+              setLocalType={this.setLocalType}
               pasterList={pasterList}
+              pasterSelectedIndex={pasterSelectedIndex}
               scrollPos={this.scrollPos}
               longPress={this.longPress}
               singlePress={this.singlePress}
@@ -944,6 +997,7 @@ const styles = StyleSheet.create({
   propStyle: {
     backgroundColor: '#000',
     opacity: 0.8,
+    position: 'relative'
   },
   clearIcon: {
     width: 32,

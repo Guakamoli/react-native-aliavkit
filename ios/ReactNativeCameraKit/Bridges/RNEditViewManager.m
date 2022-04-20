@@ -86,6 +86,14 @@ RCT_EXPORT_METHOD(getTaskPath:(NSDictionary *)options
     resolve(taskPath);
 }
 
+RCT_EXPORT_METHOD(stopEdit:(NSDictionary *)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    BOOL stopCode = [self.editView stopEdit];
+    resolve(@(stopCode));
+}
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();

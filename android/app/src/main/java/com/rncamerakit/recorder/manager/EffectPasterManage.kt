@@ -51,16 +51,22 @@ class EffectPasterManage private constructor() {
             mPaterLoader = EffectLoader(reactContext?.applicationContext)
         }
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
-            for (form in localInfos!!) {
+
+            for (i in 0 until localInfos.size) {
+                val form = localInfos[i]
                 if (form.id == 150) {
                     form.icon = "file://" + form.icon
                 }
                 form.isLocalRes = FileUtils.fileIsExists(form.path)
+                form.sort = i + 1
                 mPasterList.add(form)
             }
-            for (mv in remoteInfos!!) {
-                mv.isLocalRes = false
-                mPasterList.add(mv)
+
+            for (i in 0 until remoteInfos.size) {
+                val form = remoteInfos[i]
+                form.isLocalRes = false
+                form.sort = i + 1 + localInfos.size
+                mPasterList.add(form)
             }
             val jsonList = GsonBuilder().create().toJson(mPasterList)
             promise?.resolve(jsonList)
@@ -104,12 +110,12 @@ class EffectPasterManage private constructor() {
                     progress: Int
                 ) {
                     Log.e("AAA", "download effectPaster progress：$progress")
-                    RNEventEmitter.downloadPasterProgress(mReactContext, progress)
+                    RNEventEmitter.downloadPasterProgress(mReactContext, progress, paster.sort)
                 }
 
                 override fun onFinish(downloadId: Int, path: String) {
                     Log.e("AAA", "下载完成 path：$path")
-                    RNEventEmitter.downloadPasterProgress(mReactContext, 100)
+                    RNEventEmitter.downloadPasterProgress(mReactContext, 100, paster.sort)
                     callback.onPath(path)
                 }
 
@@ -131,12 +137,12 @@ class EffectPasterManage private constructor() {
                 progress: Int
             ) {
 //                Log.e("AAA", "download progress：$progress")
-                RNEventEmitter.downloadPasterProgress(mReactContext, progress)
+//                RNEventEmitter.downloadPasterProgress(mReactContext, progress)
             }
 
             override fun onFinish(downloadId: Int, path: String) {
 //                Log.e("AAA", "download path：$path")
-                RNEventEmitter.downloadPasterProgress(mReactContext, 100)
+//                RNEventEmitter.downloadPasterProgress(mReactContext, 100)
                 paster?.isLocalRes = true
                 paster?.path = path
                 promise.resolve(paster)

@@ -180,6 +180,42 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
 
 
     @ReactMethod
+    fun setFacePasterInfo(readableMap: ReadableMap, promise: Promise) {
+        if (readableMap != null && readableMap.toHashMap().size > 0) {
+            val previewPaster = PreviewPasterForm()
+
+            previewPaster.icon =
+                if (readableMap.hasKey("icon")) readableMap.getString("icon") else ""
+            previewPaster.type =
+                if (readableMap.hasKey("type")) readableMap.getInt("type") else 0
+            previewPaster.id = if (readableMap.hasKey("id")) readableMap.getInt("id") else 0
+            previewPaster.sort = if (readableMap.hasKey("sort")) readableMap.getInt("sort") else 0
+
+            previewPaster.url = if (readableMap.hasKey("url")) readableMap.getString("url") else ""
+            previewPaster.md5 = if (readableMap.hasKey("md5")) readableMap.getString("md5") else ""
+            previewPaster.preview =
+                if (readableMap.hasKey("preview")) readableMap.getString("preview") else ""
+            previewPaster.name =
+                if (readableMap.hasKey("name")) readableMap.getString("name") else ""
+
+            previewPaster.fontId =
+                if (readableMap.hasKey("fontId")) readableMap.getInt("fontId") else 0
+            previewPaster.level =
+                if (readableMap.hasKey("level")) readableMap.getInt("level") else 0
+
+            previewPaster.isLocalRes =
+                if (readableMap.hasKey("isLocalRes")) readableMap.getBoolean("isLocalRes") else false
+
+            previewPaster.path =
+                if (readableMap.hasKey("path")) readableMap.getString("path") else ""
+            reactContext.runOnUiQueueThread {
+                mView?.mRecorderManage?.setFaceEffectPaster(previewPaster, reactContext)
+            }
+        }
+    }
+
+
+    @ReactMethod
     fun release(promise: Promise) {
         mView?.onRelease()
     }
