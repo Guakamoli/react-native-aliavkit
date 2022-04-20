@@ -4,17 +4,15 @@
 //
 //  Created by jimmy on 2021/9/24.
 //
-
-#if __has_include(<React/RCTBridge.h>)
 #import <React/RCTViewManager.h>
-#import <React/RCTConvert.h>
-#import <React/RCTUIManager.h>
-#else
-#import "RCTViewManager.h"
-#import "RCTConvert.h"
-#endif
+#import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface RNEditViewManager : RCTViewManager
+@interface RNEventEmitter : RCTEventEmitter<RCTBridgeModule>
+
++ (id)allocWithZone:(NSZone *)zone;
+- (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index;
 
 @end
 

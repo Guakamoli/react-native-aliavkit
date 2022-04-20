@@ -29,6 +29,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import "AliAVServiceBridge.h"
+#import "RNEventEmitter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -359,7 +360,7 @@
 }
 
 #pragma mark - face paster
-- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo  index:(NSNumber *)index
 {
 //    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
 //        return;
@@ -378,10 +379,12 @@
     [self deletePreviousEffectPaster];
     
     if (![pasterInfo fileExist]) {
+        RNEventEmitter *eventEmitter = [RNEventEmitter allocWithZone: nil];
         AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
+            [eventEmitter setFacePasterDownloadProgress:pgs index:index];
 //            AVDLog(@"------download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;

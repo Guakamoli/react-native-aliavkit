@@ -1,8 +1,10 @@
 import React from 'react';
 import { NativeModules, NativeEventEmitter, } from 'react-native';
-const { AliAVServiceBridge, RNMusicService, RNEditViewManager } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNEditViewManager, RNEventEmitter, CKCameraManager } = NativeModules;
 
 const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+
+const eventEmitter = new NativeEventEmitter(RNEventEmitter);
 
 type MusicRequestType = {
   name: string;
@@ -13,6 +15,24 @@ type MusicRequestType = {
 
 export default class AVService {
 
+
+  static async setFacePasterInfo(facePasterInfo) {
+    CKCameraManager.setFacePasterInfo(facePasterInfo, facePasterInfo.index);
+  }
+
+  static async removeFacePasterListener() {
+    eventEmitter?.removeAllListeners('addFacePasterListener');
+  }
+
+  static async addFacePasterListener(progressListener: (progress: any) => void) {
+    this.removeFacePasterListener();
+    eventEmitter.addListener('addFacePasterListener', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(progress);
+      }
+    });
+  }
 
 
   static async stopEdit() {
@@ -30,7 +50,7 @@ export default class AVService {
    * @returns story 取消导出
    */
   static async storyCancelCompose() {
-    console.info("storyCancelCompose");
+    // console.info("storyCancelCompose");
     AliAVServiceBridge.storyCancelCompose({});
     managerEmitter?.removeAllListeners('storyComposeVideo');
   }
@@ -52,7 +72,7 @@ export default class AVService {
    * @returns post 取消裁剪
    */
   static async postCancelCrop() {
-    console.info("postCancelCrop");
+    // console.info("postCancelCrop");
     AliAVServiceBridge.postCancelCrop({});
     managerEmitter?.removeAllListeners("postVideoCrop");
   }

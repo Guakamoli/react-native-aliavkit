@@ -11,6 +11,24 @@ type MusicRequestType = {
 
 export default class AVService {
 
+  static async setFacePasterInfo(facePasterInfo) {
+    RNCameraKitModule.setFacePasterInfo(facePasterInfo);
+  }
+
+  static async removeFacePasterListener() {
+    DeviceEventEmitter.removeAllListeners("addFacePasterListener");
+  }
+
+  static async addFacePasterListener(progressListener: (progress: any) => void) {
+    this.removeFacePasterListener();
+    DeviceEventEmitter.addListener('addFacePasterListener', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(JSON.parse(progress));
+      }
+    });
+  }
+
   static async stopEdit() {
     const isStop = await RNEditorKitModule.stopEdit();
     return isStop;

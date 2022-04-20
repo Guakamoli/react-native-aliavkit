@@ -10,6 +10,7 @@ import { setType } from './actions/container';
 import I18n from './i18n';
 const { width, height } = Dimensions.get('window');
 
+//
 const Entry = (props) => {
   const { multipleBtnPng, startMultipleBtnPng, postCameraPng, changeSizePng } = props;
   const {

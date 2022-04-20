@@ -163,6 +163,20 @@ RCT_EXPORT_METHOD(deleteAllMultiRecording:(NSDictionary*)options
     [self.camera deleteAllMultiRecording:resolve  reject:reject];
 }
 
+RCT_EXPORT_METHOD(setFacePasterInfo:(NSDictionary*)options
+                  position:(int)position
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    NSMutableDictionary *pasterOptions = [options mutableCopy];
+
+    NSNumber *index = [NSNumber numberWithInt:position];
+    [pasterOptions setObject:index forKey:@"index"];
+    [self.camera setFacePasterInfo:pasterOptions];
+    resolve(@YES);
+}
+
+
 
 - (dispatch_queue_t)methodQueue
 {

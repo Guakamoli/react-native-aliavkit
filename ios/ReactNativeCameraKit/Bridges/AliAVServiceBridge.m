@@ -21,6 +21,7 @@
 #import "RNAVDeviceHelper.h"
 #import <React/RCTConvert.h>
 #import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
+#import "AliyunPasterInfo.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -437,9 +438,31 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
         if (error) {
             reject(@"fetch remote paster fail", error.localizedDescription, nil);
         } else {
+            
             NSArray *pastList = responseObject[@"data"];
             NSMutableArray *arr = [pastList mutableCopy];
-            [arr insertObject:[self _localFacePaster] atIndex:0];
+            
+            for(int i=0; i < [arr count]; i++){
+                NSDictionary * mOptions =  arr[i];
+                NSMutableDictionary *pasterOptions = [mOptions mutableCopy];
+                
+                AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:pasterOptions];
+                
+                NSString *path = [info filePath];
+                
+                BOOL isLocalRes = [info fileExist];//本地文件是否存在
+                if(!isLocalRes){
+                    path = @"";
+                }
+                NSNumber *index = [NSNumber numberWithInt:(i+1)];
+                [pasterOptions setValue:index forKey:@"index"];
+                [pasterOptions setValue:path forKey:@"path"];
+                [pasterOptions setValue:@(isLocalRes) forKey:@"isLocalRes"];
+                
+                [arr replaceObjectAtIndex:i withObject:pasterOptions];
+            }
+          
+//            [arr insertObject:[self _localFacePaster] atIndex:0];
             resolve(arr);
         }
     }];
@@ -452,11 +475,13 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
     NSString *lastComponent = [path lastPathComponent];
     NSArray *comp = [lastComponent componentsSeparatedByString:@"-"];
     NSDictionary *localPaster = @{
+        @"index": @1.0,
         @"name": comp.firstObject,
         @"id": @([comp.lastObject integerValue]),
         @"icon": [path stringByAppendingPathComponent:@"icon.png"],
         @"type": @2,
-        @"bundlePath": path
+        @"path": path,
+        @"isLocalRes": @YES,
     };
     return localPaster;
 }

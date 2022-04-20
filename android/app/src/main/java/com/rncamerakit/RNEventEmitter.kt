@@ -7,7 +7,9 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.google.gson.GsonBuilder
 import java.io.File
+import java.text.FieldPosition
 
 class RNEventEmitter {
 
@@ -31,9 +33,12 @@ class RNEventEmitter {
         /**
          * 下载贴纸
          */
-        fun downloadPasterProgress(reactContext: ReactContext?, progress: Int) {
+        fun downloadPasterProgress(reactContext: ReactContext?, progress: Int, position: Int) {
+            val map: HashMap<String, Any> = HashMap<String, Any>()
+            map["progress"] = progress.toDouble()/100
+            map["index"] = position
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("downloadPaster", "" + progress.toDouble()/100)
+                ?.emit("addFacePasterListener", GsonBuilder().create().toJson(map))
         }
 
 
@@ -57,11 +62,11 @@ class RNEventEmitter {
          * Editor 播放进度
          */
         fun startVideoEditor(reactContext: ReactContext?, currentPlayTime: Long, currentStreamPlayTime: Long) {
-            val obj = Arguments.createMap()
-            obj.putDouble("playProgress", currentPlayTime.toDouble()/1000/1000)
-            obj.putDouble("streamProgress", currentStreamPlayTime.toDouble()/1000/1000)
+            val map: HashMap<String, Any> = HashMap<String, Any>()
+            map["playProgress"] = currentPlayTime.toDouble()/1000/1000
+            map["streamProgress"] = currentStreamPlayTime.toDouble()/1000/1000
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                ?.emit("startVideoEditor", obj)
+                ?.emit("startVideoEditor", GsonBuilder().create().toJson(map))
         }
 
         /**
@@ -77,14 +82,14 @@ class RNEventEmitter {
          */
         fun startVideoCompose(reactContext: ReactContext?, progress: Int, outputPath: String, isStoryCompose: Boolean): HashMap<String, Any> {
             val videoParamMap: HashMap<String, Any> = HashMap<String, Any>()
-            val obj = Arguments.createMap()
-            if(isStoryCompose){
-                obj.putDouble("progress", progress.toDouble()/100)
-            }else{
-                obj.putDouble("exportProgress", progress.toDouble()/100)
+            val map: HashMap<String, Any> = HashMap<String, Any>()
+            if (isStoryCompose) {
+                map["progress"] = progress.toDouble()/100
+            } else {
+                map["exportProgress"] = progress.toDouble()/100
             }
             if (progress == 100) {
-                obj.putString("outputPath", outputPath)
+                map["outputPath"] = outputPath
                 val response: WritableMap = WritableNativeMap()
                 response.putString("path", outputPath)
                 videoParamMap["path"] = outputPath
@@ -120,14 +125,14 @@ class RNEventEmitter {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                obj.putMap("videoParams", response)
+                map["videoParams"] = response
             }
             if (isStoryCompose) {
                 reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                    ?.emit("storyComposeVideo", obj)
+                    ?.emit("storyComposeVideo", GsonBuilder().create().toJson(map))
             } else {
                 reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                    ?.emit("startVideoCompose", obj)
+                    ?.emit("startVideoCompose", GsonBuilder().create().toJson(map))
             }
             return videoParamMap
         }
