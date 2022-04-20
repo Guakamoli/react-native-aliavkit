@@ -1,10 +1,11 @@
 import React from 'react';
 import { NativeModules, NativeEventEmitter, } from 'react-native';
-const { AliAVServiceBridge, RNMusicService, RNEditViewManager, RNEventEmitter, CKCameraManager } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNEditViewManager, CKCameraManager } = NativeModules;
 
 const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
 
-const eventEmitter = new NativeEventEmitter(RNEventEmitter);
+const { RNAliavkitEventEmitter } = NativeModules;
+const aliavkitEventEmitter = new NativeEventEmitter(RNAliavkitEventEmitter);
 
 type MusicRequestType = {
   name: string;
@@ -21,12 +22,12 @@ export default class AVService {
   }
 
   static async removeFacePasterListener() {
-    eventEmitter?.removeAllListeners('addFacePasterListener');
+    aliavkitEventEmitter?.removeAllListeners('addFacePasterListener');
   }
 
   static async addFacePasterListener(progressListener: (progress: any) => void) {
     this.removeFacePasterListener();
-    eventEmitter.addListener('addFacePasterListener', (progress) => {
+    aliavkitEventEmitter.addListener('addFacePasterListener', (progress) => {
       //0~1
       if (progressListener) {
         progressListener(progress);

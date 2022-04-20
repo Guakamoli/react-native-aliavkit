@@ -11,7 +11,7 @@ import com.google.gson.GsonBuilder
 import java.io.File
 import java.text.FieldPosition
 
-class RNEventEmitter {
+class RNAliavkitEventEmitter {
 
     companion object {
         /**

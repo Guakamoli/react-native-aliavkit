@@ -29,7 +29,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import "AliAVServiceBridge.h"
-#import "RNEventEmitter.h"
+#import "RNAliavkitEventEmitter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -60,6 +60,17 @@
 
 @implementation AliCameraAction
 
+//// 标记宏（必要）
+//RCT_EXPORT_MODULE();
+//
+//- (NSArray<NSString *> *)supportedEvents
+//{
+//    return @[
+//        @"addFacePasterListener"
+//    ];
+//}
+
+
 - (instancetype)initWithPreviewFrame:(CGRect)previewFrame
 {
     if (self = [super init]) {
@@ -80,13 +91,7 @@
     return self.recorder.preview;
 }
 
-//- (NSArray<NSString *> *)supportedEvents
-//{
-//    return @[
-//        @"startMultiRecording"
-//    ];
-//}
-//
+
 #pragma mark - GET
 - (AliyunIRecorder *)recorder
 {
@@ -379,7 +384,8 @@
     [self deletePreviousEffectPaster];
     
     if (![pasterInfo fileExist]) {
-        RNEventEmitter *eventEmitter = [RNEventEmitter allocWithZone: nil];
+        RNAliavkitEventEmitter *eventEmitter = [RNAliavkitEventEmitter allocWithZone: nil];
+
         AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {

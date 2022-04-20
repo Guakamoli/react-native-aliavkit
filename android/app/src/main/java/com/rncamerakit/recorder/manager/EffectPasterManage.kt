@@ -11,7 +11,7 @@ import com.facebook.react.bridge.ReactContext
 import com.google.gson.GsonBuilder
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.manwei.libs.utils.FileUtils
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import java.util.*
 
 
@@ -110,12 +110,12 @@ class EffectPasterManage private constructor() {
                     progress: Int
                 ) {
                     Log.e("AAA", "download effectPaster progress：$progress")
-                    RNEventEmitter.downloadPasterProgress(mReactContext, progress, paster.sort)
+                    RNAliavkitEventEmitter.downloadPasterProgress(mReactContext, progress, paster.sort)
                 }
 
                 override fun onFinish(downloadId: Int, path: String) {
                     Log.e("AAA", "下载完成 path：$path")
-                    RNEventEmitter.downloadPasterProgress(mReactContext, 100, paster.sort)
+                    RNAliavkitEventEmitter.downloadPasterProgress(mReactContext, 100, paster.sort)
                     callback.onPath(path)
                 }
 

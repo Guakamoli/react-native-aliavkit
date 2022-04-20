@@ -1,19 +1,17 @@
 //
-//  RNEditViewManager.h
+//  RNAliavkitEventEmitter.m
 //  ReactNativeAliAVKit
 //
-//  Created by jimmy on 2021/9/24.
+//  Created by Mac on 2022/4/20.
 //
-#import <React/RCTViewManager.h>
+
 #import <Foundation/Foundation.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 
-@interface RNEventEmitter : RCTEventEmitter<RCTBridgeModule>
+@interface RNAliavkitEventEmitter : RCTEventEmitter<RCTBridgeModule>
 
 + (id)allocWithZone:(NSZone *)zone;
 - (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index;
 
 @end
-
-

@@ -17,7 +17,6 @@ import com.aliyun.svideo.downloader.FileDownloaderModel
 import com.aliyun.svideo.editor.util.EditorCommon
 import com.aliyun.svideo.editor.util.FixedToastUtils
 import com.aliyun.svideo.editor.view.EditorVideHelper
-import com.aliyun.svideosdk.common.AliyunEditorErrorCode
 import com.aliyun.svideosdk.common.AliyunErrorCode
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.effect.EffectBean
@@ -29,7 +28,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.editor.manager.*
 import com.rncamerakit.font.FontManager
@@ -183,7 +182,7 @@ class CKEditor(val reactContext: ThemedReactContext) :
     }
 
     override fun onPlayProgress(currentPlayTime: Long, currentStreamPlayTime: Long) {
-        RNEventEmitter.startVideoEditor(reactContext, currentPlayTime, currentStreamPlayTime)
+        RNAliavkitEventEmitter.startVideoEditor(reactContext, currentPlayTime, currentStreamPlayTime)
     }
 
     override fun onEnd(state: Int?, isVideo: Boolean) {

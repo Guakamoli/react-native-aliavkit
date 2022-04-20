@@ -10,7 +10,6 @@ import android.text.TextUtils
 import android.util.Log
 import com.aliyun.svideo.common.utils.BitmapUtils
 import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.editor.Transcoder
 import com.aliyun.svideosdk.common.AliyunIThumbnailFetcher
 import com.aliyun.svideosdk.common.impl.AliyunThumbnailFetcherFactory
 import com.aliyun.svideosdk.common.struct.common.MediaType
@@ -26,7 +25,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.google.gson.GsonBuilder
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.VideoConst
 import kotlinx.coroutines.*
 import java.io.File
@@ -203,7 +202,7 @@ class CropManager {
             aliyunCrop.setCropCallback(object : CropCallback {
                 override fun onProgress(percent: Int) {
                     Log.e("AAA", "onProgress：$percent")
-                    RNEventEmitter.postVideoCrop(reactContext, percent)
+                    RNAliavkitEventEmitter.postVideoCrop(reactContext, percent)
                 }
 
                 override fun onError(code: Int) {
@@ -212,7 +211,7 @@ class CropManager {
                 }
 
                 override fun onComplete(duration: Long) {
-                    RNEventEmitter.postVideoCrop(reactContext, 100)
+                    RNAliavkitEventEmitter.postVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
 
 //                    val nativeParser = NativeParser()
@@ -315,7 +314,7 @@ class CropManager {
             aliyunCrop.setCropCallback(object : CropCallback {
                 override fun onProgress(progress: Int) {
                     Log.e(TAG, "progress：$progress")
-                    RNEventEmitter.startVideoCrop(reactContext, progress)
+                    RNAliavkitEventEmitter.startVideoCrop(reactContext, progress)
                 }
 
                 override fun onError(code: Int) {
@@ -325,7 +324,7 @@ class CropManager {
 
                 override fun onComplete(duration: Long) {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
-                    RNEventEmitter.startVideoCrop(reactContext, 100)
+                    RNAliavkitEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
                     promise.resolve("file://$outputPath")
                 }
@@ -449,7 +448,7 @@ class CropManager {
             aliyunCrop.setCropCallback(object : CropCallback {
                 override fun onProgress(progress: Int) {
                     Log.e(TAG, "progress：$progress")
-                    RNEventEmitter.startVideoCrop(reactContext, progress)
+                    RNAliavkitEventEmitter.startVideoCrop(reactContext, progress)
                 }
 
                 override fun onError(code: Int) {
@@ -459,7 +458,7 @@ class CropManager {
 
                 override fun onComplete(duration: Long) {
                     Log.e(TAG, "onComplete：$duration; $outputPath")
-                    RNEventEmitter.startVideoCrop(reactContext, 100)
+                    RNAliavkitEventEmitter.startVideoCrop(reactContext, 100)
                     aliyunCrop.dispose()
 
                     try {
