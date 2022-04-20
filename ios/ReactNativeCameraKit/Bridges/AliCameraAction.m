@@ -29,7 +29,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import "AliAVServiceBridge.h"
-#import "RNAvkitEventEmitter.h"
+#import "RNAliavkitEventEmitter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
@@ -384,7 +384,7 @@
     [self deletePreviousEffectPaster];
     
     if (![pasterInfo fileExist]) {
-        RNAvkitEventEmitter *eventEmitter = [RNAvkitEventEmitter allocWithZone: nil];
+        RNAliavkitEventEmitter *eventEmitter = [RNAliavkitEventEmitter allocWithZone: nil];
 
         AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
         [self.downloadManager addTask:task];

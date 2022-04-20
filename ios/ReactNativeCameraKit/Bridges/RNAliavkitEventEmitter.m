@@ -1,15 +1,28 @@
+//
+//  RNAliavkitEventEmitter.h
+//  Pods
+//
+//  Created by Mac on 2022/4/20.
+//
 
-#import "RNAvkitEventEmitter.h"
+#ifndef RNAliavkitEventEmitter_h
+#define RNAliavkitEventEmitter_h
 
 
-@interface RNAvkitEventEmitter ()
+#endif /* RNAliavkitEventEmitter_h */
+
+
+#import "RNAliavkitEventEmitter.h"
+
+
+@interface RNAliavkitEventEmitter ()
 {
     BOOL _hasListeners;
 }
 
 @end
 
-@implementation RNAvkitEventEmitter
+@implementation RNAliavkitEventEmitter
 
 RCT_EXPORT_MODULE();
 
@@ -19,7 +32,7 @@ RCT_EXPORT_MODULE();
 }
 
 + (id)allocWithZone:(NSZone *)zone {
-    static RNAvkitEventEmitter *sharedInstance = nil;
+    static RNAliavkitEventEmitter *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [super allocWithZone:zone];
@@ -35,3 +48,4 @@ RCT_EXPORT_MODULE();
 }
 
 @end
+

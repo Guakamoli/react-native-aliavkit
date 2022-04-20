@@ -4,8 +4,8 @@ const { AliAVServiceBridge, RNMusicService, RNEditViewManager, CKCameraManager }
 
 const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
 
-const { RNAvkitEventEmitter } = NativeModules;
-const aliavkitEventEmitter = new NativeEventEmitter(RNAvkitEventEmitter);
+const { RNAliavkitEventEmitter } = NativeModules;
+const aliavkitEventEmitter = new NativeEventEmitter(RNAliavkitEventEmitter);
 
 type MusicRequestType = {
   name: string;
