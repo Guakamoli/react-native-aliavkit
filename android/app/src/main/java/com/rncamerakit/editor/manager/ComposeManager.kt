@@ -18,7 +18,7 @@ import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactContext
 import com.google.gson.GsonBuilder
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.utils.AliFileUtils
 import java.io.FileOutputStream
@@ -129,7 +129,7 @@ class ComposeManager(private val mContext: ReactContext) {
 
                 override fun onComposeProgress(progress: Int) {
                     Log.e("AAA", "onComposeProgress:$progress")
-                    RNEventEmitter.startVideoCompose(mContext, progress, "", isStoryCompose)
+                    RNAliavkitEventEmitter.startVideoCompose(mContext, progress, "", isStoryCompose)
                 }
 
                 override fun onComposeCompleted() {
@@ -148,7 +148,7 @@ class ComposeManager(private val mContext: ReactContext) {
                     if (isSaveToPhotoLibrary) {
                         AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath)
                     }
-                    val videoParam = RNEventEmitter.startVideoCompose(mContext, 100, mOutputPath, isStoryCompose)
+                    val videoParam = RNAliavkitEventEmitter.startVideoCompose(mContext, 100, mOutputPath, isStoryCompose)
                     val videoParamJson = GsonBuilder().create().toJson(videoParam)
                     promise?.resolve(videoParamJson)
 //                    } else {

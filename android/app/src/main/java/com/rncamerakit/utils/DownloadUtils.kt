@@ -3,9 +3,6 @@ package com.rncamerakit.utils
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import android.text.TextUtils
-import android.util.Log
-import com.aliyun.common.utils.StorageUtils
 import com.aliyun.svideo.common.utils.MD5Utils
 import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.downloader.FileDownloaderCallback
@@ -19,7 +16,7 @@ import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloader
 import com.liulishuo.filedownloader.util.FileDownloadUtils
 import com.manwei.libs.utils.GsonManage
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.db.MusicFileBaseInfo
 import com.rncamerakit.db.MusicFileInfoDao
 import com.rncamerakit.font.FontManager
@@ -27,7 +24,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.net.URL
-import kotlin.coroutines.resume
 
 class DownloadUtils {
     companion object {
@@ -71,12 +67,12 @@ class DownloadUtils {
                     ) {
                         super.progress(task, soFarBytes, totalBytes)
                         val progress = soFarBytes.toDouble()/totalBytes.toDouble()*100
-                        RNEventEmitter.downloadMusicProgress(context, progress.toInt())
+                        RNAliavkitEventEmitter.downloadMusicProgress(context, progress.toInt())
                     }
 
                     override fun completed(task: BaseDownloadTask) {
                         super.completed(task)
-                        RNEventEmitter.downloadMusicProgress(context, 100)
+                        RNAliavkitEventEmitter.downloadMusicProgress(context, 100)
                         val filePath = task.targetFilePath
                         val duration = getAudioDuration(context.applicationContext, filePath)
                         MusicFileInfoDao.instance.updateLocalPath(songID, filePath, duration)

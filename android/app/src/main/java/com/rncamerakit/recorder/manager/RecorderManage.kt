@@ -10,7 +10,6 @@ import com.aliyun.svideo.recorder.util.FixedToastUtils
 import com.aliyun.svideo.recorder.util.RecordCommon
 import com.aliyun.svideo.recorder.util.SharedPreferenceUtils
 import com.aliyun.svideosdk.common.struct.common.AliyunSnapVideoParam
-import com.aliyun.svideosdk.common.struct.common.VideoQuality
 import com.aliyun.svideosdk.common.struct.effect.EffectFilter
 import com.aliyun.svideosdk.common.struct.effect.EffectPaster
 import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
@@ -28,7 +27,7 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
-import com.rncamerakit.RNEventEmitter
+import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.VideoConst
 import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
@@ -220,7 +219,7 @@ class RecorderManage(
             mClipManager?.deleteAllPart()
             mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
                 override fun onProgress(duration: Long) {
-                    RNEventEmitter.startVideoRecord(reactContext, duration)
+                    RNAliavkitEventEmitter.startVideoRecord(reactContext, duration)
                 }
             })
             isRecording = true
@@ -286,7 +285,7 @@ class RecorderManage(
             }
             mRecordCallback?.setOnRecorderCallbacks(object : OnRecorderCallbacks() {
                 override fun onProgress(duration: Long) {
-                    RNEventEmitter.startMultiRecording(reactContext, duration)
+                    RNAliavkitEventEmitter.startMultiRecording(reactContext, duration)
                 }
             })
             mRecorder?.startRecording()
