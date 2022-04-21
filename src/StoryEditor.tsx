@@ -15,6 +15,8 @@ import {
   StatusBar,
 } from 'react-native';
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import _ from 'lodash';
@@ -142,11 +144,19 @@ export default class StoryEditor extends Component<Props, State> {
     // console.info("storyComposeVideo videoParams", videoParams);
     //需求：story 发布时要同时保存到相册
     // CameraRoll.save(videoParams.path, { type: 'video' })
-    this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
-    let uploadData = [{path: jsonPath}];
+
+
+
+    const isExport = await AsyncStorage.getItem("StoryExportVideo");
+    if (isExport === null) {
+      AsyncStorage.setItem('StoryExportVideo', "StoryExportVideo");
+      this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
+    }
+
+    let uploadData = [{ path: jsonPath }];
     this.props.getUploadFile(uploadData);
     //story 去做导出
-  
+
 
     //外部去做导出，这里返回 json 文件，外部去调用 await AVService.storyComposeVideo
     // const storyParam = {
