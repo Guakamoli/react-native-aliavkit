@@ -223,7 +223,7 @@ class RenderBigCircle extends Component {
                   style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
                   source={{ uri: i.icon }}
                 />
-                {(this.props.pasterSelectedIndex === index && !i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
+                {(!i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
                   <Image style={{ position: 'absolute', width: 14, height: 14, right: 6, bottom: 6 }} source={require('../../images/ic_story_paster_download.png')} />
                   :
                   <Progress.Circle style={{ position: 'absolute', right: 6, bottom: 6 }} animated={true} size={14} progress={this.state.downloadProgress} color={"rgba(255, 255, 255, 1)"} />
@@ -598,9 +598,6 @@ class CarouselWrapper extends Component<Props, State> {
   getPasterInfos = async () => {
     const pasters = await AVService.getFacePasterInfos({});
     pasters.forEach((item, index) => {
-      if (index == 0) {
-        return;
-      }
       if (item.icon) {
         item.icon = item.icon.replace('http://', 'https://');
       }
