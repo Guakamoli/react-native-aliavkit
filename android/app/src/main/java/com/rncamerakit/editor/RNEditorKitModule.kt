@@ -201,8 +201,8 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun postCancelCrop(promise: Promise) {
         reactContext.runOnUiQueueThread {
             val cropMap: HashMap<String, Any> = HashMap<String, Any>()
-            cropMap["path"] = ""
-            cropMap["isCroped"] = 0
+//            cropMap["path"] = ""
+//            cropMap["isCroped"] = false
             val jsonString =  GsonBuilder().create().toJson(cropMap)
             mPostCropPromise?.resolve(jsonString)
         }

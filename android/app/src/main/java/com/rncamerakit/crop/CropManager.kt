@@ -157,14 +157,18 @@ class CropManager {
                             mBitrate = (bitRate/1000).toInt()
                         }
                     } else {
-                        //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
+                        //沿用原视频码率
                         if (bitRate < mBitrate*1000) {
-                            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
-                            cropMap["path"] = videoPath
-                            cropMap["isCroped"] = 0
-                            promise.resolve(GsonBuilder().create().toJson(cropMap))
-                            return null
+                            mBitrate = (bitRate/1000).toInt()
                         }
+//                        //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
+//                        if (bitRate < mBitrate*1000) {
+//                            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+//                            cropMap["path"] = videoPath
+//                            cropMap["isCroped"] = 0
+//                            promise.resolve(GsonBuilder().create().toJson(cropMap))
+//                            return null
+//                        }
                         mVideoWidth = frameWidth
                         mVideoHeight = frameHeight
                     }
@@ -223,9 +227,20 @@ class CropManager {
 //                    val frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH)
 //                    val frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT)
 
+                    val outputPathFile = File(videoParam.outputPath)
                     val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+                    cropMap["index"] = 0
+                    cropMap["localPath"] = videoPath
+                    cropMap["name"] = outputPathFile.name
                     cropMap["path"] = videoParam.outputPath
-                    cropMap["isCroped"] = 1
+                    cropMap["coverImage"] = ""
+
+                    cropMap["size"] = outputPathFile.length()
+                    cropMap["width"] = mVideoWidth
+                    cropMap["height"] = mVideoHeight
+
+                    cropMap["type"] = "video/mp4"
+                    cropMap["isCroped"] = true
                     promise.resolve(GsonBuilder().create().toJson(cropMap))
                 }
 

@@ -256,12 +256,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setIsStartPreview:(BOOL)startPreview
 {
-    if (startPreview != _isStartPreview) {
-        _isStartPreview = startPreview;
-        if(startPreview){
-            [self.cameraAction resumeCamera];
-        }
-    }
+//    if (startPreview != _isStartPreview) {
+//        _isStartPreview = startPreview;
+//        if(startPreview){
+//            [self.cameraAction resumeCamera];
+//        }
+//    }
 }
 
 - (void)changeCamera:(AVCaptureDevicePosition)preferredPosition

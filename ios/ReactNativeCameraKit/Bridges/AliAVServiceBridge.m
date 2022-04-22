@@ -33,6 +33,7 @@ static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
     RCTPromiseResolveBlock _videoComposeResolve;
     RCTPromiseRejectBlock _videoComposeReject;
     NSString *_videoCropOutputPath;
+    NSString *_postCropLocalPath;
     // 裁剪模式， 1：原裁剪 2：post 压缩裁剪
     NSInteger _videoCropType;
 }
@@ -193,7 +194,8 @@ RCT_EXPORT_METHOD(postCancelCrop:(NSDictionary*)options
         [self.cutPanel cancel];
     }
     if(_videoCropResolve != nil){
-        id cropParam = @{@"path":@"", @"isCroped":@(FALSE)};
+//        id cropParam = @{@"path":@"", @"isCroped":@(NO)};
+        id cropParam = @{};
         _videoCropResolve(cropParam);
         _videoCropResolve = nil;
     }
@@ -213,7 +215,7 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
 //        reject(@"",@"no ph:// scheme",nil);
 //        return;
 //    }
-    
+    _postCropLocalPath = videoPath;
     _videoCropResolve = resolve;
     _videoCropReject = reject;
     
@@ -262,13 +264,16 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
                 mBitrate = bitRate;
             }
         } else {
-            //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
             if (bitRate < mBitrate) {
-                //TODO
-                id cropParam = @{@"path":videoPath, @"isCroped":@(FALSE)};
-                resolve(cropParam);
-                return;
+                mBitrate = bitRate;
             }
+//            //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
+//            if (bitRate < mBitrate) {
+//                //TODO
+//                id cropParam = @{@"path":videoPath, @"isCroped":@(FALSE)};
+//                resolve(cropParam);
+//                return;
+//            }
             mVideoWidth = frameWidth;
             mVideoHeight = frameHeight;
         }
@@ -854,9 +859,40 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
 //
 //    AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:_videoCropOutputPath];
 //    NSInteger bitRate = nativeParser.getVideoBitrate;
-    
+    //                   [{"coverImage": "",
+    //                        "height": 1920,
+    //                        "index": 0,
+    //                        "localPath": "file:///storage/emulated/0/DCIM/Camera/VID_20220422_114127.mp4",
+    //                        "name": "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/cache/media/editor/Crop_1650603488136_VID_20220422_114127.mp4",
+    //                        "path": "/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/cache/media/editor/Crop_1650603488136_VID_20220422_114127.mp4",
+    //                        "size": 23039811,
+    //                        "type": "video/mp4",
+    //                        "width": 1080}
+    //                    ]
     if(_videoCropType == 2 && _videoCropResolve != nil && _videoCropOutputPath){
-        id cropParam = @{@"path":_videoCropOutputPath, @"isCroped":@(TRUE)};
+        
+        AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:_videoCropOutputPath]];
+        CGSize size = [asset avAssetNaturalSize];
+        CGFloat frameWidth = size.width;
+        CGFloat frameHeight = size.height;
+        NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:_videoCropOutputPath error:nil].fileSize;
+        NSString *fileType =[self fileMIMETypeURLSessionWithPath:_videoCropOutputPath];
+        NSString *fileName = [_videoCropOutputPath lastPathComponent];
+        id cropParam = @{
+            @"index":@0,
+            @"localPath":_postCropLocalPath,
+            @"name":fileName,
+            @"path":_videoCropOutputPath,
+            @"coverImage":@"",
+            
+            @"size":@(fileSize),
+            @"width":@(frameWidth),
+            @"height":@(frameHeight),
+            
+            @"type":@"video/mp4",
+            
+            @"isCroped":@(YES)
+        };
         _videoCropResolve(cropParam);
     }
     
