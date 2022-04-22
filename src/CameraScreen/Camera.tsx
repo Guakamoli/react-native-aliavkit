@@ -277,7 +277,7 @@ class RenderCamera extends Component {
   componentDidMount() {
     this.getRecordColorFilter();
 
-    // //TODOWUYQ
+    //TODOWUYQ
     // setTimeout(() => {
     //   this.setState({ startPreview: true });
     // }, 1000);
@@ -496,7 +496,7 @@ class RenderCamera extends Component {
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
-        <CameraPreView  {...this.props} width={width} height={CameraFixHeight} />
+        {/* <CameraPreView  {...this.props} width={width} height={CameraFixHeight} /> */}
         <View
           style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {
