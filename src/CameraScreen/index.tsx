@@ -559,6 +559,7 @@ class CameraScreen extends Component<Props, State> {
         ShootSuccess: true,
       });
     }
+    this.setMultiType(0);
     this.props.setType('storyedit');
   }
 
