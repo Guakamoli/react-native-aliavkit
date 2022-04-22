@@ -24,7 +24,7 @@ RCT_EXPORT_VIEW_PROPERTY(cameraType, CKCameraType)
 RCT_EXPORT_VIEW_PROPERTY(flashMode, CKCameraFlashMode)
 RCT_EXPORT_VIEW_PROPERTY(focusMode, CKCameraFocusMode)
 RCT_EXPORT_VIEW_PROPERTY(zoomMode, CKCameraZoomMode)
-
+//
 RCT_EXPORT_VIEW_PROPERTY(frameColor, UIColor)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
@@ -37,7 +37,7 @@ RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
 RCT_EXPORT_VIEW_PROPERTY(cameraStyle, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
-RCT_EXPORT_VIEW_PROPERTY(isStartPreview, BOOL)
+//RCT_EXPORT_VIEW_PROPERTY(isStartPreview, BOOL)
 
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options

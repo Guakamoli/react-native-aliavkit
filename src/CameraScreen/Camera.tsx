@@ -278,9 +278,10 @@ class RenderCamera extends Component {
     this.getRecordColorFilter();
 
     //TODOWUYQ
-    // setTimeout(() => {
-    //   this.setState({ startPreview: true });
-    // }, 1000);
+    setTimeout(() => {
+      this.resumeCamera()
+      // this.setState({ startPreview: true });
+    }, 200);
     //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
@@ -307,7 +308,7 @@ class RenderCamera extends Component {
 
   //恢复录制，用于 post 重新切换成  post, 或者 story 编辑 退出到 story
   resumeCamera = () => {
-
+    console.info('调用', this.props.camera.current?.resumeCamera)
     this.props.camera.current?.resumeCamera();
   }
 
@@ -356,9 +357,10 @@ class RenderCamera extends Component {
     }
 
 
-
-    if (this.props.type != nextProps.type && this.props.initStory) {
+    console.info('记过这里',  nextProps.type)
+    if (this.props.type != nextProps.type && nextProps.initStory) {
       //
+      console.info('命中',nextProps.type)
       if (nextProps.type == "story") {
         this.resumeCamera();
       }
@@ -370,9 +372,6 @@ class RenderCamera extends Component {
 
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
-      if (!showCamera) {
-        this.props.camera.current?.cameraStopPreview?.();
-      }
       this.setState({
         showCamera,
       });
@@ -410,9 +409,6 @@ class RenderCamera extends Component {
 
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
-      if (!showCamera) {
-        this.props.camera.current?.cameraStopPreview?.();
-      }
       this.setState(
         {
           showCamera,
@@ -492,7 +488,6 @@ class RenderCamera extends Component {
     if (CameraFixHeight > fixHeight) {
       CameraFixHeight = fixHeight;
     }
-    // console.info("facePasterInfo",this.props.facePasterInfo);
     return (
       <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
         {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}

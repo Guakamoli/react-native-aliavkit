@@ -1055,9 +1055,9 @@ class PostFileUpload extends Component {
     const { AsyncStorage } = this.props;
     getPhotos.then(
       async (data) => {
-        if (getPhotosNum > data.edges.length) {
-          isMax = true;
-        }
+        // if (getPhotosNum > data.edges.length) {
+        //   isMax = true;
+        // }
         // end_cursor =  data?.page_info?.end_cursor
         var edges = data.edges;
         var photos = [];

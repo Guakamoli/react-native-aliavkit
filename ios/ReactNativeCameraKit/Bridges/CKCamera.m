@@ -101,26 +101,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-    if (!self.superview && _isPresented) {
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:nil];
-        }
-        [self.cameraAction stopPreview];
-        [self destroyRecorder];
-//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-//            [self.cameraAction.cameraPreview removeFromSuperview];
-//        }
-        _isPresented = NO;
-        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-    }else{
-        
-    }
-}
-
-- (void)didMoveToWindow
-{
-    [super didMoveToWindow];
-    if (!_isPresented && self.window) {
+    if (!_isPresented && self.superview) {
         AVDLog(@"----： 📷 ready to appear");
         if (self.cameraAction && !self.cameraAction.isRecording) {
             if (![self.subviews containsObject:self.cameraAction.cameraPreview]) {
@@ -128,27 +109,24 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             }
             [self.cameraAction startPreview];
             [self.cameraAction addNotification];
-//            [self.cameraAction deletePreviousEffectPaster];
+
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
     }
-    if (!self.window && _isPresented) {
+    if (!self.superview && _isPresented) {
+        [self.cameraAction stopPreview];
+        [self.cameraAction removeNotification];
         if (self.cameraAction.isRecording) {
             [self.cameraAction stopRecordVideo:nil];
         }
-        [self.cameraAction stopPreview];
-        [self.cameraAction removeNotification];
         [self destroyRecorder];
-        
-//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-//            [self.cameraAction.cameraPreview removeFromSuperview];
-//        }
         _isPresented = NO;
-        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+//        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
 }
+
 
 - (instancetype)init
 {
@@ -207,7 +185,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
         CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
         if (outputSize.width != 0 && outputSize.height != 0 ) {
-            self.cameraAction.mediaConfig.outputSize = outputSize;            
+            self.cameraAction.mediaConfig.outputSize = outputSize;
         }
         if ([mediaInfo objectForKey:@"minDuration"]) {
             CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
@@ -223,11 +201,11 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setCameraStyle:(NSDictionary *)cameraStyle
 {
-    if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
-        CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
-        CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
-        self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
-    }
+   if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
+       CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
+       CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
+//       self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
+   }
 }
 
 - (void)setFilterPath:(NSString*)filterPath
@@ -256,12 +234,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setIsStartPreview:(BOOL)startPreview
 {
-//    if (startPreview != _isStartPreview) {
-//        _isStartPreview = startPreview;
-//        if(startPreview){
-//            [self.cameraAction resumeCamera];
-//        }
-//    }
+    if (startPreview != _isStartPreview) {
+        _isStartPreview = startPreview;
+        if(startPreview){
+            [self.cameraAction resumeCamera];
+        }
+    }
 }
 
 - (void)changeCamera:(AVCaptureDevicePosition)preferredPosition

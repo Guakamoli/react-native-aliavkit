@@ -74,8 +74,8 @@
 - (instancetype)initWithPreviewFrame:(CGRect)previewFrame
 {
     if (self = [super init]) {
-        [self setupDefault];
-        self.previewRect = previewFrame;
+       [self setupDefault];
+       self.previewRect = previewFrame;
     }
     return self;
 }
@@ -88,13 +88,17 @@
 
 - (UIView *)cameraPreview
 {
-    return self.recorder.preview;
+    if (self.recorder) {
+        self.recorder.preview;
+    }
+    return nil;
 }
 
 
 #pragma mark - GET
 - (AliyunIRecorder *)recorder
 {
+    
     if (!_recorder) {
         _recorder =[[AliyunIRecorder alloc] initWithDelegate:self videoSize:self.mediaConfig.outputSize];
         _recorder.preview = [[UIView alloc] initWithFrame:self.previewRect];
@@ -142,11 +146,15 @@
 #pragma mark - focus and scale
 - (AlivcRecordFocusView *)focusView
 {
+    
     if (!_focusView) {
         CGFloat size = 150;
         _focusView = [[AlivcRecordFocusView alloc]initWithFrame:CGRectMake(0, 0, size, size)];
         _focusView.animation = YES;
-        [self.recorder.preview addSubview:_focusView];
+        if (self.recorder.preview) {
+         [self.recorder.preview addSubview:_focusView];
+    }
+       
     }
     return _focusView;
 }
@@ -172,11 +180,10 @@
 
 - (void)appWillResignActive:(id)sender
 {
-//    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
-//    if (self.recorder.isRecording) {
-//        [self.recorder stopRecording];
-//        [self.recorder stopPreview];
-//    }
+    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+    if (self.recorder.isRecording) {
+        [self.recorder stopRecording];
+    }
     [self pauseCamera];
 }
 
@@ -187,7 +194,10 @@
 }
 
 - (void)addFocusGesture
-{
+{   
+    if (!self.recorder.preview) {
+        return;
+    }
     if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
         return;
     }
@@ -198,6 +208,9 @@
 
 - (void)addZoomGesture
 {
+        if (!self.recorder.preview) {
+        return;
+    }
     if (self.recorder.preview && [self.recorder.preview.gestureRecognizers containsObject:self.zoomGesture]) {
         return;
     }
@@ -208,6 +221,9 @@
 
 - (void)focusAndExposeTap:(UITapGestureRecognizer *)tapGesture
 {
+        if (!self.recorder.preview) {
+        return;
+    }
     UIView *tapView = tapGesture.view;
     CGPoint point = [tapGesture locationInView:tapView];
     self.recorder.focusPoint = point;
@@ -226,6 +242,9 @@
 
 - (void)removeFocusGesture
 {
+        if (!self.recorder.preview) {
+        return;
+    }
     if (!self.focusGesture) {
         return;
     }
@@ -235,6 +254,9 @@
 
 - (void)removeZoomGesture
 {
+        if (!self.recorder.preview) {
+        return;
+    }
     if (!self.zoomGesture) {
         return;
     }
@@ -290,8 +312,8 @@
     self.recorder.outputPath = videoSavePath;
     self.mediaConfig.outputPath = self.recorder.outputPath;
     self.recorder.taskPath = taskPath;
-    
-    [self.recorder startPreview];
+    _isPauseCamera = YES;
+//    [self.recorder startPreview];
 }
 
 - (void)stopPreview
@@ -299,7 +321,10 @@
 //    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
 //        [self clearBeautyEngine];
 //    }
-    [_recorder stopPreview];
+    if (!_isPauseCamera) {
+        [_recorder stopPreview];
+    }
+   
 }
 
 - (void)destroyRecorder
@@ -537,7 +562,7 @@
 
 - (void)resumeCamera
 {
-    _isPauseCamera = NO;
+    
 //    if(_mRecorderTorchMode){
 //        [self.recorder switchTorchWithMode:_mRecorderTorchMode];
 //    }
@@ -549,7 +574,11 @@
 //        [self.recorder startPreview];
 //    }
     if(self.recorder!=nil){
-        [self.recorder startPreview];
+        if (_isPauseCamera) {
+            [self.recorder startPreview];
+            _isPauseCamera = NO;
+        }
+        
     }
 }
 
