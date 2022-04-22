@@ -143,23 +143,23 @@ class RenderBigCircle extends Component {
 
   componentDidMount() {
     AVService.setFacePasterInfo(this.props.pasterList[0]);
-    AVService.addFacePasterListener((downloadInfo: any) => {
-      const position = downloadInfo?.index;
-      let progress = downloadInfo?.progress;
+    // AVService.addFacePasterListener((downloadInfo: any) => {
+    //   const position = downloadInfo?.index;
+    //   let progress = downloadInfo?.progress;
 
-      if (progress === 1) {
-        progress = 0
-        this.props.setLocalType(downloadInfo)
-      }
-      if (position === this.props.pasterSelectedIndex) {
-        this.setState({ downloadProgress: progress })
-      }
+    //   if (progress === 1) {
+    //     progress = 0
+    //     this.props.setLocalType(downloadInfo)
+    //   }
+    //   if (position === this.props.pasterSelectedIndex) {
+    //     this.setState({ downloadProgress: progress })
+    //   }
 
-    });
+    // });
   }
 
   componentWillUnmount() {
-    AVService.removeFacePasterListener();
+    // AVService.removeFacePasterListener();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -223,11 +223,11 @@ class RenderBigCircle extends Component {
                   style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
                   source={{ uri: i.icon }}
                 />
-                {(!i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
+                {/* {(!i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
                   <Image style={{ position: 'absolute', width: 14, height: 14, right: 6, bottom: 6 }} source={require('../../images/ic_story_paster_download.png')} />
                   :
                   <Progress.Circle style={{ position: 'absolute', right: 6, bottom: 6 }} animated={true} size={14} progress={this.state.downloadProgress} color={"rgba(255, 255, 255, 1)"} />
-                )}
+                )} */}
               </Animated.View>
             </View>
           );
@@ -326,7 +326,7 @@ const RenderItem = React.memo((props) => {
       <View>
         <View style={[styles.propStyle, styles.img]}>
           <Image style={styles.img} source={{ uri: item.icon }} />
-          {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />}
+          {/* {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />} */}
         </View>
       </View>
     </Pressable>

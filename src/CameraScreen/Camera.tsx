@@ -277,10 +277,10 @@ class RenderCamera extends Component {
   componentDidMount() {
     this.getRecordColorFilter();
 
-    //TODOWUYQ
-    setTimeout(() => {
-      this.setState({ startPreview: true });
-    }, 1000);
+    // //TODOWUYQ
+    // setTimeout(() => {
+    //   this.setState({ startPreview: true });
+    // }, 1000);
     //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
