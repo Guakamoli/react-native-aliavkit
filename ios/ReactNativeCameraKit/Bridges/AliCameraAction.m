@@ -291,7 +291,7 @@
     self.mediaConfig.outputPath = self.recorder.outputPath;
     self.recorder.taskPath = taskPath;
     
-//    [self.recorder startPreview];
+    [self.recorder startPreview];
 }
 
 - (void)stopPreview
