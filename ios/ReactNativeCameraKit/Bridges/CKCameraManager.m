@@ -37,7 +37,7 @@ RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
 RCT_EXPORT_VIEW_PROPERTY(cameraStyle, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
-
+RCT_EXPORT_VIEW_PROPERTY(isStartPreview, BOOL)
 
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options

@@ -44,7 +44,7 @@ RCT_EXPORT_MODULE();
  * 贴纸下载进度回调
  */
 - (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index{
-    [self sendEventWithName:@"addFacePasterListener" body:@{@"progress":@(progress),@"index":index}];
+//    [self sendEventWithName:@"addFacePasterListener" body:@{@"progress":@(progress),@"index":index}];
 }
 
 @end

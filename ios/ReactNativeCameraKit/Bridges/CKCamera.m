@@ -92,6 +92,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
 @property (nonatomic, strong) NSDictionary *cameraStyle;
 @property (nonatomic, copy) NSDictionary *mediaInfo;
+@property (nonatomic) BOOL isStartPreview;
 @end
 
 @implementation CKCamera
@@ -251,6 +252,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _cameraType = cameraType;
         [self changeCamera:cameraType];
     }
+}
+
+- (void)setIsStartPreview:(BOOL)startPreview
+{
+//    if (startPreview != _isStartPreview) {
+//        _isStartPreview = startPreview;
+//        if(startPreview){
+//            [self.cameraAction resumeCamera];
+//        }
+//    }
 }
 
 - (void)changeCamera:(AVCaptureDevicePosition)preferredPosition

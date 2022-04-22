@@ -153,6 +153,13 @@ class CKCameraManager : SimpleViewManager<CKCamera>() {
         view.mRecorderManage?.setTorchMode(mode)
     }
 
+    //是否开启预览
+    @ReactProp(name = "isStartPreview")
+    fun setStartPreview(view: CKCamera, isStartPreview: Boolean?) {
+//        if(isStartPreview == true){
+//            view.resumeCamera()
+//        }
+    }
 
     //设置背景音乐
     @ReactProp(name = "backgroundMusic")

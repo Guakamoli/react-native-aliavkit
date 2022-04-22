@@ -251,6 +251,7 @@ class RenderCamera extends Component {
       filterPath: null,
       filterList: [],
       showFilterLens: false,
+      startPreview: false,
     };
     // this.fadeAnim = new Animated.Value(1);
   }
@@ -275,6 +276,11 @@ class RenderCamera extends Component {
   };
   componentDidMount() {
     this.getRecordColorFilter();
+
+    // //TODOWUYQ
+    // setTimeout(() => {
+    //   this.setState({ startPreview: true });
+    // }, 1000);
     //
     // if (Platform.OS === 'ios') {
     //   AppState.addEventListener('change', this.handleAppStateChange);
@@ -325,6 +331,10 @@ class RenderCamera extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState) {
+
+    if (this.state.startPreview != nextState.startPreview) {
+      return true;
+    }
 
     if (this.state.filterPath != nextState.filterPath) {
       return true;
@@ -509,8 +519,9 @@ class RenderCamera extends Component {
                 torchMode={'off'}
                 onReadCode={() => { }}
                 onRecordingProgress={() => { }}
-
                 filterPath={this.state.filterPath}
+                //TODOWUYQ
+                isStartPreview={this.state.startPreview}
               />
             </View>
           )}

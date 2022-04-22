@@ -57,6 +57,7 @@ class CKCamera(
     private var mHeight = 0
 
 
+
     private var isInit = false
 
     companion object {
@@ -274,17 +275,22 @@ class CKCamera(
     }
 
 
+
+    private var isOnHostPause = false
     private fun initLifecycle() {
         BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
             override fun onHostResume() {
                 super.onHostResume()
 //                Log.e("AAA", "onHostResume()")
-                resumeCamera()
+                if(isOnHostPause){
+                    resumeCamera()
+                }
             }
 
             override fun onHostPause() {
                 super.onHostPause()
 //                Log.e("AAA", "onHostPause()")
+                isOnHostPause = true
                 pauseCamera()
             }
 

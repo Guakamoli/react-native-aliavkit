@@ -548,16 +548,20 @@
 //    }else{
 //        [self.recorder startPreview];
 //    }
-    [self.recorder startPreview];
+    if(self.recorder!=nil){
+        [self.recorder startPreview];
+    }
 }
 
 - (void)pauseCamera
 {
-    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
-    if(self.isRecording){
-        [self.recorder stopRecording];
+    if(self.recorder!=nil){
+        [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+        if(self.isRecording){
+            [self.recorder stopRecording];
+        }
+        [self.recorder stopPreview];
     }
-    [self.recorder stopPreview];
     _isPauseCamera = YES;
 }
 
