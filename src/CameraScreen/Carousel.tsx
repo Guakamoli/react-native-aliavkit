@@ -15,6 +15,8 @@ import {
 
 import * as Progress from 'react-native-progress';
 
+import { ReanimatedArcBase } from '@callstack/reanimated-arc';
+
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import { useInterval, useThrottleFn } from 'ahooks';
@@ -137,35 +139,32 @@ class RenderBigCircle extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      downloadProgress: 0
+
     };
+
+    this.downloadAngle = new Reanimated.Value(0);
   }
 
   componentDidMount() {
     AVService.setFacePasterInfo(this.props.pasterList[0]);
-    // AVService.addFacePasterListener((downloadInfo: any) => {
-    //   const position = downloadInfo?.index;
-    //   let progress = downloadInfo?.progress;
-
-    //   if (progress === 1) {
-    //     progress = 0
-    //     this.props.setLocalType(downloadInfo)
-    //   }
-    //   if (position === this.props.pasterSelectedIndex) {
-    //     this.setState({ downloadProgress: progress })
-    //   }
-
-    // });
+    AVService.addFacePasterListener((downloadInfo: any) => {
+      const position = downloadInfo?.index;
+      let progress = downloadInfo?.progress;
+      const downloadAngle = progress * 360;
+      console.info("downloadAngle", downloadAngle);
+      this.downloadAngle?.setValue(downloadAngle)
+      if (progress === 1) {
+        this.downloadAngle?.setValue(0)
+        this.props.setLocalType(downloadInfo)
+      }
+    });
   }
 
   componentWillUnmount() {
-    // AVService.removeFacePasterListener();
+    AVService.removeFacePasterListener();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.downloadProgress !== this.state.downloadProgress) {
-      return true;
-    }
     if (nextProps.pasterList && nextProps.pasterList !== this.props.pasterList) {
       return true;
     }
@@ -223,16 +222,47 @@ class RenderBigCircle extends Component {
                   style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
                   source={{ uri: i.icon }}
                 />
-                {/* {(!i?.isLocalRes && this.state.downloadProgress < 1) && (!this.state.downloadProgress ?
-                  <Image style={{ position: 'absolute', width: 14, height: 14, right: 6, bottom: 6 }} source={require('../../images/ic_story_paster_download.png')} />
-                  :
-                  <Progress.Circle style={{ position: 'absolute', right: 6, bottom: 6 }} animated={true} size={14} progress={this.state.downloadProgress} color={"rgba(255, 255, 255, 1)"} />
-                )} */}
+
+                {
+                  (this.props.pasterSelectedIndex === index && !i?.isLocalRes) &&
+                  < Reanimated.View
+                    style={{
+                      position: 'absolute',
+                      width: 14,
+                      height: 14,
+                      right: 6,
+                      bottom: 6,
+                    }}>
+                    <ReanimatedArcBase
+                      color='rgba(216,216,216,0.54)'
+                      diameter={14}
+                      width={2.5}
+                      arcSweepAngle={360}
+                      lineCap='round'
+                      rotation={360}
+                      hideSmallAngle={false}
+                      style={styles.absolute}
+                    />
+                    <ReanimatedArcBase
+                      color='#FFF'
+                      diameter={14}
+                      width={2.5}
+                      arcSweepAngle={this.downloadAngle}
+                      lineCap='round'
+                      rotation={360}
+                      hideSmallAngle={false}
+                      style={styles.absolute}
+                    />
+                  </Reanimated.View>
+
+                }
+
               </Animated.View>
             </View>
           );
-        })}
-      </Animated.View>
+        })
+        }
+      </Animated.View >
     );
   }
 }
@@ -326,7 +356,7 @@ const RenderItem = React.memo((props) => {
       <View>
         <View style={[styles.propStyle, styles.img]}>
           <Image style={styles.img} source={{ uri: item.icon }} />
-          {/* {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />} */}
+          {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />}
         </View>
       </View>
     </Pressable>
@@ -661,7 +691,6 @@ class CarouselWrapper extends Component<Props, State> {
   setLocalType = (downloadInfo) => {
     //{"index": 43, "progress": 1}
     const position = downloadInfo?.index;
-    const progress = downloadInfo?.progress;
     const todoList = [...this.state.pasterList];   //浅拷贝一下
     const list = todoList.map((item, key) => {
       return key == position ? { ...item, isLocalRes: true } : item;
@@ -1019,5 +1048,14 @@ const styles = StyleSheet.create({
     borderRadius: circleSize,
     borderWidth: 4,
     borderColor: 'white',
+  },
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
+    height: '100%'
   },
 });
