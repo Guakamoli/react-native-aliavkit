@@ -34,11 +34,11 @@ class RNAliavkitEventEmitter {
          * 下载贴纸
          */
         fun downloadPasterProgress(reactContext: ReactContext?, progress: Int, position: Int) {
-//            val map: HashMap<String, Any> = HashMap<String, Any>()
-//            map["progress"] = progress.toDouble()/100
-//            map["index"] = position
-//            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-//                ?.emit("addFacePasterListener", GsonBuilder().create().toJson(map))
+            val map: HashMap<String, Any> = HashMap<String, Any>()
+            map["progress"] = progress.toDouble()/100
+            map["index"] = position
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("addFacePasterListener", GsonBuilder().create().toJson(map))
         }
 
 
