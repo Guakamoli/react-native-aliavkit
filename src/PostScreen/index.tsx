@@ -1137,11 +1137,12 @@ class PostFileUpload extends Component {
   };
   componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    if (!!this.props.isExample) {
-      this.getPhotos(true);
-    } else {
-      this.getPhotoFromCache();
-    }
+    this.getPhotos(true);
+    // if (!!this.props.isExample) {
+    //   this.getPhotos(true);
+    // } else {
+    //   this.getPhotoFromCache();
+    // }
 
   }
 
