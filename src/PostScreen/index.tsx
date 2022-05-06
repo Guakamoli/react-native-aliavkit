@@ -1079,9 +1079,9 @@ class PostFileUpload extends Component {
             } else {
               localUri = firstData?.image?.uri;
             }
-            if (localUri) {
-              selectedValid = true;
-            }
+            // if (localUri) {
+            //   selectedValid = true;
+            // }
           }
           if (!selectedValid) {
             if (firstData.type.indexOf("video") !== -1) {
