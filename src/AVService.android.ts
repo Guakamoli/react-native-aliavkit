@@ -50,10 +50,10 @@ export default class AVService {
   }
 
   static async storyComposeVideo(jsonPath: String, progressListener: (progress: number) => void) {
-    const storyComposeListener = DeviceEventEmitter.addListener('storyComposeVideo', (reminder) => {
+    const storyComposeListener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
       //0~1
       if (progressListener) {
-        progressListener(reminder.progress);
+        progressListener( JSON.parse(progress).progress);
       }
     });
     const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);

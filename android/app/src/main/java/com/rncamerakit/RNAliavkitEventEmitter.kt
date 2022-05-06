@@ -125,7 +125,6 @@ class RNAliavkitEventEmitter {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                map["videoParams"] = response
             }
             if (isStoryCompose) {
                 reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
