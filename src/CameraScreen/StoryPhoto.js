@@ -297,11 +297,11 @@ class StoryPhoto extends React.Component {
                     width: width, height: 54, backgroundColor: '#121212', marginTop: 10,
                     justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'
                 }}>
-                    <Text style={{ fontSize: 14, color: '#A8A8A8', marginStart: 11 }}>你已允许拍鸭访问特定数量的照片和视频。</Text>
+                    <Text style={{ fontSize: 14, color: '#A8A8A8', marginStart: 11 }}>{I18n.t('camera_jurisdictions')}</Text>
                     <Pressable onPress={() => {
                         openSettings();
                     }}>
-                        <Text style={{ fontSize: 14, color: '#FFFFFF', height: 54, lineHeight: 54, paddingStart: 10, paddingEnd: 12 }}>去设置</Text>
+                        <Text style={{ fontSize: 14, color: '#FFFFFF', height: 54, lineHeight: 54, paddingStart: 10, paddingEnd: 12 }}>{I18n.t('canera_to_setting')}</Text>
                     </Pressable>
 
                 </View>}

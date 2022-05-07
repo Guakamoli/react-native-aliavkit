@@ -34,5 +34,7 @@
     "Need_camera_permission": "“拍鸭”需要获取您的相机和麦克风权限",
     "record_time_small": "录制时间过短",
     "selected_video_time_60": "请选择60秒以内的视频",
-    "close":"关闭"
+    "close":"关闭",
+    "camera_jurisdictions":"你已允许拍鸭访问特定数量的照片和视频。",
+    "canera_to_setting":" 去设置",
 }
