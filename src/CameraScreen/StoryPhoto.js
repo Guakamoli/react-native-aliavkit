@@ -279,7 +279,7 @@ class StoryPhoto extends React.Component {
                         }}
                     >
                         <View style={styles.bottomSheetHeadClose}>
-                            <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                            <Text style={styles.bottomSheetHeadCloseText}>{I18n.t('close')}</Text>
                         </View>
                     </NativeViewGestureHandler>
                     :
@@ -289,7 +289,7 @@ class StoryPhoto extends React.Component {
                         onPress={() => {
                             this.hideBottomSheet();
                         }}>
-                        <Text style={styles.bottomSheetHeadCloseText}>关闭</Text>
+                        <Text style={styles.bottomSheetHeadCloseText}>{I18n.t('close')}</Text>
                     </TouchableOpacity>
                 }
 

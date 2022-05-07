@@ -33,5 +33,6 @@
     "Need_album_permission": "Paiya needs to get your album permission",
     "Need_camera_permission": "Paiya requires access to your camera and microphone",
     "record_time_small": "录制时间过短",
-    "selected_video_time_60": "请选择60秒以内的视频"
+    "selected_video_time_60": "请选择60秒以内的视频",
+    "close":"Close"
 }
