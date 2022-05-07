@@ -10,7 +10,11 @@ export const LANGUAGES = [
 		label: '简体中文',
 		value: 'zh-CN',
 		file: () => require('./locales/zh-CN.json')
-	}
+	}, {
+		label: '简体中文',
+		value: 'zh-Hans',
+		file: () => require('./locales/zh-CN.json')
+	},
 ];
 
 const translations = LANGUAGES.reduce((ret, item) => {
