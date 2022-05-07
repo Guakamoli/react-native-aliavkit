@@ -515,10 +515,11 @@ class ImageViewer extends Component<IProps> {
           avgTouches
           onGestureEvent={this.onPanGestureEvent}
           onHandlerStateChange={this.onPanGestureEvent}
+     
         >
           <Animated.View style={containerStyles}>
             <TapGestureHandler numberOfTaps={2} onHandlerStateChange={this.onTapGestureEvent}>
-              <Animated.View style={areaStyles}>
+              <Animated.View style={areaStyles}      testID={'image-cropper'}>
                 <PinchGestureHandler
                   ref={this.pinchRef}
                   enabled={!this.props.disablePin}
