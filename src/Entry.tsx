@@ -263,7 +263,6 @@ const Entry = (props) => {
             {
               transform: [{ translateX: transX }],
             },
-            I18n.locale ==='en' && {width:160,left:(width - 160)/ 2, paddingRight:10 }
           ]}
         >
           {types.map((i) => {
