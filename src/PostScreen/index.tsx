@@ -147,6 +147,7 @@ class MultipleSelectButton extends Component {
     return (
       <Pressable onPress={this.pressMultiple}>
         <FastImage
+        testID={`post-multiple-button`}
           style={[styles.multipleBtnImage, { marginRight: 10 }]}
           source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
           resizeMode='contain'
@@ -487,6 +488,7 @@ class PostContent extends Component {
             }}
           >
             <FastImage
+              testID='change-image-size-button'
               style={[
                 {
                   width: 31,
@@ -682,7 +684,7 @@ class GridItemCover extends Component {
     const itemCopy = { ...item };
 
     if (fileType === 'video' && Math.ceil(item?.image?.playableDuration) > 300) {
-      return this.props.toastRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 1000);
+      return this.props.toastRef.current.show(`${I18n.t('The_length_of_the_video_cannot_exceed_5_minutes')}`, 2000);
     }
     if (fileType === 'video') {
       // 这里验证一下是否可以用
@@ -734,7 +736,7 @@ class GridItemCover extends Component {
 
       }
       if (datalist.length >= 10) {
-        this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 1000);
+        this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 2000);
         // 无效 注意
         return;
       }
@@ -897,7 +899,7 @@ class GridItem extends Component {
     const { item } = this.props;
     const { type, image } = item;
     return (
-      <View>
+      <View testID={`post-upload-file`}>
         <GridItemCover {...this.props} key={item.image.uri} />
         <Image
           style={[
@@ -965,7 +967,7 @@ const PostHead = React.memo((props) => {
           justifyContent: 'center',
         }}
       >
-        <FastImage style={styles.closeIcon} source={closePng} resizeMode='contain' />
+        <FastImage testID={"back-home"} style={styles.closeIcon} source={closePng} resizeMode='contain' />
       </Pressable>
       <Text style={styles.textCenter}>{`${I18n.t('New_product')}`}</Text>
 
@@ -978,7 +980,7 @@ const PostHead = React.memo((props) => {
           alignItems: 'flex-end',
         }}
       >
-        <Text style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
+        <Text testID={'confirm-upload'} style={[styles.continueText, multipleData[0]?.image?.playableDuration > 300 && { color: '#333', }]}>
           {I18n.t('continue')}
         </Text>
       </Pressable>
