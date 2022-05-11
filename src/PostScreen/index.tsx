@@ -36,6 +36,8 @@ import Animated from 'react-native-reanimated';
 import { Button } from 'react-native-elements';
 import I18n from '../i18n';
 
+import AVkitPhotoView from '../AVKitPhotoView';
+
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import ImageMap from '../../images';
@@ -147,7 +149,7 @@ class MultipleSelectButton extends Component {
     return (
       <Pressable onPress={this.pressMultiple}>
         <FastImage
-        testID={`post-multiple-button`}
+          testID={`post-multiple-button`}
           style={[styles.multipleBtnImage, { marginRight: 10 }]}
           source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
           resizeMode='contain'
@@ -1888,7 +1890,10 @@ export default class CameraScreen extends Component<Props, State> {
           <PostContent key={'PostContent'} {...this.props} postEditorParams={this.state.postEditorParams} isVidoePlayer={this.state.isVidoePlayer} />
           <PostFileUploadHead key={'PostFileUploadHead'} {...this.props} />
 
-          <PostFileUpload {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
+          {/* <PostFileUpload {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} /> */}
+
+          <AVkitPhotoView {...this.props}></AVkitPhotoView>
+
         </View>
         {this.state.postEditorParams ? (
           <PostEditor
