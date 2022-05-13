@@ -29,7 +29,7 @@ export const setLanguage = (l) => {
 	}
 	// server uses lowercase pattern (pt-br), but we're forced to use standard pattern (pt-BR)
 	let locale = LANGUAGES.find(ll => ll.value.toLowerCase() === l.toLowerCase())?.value;
-	if (locale === 'zh-Hans') {
+	if (locale && locale.startsWith('zh-')) {
 		locale = 'zh-CN';
 	} else {
 		locale = 'en';
