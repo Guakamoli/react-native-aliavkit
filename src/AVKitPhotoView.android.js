@@ -42,6 +42,7 @@ export default class AVkitPhotoView extends React.Component {
     }
 
     _onSelectedPhotos = event => {
+        console.info("_onSelectedPhotos",event.nativeEvent);
         if (this.props.onSelectedPhotos) {
             // selectedIndex： 当前选中的 图片/视频 数组下标，单选模式固定返回0
             // selectedData：  选择的图片、视频的数组，单选模式其中只有一条数据，多选模式中视频也应该只有一条数据
@@ -69,16 +70,16 @@ export default class AVkitPhotoView extends React.Component {
         // multiSelect: 是否多选  默认：false
         // itemWidth: 相册一张图片的宽度（为0则不设置，默认是：屏幕宽度 / 列数）。post用不到，后续 story 相册，UI宽高不一样会用到
         // itemHeight: 同itemWidth
+
+        console.info("this.state.viewStyle", this.state.viewStyle);
         return (
             <NativePhotoView
-                style={{ minWidth: 100, minHeight: 100 }}
                 {...this.props}
                 pageSize={this.state.pageSize}
                 numColumns={this.state.numColumns}
                 multiSelect={this.state.multiSelect}
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
-
                 onSelectedPhotos={this._onSelectedPhotos}
             />
         );

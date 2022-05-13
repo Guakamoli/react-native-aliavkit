@@ -1892,7 +1892,10 @@ export default class CameraScreen extends Component<Props, State> {
 
           {/* <PostFileUpload {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} /> */}
 
-          <AVkitPhotoView {...this.props}></AVkitPhotoView>
+          <AVkitPhotoView {...this.props}
+            style={{ height: height - 44 - 50 - width, width: width, backgroundColor: 'black' }}
+          ></AVkitPhotoView>
+
 
         </View>
         {this.state.postEditorParams ? (
