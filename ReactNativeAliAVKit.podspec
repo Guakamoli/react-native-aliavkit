@@ -17,6 +17,9 @@ Pod::Spec.new do |s|
   
   s.resource = 'ios/ReactNativeCameraKit/Resources/ShortVideoResource/*'
   
+  #不允许多个resource
+  #s.resource = 'ios/ReactNativeCameraKit/Resources/AliKitPhotoViewResource/*'
+  
   s.dependency 'React-Core'
   
   # 柯南SDK-短视频SDK依赖的数据埋点
