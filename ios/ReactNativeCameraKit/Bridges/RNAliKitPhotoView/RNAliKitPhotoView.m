@@ -59,8 +59,10 @@
 @end
     
 @implementation RNAliKitPhotoView
+
 #pragma mark - KVO 监视滑动区域来进行分页
-- (void)dealloc {
+- (void)dealloc
+{
     [self.collectionView removeObserver:self forKeyPath:@"contentOffset"];
 }
 //监听滑动,到底最下面的时候再拼接新的数据再下面
@@ -68,22 +70,22 @@
 {
     if ([keyPath isEqualToString:@"contentOffset"] && object == self.collectionView)
     {
-        NSValue *newvalue = change[NSKeyValueChangeNewKey];
-        NSValue *oldvalue = change[NSKeyValueChangeOldKey];
+        NSValue *newvalue   = change[NSKeyValueChangeNewKey];
+        NSValue *oldvalue   = change[NSKeyValueChangeOldKey];
         CGFloat newoffset_y = newvalue.UIOffsetValue.vertical;
         CGFloat oldoffset_y = oldvalue.UIOffsetValue.vertical;
-        CGFloat viewHeight = self.collectionView.frame.size.height;
-        CGFloat maxOffsetY = self.collectionView.contentSize.height - viewHeight;
+        CGFloat viewHeight  = self.collectionView.frame.size.height;
+        CGFloat maxOffsetY  = self.collectionView.contentSize.height - viewHeight;
         //第二阶段,触发回弹,并且回弹结束
         if(self.showFooterStatus && oldoffset_y > newoffset_y && maxOffsetY > (newoffset_y-30))
         {
             //极端情况可能会出现滑动速度快于数据加载
             @synchronized (self.viewDataArray) {
                 NSInteger dataCount = self.viewDataArray.count;
-                NSInteger pageSize = MIN(self.libraryDataArray.count - dataCount, self.pageSize);
-                NSRange range = NSMakeRange(dataCount, pageSize);
-                NSArray *moreData = [self.libraryDataArray subarrayWithRange:range];
-                self.viewDataArray = [self.viewDataArray arrayByAddingObjectsFromArray:moreData];
+                NSInteger pageSize  = MIN(self.libraryDataArray.count - dataCount, self.pageSize);
+                NSRange range       = NSMakeRange(dataCount, pageSize);
+                NSArray *moreData   = [self.libraryDataArray subarrayWithRange:range];
+                self.viewDataArray  = [self.viewDataArray arrayByAddingObjectsFromArray:moreData];
                 [self.collectionView reloadData];
                 self.showFooterStatus = NO;
             }
@@ -159,17 +161,17 @@
 //初始化UI
 - (void)setupSubviews
 {
-    self.flowLayout = [self getFlowLayout];
-    CGFloat viewWidth = self.frame.size.width;
-    CGFloat viewHeight = self.frame.size.height;
-    CGRect collectionFrame = CGRectMake(0, 0, viewWidth, viewHeight);
+    self.flowLayout         = [self getFlowLayout];
+    CGFloat viewWidth       = self.frame.size.width;
+    CGFloat viewHeight      = self.frame.size.height;
+    CGRect collectionFrame  = CGRectMake(0, 0, viewWidth, viewHeight);
     UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:collectionFrame collectionViewLayout:_flowLayout];
-    self.collectionView = collectionView;
+    self.collectionView     = collectionView;
     self.collectionView.backgroundColor = [UIColor clearColor];
     [self.collectionView registerClass:[AliyunCompositionCell class] forCellWithReuseIdentifier:@"AliyunCompositionCell"];
     self.collectionView.alwaysBounceVertical = YES;
-    self.collectionView.delegate = self;
-    self.collectionView.dataSource = self;
+    self.collectionView.delegate             = self;
+    self.collectionView.dataSource           = self;
     [self addSubview:self.collectionView];
 }
 
@@ -204,20 +206,21 @@
 {
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     //numColumns优先级大于viewWidth
-    CGFloat viewWidth = self.frame.size.width;
-    NSUInteger numColumns = _numColumns ?: 4;
+    CGFloat viewWidth       = self.frame.size.width;
+    NSUInteger numColumns   = _numColumns ?: 4;
     //列数决定item实际宽度
-    CGFloat cellWidth = viewWidth / numColumns;
+    CGFloat cellWidth       = viewWidth / numColumns;
     //item宽度需要和传入的_itemWidth算是间距
-    CGFloat itemSpacing = cellWidth - MIN(cellWidth , _itemWidth);
+    CGFloat itemSpacing     = cellWidth - MIN(cellWidth , _itemWidth);
     //有间距时重新计算cellWidth的大小
-    if(itemSpacing > 0){
-        cellWidth = (viewWidth - itemSpacing * numColumns)/numColumns;
+    if(itemSpacing > 0)
+    {
+        cellWidth = (viewWidth - itemSpacing * numColumns) / numColumns;
     }
     //item高度没有传入时用itemWidth
-    CGFloat cellHeight = _itemHeight ?: cellWidth;
-    layout.itemSize = CGSizeMake(cellWidth, cellHeight);
-    layout.minimumLineSpacing = 0;
+    CGFloat cellHeight          = _itemHeight ?: cellWidth;
+    layout.itemSize             = CGSizeMake(cellWidth, cellHeight);
+    layout.minimumLineSpacing   = 0;
     layout.minimumInteritemSpacing = itemSpacing;
     return layout;
 }
@@ -225,60 +228,61 @@
 
 #pragma mark - UICollectionViewDelegate
 //UICollectionView内部结构:{组:cell群},在不使用多组结构时,section没有用处
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
     return self.viewDataArray.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     AliyunCompositionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"AliyunCompositionCell" forIndexPath:indexPath];
-    cell.delegate = self;
     AliyunAssetModel *model = self.viewDataArray[indexPath.item];
-    cell.labelDuration = model.timeLength;
+    cell.delegate       = self;
+    cell.labelDuration  = model.timeLength;
     cell.hiddenDuration = model.type == AliyunAssetModelMediaTypePhoto;
     //涉及cell重用,元素需要保持初始状态或保证每次都赋值
-    cell.imageView.image = nil;
+    cell.photoImage     = nil;
     //cell样式处理
-    BOOL selectStatus = [self.selectedIndexs containsObject:@(indexPath.item).stringValue];
-    cell.photoIndex = 0;
-    cell.indexPath = indexPath;
+    BOOL selectStatus   = [self.selectedIndexs containsObject:@(indexPath.item).stringValue];
+    cell.photoIndex     = 0;
+    cell.indexPath      = indexPath;
     if(!self.multiSelect){
         //非多选状态下页面只有默认状态和白色模版状态
-        cell.cellStatus = selectStatus ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
-        cell.selectStatus = AYPhotoSelectStatusDefault;
+        cell.cellStatus     = selectStatus ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
+        cell.selectStatus   = AYPhotoSelectStatusDefault;
     }else if(self.selectedIndexs.count == 0){
         //多选情况下允许不选择
-        cell.cellStatus =  AYPhotoCellStatusDefault;
-        cell.selectStatus = AYPhotoSelectStatusUnchecked;
+        cell.cellStatus     =  AYPhotoCellStatusDefault;
+        cell.selectStatus   = AYPhotoSelectStatusUnchecked;
     }else{
         // 当前已选中视频数据
         BOOL selectVideoStatus = [self selectVideoStatus];
         // 当前item不是视频
-        BOOL noVideoData = model.type != AliyunAssetModelMediaTypeVideo;
+        BOOL noVideoData       = model.type != AliyunAssetModelMediaTypeVideo;
         // 已选中数据:白色蒙版
         if(selectStatus){
             BOOL lastSelectData = self.lastSelectIndex == indexPath.item;
-            cell.cellStatus = lastSelectData ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
+            cell.cellStatus   = lastSelectData ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
             cell.selectStatus = selectVideoStatus ? AYPhotoSelectStatusCheck : AYPhotoSelectStatusNumber;
-            cell.photoIndex = [self.selectedIndexs indexOfObject:@(indexPath.item).stringValue]+1;
-        }else if(selectVideoStatus ? noVideoData : !noVideoData){
+            cell.photoIndex   = [self.selectedIndexs indexOfObject:@(indexPath.item).stringValue]+1;
+        }else if(selectVideoStatus == noVideoData){
             //选中视频时,非视频数据加蒙版
             //没选中视频时,视频数据加蒙版
-            cell.cellStatus = AYPhotoCellStatusNoEnabled;
+            cell.cellStatus   = AYPhotoCellStatusNoEnabled;
             cell.selectStatus = AYPhotoSelectStatusUnchecked;
         }else{
-            cell.cellStatus = AYPhotoCellStatusDefault;
+            cell.cellStatus   = AYPhotoCellStatusDefault;
             cell.selectStatus = AYPhotoSelectStatusUnchecked;
         }
     }
     NSString *filename = [model.asset valueForKey:@"filename"];
     if (model.fetchThumbnail) {
-        cell.imageView.image = model.thumbnailImage;
+        cell.photoImage = model.thumbnailImage;
     }else if([ImageCacheTool checkImageCache:filename]){
         //直接从缓存中取出缩略图
-        UIImage *photo = [ImageCacheTool imageWithName:filename];
+        UIImage *photo       = [ImageCacheTool imageWithName:filename];
         model.fetchThumbnail = YES;
         model.thumbnailImage = photo;
-        cell.imageView.image = photo;
+        cell.photoImage      = photo;
     } else {
         CGFloat photoWidth = self.flowLayout.itemSize.width;
         [[AliyunPhotoLibraryManager sharedManager] getPhotoWithAsset:model.asset thumbnailImage:YES photoWidth:photoWidth completion:^(UIImage *photo, NSDictionary *info) {
@@ -286,7 +290,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     model.fetchThumbnail = YES;
                     model.thumbnailImage = photo;
-                    cell.imageView.image = photo;
+                    cell.photoImage      = photo;
                     //缩略图存到到缓存中
                     [ImageCacheTool saveImageToCache:photo name:filename];
                 });
@@ -298,9 +302,8 @@
 // 设置Footer的尺寸
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout referenceSizeForFooterInSection:(NSInteger)section
 {
-    NSLog(@"show foot");
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-    //为避免刘海屏最下面遮住照片
+    //避免刘海屏最下面遮住照片
     CGFloat safeAreaBottom = 34;
     if (@available(iOS 11.0, *)) {
         //RN嵌入页面的view拿不到safeAreaInsets
@@ -314,7 +317,8 @@
     UIView *next = self;
     while ((next = [next superview])) {
         UIResponder *nextResponder = [next nextResponder];
-        if ([nextResponder isKindOfClass:[UIViewController class]]) {
+        if ([nextResponder isKindOfClass:[UIViewController class]])
+        {
             return (UIViewController *)nextResponder;
         }
     }
@@ -346,13 +350,13 @@
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     //oc的array不允许直接放int
-    NSString *indexStr = @(indexPath.item).stringValue;
+    NSString *indexStr      = @(indexPath.item).stringValue;
     //已有数据
-    BOOL cellSelectStatus = [self.selectedIndexs containsObject:indexStr];
+    BOOL cellSelectStatus   = [self.selectedIndexs containsObject:indexStr];
     //当前cell对应的数据
     AliyunAssetModel *model = self.viewDataArray[indexPath.item];
     // 当前item不是视频
-    BOOL noVideoData = model.type != AliyunAssetModelMediaTypeVideo;
+    BOOL noVideoData        = model.type != AliyunAssetModelMediaTypeVideo;
     //多选模式下,照片只能通过右上角勾选按钮删除
     if(self.multiSelect && cellSelectStatus && noVideoData)
     {
@@ -408,7 +412,7 @@
         }else {
             //是否已选中视频
             BOOL selectVideoStatus = [self selectVideoStatus];
-            //如果之后允许多视频的话,只使用else部分
+            //如果之后允许多视频的话,只需要使用else部分
             if(selectVideoStatus){
                 self.selectedIndexs  = [NSMutableArray arrayWithObject:indexStr];
             }else{
@@ -416,6 +420,7 @@
                 NSInteger maxCount = selectVideoStatus ? 1 : 10;
                 //数据上限
                 if (maxCount <= self.selectedIndexs.count) {
+                    //选择的照片达到上限
                     //等待RN加个回调函数
                     return;
                 }
@@ -427,10 +432,8 @@
             self.lastSelectIndex = [lastObj integerValue];
         }
     }
-    
     [self.collectionView reloadData];
 
-    
     
     //当前选择的照片/视频变动后调用RN响应
     if (!self.onSelectedPhotos) {
@@ -441,24 +444,26 @@
     NSMutableArray *selectData = [NSMutableArray new];
     for(NSString *indexStr in self.selectedIndexs){
         AliyunAssetModel *model = self.viewDataArray[indexStr.integerValue];
-        PHAsset *phAsset = model.asset;
-        NSString *filename = [phAsset valueForKey:@"filename"];
-        NSArray *resources = [PHAssetResource assetResourcesForAsset:phAsset];
-        NSString *localPath = [(PHAssetResource*)resources[0] valueForKey:@"privateFileURL"];
-        NSString *fileSize = [(PHAssetResource*)resources[0] valueForKey:@"fileSize"];
-        NSString *playableDuration = @(model.assetDuration*1000).stringValue;
-        NSString *type = phAsset.mediaType == PHAssetMediaTypeImage ? @"image/jpeg" : @"video/mp4";
-        NSString *rotation = @"0";
+        PHAsset *phAsset        = model.asset;
+        NSString *filename      = [phAsset valueForKey:@"filename"];
+        NSArray *resources      = [PHAssetResource assetResourcesForAsset:phAsset];
+        NSString *localPath     = [(PHAssetResource*)resources[0] valueForKey:@"privateFileURL"];
+        NSString *fileSize      = [(PHAssetResource*)resources[0] valueForKey:@"fileSize"];
+        NSString *duration      = @(model.assetDuration*1000).stringValue;
+        BOOL imageType          = phAsset.mediaType == PHAssetMediaTypeImage;
+        NSString *type          = imageType ? @"image/" : @"video/";
+        NSString *fileFormat    = [[filename componentsSeparatedByString:@"."]lastObject];
+        NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
         NSDictionary *imageData = @{
-            @"index":@0,//下标：选择的图片/视频数组的顺序,
-            @"width":@(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
-            @"height":@(phAsset.pixelHeight),//该图片/视频的高,
-            @"url":[NSString stringWithFormat:@"%@",localPath],//文件本地地址
-            @"fileSize":fileSize,//文件大小（字节大小）,
-            @"filename":filename,//文件名称,
-            @"type":type,// 文件类型： 格式为 "video/mp4" 或者  "image/jpeg",
-            @"playableDuration":playableDuration,// 视频时长,图片为0,视频为 ms
-            @"rotation":rotation,// 视频角度，通常手机拍摄的适配，宽高相反，需要根据角度重新设置宽高，（android 有这个问题）
+            @"index":       @0,//下标：选择的图片/视频数组的顺序
+            @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
+            @"height":      @(phAsset.pixelHeight),//该图片/视频的高
+            @"url":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
+            @"fileSize":    fileSize,//文件大小（字节大小）
+            @"filename":    filename,//文件名称
+            @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"
+            @"playableDuration":duration,// 视频时长,图片为0,视频为 ms
+            @"rotation"     :rotation,// 视频角度
         };
         [selectData addObject:imageData];
     }

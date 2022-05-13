@@ -13,6 +13,8 @@
 #define pt375(pt) (pt * [UIScreen mainScreen].bounds.size.width/375)
 
 @interface AliyunCompositionCell()
+//主显示照片
+@property (strong, nonatomic) UIImageView *photoView;
 //阴影层
 @property (nonatomic,strong)UIView *shadowView;
 //视频时长label
@@ -45,13 +47,11 @@
 
 - (void)setup
 {
-    
-    
     //基础图像层
-    self.imageView = [[UIImageView alloc] initWithFrame:self.bounds];
-    self.imageView.contentMode = UIViewContentModeScaleAspectFill;
-    self.imageView.clipsToBounds = YES;
-    [self addSubview:self.imageView];
+    self.photoView = [[UIImageView alloc] initWithFrame:self.bounds];
+    self.photoView.contentMode = UIViewContentModeScaleAspectFill;
+    self.photoView.clipsToBounds = YES;
+    [self addSubview:self.photoView];
     
     
     self.shadowView = [[UIView alloc]initWithFrame:self.bounds];
@@ -93,7 +93,7 @@
 
 -(void)layoutSubviews {
     [super layoutSubviews];
-    self.imageView.frame = self.bounds;
+    self.photoView.frame = self.bounds;
     CGFloat laeblGap = pt375(7);
     CGFloat labelHeight = pt375(17);
     self.timeLabel.frame = CGRectMake(laeblGap, CGRectGetHeight(self.frame) - labelHeight - laeblGap, CGRectGetWidth(self.frame)-laeblGap*2, labelHeight);
@@ -178,5 +178,9 @@
     if(self.delegate && [self.delegate respondsToSelector:@selector(cell:didSelectItemAtIndexPath:)]){
         [self.delegate performSelector:@selector(cell:didSelectItemAtIndexPath:) withObject:self withObject:self.indexPath];
     }
+}
+-(void)setPhotoImage:(UIImage *)photoImage
+{
+    self.photoView.image = photoImage;
 }
 @end
