@@ -35,9 +35,9 @@ class PhotoAdapter(private val mContext: Context, private val mList: List<MediaI
     }
 
     private var mMultiSelect: Boolean = false
+
     fun setMultiSelect(multiSelect: Boolean) {
         this.mMultiSelect = multiSelect
-        notifyDataSetChanged()
     }
 
     private var mThumbnailGenerator: ThumbnailGenerator? = null
@@ -51,7 +51,6 @@ class PhotoAdapter(private val mContext: Context, private val mList: List<MediaI
         notifyItemChanged(mCurrentClickPosition)
         mOldCurrentClickPosition = mCurrentClickPosition
     }
-
 
     init {
         mThumbnailGenerator = ThumbnailGenerator(mContext)
@@ -107,7 +106,6 @@ class PhotoAdapter(private val mContext: Context, private val mList: List<MediaI
                 holder.durationText.text = convertDuration2Text(info.duration.toLong())
             }
 
-
             if (mCurrentClickPosition == position) {
                 holder.selectedView.visibility = View.VISIBLE
             } else {
@@ -115,11 +113,12 @@ class PhotoAdapter(private val mContext: Context, private val mList: List<MediaI
             }
 
             holder.itemView.setOnClickListener {
-                if (position == mOldCurrentClickPosition) return@setOnClickListener
+                if (position == mOldCurrentClickPosition) {
+                    return@setOnClickListener
+                }
                 setCurrentClickPosition(position)
                 mItemListener?.onItemClick(position, info)
             }
-
         }
     }
 
@@ -146,7 +145,6 @@ class PhotoAdapter(private val mContext: Context, private val mList: List<MediaI
         }
         return res
     }
-
 
     private fun convertDuration2Text(duration: Long): String? {
         var sec = (duration.toFloat()/1000).roundToInt()

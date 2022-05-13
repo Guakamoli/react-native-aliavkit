@@ -37,4 +37,14 @@
         app:layout_constraintStart_toStartOf="@id/thumbnailImage"
         app:layout_constraintTop_toTopOf="@id/thumbnailImage" />
 
+<!--    <androidx.appcompat.widget.AppCompatImageView-->
+<!--        android:id="@+id/checkImage"-->
+<!--        android:layout_width="26dp"-->
+<!--        android:layout_height="26dp"-->
+<!--        android:padding="3dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        android:src="@drawable/bg_post_photo_selected"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
 </androidx.constraintlayout.widget.ConstraintLayout>

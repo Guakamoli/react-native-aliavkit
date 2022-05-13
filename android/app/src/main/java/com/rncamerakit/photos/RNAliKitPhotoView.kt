@@ -24,7 +24,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private var mWidth = 0
     private var mHeight = 0
     private var mNumColumns = 4
-    private var mMultiSelect: Boolean = false
+    private var mMultiSelect: Boolean = true
     private var mPhotoAdapter: PhotoAdapter? = null
     private var mPhotoRecyclerView: RecyclerView? = null
     private var mPhotoList: MutableList<MediaInfo> = ArrayList()
@@ -49,7 +49,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             initViews()
             initMedias()
         }
-
     }
 
     fun setPageSize(pageSize: Int) {
@@ -90,11 +89,13 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private fun filAdapter() {
         if (mPhotoAdapter == null) {
             mPhotoAdapter = PhotoAdapter(context, mPhotoList, this.mWidth/mNumColumns, this.mWidth/mNumColumns)
+            mPhotoAdapter?.setMultiSelect(mMultiSelect)
             mPhotoRecyclerView?.layoutManager = GridLayoutManager(context, mNumColumns)
             mPhotoRecyclerView?.addItemDecoration(GridSpacingItemDecoration(mNumColumns, 2, false))
             mPhotoRecyclerView?.itemAnimator = DefaultItemAnimator()
             mPhotoRecyclerView?.adapter = mPhotoAdapter
         } else {
+            mPhotoAdapter?.setMultiSelect(mMultiSelect)
             mPhotoAdapter?.notifyDataSetChanged()
         }
     }
