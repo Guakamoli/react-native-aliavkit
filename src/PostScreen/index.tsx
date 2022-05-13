@@ -147,7 +147,7 @@ class MultipleSelectButton extends Component {
     return (
       <Pressable onPress={this.pressMultiple}>
         <FastImage
-        testID={`post-multiple-button`}
+          testID={`post-multiple-button`}
           style={[styles.multipleBtnImage, { marginRight: 10 }]}
           source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
           resizeMode='contain'
@@ -202,7 +202,7 @@ class PostContent extends Component {
       imageItem: "",
       cropScale: 0,
       videoPaused: false,
-      videoMuted: this.props.isExample ? false : true,
+      videoMuted: false,
       isChangeScale: false,
       minScale: 0,
       positionX: 0,
