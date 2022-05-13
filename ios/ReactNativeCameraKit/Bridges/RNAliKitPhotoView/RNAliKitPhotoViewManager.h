@@ -15,6 +15,6 @@
 #endif
 
 
-@interface RNAlikitPhotoViewManager : RCTViewManager
+@interface RNAliKitPhotoViewManager : RCTViewManager
 
 @end
