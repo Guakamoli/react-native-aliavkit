@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ImageCacheTool : NSObject
 
 //image保存到本地缓存中
-+(void)saveImageToCache:(UIImage *)image name:(NSString *)name;
++(NSString *)saveImageToCache:(UIImage *)image name:(NSString *)name;
 
 //根据图片名称获取缓存文件
 +(UIImage *)imageWithName:(NSString *)name;
