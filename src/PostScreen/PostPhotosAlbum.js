@@ -6,17 +6,20 @@ import {
     Platform,
     AppState,
     Alert,
+    View,
+    Text,
+    TouchableOpacity,
 } from 'react-native';
 
-import _, { lte } from 'lodash';
 import I18n from '../i18n';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
 
 import AVkitPhotoView from '../AVKitPhotoView';
 
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 const { width, height } = Dimensions.get('window');
-
 
 
 export default class PostPhotosAlbum extends Component {
@@ -157,17 +160,40 @@ export default class PostPhotosAlbum extends Component {
 
     //WUYQTODO
     onSelectedPhotoCallback = (data) => {
+        // console.info("onSelectedPhotoCallback", data)
         if (!!this.props.setMultipleData) {
             this.props.setMultipleData(data)
         }
-        // console.info("multipleData",props.multipleData);
-        // console.info("selectMultiple",props.selectMultiple);
-        // console.info("setSelectMultiple",props.setSelectMultiple);
-        // console.info("setMultipleData",props.setMultipleData);
     }
 
     onMaxSelectCountCallback = (data) => {
         this.props.toastRef.current.show(`${I18n.t('Select_up_to_ten_pictures')}`, 2000);
+    }
+
+
+    _onSetSelectMultiple = () => {
+        this.props.setSelectMultiple();
+    }
+
+    PostPhotosAlbumHead = () => {
+        return (
+            <View style={styles.continueHeadView}>
+                <TouchableOpacity>
+                    <Text style={{ fontSize: 17, fontWeight: '500', color: '#fff', lineHeight: 24 }}>{`${I18n.t('Recent_Albums')}`}</Text>
+                </TouchableOpacity>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={this._onSetSelectMultiple}>
+                        <FastImage
+                            testID={`post-multiple-button`}
+                            style={[styles.multipleBtnImage, { marginRight: 10 }]}
+                            source={this.props.selectMultiple ? this.props.startMultipleBtnImage : this.props.multipleBtnImage}
+                            resizeMode='contain'
+                        />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        )
     }
 
 
@@ -176,13 +202,32 @@ export default class PostPhotosAlbum extends Component {
             return null
         }
         return (
-            <AVkitPhotoView {...this.props}
-                style={{ height: height - 44 - 50 - width, width: width, backgroundColor: 'black' }}
-                multiSelect={this.props.selectMultiple}
-                onSelectedPhotoCallback={this.onSelectedPhotoCallback}
-                onMaxSelectCountCallback={this.onMaxSelectCountCallback}
-            ></AVkitPhotoView>
+            <View>
+                {this.PostPhotosAlbumHead()}
+                <AVkitPhotoView {...this.props}
+                    style={{ height: height - 44 - 50 - width, width: width, backgroundColor: 'black' }}
+                    multiSelect={this.props.selectMultiple}
+                    onSelectedPhotoCallback={this.onSelectedPhotoCallback}
+                    onMaxSelectCountCallback={this.onMaxSelectCountCallback}
+                ></AVkitPhotoView>
+            </View>
         )
     }
 
 }
+
+const styles = StyleSheet.create({
+    continueHeadView: {
+        height: 50,
+        backgroundColor: 'black',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+    },
+
+    multipleBtnImage: {
+        width: 31,
+        height: 31,
+    },
+})
