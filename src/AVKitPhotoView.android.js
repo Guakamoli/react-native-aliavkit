@@ -47,14 +47,6 @@ export default class AVkitPhotoView extends React.Component {
 
     }
 
-    /**
-     *  用 onSelectedPhotoCallback
-     */
-    _onSelectedPhotos = event => {
-        if (this.props.onSelectedPhotoCallback) {
-            this.props.onSelectedPhotoCallback(event.nativeEvent);
-        }
-    }
 
     _onSelectedPhotoCallback = event => {
         // console.info("_onSelectedPhotos",event.nativeEvent);

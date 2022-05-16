@@ -22,7 +22,7 @@ import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIO
 const { width, height } = Dimensions.get('window');
 
 
-export default class PostPhotosAlbum extends Component {
+export default class PostPhotos extends Component {
 
     constructor(props) {
         super(props);
@@ -205,7 +205,7 @@ export default class PostPhotosAlbum extends Component {
             <View>
                 {this.PostPhotosAlbumHead()}
                 <AVkitPhotoView {...this.props}
-                    style={{ height: height - 44 - 50 - width, width: width, backgroundColor: 'black' }}
+                    style={{ height: height - 44 - 50 - width - this.props.insets.bottom, width: width, backgroundColor: 'black' }}
                     multiSelect={this.props.selectMultiple}
                     onSelectedPhotoCallback={this.onSelectedPhotoCallback}
                     onMaxSelectCountCallback={this.onMaxSelectCountCallback}
