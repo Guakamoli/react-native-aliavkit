@@ -18,7 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 import PostHead from './PostHead';
 import PostContent from './PostContent';
-import PostPhotosAlbum from './PostPhotosAlbum'
+import PostPhotos from './PostPhotos'
 
 let multipleData: any = [];
 
@@ -48,7 +48,7 @@ const setPostContentMapStateToProps = (dispatch: any) => ({
 
 const PostHeadView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostHead);
 const PostContentView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostContent);
-const PostPhotosAlbumView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostPhotosAlbum);
+const PostPhotosView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostPhotos);
 
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
@@ -215,7 +215,7 @@ export default class CameraScreen extends Component<Props, State> {
 
         <PostContentView {...this.props} onCropParams={this._onCropParams} isVidoePlayer={this.state.isVidoePlayer} />
 
-        <PostPhotosAlbumView {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
+        <PostPhotosView {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
 
       </View>
     );
