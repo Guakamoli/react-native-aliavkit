@@ -30,12 +30,20 @@
 @property (nonatomic) NSUInteger numColumns;
 /**是否多选,默认flase,注意视频即使开启开关也不能多选,相册上限10等待后续增加字段*/
 @property (nonatomic) BOOL multiSelect;
+// 最多可选数量
+@property (nonatomic) NSUInteger maxSelectCount;
+// 默认选中下标
+@property (nonatomic) NSUInteger defaultSelectedPosition;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemWidth;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemHeight;
 /**每次点击照片/视频后回调RN,注意是点击不是选择*/
-@property (nonatomic, copy) RCTBubblingEventBlock onSelectedPhotos;
+@property (nonatomic, copy) RCTBubblingEventBlock onSelectedPhotoCallback;
+/** 触发最大照片选择回调*/
+@property (nonatomic, copy) RCTBubblingEventBlock onMaxSelectCountCallback;
+/** error回调 (errorCode,errorMessage)=>{}*/
+@property (nonatomic, copy) RCTBubblingEventBlock onErrorCallback;
 @end
 
 //photoView内部交互参数
@@ -108,6 +116,15 @@
     {
         return;
     }
+    
+    //刷新页面的时候需要处理历史数据
+    if(self.selectedIndexs.count > 0 && !self.multiSelect){
+        //多选切换单选需要处理数据
+//        self.selectedIndexs  = [NSMutableArray arrayWithObject:self.selectedIndexs.lastObject];
+        self.selectedIndexs = [NSMutableArray arrayWithObject:@(self.lastSelectIndex).stringValue];
+        [self sendSelectPhotoDataToRN];
+    }
+    
     self.flowLayout = [self getFlowLayout];
     self.collectionView.collectionViewLayout = self.flowLayout;
     [self.collectionView reloadData];
@@ -191,11 +208,11 @@
                     return;
                 }
                 weakSelf.libraryDataArray = models;
-                weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, self.pageSize)];
+                weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];
                 [weakSelf addObserver];
                 //默认选中第一张照片
-                [weakSelf selectDataUpdate:0];
+                [weakSelf selectDataUpdate:MIN(models.count,self.defaultSelectedPosition)];
             }];
         });
     }];
@@ -211,7 +228,7 @@
     //列数决定item实际宽度
     CGFloat cellWidth       = viewWidth / numColumns;
     //item宽度需要和传入的_itemWidth算是间距
-    CGFloat itemSpacing     = cellWidth - MIN(cellWidth , _itemWidth);
+    CGFloat itemSpacing     = _itemWidth==0?0:cellWidth - MIN(cellWidth , _itemWidth);
     //有间距时重新计算cellWidth的大小
     if(itemSpacing > 0)
     {
@@ -364,6 +381,7 @@
             //修改白色模版的位置
             self.lastSelectIndex = indexPath.item;
             [self.collectionView reloadData];
+            [self sendSelectPhotoDataToRN];
         }else{
             //多选模式下,已选中照片的第二次点击不做处理
         }
@@ -380,10 +398,12 @@
     if (phAsset.pixelWidth+phAsset.pixelHeight <=0)
     {
         //文件已损坏
+        self.onErrorCallback(@{@"code":@"10001",@"message":@"file error"});
         return;
     }
     if(phAsset.mediaType != PHAssetMediaTypeImage && phAsset.mediaType != PHAssetMediaTypeVideo){
          //特殊类型
+        self.onErrorCallback(@{@"code":@"10002",@"message":@"type not supported"});
         return;
     }
     //oc的array不允许直接放int
@@ -417,11 +437,11 @@
                 self.selectedIndexs  = [NSMutableArray arrayWithObject:indexStr];
             }else{
                 //当前可选择数据的上限,单个视频或十张照片
-                NSInteger maxCount = selectVideoStatus ? 1 : 10;
+                NSInteger maxCount = selectVideoStatus ? 1 : self.maxSelectCount;
                 //数据上限
                 if (maxCount <= self.selectedIndexs.count) {
                     //选择的照片达到上限
-                    //等待RN加个回调函数
+                    self.onMaxSelectCountCallback(@{});
                     return;
                 }
                 [self.selectedIndexs addObject:indexStr];
@@ -433,11 +453,14 @@
         }
     }
     [self.collectionView reloadData];
+    [self sendSelectPhotoDataToRN];
+}
 
-    
+// 发送本地选择数据给RN
+-(void)sendSelectPhotoDataToRN
+{
     //当前选择的照片/视频变动后调用RN响应
-    if (!self.onSelectedPhotos) {
-        //等待RN加个回调函数
+    if (!self.onSelectedPhotoCallback) {
         return;
     }
 
@@ -455,7 +478,7 @@
         NSString *fileFormat    = [[filename componentsSeparatedByString:@"."]lastObject];
         NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
         NSDictionary *imageData = @{
-            @"index":       @0,//下标：选择的图片/视频数组的顺序
+            @"index":       @(selectData.count),//下标：选择的图片/视频数组的顺序
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
             @"height":      @(phAsset.pixelHeight),//该图片/视频的高
             @"url":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
@@ -467,7 +490,21 @@
         };
         [selectData addObject:imageData];
     }
-    self.onSelectedPhotos(@{@"selectedIndex":@(self.lastSelectIndex), @"data":selectData});
+    if(selectData.count > 0){
+        NSNumber *selectedIndex = @0;
+        AliyunAssetModel *model = self.viewDataArray[self.lastSelectIndex];
+        for(NSDictionary *imageData in selectData)
+        {
+            if([imageData[@"filename"] isEqualToString:[model.asset valueForKey:@"filename"]])
+            {
+                selectedIndex = imageData[@"index"];
+                break;
+            }
+        }
+        self.onSelectedPhotoCallback(@{@"selectedIndex":selectedIndex, @"data":selectData});
+    }else{
+        self.onSelectedPhotoCallback(@{@"selectedIndex":@(0), @"data":@[]});
+    }
 }
 
 @end

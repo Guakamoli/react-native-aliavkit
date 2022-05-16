@@ -38,6 +38,10 @@ RCT_EXPORT_VIEW_PROPERTY(pageSize, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(numColumns, NSInteger)
 // multiSelect: 是否多选  默认：false
 RCT_EXPORT_VIEW_PROPERTY(multiSelect, BOOL)
+//照片最多可选择数量
+RCT_EXPORT_VIEW_PROPERTY(maxSelectCount, NSInteger)
+//默认选中下标
+RCT_EXPORT_VIEW_PROPERTY(defaultSelectedPosition, NSInteger)
 // itemWidth: 相册一张图片的宽度（为0则不设置，默认是：屏幕宽度 / 列数）。post用不到，后续 story 相册，UI宽高不一样会用到
 RCT_EXPORT_VIEW_PROPERTY(itemWidth, CGFloat)
 // itemHeight: 同itemWidth
@@ -56,6 +60,10 @@ RCT_EXPORT_VIEW_PROPERTY(itemHeight, CGFloat)
 //     playableDuration: 视频时长,图片为0,视频为 ms
 //     rotation: 视频角度，通常手机拍摄的适配，宽高相反，需要根据角度重新设置宽高，（android 有这个问题）
 // }];
-RCT_EXPORT_VIEW_PROPERTY(onSelectedPhotos, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onSelectedPhotoCallback, RCTBubblingEventBlock)
+//触发最大照片数量后的回调
+RCT_EXPORT_VIEW_PROPERTY(onMaxSelectCountCallback, RCTBubblingEventBlock)
+//error回调
+RCT_EXPORT_VIEW_PROPERTY(onErrorCallback, RCTBubblingEventBlock)
 @end
 
