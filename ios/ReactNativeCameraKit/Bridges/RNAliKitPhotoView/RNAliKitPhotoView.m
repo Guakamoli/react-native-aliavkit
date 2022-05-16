@@ -175,8 +175,12 @@
 {
     [super layoutSubviews];
     self.renderStatus = true;
-    [self setupSubviews];
-    [self fetchPhotoData];
+    //后台重新进入页面
+    if(!self.collectionView)
+    {
+        [self setupSubviews];
+        [self fetchPhotoData];
+    }
 }
 //初始化UI
 - (void)setupSubviews
@@ -205,11 +209,7 @@
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             //分页处理
-            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){0,0} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount) {
-                //虽然可能性很小,但真的会有设备没有照片
-                if(models.count == 0){
-                    return;
-                }
+            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){0,0} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
                 weakSelf.libraryDataArray = models;
                 weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];
@@ -330,7 +330,8 @@
         //safeAreaBottom = self.safeAreaInsets.bottom;
         safeAreaBottom = [self viewController].view.safeAreaInsets.bottom;
     }
-    return CGSizeMake(screenWidth, safeAreaBottom);
+    CGFloat itemheight = self.flowLayout.itemSize.height;
+    return CGSizeMake(screenWidth, safeAreaBottom + itemheight/2);
 }
 //获取当前的view的根vc
 - (UIViewController *)viewController {
