@@ -1,5 +1,6 @@
 package com.rncamerakit.photos
 
+import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -17,6 +18,10 @@ class RNAliKitPhotoViewManager : SimpleViewManager<RNAliKitPhotoView>() {
         return view
     }
 
+    override fun onDropViewInstance(view: RNAliKitPhotoView) {
+        super.onDropViewInstance(view)
+        view.onDestroy()
+    }
 
     @ReactProp(name = "pageSize", defaultInt = 40)
     fun setPageSize(view: RNAliKitPhotoView, pageSize: Int) {
@@ -41,6 +46,15 @@ class RNAliKitPhotoViewManager : SimpleViewManager<RNAliKitPhotoView>() {
     @ReactProp(name = "itemHeight", defaultInt = 0)
     fun setItemHeight(view: RNAliKitPhotoView, itemHeight: Int) {
         view.setItemHeight(itemHeight)
+    }
+
+
+    override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
+        val builder: MapBuilder.Builder<String, Any> = MapBuilder.builder<String, Any>()
+        for (event in RNAliKitPhotoView.EventEmitterKeys.values()) {
+            builder.put(event.toString(), MapBuilder.of("registrationName", event.toString()))
+        }
+        return builder.build()
     }
 
 }

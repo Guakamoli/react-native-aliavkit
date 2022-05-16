@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/bg_post_photo_unselected" />
+    <item
+        android:drawable="@mipmap/ic_post_photo_selected_video"
+        android:maxWidth="@dimen/alivc_common_size_icon_20"
+        android:maxHeight="@dimen/alivc_common_size_icon_20"/>
+</layer-list>
