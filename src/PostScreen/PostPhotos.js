@@ -70,6 +70,16 @@ export default class PostPhotos extends Component {
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextState.isStoragePermission !== this.state.isStoragePermission) {
+            return true;
+        }
+        if (nextProps.selectMultiple !== this.props.selectMultiple) {
+            return true;
+        }
+        return false;
+    }
+
     /**
     * 检测是否有存储权限
     */
@@ -158,9 +168,7 @@ export default class PostPhotos extends Component {
         );
 
 
-    //WUYQTODO
     onSelectedPhotoCallback = (data) => {
-        // console.info("onSelectedPhotoCallback", data)
         if (!!this.props.setMultipleData) {
             this.props.setMultipleData(data)
         }
