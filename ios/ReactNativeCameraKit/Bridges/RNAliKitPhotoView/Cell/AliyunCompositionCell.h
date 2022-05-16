@@ -30,8 +30,10 @@ typedef NS_ENUM(NSInteger,AYPhotoSelectStatus){
 - (void)cell:(AliyunCompositionCell *)cell didSelectItemAtIndexPath:(NSIndexPath *)indexPath;
 @end
 
-//相册单个item view
+//相册单个item view,不暴露控件
 @interface AliyunCompositionCell : UICollectionViewCell
+//照片或视频的缩略图
+@property (strong,nonatomic)UIImage *photoImage;
 //图片显示
 @property (strong, nonatomic) UIImageView *imageView;
 //视频显示出时长
