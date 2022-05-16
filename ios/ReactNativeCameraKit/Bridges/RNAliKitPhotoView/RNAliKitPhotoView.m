@@ -60,10 +60,13 @@
 @property (nonatomic,strong)NSArray<AliyunAssetModel *> *viewDataArray;
 //当前选中照片的下标存放集合
 @property (nonatomic,strong)NSMutableArray *selectedIndexs;
+//单选多选的临时保存
+@property (nonatomic,strong)NSMutableArray *tempSelectedIndexs;
 /** 最后选中的元素下标*/
 @property (nonatomic,assign)NSInteger lastSelectIndex;
 //滑到最下面的时候会显示出底部foot栏,之后才刷新数据可以节约内存
 @property (nonatomic,assign)BOOL showFooterStatus;
+
 @end
     
 @implementation RNAliKitPhotoView
@@ -118,11 +121,15 @@
     }
     
     //刷新页面的时候需要处理历史数据
-    if(self.selectedIndexs.count > 0 && !self.multiSelect){
+    if(self.selectedIndexs.count > 0 && !self.multiSelect)
+    {
         //多选切换单选需要处理数据
-//        self.selectedIndexs  = [NSMutableArray arrayWithObject:self.selectedIndexs.lastObject];
+//        self.tempSelectedIndexs = self.selectedIndexs;
         self.selectedIndexs = [NSMutableArray arrayWithObject:@(self.lastSelectIndex).stringValue];
         [self sendSelectPhotoDataToRN];
+//    }else{
+//        //暂不支持多选数据的缓存
+//        self.selectedIndexs = self.tempSelectedIndexs;
     }
     
     self.flowLayout = [self getFlowLayout];
@@ -371,19 +378,17 @@
     //已有数据
     BOOL cellSelectStatus   = [self.selectedIndexs containsObject:indexStr];
     //当前cell对应的数据
-    AliyunAssetModel *model = self.viewDataArray[indexPath.item];
-    // 当前item不是视频
-    BOOL noVideoData        = model.type != AliyunAssetModelMediaTypeVideo;
     //多选模式下,照片只能通过右上角勾选按钮删除
-    if(self.multiSelect && cellSelectStatus && noVideoData)
+    if(self.multiSelect && cellSelectStatus)
     {
-        if(self.lastSelectIndex != indexPath.item){
+        if(self.lastSelectIndex != indexPath.item)
+        {
             //修改白色模版的位置
             self.lastSelectIndex = indexPath.item;
             [self.collectionView reloadData];
             [self sendSelectPhotoDataToRN];
         }else{
-            //多选模式下,已选中照片的第二次点击不做处理
+            //多选模式下,已选中视频/照片的第二次点击不做处理
         }
     }else{
         [self selectDataUpdate:indexPath.item];
@@ -429,6 +434,15 @@
         if(containIndex)
         {
             [self.selectedIndexs removeObjectAtIndex:dataIndex];
+            //多选下如果删除了当前选中的照片,即从选中已选照片中最后的一张
+            if(self.selectedIndexs.count > 0)
+            {
+                NSString *lastObj = self.selectedIndexs[self.selectedIndexs.count-1];
+                if(self.lastSelectIndex == index)//index为取消元素的下标
+                {
+                    self.lastSelectIndex = [lastObj integerValue];
+                }
+            }
         }else {
             //是否已选中视频
             BOOL selectVideoStatus = [self selectVideoStatus];
@@ -446,8 +460,7 @@
                 }
                 [self.selectedIndexs addObject:indexStr];
             }
-        }
-        if(self.selectedIndexs.count > 0){
+            //多选模式下,新增照片是选中状态(白色蒙版)
             NSString *lastObj = self.selectedIndexs[self.selectedIndexs.count-1];
             self.lastSelectIndex = [lastObj integerValue];
         }

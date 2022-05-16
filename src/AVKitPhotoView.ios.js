@@ -72,10 +72,10 @@ export default class AVkitPhotoView extends React.Component {
             //     playableDuration: 视频时长,图片为0,视频为 ms
             //     rotation: 视频角度，通常手机拍摄的适配，宽高相反，需要根据角度重新设置宽高，（android 有这个问题）
             // }];
-            const selectedIndex = event.nativeEvent.selectedIndex;
-            const selectedData = event.nativeEvent.data;
-            console.log(selectedIndex);
-            console.log(selectedData);
+            // const selectedIndex = event.nativeEvent.selectedIndex;
+            // const selectedData = event.nativeEvent.data;
+            // console.log(selectedIndex);
+            // console.log(selectedData);
             this.props.onSelectedPhotoCallback(event.nativeEvent);
         }
     };

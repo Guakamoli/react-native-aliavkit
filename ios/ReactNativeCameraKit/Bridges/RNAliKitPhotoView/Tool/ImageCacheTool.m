@@ -30,10 +30,11 @@
     return [path_document stringByAppendingFormat:@"/Documents/photoCache/%@",md5Name];
 }
 
-+(void)saveImageToCache:(UIImage *)image name:(NSString *)name
++(NSString *)saveImageToCache:(UIImage *)image name:(NSString *)name
 {
     NSString *imagePath = [self getImagePathWithName:name];
     [UIImagePNGRepresentation(image) writeToFile:imagePath atomically:YES];
+    return imagePath;
 }
 
 +(UIImage *)imageWithName:(NSString *)name
