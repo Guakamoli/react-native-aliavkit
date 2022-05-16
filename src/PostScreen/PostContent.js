@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import {
     StyleSheet,
-    Text,
     View,
     TouchableOpacity,
-    Image,
     Dimensions,
 } from 'react-native';
 
@@ -12,16 +10,13 @@ import ImageCropper from '../react-native-simple-image-cropper/src';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
-
 const { width, height } = Dimensions.get('window');
-
-
-let cropDataRow = {};
-
 
 export default class PostContent extends Component {
     constructor(props) {
         super(props);
+
+        this.cropParams = {};
         this.state = {
             imageItem: "",
             cropScale: 0,
@@ -38,6 +33,12 @@ export default class PostContent extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+
+        if (nextProps.selectMultiple !== this.props.selectMultiple) {
+            this.cropParams = {};
+            this.props.onCropParams(this.cropParams);
+            return true;
+        }
 
         if (nextProps.isVidoePlayer !== this.props.isVidoePlayer) {
             this.setState({
@@ -65,7 +66,6 @@ export default class PostContent extends Component {
             return true;
         }
 
-
         if (!!nextProps.multipleData && !!nextProps.multipleData?.data && nextProps.multipleData !== this.props.multipleData) {
             const imageItem = nextProps.multipleData?.data[nextProps.multipleData?.selectedIndex];
             if (!!imageItem) {
@@ -78,9 +78,7 @@ export default class PostContent extends Component {
         if (nextState.imageItem !== this.state.imageItem) {
             const imageItem = nextState.imageItem;
             if (!!imageItem) {
-                const itemCropData = cropDataRow[imageItem.url];
-
-                console.info("itemCropData", itemCropData)
+                const itemCropData = this.cropParams[imageItem.url];
 
                 const isVideo = imageItem?.type?.includes('video');
                 const videoPaused = !isVideo;
@@ -174,7 +172,6 @@ export default class PostContent extends Component {
 
         const imageItem = this.state.imageItem;
 
-        // console.info("imageItem", imageItem);
         if (!imageItem) {
             return (<View style={styles.continueView} />)
         }
@@ -208,10 +205,12 @@ export default class PostContent extends Component {
                     areaColor='black'
                     areaOverlay={<View></View>}
                     setCropperParams={(cropperParams) => {
-                        // console.info("cropperParams", cropperParams);
                         let newKey = imageItem.url;
-                        cropDataRow[newKey] = cropperParams;
+                        this.cropParams[newKey] = cropperParams;
                         this.moveScale = cropperParams.scale;
+
+                        this.props.onCropParams(this.cropParams);
+
                     }}
                 />
 

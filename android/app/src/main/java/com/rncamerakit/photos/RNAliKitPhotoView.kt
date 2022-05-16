@@ -108,6 +108,9 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
             mPhotoAdapter?.setMultiSelect(multiSelect)
             mPhotoAdapter?.notifyItemRangeChanged(0, mPhotoList.size, "MultiSelectChanged")
+
+            //回调一次RN
+            sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
         }
     }
 
