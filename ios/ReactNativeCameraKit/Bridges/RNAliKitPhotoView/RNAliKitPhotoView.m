@@ -378,7 +378,6 @@
     //已有数据
     BOOL cellSelectStatus   = [self.selectedIndexs containsObject:indexStr];
     //当前cell对应的数据
-//    AliyunAssetModel *model = self.viewDataArray[indexPath.item];
     //多选模式下,照片只能通过右上角勾选按钮删除
     if(self.multiSelect && cellSelectStatus)
     {
