@@ -124,12 +124,8 @@
     if(self.selectedIndexs.count > 0 && !self.multiSelect)
     {
         //多选切换单选需要处理数据
-//        self.tempSelectedIndexs = self.selectedIndexs;
         self.selectedIndexs = [NSMutableArray arrayWithObject:@(self.lastSelectIndex).stringValue];
         [self sendSelectPhotoDataToRN];
-//    }else{
-//        //暂不支持多选数据的缓存
-//        self.selectedIndexs = self.tempSelectedIndexs;
     }
     
     self.flowLayout = [self getFlowLayout];
