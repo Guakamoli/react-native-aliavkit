@@ -124,12 +124,8 @@
     if(self.selectedIndexs.count > 0 && !self.multiSelect)
     {
         //多选切换单选需要处理数据
-//        self.tempSelectedIndexs = self.selectedIndexs;
         self.selectedIndexs = [NSMutableArray arrayWithObject:@(self.lastSelectIndex).stringValue];
         [self sendSelectPhotoDataToRN];
-//    }else{
-//        //暂不支持多选数据的缓存
-//        self.selectedIndexs = self.tempSelectedIndexs;
     }
     
     self.flowLayout = [self getFlowLayout];
@@ -179,8 +175,12 @@
 {
     [super layoutSubviews];
     self.renderStatus = true;
-    [self setupSubviews];
-    [self fetchPhotoData];
+    //后台重新进入页面
+    if(!self.collectionView)
+    {
+        [self setupSubviews];
+        [self fetchPhotoData];
+    }
 }
 //初始化UI
 - (void)setupSubviews
@@ -209,11 +209,7 @@
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             //分页处理
-            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){0,0} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount) {
-                //虽然可能性很小,但真的会有设备没有照片
-                if(models.count == 0){
-                    return;
-                }
+            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){0,0} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
                 weakSelf.libraryDataArray = models;
                 weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];
@@ -334,7 +330,8 @@
         //safeAreaBottom = self.safeAreaInsets.bottom;
         safeAreaBottom = [self viewController].view.safeAreaInsets.bottom;
     }
-    return CGSizeMake(screenWidth, safeAreaBottom);
+    CGFloat itemheight = self.flowLayout.itemSize.height;
+    return CGSizeMake(screenWidth, safeAreaBottom + itemheight/2);
 }
 //获取当前的view的根vc
 - (UIViewController *)viewController {
@@ -377,7 +374,6 @@
     NSString *indexStr      = @(indexPath.item).stringValue;
     //已有数据
     BOOL cellSelectStatus   = [self.selectedIndexs containsObject:indexStr];
-    //当前cell对应的数据
     //多选模式下,照片只能通过右上角勾选按钮删除
     if(self.multiSelect && cellSelectStatus)
     {
