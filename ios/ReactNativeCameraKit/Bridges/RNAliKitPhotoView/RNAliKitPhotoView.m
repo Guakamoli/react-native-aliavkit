@@ -72,8 +72,10 @@
 @implementation RNAliKitPhotoView
 
 #pragma mark - KVO 监视滑动区域来进行分页
+//当前视图在RN中以组件的形式存在,会随RN中组件的销毁而在RN关联框架中被调用removeFromSuperview
 - (void)dealloc
 {
+    //不需要super dealloc
     [self.collectionView removeObserver:self forKeyPath:@"contentOffset"];
 }
 //监听滑动,到底最下面的时候再拼接新的数据再下面

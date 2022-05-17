@@ -12,8 +12,6 @@
 
 @interface RNAliKitPhotoViewManager ()
 
-@property (nonatomic, strong) RNAliKitPhotoView *photoView;
-
 @end
 
 @implementation RNAliKitPhotoViewManager
@@ -23,7 +21,8 @@ RCT_EXPORT_MODULE();
 
 - (UIView *)view
 {
-    return _photoView ?: (_photoView = [RNAliKitPhotoView new]);
+    //相册不属于公有组件,每次都创建新对象关联到RN中
+    return [RNAliKitPhotoView new];
 }
 - (dispatch_queue_t)methodQueue
 {
