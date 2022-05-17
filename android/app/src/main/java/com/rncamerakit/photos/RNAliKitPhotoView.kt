@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.ScreenUtils
 import com.aliyun.svideo.media.MediaInfo
+import com.aliyun.svideo.media.MediaStorage
 import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.LifecycleEventListener
@@ -130,6 +131,12 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
                 super.onAddPhotoClick(position, info)
                 mCurrentClickPosition = position
                 if (mMultiSelect) {
+
+                    if (info.type == MediaStorage.TYPE_VIDEO) {
+                        mSelectedPhotoMap.clear()
+                        mSelectedPhotoList.clear()
+                    }
+
                     if (mSelectedPhotoMap[position] == null) {
                         //多选
                         mSelectedPhotoList.add(info)
