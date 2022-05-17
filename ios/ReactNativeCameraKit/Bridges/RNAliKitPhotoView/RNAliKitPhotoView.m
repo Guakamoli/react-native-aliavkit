@@ -226,7 +226,8 @@
 //layou参数决定了每个item的显示
 - (UICollectionViewFlowLayout *)getFlowLayout
 {
-    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    //低系统模拟器上面会出现不能修改flowLayout对象的bug
+    UICollectionViewFlowLayout *layout = self.flowLayout?:[[UICollectionViewFlowLayout alloc] init];
     //numColumns优先级大于viewWidth
     CGFloat viewWidth       = self.frame.size.width;
     NSUInteger numColumns   = _numColumns ?: 4;
