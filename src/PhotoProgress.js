@@ -14,14 +14,16 @@ export default class PhotoProgress extends Component {
         itemDuration: PropTypes.number,
         currentDuration: PropTypes.number,
         playAnimaton: PropTypes.bool,
+        gapTime: PropTypes.number,
     });
 
     render() {
         const {
-            itemCount = 3,
-            itemDuration = 3,
-            currentDuration = 4,
-            playAnimaton = true
+            itemCount = 3,          //总共有多少个进度块
+            itemDuration = 2,       //单个进度的时间
+            currentDuration = 3,    //当前进度时间
+            playAnimaton = true,    //是否展示动画
+            gapTime = 0,            //每个进度条之间的间隔时间
         } = this.props;
         //拼接一个数组用于渲染,元素起始时间大于当前时间时,显示为灰色进度条
         const progressData = Array.from({ length: itemCount }, (v, index) => {
@@ -31,11 +33,17 @@ export default class PhotoProgress extends Component {
             let progress = Math.max(0, (currentDuration - start) / itemDuration);
             let width = new Animated.Value(progress);
             if (next && playAnimaton) {
+                let delay = 0;
+                if (start > currentDuration) {
+                    delay = start - currentDuration;
+                    delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
+                    delay *= 1000;
+                }
                 let animatedData = {
                     toValue: 1,
                     duration: itemDuration * (1 - progress) * 1000,
                     easing: Easing.easeInOut,
-                    delay: Math.max(0, start - currentDuration) * 1000,
+                    delay,
                     useNativeDriver: false,
                 };
                 Animated.timing(width, animatedData).start();
