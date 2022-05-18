@@ -20,8 +20,8 @@ export default class PostContent extends Component {
         this.state = {
             imageItem: "",
             cropScale: 0,
-            videoPaused: false,
-            videoMuted: false,
+            videoPaused: true,
+            videoMuted: true,
             isChangeScale: false,
             minScale: 0,
             positionX: 0,
@@ -31,6 +31,16 @@ export default class PostContent extends Component {
         // 展示中的图片缩放值
         this.moveScale = 0;
     }
+
+    componentDidMount() {
+        setTimeout(() => {
+            this.setState({
+                videoMuted: false,
+                videoPaused: false,
+            });
+        }, 500);
+    }
+
 
     shouldComponentUpdate(nextProps, nextState) {
 
@@ -48,10 +58,12 @@ export default class PostContent extends Component {
 
         if (nextProps.type !== this.props.type) {
             if (nextProps.type === 'post') {
-                this.setState({
-                    videoMuted: false,
-                    videoPaused: false,
-                });
+                setTimeout(() => {
+                    this.setState({
+                        videoMuted: false,
+                        videoPaused: false,
+                    });
+                }, 500);
             } else {
                 this.setState({
                     videoMuted: true,
@@ -81,7 +93,7 @@ export default class PostContent extends Component {
                 const itemCropData = this.cropParams[imageItem.url];
 
                 const isVideo = imageItem?.type?.includes('video');
-                const videoPaused = !isVideo;
+                // const videoPaused = !isVideo;
 
                 let minScale = 1;
                 if (imageItem.width > imageItem.height) {
@@ -94,7 +106,7 @@ export default class PostContent extends Component {
                     const positionY = itemCropData?.positionY;
                     const positionScale = itemCropData?.scale;
                     this.setState({
-                        videoPaused: videoPaused,
+                        // videoPaused: videoPaused,
                         cropScale: positionScale,
                         minScale: minScale,
                         positionX: positionX,
@@ -102,7 +114,7 @@ export default class PostContent extends Component {
                     });
                 } else {
                     this.setState({
-                        videoPaused: videoPaused,
+                        // videoPaused: videoPaused,
                         cropScale: minScale,
                         minScale: minScale,
                         positionX: 0,
