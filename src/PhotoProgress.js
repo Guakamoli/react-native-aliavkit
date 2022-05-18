@@ -17,11 +17,16 @@ export default class PhotoProgress extends Component {
         gapTime: PropTypes.number,
     });
 
-    render() {
+    componentWillUnmount(){
+        this.state.animatedArray.map(a=>{
+            a.stop();
+        })
+    }
+    componentWillMount(){
         const {
             itemCount = 3,          //总共有多少个进度块
             itemDuration = 2,       //单个进度的时间
-            currentDuration = 3,    //当前进度时间
+            currentDuration = 0,    //当前进度时间
             playAnimaton = true,    //是否展示动画
             gapTime = 0,            //每个进度条之间的间隔时间
         } = this.props;
@@ -32,31 +37,46 @@ export default class PhotoProgress extends Component {
             let next = end > currentDuration;
             let progress = Math.max(0, (currentDuration - start) / itemDuration);
             let width = new Animated.Value(progress);
-            if (next && playAnimaton) {
+            return {
+                key: 'progress_' + index,
+                next,
+                width,
+                start,
+                end,
+                progress,
+            }
+        });
+        const animatedArray = progressData.map((p,index)=>{
+            if (p.next && playAnimaton) {
                 let delay = 0;
-                if (start > currentDuration) {
-                    delay = start - currentDuration;
+                if (p.start > currentDuration) {
+                    delay = p.start - currentDuration;
                     delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
                     delay *= 1000;
                 }
                 let animatedData = {
                     toValue: 1,
-                    duration: itemDuration * (1 - progress) * 1000,
+                    duration: itemDuration * (1 - p.progress) * 1000,
                     easing: Easing.easeInOut,
                     delay,
                     useNativeDriver: false,
                 };
-                Animated.timing(width, animatedData).start();
-            }
-            return {
-                key: 'progress_' + index,
-                next,
-                width,
+                return Animated.timing(p.width, animatedData);
             }
         });
+        this.setState({
+            progressData,
+            animatedArray
+        },()=>{
+            animatedArray.map(a=>{
+                a.start();
+            })
+        })
+    }
+    render() {
         return (
             <View style={styles.rootView} >
-                {progressData.map(p => {
+                {this.state.progressData.map(p => {
                     return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
                         <Animated.View style={[p.next && styles.animated, {
                             width: p.width.interpolate({
