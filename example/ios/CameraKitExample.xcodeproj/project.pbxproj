@@ -238,6 +238,7 @@
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-resources.sh",
 				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/AliKitPhotoView",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Face_Sticker",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Filter",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/lookups",
@@ -247,6 +248,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AliyunVideoSDKPro.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AliKitPhotoView",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Face_Sticker",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Filter",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/lookups",

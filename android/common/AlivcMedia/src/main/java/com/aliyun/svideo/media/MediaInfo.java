@@ -25,6 +25,7 @@ public class MediaInfo implements Parcelable, Cloneable {
     public long addTime;
     public boolean isSquare;
     public int type;
+    public boolean isChecked;
 
     @Override
     public boolean equals(Object o) {

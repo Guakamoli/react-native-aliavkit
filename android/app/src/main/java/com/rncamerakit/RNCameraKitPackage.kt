@@ -6,6 +6,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 import com.rncamerakit.editor.CKEditorManager
 import com.rncamerakit.editor.RNEditorKitModule
+import com.rncamerakit.photos.RNAliKitPhotoViewManager
+import com.rncamerakit.photos.RNAliKitPhotoViewModule
 import com.rncamerakit.recorder.CKCameraManager
 import com.rncamerakit.recorder.RNCameraKitModule
 import java.util.*
@@ -15,6 +17,7 @@ class RNCameraKitPackage : ReactPackage {
         val modules: MutableList<NativeModule> = ArrayList()
         modules.add(RNCameraKitModule(reactContext))
         modules.add(RNEditorKitModule(reactContext))
+        modules.add(RNAliKitPhotoViewModule(reactContext))
         return modules
     }
 
@@ -22,6 +25,7 @@ class RNCameraKitPackage : ReactPackage {
         val viewManagers: MutableList<ViewManager<*, *>> = ArrayList()
         viewManagers.add(CKCameraManager())
         viewManagers.add(CKEditorManager())
+        viewManagers.add(RNAliKitPhotoViewManager())
         return viewManagers
     }
 }
