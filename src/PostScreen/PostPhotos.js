@@ -30,6 +30,10 @@ export default class PostPhotos extends Component {
         this.state = {
             isStoragePermission: false
         };
+
+        if (this.props.selectMultiple) {
+            this.props.setSelectMultiple()
+        }
     }
 
     getPhotos = async (isGetPermissions = false) => {
@@ -168,7 +172,7 @@ export default class PostPhotos extends Component {
         );
 
 
-    onSelectedPhotoCallback = (data) => {
+    onSelectedPhotoCallback = async (data) => {
         if (!!this.props.setMultipleData) {
             this.props.setMultipleData(data)
         }
@@ -209,6 +213,7 @@ export default class PostPhotos extends Component {
         if (!this.state.isStoragePermission) {
             return null
         }
+
         return (
             <View>
                 {this.PostPhotosAlbumHead()}
