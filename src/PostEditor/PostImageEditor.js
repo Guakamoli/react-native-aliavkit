@@ -86,6 +86,8 @@ export default class PostImageEditor extends React.Component {
             console.info("_onPostUploadFiles", uploadData);
             this.props.getUploadFile(uploadData);
         }
+        
+        this._onCleanMusic();
     }
 
     /**
