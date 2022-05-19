@@ -1,0 +1,95 @@
+fastlane_version "2.206.0"
+
+default_platform :ios
+
+platform :ios do
+
+  desc "以 development 方式打包并上传到蒲公英"
+  lane :test_beta do
+
+    puts "以 development 方式打包"
+    gym(
+      # 指定打包所使用的输出方式 (可选: app-store, package, ad-hoc, enterprise, development)
+      export_method: "development",
+      # 指定项目的 scheme 名称
+      scheme: "CameraKitExample",
+      # 指定输出的文件夹地址
+      output_directory: "./archive/test_beta/" + Time.new.strftime("%Y-%m-%d-%H:%M:%S"),
+    )
+
+    puts "上传 ipa 包到蒲公英"
+    pgyer(
+      # 蒲公英 API KEY
+      api_key: "967675ddc438c780095798db05638c21",
+      # 蒲公英 USER KEY
+      user_key: "8bcdfc9e61e52de3bbbf254337cb842d"
+    )
+
+  end
+
+  desc "以 ad-hoc 方式打包并上传到蒲公英"
+  lane :beta do
+    puts "自动生成 Provisioning Profiles 文件"
+    sigh(
+      # 指定输出的文件夹地址
+      output_path: "./archive/sign",
+      # 是否为 AdHoc 证书（设为 false 或不写默认为 AppStore 证书）
+      adhoc: true
+    )
+
+    puts "以 ad-hoc 方式打包"
+    gym(
+      # 指定打包所使用的输出方式 (可选: app-store, package, ad-hoc, enterprise, development)
+      export_method: "ad-hoc",
+      # 指定项目的 scheme 名称
+      scheme: "xxx",
+      # 指定输出的文件夹地址
+      output_directory: "./archive/beta/" + Time.new.strftime("%Y-%m-%d-%H:%M:%S"),
+      # 指定打包方式 (可选: Release, Debug)
+      configuration: "Release"
+    )
+    puts "上传 ipa 包到蒲公英"
+    pgyer(
+      # 蒲公英 API KEY
+      api_key: "xxx",
+      # 蒲公英 USER KEY
+      user_key: "xxx"
+    )
+
+  end
+
+  desc "以 app-store 方式打包并上传到 iTunes Connect"
+  lane :release do
+
+    puts "自动生成 Provisioning Profiles 文件"
+    sigh(
+      # 指定输出的文件夹地址
+      output_path: "./archive/sign"
+    )
+
+    puts "以 app-store 方式打包"
+    gym(
+      # 指定打包所使用的输出方式 (可选: app-store, package, ad-hoc, enterprise, development)
+      export_method: "app-store",
+      # 指定项目的 scheme 名称
+      scheme: "xxx",
+      # 指定输出的文件夹地址
+      output_directory: "./archive/release/" + Time.new.strftime("%Y-%m-%d-%H:%M:%S"),
+      # 指定打包方式 (可选: Release, Debug)
+      configuration: "Release"
+    )
+
+    puts "上传 ipa 包到 iTunes Connect"
+    deliver(
+      # 跳过截图上传
+      skip_screenshots: true,
+      # 跳过元数据上传
+      skip_metadata: true,
+      # 跳过审核直接上传
+      force: true
+    )
+
+  end
+
+end
+
