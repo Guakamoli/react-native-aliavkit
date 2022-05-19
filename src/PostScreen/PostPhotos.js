@@ -30,10 +30,6 @@ export default class PostPhotos extends Component {
         this.state = {
             isStoragePermission: false
         };
-
-        if (this.props.selectMultiple) {
-            this.props.setSelectMultiple()
-        }
     }
 
     getPhotos = async (isGetPermissions = false) => {
@@ -172,7 +168,7 @@ export default class PostPhotos extends Component {
         );
 
 
-    onSelectedPhotoCallback = async (data) => {
+    onSelectedPhotoCallback = (data) => {
         if (!!this.props.setMultipleData) {
             this.props.setMultipleData(data)
         }
@@ -213,12 +209,11 @@ export default class PostPhotos extends Component {
         if (!this.state.isStoragePermission) {
             return null
         }
-
         return (
             <View>
                 {this.PostPhotosAlbumHead()}
                 <AVkitPhotoView {...this.props}
-                    style={{ height: height - 44 - 50 - width - this.props.insets.bottom, width: width, backgroundColor: 'black' }}
+                    style={{ height: height - 50 - 50 - width - this.props.insets.bottom, width: width, backgroundColor: 'black' }}
                     multiSelect={this.props.selectMultiple}
                     onSelectedPhotoCallback={this.onSelectedPhotoCallback}
                     onMaxSelectCountCallback={this.onMaxSelectCountCallback}

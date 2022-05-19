@@ -20,16 +20,21 @@ import PostHead from './PostHead';
 import PostContent from './PostContent';
 import PostPhotos from './PostPhotos'
 
+import PostImageEditor from '../PostEditor/PostImageEditor'
+
+
 let multipleData: any = [];
 
-export type Props = {
+type Props = {
   getUploadFile: (any) => void;
+  setType: (string) => void;
+  type: string;
+  connected: string;
 };
 
 type State = {
-  multipleData: any;
-  selectMultiple: boolean;
   isVidoePlayer: boolean;
+  uploadData: Array<any>;
 };
 
 
@@ -49,6 +54,7 @@ const setPostContentMapStateToProps = (dispatch: any) => ({
 const PostHeadView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostHead);
 const PostContentView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostContent);
 const PostPhotosView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostPhotos);
+const PostImageEditorView = connect(getPostContentMapStateToProps, setPostContentMapStateToProps)(PostImageEditor);
 
 export default class CameraScreen extends Component<Props, State> {
   camera: any;
@@ -64,6 +70,7 @@ export default class CameraScreen extends Component<Props, State> {
     this.cropParams = [];
     this.state = {
       isVidoePlayer: true,
+      uploadData: [],
     };
 
     this.mClickLock = false;
@@ -143,7 +150,10 @@ export default class CameraScreen extends Component<Props, State> {
       }
       return item
     })
-    console.info("onUploadImage", uploadData);
+    // this.setState({ uploadData: uploadData });
+    // this.props.setType('postImageEdit');
+
+    console.info("onUploadVideo", uploadData);
     this.sendUploadFile(uploadData)
   }
 
@@ -168,6 +178,10 @@ export default class CameraScreen extends Component<Props, State> {
     if (nextState.isVidoePlayer !== this.state.isVidoePlayer) {
       return true;
     }
+    if (nextState.uploadData !== this.state.uploadData) {
+      return true;
+    }
+
     if (nextProps.connected !== this.props.connected && !nextProps.connected) {
       this.messageRef?.current?.show(
         <View
@@ -193,7 +207,7 @@ export default class CameraScreen extends Component<Props, State> {
 
   render() {
     return (
-      <View style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <View style={{ width: '100%', height: '100%', position: 'relative', overflow: this.props.type === 'postImageEdit' ? 'hidden' : 'visible' }}>
         <Toast
           ref={this.myRef}
           position='top'
@@ -216,6 +230,10 @@ export default class CameraScreen extends Component<Props, State> {
         <PostContentView {...this.props} onCropParams={this._onCropParams} isVidoePlayer={this.state.isVidoePlayer} />
 
         <PostPhotosView {...this.props} toastRef={this.myRef} setVideoPlayer={this.setVideoPlayer} />
+
+        {this.props.type === 'postImageEdit' &&
+          <PostImageEditorView {...this.props} toastRef={this.myRef} uploadData={this.state.uploadData} />
+        }
 
       </View>
     );
