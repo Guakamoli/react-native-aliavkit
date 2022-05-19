@@ -28,7 +28,8 @@ export default class PostPhotos extends Component {
         super(props);
         this.appState = '';
         this.state = {
-            isStoragePermission: false
+            isStoragePermission: false,
+            isPhotoLimited: false,
         };
     }
 
@@ -47,7 +48,6 @@ export default class PostPhotos extends Component {
             isStoragePermission: true
         });
     };
-
 
     _handleAppStateChange = (nextAppState) => {
         if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
@@ -71,7 +71,14 @@ export default class PostPhotos extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (nextProps.type !== this.props.type && nextProps.type === 'post') {
+            this.getPhotos(true);
+            return false;
+        }
         if (nextState.isStoragePermission !== this.state.isStoragePermission) {
+            return true;
+        }
+        if (nextState.isPhotoLimited !== this.state.isPhotoLimited) {
             return true;
         }
         if (nextProps.selectMultiple !== this.props.selectMultiple) {
@@ -212,6 +219,18 @@ export default class PostPhotos extends Component {
         return (
             <View>
                 {this.PostPhotosAlbumHead()}
+                {this.state.isPhotoLimited && <View style={{
+                    width: width, height: 54, backgroundColor: '#121212',
+                    justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'
+                }}>
+                    <Text style={{ fontSize: 14, color: '#A8A8A8', marginStart: 11 }}>{I18n.t('camera_jurisdictions')}</Text>
+                    <TouchableOpacity onPress={() => {
+                        openSettings();
+                    }}>
+                        <Text style={{ fontSize: 14, color: '#FFFFFF', height: 54, lineHeight: 54, paddingStart: 10, paddingEnd: 12 }}>{I18n.t('canera_to_setting')}</Text>
+                    </TouchableOpacity>
+
+                </View>}
                 <AVkitPhotoView {...this.props}
                     style={{ height: height - 50 - 50 - width - this.props.insets.bottom, width: width, backgroundColor: 'black' }}
                     multiSelect={this.props.selectMultiple}
