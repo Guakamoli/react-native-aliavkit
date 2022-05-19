@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     continueText: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#836BFF',
+        color: '#FFF',
         lineHeight: 44,
     },
 })

@@ -150,11 +150,11 @@ export default class CameraScreen extends Component<Props, State> {
       }
       return item
     })
-    // this.setState({ uploadData: uploadData });
-    // this.props.setType('postImageEdit');
+    this.setState({ uploadData: uploadData });
+    this.props.setType('postImageEdit');
 
-    console.info("onUploadVideo", uploadData);
-    this.sendUploadFile(uploadData)
+    // console.info("onUploadVideo", uploadData);
+    // this.sendUploadFile(uploadData)
   }
 
   sendUploadFile(data) {

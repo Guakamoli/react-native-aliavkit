@@ -73,7 +73,7 @@ export default class ImageCarousel extends React.Component {
                     enabled={this.state.enabled}
 
                     autoPlay={true}
-                    autoPlayInterval={1000}
+                    autoPlayInterval={3000}
                     horizontal={true}
 
                     onScrollBegin={() => {
@@ -116,11 +116,14 @@ class ImageItem extends React.Component {
     }
     render() {
         const item = this.props.item;
+
+        const itemHeight = item.height / item.width * width;
+
         return (
             <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                 < FastImage
                     source={{ uri: item.url }}
-                    style={{ width: width, height: item.height / item.width * width, backgroundColor: 'rgba(100,100,100,0.5)' }}
+                    style={{ width: width, height: itemHeight, backgroundColor: 'rgba(100,100,100,0.5)' }}
                     resizeMode='cover'
                     placeholderStyle={{ backgroundColor: 'transparent' }}
                 />

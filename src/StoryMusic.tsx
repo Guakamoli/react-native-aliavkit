@@ -42,6 +42,8 @@ const StoryMusic = (props) => {
     getMusicOn,
     connected,
   } = props;
+
+  console.info("musicDynamicGif", musicDynamicGif);
   //打开搜索列表
   const [musicChoice, setMmusicChoice] = useState(false);
 

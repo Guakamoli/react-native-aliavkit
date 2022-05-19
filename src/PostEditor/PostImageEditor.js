@@ -6,6 +6,7 @@ import {
     Text,
     TouchableOpacity,
     Dimensions,
+    Image
 } from 'react-native';
 
 import I18n from '../i18n';
@@ -19,17 +20,19 @@ import PostMusic from './PostMusic'
 
 const { width, height } = Dimensions.get('window');
 
-
-
-
 export default class PostImageEditor extends React.Component {
 
     constructor(props) {
         super(props);
         this.refMarqueeText = React.createRef();
         this.state = {
-            musicInfo: { name: '哈哈哈哈哈' }
+            currentMusic: null,
+            openMusicView: false,
         }
+    }
+
+    setCurrentMusic = async (musicInfo) => {
+        this.setState({ currentMusic: musicInfo });
     }
 
     componentDidMount() {
@@ -39,7 +42,10 @@ export default class PostImageEditor extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState.musicInfo !== this.state.musicInfo) {
+        if (nextState.currentMusic !== this.state.currentMusic) {
+            return true;
+        }
+        if (nextState.openMusicView !== this.state.openMusicView) {
             return true;
         }
         return false;
@@ -56,7 +62,30 @@ export default class PostImageEditor extends React.Component {
      * 上传图片
      */
     _onPostUploadFiles = () => {
-        console.info("_onPostUploadFiles");
+        let uploadData = this.props.uploadData.slice()
+        const musicInfo = this.state.currentMusic
+        if (!!musicInfo) {
+            const url = musicInfo.url;
+            const filelaseIndex = url.lastIndexOf('.')
+            let type = url.substr(filelaseIndex + 1)
+            type = 'audio/' + type
+            const audioInfo = {
+                title: musicInfo.name,
+                type: type,
+                description: '',
+                title_link: url,
+                title_link_download: true,
+                audio_url: url,
+                audio_type: type,
+                audio_size: 0
+            }
+            uploadData.push(audioInfo);
+        }
+
+        if (!!this.props.getUploadFile) {
+            console.info("_onPostUploadFiles", uploadData);
+            this.props.getUploadFile(uploadData);
+        }
     }
 
     /**
@@ -64,7 +93,7 @@ export default class PostImageEditor extends React.Component {
      */
     _onSelectMusic = () => {
         this.setState({
-            musicInfo: { name: '庐州月光光' }
+            openMusicView: true
         })
     }
 
@@ -73,55 +102,80 @@ export default class PostImageEditor extends React.Component {
      */
     _onCleanMusic = () => {
         this.setState({
-            musicInfo: { name: '' }
+            currentMusic: null
         })
     }
 
 
     HeadView = () => {
-        return (<View style={styles.continueHeadView} >
-            <TouchableOpacity onPress={this._goBack} style={styles.closeContinue} >
-                <FastImage style={styles.closeIcon} source={require('../../images/backArrow.png')} resizeMode='contain' />
-            </TouchableOpacity>
-
-
-            <View style={styles.musicContinue}>
-                <TouchableOpacity onPress={this._onSelectMusic} disabled={!!this.state.musicInfo?.name}>
-                    <View style={styles.musicTextContinue}>
-                        <FastImage style={styles.musicImg} source={require('../../images/ic_post_upload_music.png')} resizeMode='contain' />
-                        <Text style={styles.musicText} ref={this.refMarqueeText} >
-                            {this.state.musicInfo?.name || '选择音乐'}
-                        </Text>
-                    </View>
+        return (
+            <View style={styles.continueHeadView} >
+                <TouchableOpacity onPress={this._goBack} style={styles.closeContinue} >
+                    <Image style={{ width: 30, height: 38, marginStart: 8 }} source={require('../../images/ic_post_editor_back.png')} resizeMode='contain' />
                 </TouchableOpacity>
 
-                {!!this.state.musicInfo?.name && <View style={{ height: '100%', width: 1, backgroundColor: '#fff' }} />}
-                {!!this.state.musicInfo?.name &&
-                    <TouchableOpacity onPress={this._onCleanMusic} style={styles.closeMusicContinue}>
-                        <FastImage style={styles.musicCloseImg} source={require('../../images/postClose.png')} resizeMode='contain' />
+
+                <View style={styles.musicContinue}>
+                    <TouchableOpacity onPress={this._onSelectMusic}>
+                        <View style={styles.musicTextContinue}>
+                            <FastImage style={styles.musicImg} source={require('../../images/ic_post_upload_music.png')} resizeMode='contain' />
+                            <Text style={styles.musicText} ref={this.refMarqueeText} >
+                                {this.state.currentMusic?.name || '选择音乐'}
+                            </Text>
+                        </View>
                     </TouchableOpacity>
-                }
 
+                    {!!this.state.currentMusic?.name && <View style={{ height: '100%', width: 1, backgroundColor: '#fff' }} />}
+                    {!!this.state.currentMusic?.name &&
+                        <TouchableOpacity onPress={this._onCleanMusic} style={styles.closeMusicContinue}>
+                            <FastImage style={styles.musicCloseImg} source={require('../../images/postClose.png')} resizeMode='contain' />
+                        </TouchableOpacity>
+                    }
+
+                </View>
+
+
+                <TouchableOpacity onPress={this._onPostUploadFiles} style={styles.nextContinue}>
+                    <Text style={[styles.continueText]}>
+                        {I18n.t('continue')}
+                    </Text>
+                </TouchableOpacity>
             </View>
-
-
-            <TouchableOpacity onPress={this._onPostUploadFiles} style={styles.nextContinue}>
-                <Text style={[styles.continueText]}>
-                    {I18n.t('continue')}
-                </Text>
-            </TouchableOpacity>
-        </View>)
+        )
     }
 
 
     render() {
+        const imageW = !this.state.currentMusic?.name ? 148 : 180;
+        const imageH = !this.state.currentMusic?.name ? 4 : 12;
         return (
             <View style={styles.continueView}>
                 <ImageCarousel {...this.props}></ImageCarousel>
-       
-                <PostMusic  {...this.props}></PostMusic>
 
-                {this.HeadView()}
+                <Image
+                    key={!this.state.currentMusic?.name ? 'pngImage' : 'gifImage'}
+                    style={{
+                        position: 'absolute',
+                        bottom: !this.state.currentMusic?.name ? 14 : 10,
+                        width: imageW,
+                        height: imageH,
+                        left: (width - imageW) / 2
+                    }}
+                    source={!this.state.currentMusic?.name ? require('../../images/ic_post_music_stop.png') : require('../../images/ic_post_music_play.gif')}
+                />
+
+                <PostMusic
+                    {...this.props}
+                    setCurrentMusic={this.setCurrentMusic}
+                    currentMusic={this.state.currentMusic}
+                    openMusicView={this.state.openMusicView}
+                    onCloseView={() => {
+                        this.setState({ openMusicView: false });
+                    }}
+                />
+
+
+                {!this.state.openMusicView && this.HeadView()}
             </View>
         )
     }
@@ -138,7 +192,7 @@ const styles = StyleSheet.create({
         top: 0,
         right: 0,
         bottom: 0,
-        backgroundColor:'#000'
+        backgroundColor: '#000'
     },
 
     continueHeadView: {
@@ -154,7 +208,6 @@ const styles = StyleSheet.create({
     closeContinue: {
         height: '100%',
         width: 50,
-        paddingHorizontal: 14,
         justifyContent: 'center',
     },
     closeIcon: {
@@ -171,8 +224,11 @@ const styles = StyleSheet.create({
     continueText: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#836BFF',
+        color: '#FFF',
         lineHeight: 44,
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 4,
     },
 
     musicContinue: {
