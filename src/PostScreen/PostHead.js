@@ -43,17 +43,16 @@ export default class PostHead extends Component {
 
 const styles = StyleSheet.create({
     continueHeadView: {
-        height: 44,
-        backgroundColor: '#000',
+        height: 50,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 9,
+        backgroundColor:'#000'
     },
     closeContinue: {
         height: 44,
         width: 50,
-        paddingHorizontal: 12,
+        paddingHorizontal: 14,
         justifyContent: 'center',
     },
     closeIcon: {

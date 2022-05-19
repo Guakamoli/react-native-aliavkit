@@ -211,7 +211,7 @@ const Entry = (props) => {
     return (<>
       {
         Platform.OS === 'ios' ?
-          <View style={{ display: (type === 'post' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
+          <View style={{ display: (type === 'post' || type === 'postImageEdit' || type === 'edit') ? 'flex' : 'none', width: '100%', height: '100%' }}>
             {PostView()}
           </View>
           :
