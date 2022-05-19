@@ -122,7 +122,7 @@ class ImageItem extends React.Component {
         return (
             <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                 < FastImage
-                    source={{ uri: item.url }}
+                    source={{ uri: item.path }}
                     style={{ width: width, height: itemHeight, backgroundColor: 'rgba(100,100,100,0.5)' }}
                     resizeMode='cover'
                     placeholderStyle={{ backgroundColor: 'transparent' }}
