@@ -128,28 +128,37 @@ export default class CameraScreen extends Component<Props, State> {
     this.sendUploadFile(uploadData)
   }
 
-  onUploadImage = async (uploadData: Array<any>) => {
-    uploadData.map(async (item, index) => {
-      item.path = item.url;
-      item.size = item.fileSize;
-      item.name = item.filename;
-      item.coverImage = '';
-      item.localPath = item.url;
-
-      const cropParams = this.cropParams[item.url]
+  onUploadImage = async (data: Array<any>) => {
+    let uploadData: Array<any> = [];
+    data.forEach((item, index) => {
+      const itemCrop = this.cropParams[item.url]
       let imageWidthScale = item.width / width;
       let imageHeightScale = item.height / width;
-      let translateXScale = cropParams.positionX / width;
-      let translateYScale = cropParams.positionY / width;
-      item.cropParams = {
-        scale: cropParams.scale,
+      let translateXScale = itemCrop.positionX / width;
+      let translateYScale = itemCrop.positionY / width;
+      const cropParams = {
+        scale: itemCrop.scale,
         widthScale: imageWidthScale,
         heightScale: imageHeightScale,
         translateXScale: translateXScale,
         translateYScale: translateYScale,
       }
-      return item
-    })
+      const imageInfo = {
+        index: item.index,
+        width: item.width,
+        height: item.height,
+        path: item.url,
+        size: item.fileSize,
+        name: item.filename,
+        type: item.type,
+        coverImage: '',
+        localPath: item.url,
+        cropParams: cropParams
+      }
+
+      uploadData.push(imageInfo);
+    });
+    
     this.setState({ uploadData: uploadData });
     this.props.setType('postImageEdit');
 
