@@ -23,9 +23,15 @@ export default class PostMusic extends React.Component {
         this.innerRefScrollBottomSheet = React.createRef();
         this.state = {
             musicList: [],
-            musicSearchValue: ''
+            musicSearchValue: '',
+            selectPosition: 2,
+            bottomSheetRefreshing: false,
         };
         this.page = 1;
+        this.pageSize = 20;
+        this.isMore = true;
+        this.initMusic = true;
+        this.playingMusic = null;
     }
 
     componentDidMount() {
@@ -33,6 +39,7 @@ export default class PostMusic extends React.Component {
     }
 
     componentWillUnmount() {
+        this.stopMusic();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -41,17 +48,87 @@ export default class PostMusic extends React.Component {
             return true;
         }
         if (nextState.musicList !== this.state.musicList) {
-            // console.info("nextState.musicList", nextState.musicList.length, nextState.musicList);
+            return true;
+        }
+        if (nextState.selectPosition !== this.state.selectPosition) {
+            this.setSelectMusic(this.state.musicList[nextState.selectPosition])
+            return true;
+        }
+        if (nextState.bottomSheetRefreshing !== this.state.bottomSheetRefreshing) {
+            return true;
+        }
+        if (nextProps.currentMusic !== this.props.currentMusic) {
+            if (nextProps.currentMusic) {
+                this.playMusic(nextProps.currentMusic);
+            } else {
+                this.stopMusic();
+            }
+            return false;
+        }
+        if (nextProps.openMusicView !== this.props.openMusicView) {
+            if (nextProps.openMusicView) {
+                this.openBottomSheet();
+            }
             return true;
         }
         return false;
     }
 
-    getMusic = async (name = '') => {
-        const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: 10 });
-        const musicList = this.state.musicList.concat(musics);
-        this.setState({ musicList });
+    playMusic = async (musicInfo) => {
+        if (!!musicInfo?.songID && musicInfo?.songID !== this.playingMusic?.songID) {
+            const songa = await AVService.playMusic(musicInfo?.songID);
+            this.playingMusic = songa;
+        }
     }
+
+    stopMusic = async () => {
+        if (!!this.playingMusic) {
+            AVService.pauseMusic(this.playingMusic?.songID);
+            this.playingMusic = null;
+
+            this.setState({ selectPosition: -1 })
+        }
+    }
+
+    setSelectMusic = (musicInfo) => {
+        this.props.setCurrentMusic(musicInfo)
+    }
+
+    getMusic = async (name = '') => {
+        const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: this.pageSize });
+        if (!name) {
+            if (!musics?.length || musics?.length < this.pageSize) {
+                this.isMore = false;
+            }
+            const musicList = this.state.musicList.concat(musics);
+            this.setState({
+                musicList: musicList,
+                bottomSheetRefreshing: false
+            });
+            if (this.initMusic) {
+                this.initMusic = false;
+                if (!!musicList?.length && musicList?.length > 0 && this.state.selectPosition >= 0) {
+                    this.setSelectMusic(musicList[this.state.selectPosition]);
+                }
+            }
+        }
+    }
+
+    openBottomSheet = () => {
+        this.refScrollBottomSheet?.current?.snapTo(0);
+        setTimeout(() => {
+            // this.setSelectMusic(this.state.musicList[nextState.selectPosition ])
+        }, 100);
+    }
+
+
+    hideBottomSheet = () => {
+        this.refScrollBottomSheet?.current?.snapTo(1);
+        setTimeout(() => {
+            this.props.onCloseView();
+        }, 500);
+    }
+
 
 
     MusicHandleView = () => {
@@ -97,43 +174,59 @@ export default class PostMusic extends React.Component {
 
     render() {
         return (
-            <View style={styles.continue}>
-                <ScrollBottomSheet
-                    testID='action-sheet'
-                    ref={this.refScrollBottomSheet}
-                    innerRef={(ref) => (this.innerRefScrollBottomSheet = ref)}
-                    componentType='FlatList'
-                    snapPoints={[height / 3, height]}
-                    initialSnapIndex={0}
-                    data={this.state.musicList}
-                    keyExtractor={(item, index) => {
-                        return index
+            <View style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0, display: this.props.openMusicView ? 'flex' : 'none' }]}>
+                <Pressable style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0 }]}
+                    onPress={async () => {
+                        this.hideBottomSheet();
                     }}
-                    enableOverScroll={true}
-                    containerStyle={styles.contentContainerStyle}
-
-                    onSettle={(index) => {
-                        if (index === 1) {
-
-                        }
-                    }}
-
-                    onEndReached={() => {
-                        //上拉加载更多
-                    }}
-
-                    renderHandle={() => this.MusicHandleView()}
-                    // ListFooterComponent={() => this.MusicHandleView()}
-                    renderItem={({ index, item }) => (
-                        <MusicItem
-                            {...this.props}
-                            index={index}
-                            item={item}
-                        />
-                    )}
                 >
+                    <ScrollBottomSheet
+                        testID='action-sheet'
+                        ref={this.refScrollBottomSheet}
+                        innerRef={(ref) => (this.innerRefScrollBottomSheet = ref)}
+                        componentType='FlatList'
+                        snapPoints={[height / 4, height]}
+                        initialSnapIndex={1}
+                        data={this.state.musicList}
+                        keyExtractor={(item, index) => {
+                            return index
+                        }}
+                        enableOverScroll={true}
+                        containerStyle={styles.contentContainerStyle}
 
-                </ScrollBottomSheet>
+                        onSettle={(index) => {
+                            if (index === 1) {
+                                this.props.onCloseView();
+                            }
+                        }}
+
+                        refreshing={this.state.bottomSheetRefreshing}
+                        onEndReached={() => {
+                            if (this.isMore) {
+                                //上拉加载更多
+                                this.page++
+                                this.setState({ bottomSheetRefreshing: true });
+                                this.getMusic();
+                            }
+                        }}
+
+                        renderHandle={() => this.MusicHandleView()}
+                        // ListFooterComponent={() => this.MusicHandleView()}
+                        renderItem={({ index, item }) => (
+                            <MusicItem
+                                {...this.props}
+                                index={index}
+                                selectPosition={this.state.selectPosition}
+                                item={item}
+                                onItemClick={(position) => {
+                                    this.setState({ selectPosition: position })
+                                    this.playMusic(item)
+                                }}
+                            />
+                        )}
+                    >
+                    </ScrollBottomSheet>
+                </Pressable>
             </View>
         )
     }
@@ -146,18 +239,26 @@ class MusicItem extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (nextProps.selectPosition !== this.props.selectPosition) {
+            return true;
+        }
         return false;
     }
 
     render() {
         const { musicIconPng, musicIcongray, item, index } = this.props;
         return (
-            <View style={styles.itemContainer}>
-                <Image source={musicIconPng} style={{ width: 40, height: 40 }}></Image>
-                <TouchableOpacity style={styles.itemMusicName}>
-                    <Text style={styles.itemMusicNameText}>{item.name}</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+                onPress={() => {
+                    this.props.onItemClick(index);
+                }}>
+                <View style={styles.itemContainer}>
+                    <FastImage source={index === this.props.selectPosition ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
+                    <View style={styles.itemMusicName}>
+                        <Text style={[styles.itemMusicNameText, { color: index === this.props.selectPosition ? '#7166F9' : '#000000' }]}>{item.name}</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
         )
     }
 
@@ -201,11 +302,7 @@ const styles = StyleSheet.create({
 
     },
     continue: {
-        position: "absolute",
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
+        width: '100%', height: '100%', position: 'absolute'
     },
 
     contentContainerStyle: {
@@ -214,7 +311,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 12,
         backgroundColor: '#fff',
         justifyContent: 'space-between',
-        paddingBottom: 60,
+        paddingBottom: 20,
     },
 
     itemContainer: {

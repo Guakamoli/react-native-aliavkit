@@ -25,9 +25,9 @@ function HomeScreen(props) {
   const insets = useSafeAreaInsets()
   const sendfile = async (data) => {
     try {
-      
+
     } catch (e) {
-     
+
     }
 
   }
@@ -42,7 +42,7 @@ function HomeScreen(props) {
           <Entry {...props} goBack={goBack} {...ImageMap} sendfile={sendfile} isExample={true}
             insets={insets}
             getUploadFile={(data) => {
-              navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].Type.split('/')[0], })
+              // navigation.navigate('FeedsPublishView', { 'attachments': data, type: data[0].type.split('/')[0], })
             }}></Entry>
         </View>
       </SafeAreaView>
@@ -89,12 +89,12 @@ function Story(props) {
       {...props}
       // 退出操作
       goback={() => {
-       
+
         props.navigation.navigate('Home');
       }}
       // 拿到上传数据
       getUploadFile={(data) => {
-       
+
       }}
       // story 跳转post 路由
       goPost={() => {
@@ -145,12 +145,12 @@ function Post(props) {
         props.navigation.replace('storyPost');
       }}
       goPostEditor={(data) => {
-       
+
         props.navigation.push('PostEditorBox', { ...data });
       }}
       // 拿到上传数据
       getUploadFile={(data) => {
-       
+
       }}
       multipleBtnImage={require('../images/multipleBtn.png')}
       startMultipleBtnImage={require('../images/startMultipleBtn.png')}
@@ -182,7 +182,7 @@ function PostEditorBox(props) {
         }}
         // 拿到上传数据
         getUploadFile={(data) => {
-         
+
         }}
         noVolumeImage={require('../images/noVolume.png')}
         volumeImage={require('../images/volume.png')}
