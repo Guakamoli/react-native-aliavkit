@@ -24,9 +24,9 @@ export default class PostMusic extends React.Component {
         this.state = {
             musicList: [],
             musicSearchValue: '',
-            selectPosition: 2,
             bottomSheetRefreshing: false,
         };
+        this.defaultSelectPostion = 2;
         this.page = 1;
         this.pageSize = 20;
         this.isMore = true;
@@ -45,14 +45,10 @@ export default class PostMusic extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         if (nextState.musicSearchValue !== this.state.musicSearchValue) {
-            console.info("musicSearchValue", nextState.musicSearchValue);
+            this.getSearchMusic(nextState.musicSearchValue);
             return true;
         }
         if (nextState.musicList !== this.state.musicList) {
-            return true;
-        }
-        if (nextState.selectPosition !== this.state.selectPosition) {
-            this.setSelectMusic(this.state.musicList[nextState.selectPosition])
             return true;
         }
         if (nextState.bottomSheetRefreshing !== this.state.bottomSheetRefreshing) {
@@ -64,7 +60,7 @@ export default class PostMusic extends React.Component {
             } else {
                 this.stopMusic();
             }
-            return false;
+            return true;
         }
         if (nextProps.openMusicView !== this.props.openMusicView) {
             if (nextProps.openMusicView) {
@@ -86,8 +82,6 @@ export default class PostMusic extends React.Component {
         if (!!this.playingMusic) {
             AVService.pauseMusic(this.playingMusic?.songID);
             this.playingMusic = null;
-
-            this.setState({ selectPosition: -1 })
         }
     }
 
@@ -95,10 +89,12 @@ export default class PostMusic extends React.Component {
         this.props.setCurrentMusic(musicInfo)
     }
 
+
     getSearchMusic = async (name = '') => {
+        console.info("getSearchMusic name", name)
         if (name) {
             const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: this.pageSize });
-
+            console.info("getSearchMusic musics", musics)
             this.setState({
                 musicList: musics,
                 bottomSheetRefreshing: false
@@ -126,8 +122,8 @@ export default class PostMusic extends React.Component {
             });
             if (this.initMusic) {
                 this.initMusic = false;
-                if (!!musicList?.length && musicList?.length > 0 && this.state.selectPosition >= 0) {
-                    this.setSelectMusic(musicList[this.state.selectPosition]);
+                if (!!musicList?.length && musicList?.length > 0) {
+                    this.setSelectMusic(musicList[this.defaultSelectPostion]);
                 }
             }
             //这里把分页加载的数据缓存一份
@@ -137,9 +133,6 @@ export default class PostMusic extends React.Component {
 
     openBottomSheet = () => {
         this.refScrollBottomSheet?.current?.snapTo(0);
-        setTimeout(() => {
-            // this.setSelectMusic(this.state.musicList[nextState.selectPosition ])
-        }, 100);
     }
 
 
@@ -168,7 +161,6 @@ export default class PostMusic extends React.Component {
                             if (e?.nativeEvent) {
                                 const searchValue = e?.nativeEvent?.text?.trim()
                                 this.setState({ musicSearchValue: searchValue });
-                                this.getSearchMusic(searchValue);
                             }
                         }}
                         value={this.state.musicSearchValue}
@@ -235,18 +227,20 @@ export default class PostMusic extends React.Component {
 
                         renderHandle={() => this.MusicHandleView()}
                         // ListFooterComponent={() => this.MusicHandleView()}
-                        renderItem={({ index, item }) => (
-                            <MusicItem
+                        renderItem={({ index, item }) => {
+                            // console.info("renderItem", index, item);
+                            return <MusicItem
                                 {...this.props}
                                 index={index}
-                                selectPosition={this.state.selectPosition}
                                 item={item}
-                                onItemClick={(position) => {
-                                    this.setState({ selectPosition: position })
+                                onItemClick={(position,) => {
                                     this.playMusic(item)
+                                    this.setSelectMusic(item)
                                 }}
                             />
-                        )}
+                        }
+
+                        }
                     >
                     </ScrollBottomSheet>
                 </Pressable>
@@ -262,23 +256,27 @@ class MusicItem extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextProps.selectPosition !== this.props.selectPosition) {
+        if (nextProps.item !== this.props.item) {
+            return true;
+        }
+        if (nextProps.currentMusic !== this.props.currentMusic) {
             return true;
         }
         return false;
     }
 
     render() {
-        const { musicIconPng, musicIcongray, item, index } = this.props;
+        const { item, index, currentMusic } = this.props;
+        const isSelected = item?.songID === currentMusic?.songID
         return (
             <TouchableOpacity
                 onPress={() => {
                     this.props.onItemClick(index);
                 }}>
                 <View style={styles.itemContainer}>
-                    <FastImage source={index === this.props.selectPosition ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
+                    <FastImage source={isSelected ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
                     <View style={styles.itemMusicName}>
-                        <Text style={[styles.itemMusicNameText, { color: index === this.props.selectPosition ? '#7166F9' : '#000000' }]}>{item.name}</Text>
+                        <Text style={[styles.itemMusicNameText, { color: isSelected ? '#7166F9' : '#000000' }]}>{item.name}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
