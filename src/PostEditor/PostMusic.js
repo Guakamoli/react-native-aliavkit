@@ -32,6 +32,7 @@ export default class PostMusic extends React.Component {
         this.isMore = true;
         this.initMusic = true;
         this.playingMusic = null;
+        this.cacheMusicList = [];
     }
 
     componentDidMount() {
@@ -94,6 +95,24 @@ export default class PostMusic extends React.Component {
         this.props.setCurrentMusic(musicInfo)
     }
 
+    getSearchMusic = async (name = '') => {
+        if (name) {
+            const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: this.pageSize });
+
+            this.setState({
+                musicList: musics,
+                bottomSheetRefreshing: false
+            });
+        } else {
+            //搜索输入为空，加载分页缓存的 list
+            this.setState({
+                musicList: this.cacheMusicList,
+                bottomSheetRefreshing: false
+            });
+        }
+
+    }
+
     getMusic = async (name = '') => {
         const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: this.pageSize });
         if (!name) {
@@ -111,6 +130,8 @@ export default class PostMusic extends React.Component {
                     this.setSelectMusic(musicList[this.state.selectPosition]);
                 }
             }
+            //这里把分页加载的数据缓存一份
+            this.cacheMusicList = musicList.slice();
         }
     }
 
@@ -145,7 +166,9 @@ export default class PostMusic extends React.Component {
                         textAlignVertical={'center'}
                         onChange={(e) => {
                             if (e?.nativeEvent) {
-                                this.setState({ musicSearchValue: e?.nativeEvent?.text });
+                                const searchValue = e?.nativeEvent?.text?.trim()
+                                this.setState({ musicSearchValue: searchValue });
+                                this.getSearchMusic(searchValue);
                             }
                         }}
                         value={this.state.musicSearchValue}
