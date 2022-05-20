@@ -53,12 +53,6 @@ export default class ImageCarousel extends React.Component {
         return false;
     }
 
-    onHandlerStateChange = (event) => {
-        if (event.nativeEvent.state === State.ACTIVE) {
-            //暂停/开启 自动播放
-        }
-    }
-
     render() {
         return (
             <View style={styles.continueView}>

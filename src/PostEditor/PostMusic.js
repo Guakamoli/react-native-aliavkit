@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef, useRef } from 'react';
 
 import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, TextInput, FlatList } from 'react-native'
 
@@ -7,6 +7,13 @@ import I18n from '../i18n';
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
+
+import Animated, {
+    Extrapolate,
+    interpolateNode,
+    EasingNode,
+    Value
+} from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,11 +39,24 @@ export default class PostMusic extends React.Component {
         this.isMore = true;
         this.initMusic = true;
         this.playingMusic = null;
+        this.lasePlayingMusic = null;
         this.cacheMusicList = [];
+
+
+        this.animatedPositionCurate = React.createRef();
+        this.animatedPositionCurate.current = new Animated.Value(0.98)
+
+        this.transY = interpolateNode(this.animatedPositionCurate?.current, {
+            inputRange: [0, 1],
+            outputRange: [64, 0],
+            extrapolate: Extrapolate.CLAMP
+        });
+
     }
 
     componentDidMount() {
         this.getMusic();
+
     }
 
     componentWillUnmount() {
@@ -75,6 +95,7 @@ export default class PostMusic extends React.Component {
         if (!!musicInfo?.songID && musicInfo?.songID !== this.playingMusic?.songID) {
             const songa = await AVService.playMusic(musicInfo?.songID);
             this.playingMusic = songa;
+            this.lasePlayingMusic = songa;
         }
     }
 
@@ -145,7 +166,7 @@ export default class PostMusic extends React.Component {
 
 
 
-    MusicHandleView = () => {
+    MusicHeadView = () => {
         return (
             <View style={styles.headContinue}>
                 <View style={{ backgroundColor: '#D8D8D8', width: 32, height: 4, borderRadius: 2, marginTop: 10 }}></View>
@@ -187,7 +208,43 @@ export default class PostMusic extends React.Component {
     }
 
 
+    MusicFootView = () => {
+
+        return (
+            <Animated.View
+                style={
+                    [
+                        styles.bottomMusicCheckContainer,
+                        {
+                            transform: [
+                                {
+                                    translateY: this.transY
+                                }
+                            ]
+                        }
+                    ]
+                }
+            >
+                <TouchableOpacity
+                    style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}
+                    onPress={() => {
+                        if (this.props.currentMusic) {
+                            this.setSelectMusic(null)
+                        } else {
+                            this.setSelectMusic(this.lasePlayingMusic);
+                        }
+                    }}>
+                    <FastImage
+                        source={this.props.currentMusic ? require('../../images/ic_post_music_ checked.png') : require('../../images/ic_post_music_ unchecked.png')}
+                        style={{ width: 18, height: 18 }} />
+                    <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>配乐</Text>
+                </TouchableOpacity>
+            </Animated.View>
+        )
+    }
+
     render() {
+
         return (
             <View style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0, display: this.props.openMusicView ? 'flex' : 'none' }]}>
                 <Pressable style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0 }]}
@@ -209,6 +266,8 @@ export default class PostMusic extends React.Component {
                         enableOverScroll={true}
                         containerStyle={styles.contentContainerStyle}
 
+                        animatedPositionCurate={this.animatedPositionCurate?.current}
+
                         onSettle={(index) => {
                             if (index === 1) {
                                 this.props.onCloseView();
@@ -225,8 +284,7 @@ export default class PostMusic extends React.Component {
                             }
                         }}
 
-                        renderHandle={() => this.MusicHandleView()}
-                        // ListFooterComponent={() => this.MusicHandleView()}
+                        renderHandle={() => this.MusicHeadView()}
                         renderItem={({ index, item }) => {
                             // console.info("renderItem", index, item);
                             return <MusicItem
@@ -241,10 +299,11 @@ export default class PostMusic extends React.Component {
                         }
 
                         }
-                    >
-                    </ScrollBottomSheet>
+                    />
                 </Pressable>
-            </View>
+                {this.MusicFootView()}
+            </View >
+
         )
     }
 
@@ -332,7 +391,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 12,
         backgroundColor: '#fff',
         justifyContent: 'space-between',
-        paddingBottom: 20,
+        paddingBottom: 70,
     },
 
     itemContainer: {
@@ -357,6 +416,18 @@ const styles = StyleSheet.create({
         color: '#000',
         fontWeight: '500',
         lineHeight: 63,
+    },
+    bottomMusicCheckContainer: {
+        paddingLeft: '4.5%',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        position: 'absolute',
+        zIndex: 3,
+        bottom: 0,
+        height: 64,
+        width: '100%',
+        flexDirection: 'row',
     }
 
 
