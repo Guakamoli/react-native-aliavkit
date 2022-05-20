@@ -17,6 +17,8 @@
 
 - (void)clear;
 
+- (void)cleanQueenEngine;
+
 
 /// 根据美颜美型参数，对race进行设置以及返回一个值
 /// @param sampleBuffer 相机数据

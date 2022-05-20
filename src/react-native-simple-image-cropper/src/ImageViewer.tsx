@@ -1,11 +1,12 @@
 import React, { Component, ReactNode, RefObject } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
-import Animated, { Easing, lessOrEq } from 'react-native-reanimated';
+import Animated, { EasingNode, lessOrEq } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 import Video from 'react-native-video';
-
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = windowWidth; //这个值根据实际的尺寸
 interface IProps {
   image: string;
   areaWidth: number;
@@ -16,7 +17,7 @@ interface IProps {
   onMove: ({ positionX, positionY, scale }: IImageViewerData) => void;
   containerColor?: string;
   videoFile?: string;
-  disablePin?: boolean,
+  disablePin?: boolean;
   imageBackdropColor?: string;
   overlay?: ReactNode;
 }
@@ -101,21 +102,21 @@ class ImageViewer extends Component<IProps> {
 
   constructor(props: IProps) {
     super(props);
-    let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale } = props;
-    minScale = propsScale;
+    let { areaWidth, areaHeight, imageWidth, imageHeight, minScale, propsScale,propsX,propsY} = props;
+    minScale = minScale;
 
     this.pinchRef = React.createRef();
     this.dragRef = React.createRef();
-    this.translateX = new Value(0);
-    this.translateY = new Value(0);
-    this.scale = new Value(minScale);
-    this.enableXRef = new Value(this.props.disablePin? 0: 1)
+    this.translateX = new Value(propsX?propsX:0);
+    this.translateY = new Value(propsY?propsY:0);
+    this.scale = new Value(propsScale?propsScale:1);
+    this.enableXRef = new Value(this.props.disablePin ? 0 : 1);
     const timingDefaultParams = {
       duration: 200,
-      easing: Easing.linear,
+      easing: EasingNode.linear,
     };
 
-    const maxScale = minScale + 3;
+    const maxScale = 2;
 
     const offsetX = new Value(0);
     const offsetY = new Value(0);
@@ -217,8 +218,7 @@ class ImageViewer extends Component<IProps> {
         }) =>
           block([
             cond(eq(state, State.ACTIVE), [
-           
-              set(this.translateX,  this.props.disablePin? offsetX :add(divide(translationX, this.scale), offsetX)),
+              set(this.translateX, this.props.disablePin ? offsetX : add(divide(translationX, this.scale), offsetX)),
               set(this.translateY, add(divide(translationY, this.scale), offsetY)),
 
               set(maxX, horizontalMax),
@@ -232,12 +232,16 @@ class ImageViewer extends Component<IProps> {
             cond(
               and(
                 eq(state, State.END),
-                greaterOrEq(scaledWidth, multiply(viewerAreaWidth, this.props.propsScale)),
+                greaterOrEq(scaledWidth, multiply(viewerAreaWidth, this.props.minScale)),
                 greaterOrEq(this.scale, new Value(minScale)),
               ),
 
               cond(
-                and( greaterOrEq(this.enableXRef, 1),lessThan(this.translateX, negMaxX), greaterOrEq(this.scale, new Value(minScale))),
+                and(
+                  greaterOrEq(this.enableXRef, 1),
+                  lessThan(this.translateX, negMaxX),
+                  greaterOrEq(this.scale, new Value(minScale)),
+                ),
                 [
                   set(
                     this.translateX,
@@ -248,16 +252,23 @@ class ImageViewer extends Component<IProps> {
                     }),
                   ),
                 ],
-                cond(and(greaterOrEq(this.enableXRef, 1), greaterThan(this.translateX, maxX), greaterOrEq(this.scale, new Value(minScale))), [
-                  set(
-                    this.translateX,
-                    timing({
-                      from: this.translateX,
-                      to: maxX,
-                      ...timingDefaultParams,
-                    }),
+                cond(
+                  and(
+                    greaterOrEq(this.enableXRef, 1),
+                    greaterThan(this.translateX, maxX),
+                    greaterOrEq(this.scale, new Value(minScale)),
                   ),
-                ]),
+                  [
+                    set(
+                      this.translateX,
+                      timing({
+                        from: this.translateX,
+                        to: maxX,
+                        ...timingDefaultParams,
+                      }),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -359,13 +370,17 @@ class ImageViewer extends Component<IProps> {
   //   return true
   // }
   componentDidUpdate(prevProps: IProps) {
-    const { propsScale , disablePin} = this.props;
+    const { propsScale, disablePin, isChangeScale } = this.props;
+
+    if (isChangeScale) {
+      this.props.setChangeScale();
+      this.scale.setValue(propsScale);
+      return;
+    }
 
     if (propsScale && prevProps.propsScale !== propsScale) {
       this.scale.setValue(propsScale);
     }
-  
-
   }
   handleMove = (args: readonly number[]): void => {
     const { onMove } = this.props;
@@ -389,6 +404,8 @@ class ImageViewer extends Component<IProps> {
       videoFile,
       minScale,
       videoPaused,
+      videoMuted,
+      srcSize,
     } = this.props;
     const imageSrc = {
       uri: image,
@@ -450,7 +467,39 @@ class ImageViewer extends Component<IProps> {
         ],
       },
     ];
-
+    const rowData = srcSize;
+    // 这里裁减策略修改为超出一定比例的时候自动裁切
+    let videoBoxWidth = windowWidth;
+    let videoBoxHeight = windowWidth;
+    let videoWidth = windowWidth;
+    let videoHeight = windowWidth;
+    // 只处理小于和大于的情况
+    const wHRatio = rowData.width / rowData.height;
+    if (wHRatio > 2) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / 2;
+      videoHeight = windowWidth / 2;
+      videoWidth = videoHeight * wHRatio;
+    } else if (wHRatio < 4 / 5) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = (windowWidth / 4) * 5;
+      videoWidth = windowWidth;
+      videoHeight = videoWidth / wHRatio;
+    } else {
+      // 宽小于高但是没有超出限制,以屏幕宽乘以比例为主
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / wHRatio;
+      videoWidth = windowWidth;
+      videoHeight = windowWidth / wHRatio;
+    }
+    const videoStyle = {
+      width: videoWidth,
+      height: videoHeight,
+    };
+    const videoBoxStyle = {
+      width: windowWidth,
+      height: windowWidth,
+    };
     return (
       <>
         <Animated.Code>
@@ -464,13 +513,13 @@ class ImageViewer extends Component<IProps> {
           minPointers={1}
           maxPointers={2}
           avgTouches
-          
           onGestureEvent={this.onPanGestureEvent}
           onHandlerStateChange={this.onPanGestureEvent}
+     
         >
           <Animated.View style={containerStyles}>
             <TapGestureHandler numberOfTaps={2} onHandlerStateChange={this.onTapGestureEvent}>
-              <Animated.View style={areaStyles}>
+              <Animated.View style={areaStyles}      testID={'image-cropper'}>
                 <PinchGestureHandler
                   ref={this.pinchRef}
                   enabled={!this.props.disablePin}
@@ -479,22 +528,34 @@ class ImageViewer extends Component<IProps> {
                 >
                   <Animated.View style={imageWrapperStyles} collapsable={false}>
                     {videoFile ? (
-                      <Animated.View style={imageStyles}>
+                      // <Animated.View style={imageStyles}>
+                      //   <Video
+                      //     paused={videoPaused}
+                      //     repeat={true}
+                      //     muted={true}
+                      //     source={{ uri: videoFile }}
+                      //     style={{
+                      //       width: imageWidth,
+                      //       height: imageHeight,
+                      //     }}
+                      //   />
+                      // </Animated.View>
+                      <Animated.View style={[videoBoxStyle, { justifyContent: 'center', alignItems: 'center' }]}>
                         <Video
+                          posterResizeMode={"cover"}
+                          resizeMode={"cover"}
                           paused={videoPaused}
                           repeat={true}
-                          muted={true}
+                          muted={videoMuted}
+                          // muted={false}
                           source={{ uri: videoFile }}
-                          style={{
-                            width: imageWidth,
-                            height: imageHeight,
-                          }}
+                          style={[videoStyle]}
                         />
                       </Animated.View>
                     ) : (
                       <Animated.Image style={imageStyles} source={imageSrc} />
                     )}
-                    {showCover ? (
+                    {showCover && !videoFile ? (
                       <Animated.View style={overlayContainerStyle}>
                         <Animated.View style={{ height: '100%', width: '100%' }}>
                           <Animated.View

@@ -7,13 +7,17 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+
 @class AliyunMediaConfig;
 @class AliyunPasterInfo;
 
 typedef void(^VideoRecordStartBlk_t)(CGFloat duration);
 typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 
-@interface AliCameraAction : NSObject
+@interface AliCameraAction : NSObject;
+//@interface AliCameraAction : RCTEventEmitter<RCTBridgeModule>;
 
 @property (nonatomic, strong) AliyunMediaConfig *mediaConfig;
 
@@ -32,7 +36,9 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)startFrontPreview;
 - (void)startPreview;
 - (void)stopPreview;
-
+- (void)destroyRecorder;
+- (void)addNotification;
+- (void)removeNotification;
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position;
 - (BOOL)switchFlashMode:(AVCaptureFlashMode)mode;
@@ -46,8 +52,24 @@ typedef void(^VideoRecordEndBlk_t)(NSString *videoSavePath);
 - (void)addZoomGesture;
 - (void)removeZoomGesture;
 
-- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo;
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo index:(NSNumber *)index;
 - (void)deletePreviousEffectPaster;
+
+- (void)resumeCamera;
+- (void)pauseCamera;
+- (void)setFilterPath:(NSString*)filterPath;
+
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject;
+
 @end
 
 

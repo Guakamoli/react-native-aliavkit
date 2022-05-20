@@ -3,7 +3,7 @@ import { STORY } from '../actions/actionsTypes';
 const initialState = {
     facePasterInfo: { eid: 0 },
     currentIndex: 0,
-    cameraType: 'back',
+    cameraType: 'front',
     normalBeautyLevel: 3,
     showBeautify: false,
 

@@ -12,7 +12,11 @@ import {
   Animated,
   ScrollView,
   NativeEventEmitter,
+  Platform,
 } from 'react-native';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import _ from 'lodash';
 import Toast, { DURATION } from 'react-native-easy-toast';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -22,7 +26,32 @@ import Carousel from 'react-native-snap-carousel';
 import Trimmer from './react-native-trimmer';
 import VideoEditor from './VideoEditor';
 import AVService from './AVService';
-import { Grayscale, Temperature, Sepia } from 'react-native-image-filter-kit';
+import I18n from './i18n';
+
+import {
+  Grayscale,
+  Temperature,
+  Sepia,
+  Warm,
+  Vintage,
+  Tint,
+  Technicolor,
+  Tritanopia,
+  Browni,
+  Achromatopsia,
+  Deuteranomaly,
+  Tritanomaly,
+  Polaroid,
+  Cool,
+  Invert,
+  Emboss,
+  cleanExtractedImagesCache,
+} from 'react-native-image-filter-kit';
+import ImageMap from '../images';
+const { postNoVolumePng, postvolumePng, postnoVolumeImage, postaddPhotoBtnPng, postEditPausePng } = ImageMap;
+import { Button } from 'react-native-elements';
+import { connect } from 'react-redux';
+import { setSelectMultiple, setMultipleData } from './actions/post';
 
 // let a  = require('../images/postEditorNoMute.png');
 
@@ -30,7 +59,7 @@ const { width, height } = Dimensions.get('window');
 const captureIcon = (width - 98) / 2;
 const { RNEditViewManager, AliAVServiceBridge } = NativeModules;
 const photosItem = width / 4;
-const cropWidth = width - 30 * 2;
+const cropWidth = width - 35 * 2;
 const PostHead = React.memo((props) => {
   const { videoMute, setvideoMute } = props;
 
@@ -43,6 +72,14 @@ const PostHead = React.memo((props) => {
     continueEdit,
     continueRef,
   } = props;
+  const successEdit = () => {
+    // 取消多选 采用最后一个
+    if (props.selectMultiple) {
+      let endSelectData = props.multipleData[props.multipleData.length - 1];
+      props.setMultipleData([endSelectData]);
+      props.setSelectMultiple();
+    }
+  };
   return (
     <View
       style={{
@@ -67,7 +104,7 @@ const PostHead = React.memo((props) => {
           justifyContent: 'center',
         }}
       >
-        <Image style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
+        <FastImage style={styles.closeIcon} source={require('../images/backArrow.png')} resizeMode='contain' />
       </Pressable>
       {fileType === 'video' ? (
         <TouchableOpacity
@@ -75,12 +112,16 @@ const PostHead = React.memo((props) => {
             setvideoMute(!videoMute);
           }}
         >
-          <Image style={{ width: 30, height: 21 }} source={!videoMute ? volumeImage : noVolumeImage} />
+          <FastImage style={{ width: 22, height: 21 }} source={!videoMute ? postvolumePng : postnoVolumeImage} />
         </TouchableOpacity>
       ) : null}
 
       <Pressable
-        onPress={continueEdit}
+        onPress={() => {
+          continueEdit();
+          //TODO
+          // successEdit();
+        }}
         style={{
           height: 30,
           paddingHorizontal: 12,
@@ -89,11 +130,221 @@ const PostHead = React.memo((props) => {
           alignItems: 'flex-end',
         }}
       >
-        <Text style={styles.continueText}>继续</Text>
+        <Text style={styles.continueText}>{`${I18n.t('continue')}`}</Text>
       </Pressable>
     </View>
   );
 });
+const PostHeadMapStateToProps = (state) => ({
+  selectMultiple: state.shootPost.selectMultiple,
+  multipleData: state.shootPost.multipleData,
+});
+const GIWMapDispatchToProps = (dispatch) => ({
+  setSelectMultiple: () => dispatch(setSelectMultiple()),
+  setMultipleData: (params) => {
+    multipleData = params;
+
+    dispatch(setMultipleData(params));
+  },
+});
+const PostHeadWrap = connect(PostHeadMapStateToProps, GIWMapDispatchToProps)(PostHead);
+const AddPhoto = React.memo((props) => {
+  const { goback } = props;
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 34 }}>
+      <Pressable
+        onPress={() => {
+          goback();
+        }}
+      >
+        <FastImage source={postaddPhotoBtnPng} style={{ width: 83, height: 83 }} />
+      </Pressable>
+    </View>
+  );
+});
+
+class PhotoShow extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      photosDataIndex: [],
+      videoPaused: false,
+    };
+  }
+
+  // const [photosDataIndex, setPhotosDataIndex] = useState([]);
+  saveFilterImage = (nativeEvent, item, flag = false, index = 0) => {
+    // ？？？？？
+    const { setPhotoFile, photoFile } = this.props;
+    const { photosDataIndex } = this.state;
+    // setPhotoFile(nativeEvent.uri);
+    if (flag) {
+      // 单张数组包裹
+      setPhotoFile([nativeEvent.uri]);
+    } else {
+      // 判断是否已经选中过 没有
+      if (photosDataIndex.indexOf(item) != -1) {
+        let list = [...photoFile];
+        list[index] = nativeEvent.uri;
+        setPhotoFile(list);
+      } else {
+        let list = [...photoFile];
+        list[index] = nativeEvent.uri;
+        setPhotoFile(list);
+      }
+    }
+  };
+  Extractor = (imgFilter, isSingle = false, editImageInfo) => {
+
+    const imageWidth = (isSingle ? width : 319) * editImageInfo.widthScale;
+    const imageHeight = (isSingle ? width : 319) * editImageInfo.heightScale;
+    const translateX = (isSingle ? width : 319) * editImageInfo.translateXScale;
+    const translateY = (isSingle ? width : 319) * editImageInfo.translateYScale;
+    const ImageComponent = (
+      <>
+        {editImageInfo &&
+          <Image style={[{ width: imageWidth, height: imageHeight }, {
+            transform: [
+              { scale: editImageInfo.scale },
+              { translateX: translateX },
+              { translateY: translateY },
+            ]
+          }]}
+            source={{ uri: editImageInfo.uri }} />
+        }
+      </>
+    );
+    switch (imgFilter) {
+      case 'Sepia2': {
+        return <Sepia image={ImageComponent} amount={2} />;
+      }
+      case 'Temperature': {
+        return <Temperature amount={0.5} image={ImageComponent} />;
+      }
+      case 'Sepia0.4': {
+        return <Sepia amount={0.4} image={ImageComponent} />;
+      }
+      case 'Warm': {
+        return <Warm image={ImageComponent} />;
+      }
+      case 'Browni': {
+        return <Browni image={ImageComponent} />;
+      }
+      case 'Tint': {
+        return <Tint amount={0.2} image={ImageComponent} />;
+      }
+      case 'Technicolor': {
+        return <Technicolor image={ImageComponent} />;
+      }
+      case 'Tritanomaly': {
+        return <Tritanomaly image={ImageComponent} />;
+      }
+      case 'Tritanopia': {
+        return <Tritanopia image={ImageComponent} />;
+      }
+      case 'Deuteranomaly': {
+        return <Deuteranomaly image={ImageComponent} />;
+      }
+      case 'Invert': {
+        return <Invert image={ImageComponent} firstColor={'#FFE580'} secondColor={'pink'} />;
+      }
+      case 'EmbossPolaroid': {
+        return <Emboss image={<Polaroid image={ImageComponent} />} />;
+      }
+      case 'EmbossCool': {
+        return <Emboss image={<Cool image={ImageComponent} />} />;
+      }
+      case 'EmbossAchromatopsia': {
+        return <Emboss image={<Achromatopsia image={ImageComponent} />} />;
+      }
+
+      default: {
+        return ImageComponent;
+      }
+    }
+  };
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.multipleSandBoxData !== this.props.multipleSandBoxData) {
+      return true;
+    }
+    if (nextProps.imgfilterName !== this.props.imgfilterName) {
+      return true;
+    }
+    return false;
+  }
+  render() {
+    // const { multipleSandBoxData, imgfilterName, goback, params } = this.props;
+    const { imgfilterName, goback, params } = this.props;
+    const editImageData = params.editImageData;
+   
+    return (
+      <View style={{ width: width, height: width, overflow: 'hidden' }}>
+        <View>
+          {editImageData.length == 1 && (
+            <Grayscale
+              style={{
+                width: width,
+                height: width,
+                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              collapsable={false}
+              amount={0}
+              onExtractImage={({ nativeEvent }) => {
+
+                editImageData[0].cacheUri = nativeEvent.uri;
+
+                //
+                // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+                // this.saveFilterImage(nativeEvent, multipleSandBoxData[0], true);
+              }}
+              extractImageEnabled={true}
+              image={this.Extractor(imgfilterName, true, editImageData[0])}
+            ></Grayscale>
+          )}
+          {editImageData.length > 1 && (
+            <>
+              <FlatList
+                keyExtractor={(item, index) => "" + index}
+                style={[{ marginTop: 40 }, !(editImageData.length > 1) && { display: 'none' }]}
+                horizontal={true}
+                data={editImageData}
+                renderItem={({ item, index }) => {
+                  return (
+                    <Grayscale
+                      style={{
+                        width: 319,
+                        height: 319,
+                        overflow: 'hidden',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      collapsable={false}
+                      amount={0}
+                      onExtractImage={({ nativeEvent }) => {
+
+                        editImageData[index].cacheUri = nativeEvent.uri;
+
+                        //
+                        // CameraRoll.save(nativeEvent.uri, { type: 'photo' })
+                        // this.saveFilterImage(nativeEvent, item, false, index);
+                      }}
+                      extractImageEnabled={true}
+                      image={this.Extractor(imgfilterName, false, item)}
+                    ></Grayscale>
+                  );
+                }}
+                ListFooterComponent={<AddPhoto {...this.props}> </AddPhoto>}
+              />
+            </>
+          )}
+        </View>
+      </View>
+    );
+  }
+}
 const PostEditor = (props) => {
   // const {params:{fileType='',trimVideoData="",trimmerRight="",videoduration=''}} = props;
   const {
@@ -104,13 +355,17 @@ const PostEditor = (props) => {
     volumeImage,
     noVolumeImage,
   } = props;
+
   const [multipleSandBoxData, setmultipleSandBoxData] = useState([]);
   const [filterList, setfilterList] = useState([]);
   const [filterName, setfilterName] = useState(null);
   const [videoMute, setvideoMute] = useState(false);
   const [coverList, setcoverList] = useState([]);
-  const [coverImage, setcoverImage] = useState('');
-  const [selectBottomModel, setselectBottomModel] = useState('滤镜');
+  // const [coverImage, setcoverImage] = useState('');
+  const coverImage = useRef(null);
+  const [selectBottomModel, setselectBottomModel] = useState(`${I18n.t('Filter')}`);
+
+
   const [trimmerLeftHandlePosition, settrimmerLeftHandlePosition] = useState(0);
   const [trimmerRightHandlePosition, settrimmerRightHandlePosition] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
@@ -119,54 +374,120 @@ const PostEditor = (props) => {
   const scrollAniRef = useRef(new Animated.Value(10)).current;
   const aniRef = useRef(null);
   const toast = useRef();
-
+  const toastAnim = useRef(new Animated.Value(1)).current;
   const [imgfilterName, setImgFilterName] = useState('');
   const stopRef = useRef(false);
   const startRef = useRef(false);
   const lockRef = useRef(false);
   const continueRef = useRef(false);
   const [photoFile, setPhotoFile] = useState('');
+
+  const [videoPause, setVideoPause] = useState(false);
   const outputPathRef = useRef(null);
 
+  /**
+   * 继续
+   */
   const continueEdit = async () => {
-    if (continueRef.current) return;
-    continueRef.current = true;
-    const cropData = props.params.cropDataResult;
-
+    // const cropData = props.params.cropDataResult;
     if (fileType === 'image') {
-      try {
-        const path = photoFile;
-        let uploadFile = [];
-        uploadFile.push({
-          Type: `image/png`,
-          path: path,
-          size: 0,
-          Name: path,
-          coverImage: path,
-        });
-        props.getUploadFile(uploadFile);
-        props.goback();
-      } catch (e) {
-        console.info(e, '错误');
-        setTimeout(() => {
-          continueRef.current = false;
-        }, 1500);
+
+      const editImageData = props.params.editImageData;
+
+      let uploadData = [];
+
+      for (let i = 0; i < editImageData.length; i++) {
+        const item = editImageData[i];
+        if (!item?.uri) {
+          return;
+        }
+
+        let localUri;
+        let type;
+        if (Platform.OS === 'ios') {
+          type = item.name.split('.');
+          type = `${item.type}/${type[type.length - 1].toLowerCase()}`;
+          localUri = await CameraRoll.requestPhotoAccess(item.uri.slice(5));
+        } else {
+          type = item.type;
+          localUri = item.uri;
+        }
+        if (!localUri) {
+          return;
+        }
+        uploadData[i] = {
+          index: item.index,
+          type: type,
+          path: localUri,
+          size: item.size,
+          name: item.name,
+          coverImage: localUri,
+          width: item.srcWidth,
+          height: item.srcHeight,
+
+          cropParams: {
+            scale: item.scale,
+            widthScale: item.widthScale,
+            heightScale: item.heightScale,
+            translateXScale: item.translateXScale,
+            translateYScale: item.translateYScale,
+          }
+        }
       }
+      props.getUploadFile(uploadData);
+      props.goback();
+
     } else {
       // 裁剪视频
-      console.info(toast.current, 'asasasas');
-      toast.current.show('正在导出, 请不要离开', 0);
+      // if (!coverImage.current) {
+      //   return;
+      // }
+      if (continueRef.current) return;
+      continueRef.current = true;
+      // toast.current.show(`${I18n.t('Exporting_please_dont_leave')}`, 0);
+      if (!filterName && videoTime === trimmerRightHandlePosition - trimmerLeftHandlePosition) {
+        return onExportVideo({ outputPath: multipleSandBoxData[0], exportProgress: 1 });
+      }
+      toast.current.show(
+        <Button
+          buttonStyle={{
+            backgroundColor: 'transparent',
+          }}
+          loadingStyle={{
+            width: 55,
+            height: 45,
+            backgroundColor: 'transparent',
+          }}
+          style={{ backgroundColor: 'transparent' }}
+          containerStyle={{
+            backgroundColor: 'transparent',
+          }}
+          loading
+          loadingProps={{ size: 'large' }}
+        />,
 
-      RNEditViewManager.trimVideo({
-        videoPath: multipleSandBoxData[0],
-        startTime: trimmerLeftHandlePosition / 1000,
-        endTime: trimmerRightHandlePosition / 1000,
-      });
+        0,
+      );
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition / 1000,
+          endTime: trimmerRightHandlePosition / 1000,
+        });
+      } else {
+        const isTrim = await editor?.trimVideo({
+          videoPath: multipleSandBoxData[0],
+          startTime: trimmerLeftHandlePosition,
+          endTime: trimmerRightHandlePosition,
+        });
+       
+      }
 
       // 导出视频
       if (exportVideo) {
         return;
       }
+
       aniRef.current.stop();
       setexportVideo(true);
     }
@@ -175,11 +496,11 @@ const PostEditor = (props) => {
   let editor = null;
   let scrubberInterval = null;
   const getFilters = async () => {
-    //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
+    //{iconPath: '.../柔柔/icon.png', filterName: `${I18n.t('soft')}`}
 
     const infos = await AVService.getFilterIcons({});
 
-    infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+    infos.unshift({ filterName: null, iconPath: '', title: `${I18n.t('no_effect')}` });
     setfilterList(infos);
   };
 
@@ -188,24 +509,40 @@ const PostEditor = (props) => {
     const { params } = props;
 
     if (!params) return null;
-    setmultipleSandBoxData([params?.trimVideoData]);
+    //
+    setmultipleSandBoxData(params?.trimVideoData);
     setVideoTime(params?.videoduration);
     settrimmerRightHandlePosition(params?.trimmerRight);
+    Animated.timing(
+      // 随时间变化而执行动画
+      toastAnim, // 动画中的变量值
+      {
+        toValue: 0, // 透明度最终变为1，即完全不透明
+        duration: 3000, // 让动画持续一段时间
+        useNativeDriver: true,
+      },
+    ).start();
   }, [props.params]);
   useEffect(() => {
     const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
+    //清除图片滤镜缓存文件
+    cleanExtractedImagesCache();
     const subscription = managerEmitter.addListener('cropProgress', (reminder) => {
-      console.log(reminder);
-
       if (reminder.progress == 1 && fileType === 'video') {
         // 可以再这里做loading
         toast.current.close();
       }
     });
+    //
     return () => {
-      console.info('销毁了', subscription);
-      AVService.removeThumbnaiImages();
-      RNEditViewManager.stop();
+     
+      //
+      // AVService.removeThumbnaiImages();
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.stop();
+      } else {
+        editor?.release();
+      }
       props.params?.playVideo?.();
       managerEmitter.removeAllListeners('cropProgress');
     };
@@ -223,16 +560,32 @@ const PostEditor = (props) => {
         itemPerTime = videoTime / 8;
       }
 
-      coverData = await AVService.getThumbnails({
+      // const cropData = props.params.cropDataResult;
+      // const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+      // const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
+
+      let thumbnailsArgument = {
         videoPath: multipleSandBoxData[0],
         startTime: 0,
         itemPerTime: Math.floor(itemPerTime),
-      });
+      };
+      if (Platform.OS != 'ios') {
+      }
+      coverData = await AVService.getThumbnails(thumbnailsArgument);
 
       setcoverList(coverData);
-      setcoverImage(coverData[0]);
+      // let videoData = props.params.originalData[0]?.image;
+
+      // const FirstcoverData = await AVService.getThumbnails({
+      //   width: videoData.width,
+      //   height: videoData.height,
+      //   ...thumbnailsArgument,
+      //   needCover: true,
+      // });
+      //
+      // coverImage.current = FirstcoverData[0];
     } catch (e) {
-      console.info(e);
+     
     }
   };
   useEffect(() => {
@@ -242,32 +595,44 @@ const PostEditor = (props) => {
   }, [multipleSandBoxData]);
 
   const onExportVideo = async (event) => {
+   
     try {
       if (event.exportProgress === 1) {
-        const cropData = props.params.cropDataResult;
+        // const cropData = props.params.cropDataResult;
         let outputPath = event.outputPath;
-        const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
-        const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
-        let preOutputPath = outputPath;
-        outputPath = await AVService.crop({
-          source: `file://${outputPath}`,
-          cropOffsetX: cropData.offset.x,
-          cropOffsetY: cropData.offset.y * Hscale,
-          cropWidth: cropData.size.width * Wscale,
-          cropHeight: cropData.size.height * Wscale,
-          duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
-        });
+        // const Wscale = 1080 / props.params.cropDataRow.srcSize.width;
+        // const Hscale = 1920 / props.params.cropDataRow.srcSize.height;
+        // let preOutputPath = outputPath;
+        // outputPath = await AVService.crop({
+        //   source: `file://${outputPath}`,
+        //   cropOffsetX: cropData.offset.x,
+        //   cropOffsetY: cropData.offset.y * Hscale,
+        //   cropWidth: cropData.size.width * Wscale,
+        //   cropHeight: cropData.size.height * Wscale,
+        //   duration: (trimmerRightHandlePosition - trimmerLeftHandlePosition) / 1000,
+        // });
+        // CameraRoll.deletePhotos([preOutputPath, ...coverList]);
 
-        CameraRoll.deletePhotos([preOutputPath, ...coverList]);
+        let videoData = props.params.originalData[0]?.image;
+
+        CameraRoll.deletePhotos(coverList);
         let uploadFile = [];
         //
         let type = outputPath.split('.');
+        let uploadCoverImage = '';
+        // if (Platform.OS === 'ios') {
+        //   uploadCoverImage = coverImage.current ? `file://${encodeURI(coverImage.current)}` : '';
+        // } else {
+        //   uploadCoverImage = coverImage.current ? `${encodeURI(coverImage.current)}` : '';
+        // }
         uploadFile.push({
-          Type: `${fileType}/${type[type.length - 1]}`,
+          type: `${fileType}/${type[type.length - 1]}`,
           path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
           size: 0,
-          Name: outputPath,
-          coverImage: coverImage ? `file://${encodeURI(coverImage)}` : '',
+          name: outputPath,
+          coverImage: uploadCoverImage,
+          width: videoData.width,
+          height: videoData.height,
         });
 
         props.getUploadFile(uploadFile);
@@ -276,45 +641,104 @@ const PostEditor = (props) => {
         }, 0);
       }
     } catch (e) {
-      console.info(e);
+     
     }
   };
 
   const postEditorViewData = () => {
-    const delta = trimmerRightHandlePosition - trimmerLeftHandlePosition;
+    const delta = trimmerRightHandlePosition - scrubberPosition;
     const top = props.params.cropDataRow.positionY;
+    let cropDataRowkey = props.params.originalData[0].image.uri;
+    //
+    const width1 = props.params.cropDataRow[cropDataRowkey].fittedSize.width;
+    const height1 = props.params.cropDataRow[cropDataRowkey].fittedSize.height;
+    const srcWidth = props.params.cropDataRow[cropDataRowkey].srcSize.width;
+    const srcHeight = props.params.cropDataRow[cropDataRowkey].srcSize.height;
+    const rowData = props.params.cropDataRow[cropDataRowkey].srcSize;
+    // 这里裁减策略修改为超出一定比例的时候自动裁切
+    const windowWidth = width;
 
-    const width1 = props.params.cropDataRow.fittedSize.width;
-    const height1 = props.params.cropDataRow.fittedSize.height;
+    let videoBoxWidth = windowWidth;
+    let videoBoxHeight = windowWidth;
+    let videoWidth = windowWidth;
+    let videoHeight = windowWidth;
+    // 只处理小于和大于的情况
+    const wHRatio = rowData.width / rowData.height;
+    if (wHRatio > 2) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / 2;
+      videoHeight = windowWidth / 2;
+      videoWidth = videoHeight * wHRatio;
+    } else if (wHRatio < 4 / 5) {
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = (windowWidth / 4) * 5;
+      videoWidth = windowWidth;
+      videoHeight = videoWidth / wHRatio;
+    } else {
+      // 宽小于高但是没有超出限制,以屏幕宽乘以比例为主
+      videoBoxWidth = windowWidth;
+      videoBoxHeight = windowWidth / wHRatio;
+      videoWidth = windowWidth;
+      videoHeight = windowWidth / wHRatio;
+    }
+    const videoStyle = {
+      width: videoWidth,
+      height: videoHeight,
+    };
+    const videoBoxStyle = {
+      width: windowWidth,
+      height: windowWidth,
+    };
+
     return (
       <View
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'black',
-          width: width,
-          height: width,
-          overflow: 'hidden',
-        }}
+        style={[
+          {
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'black',
+            width: width,
+            height: width,
+            overflow: 'hidden',
+          },
+          videoBoxStyle,
+        ]}
       >
-        <View
-          style={{
-            width: width1,
-            height: height1,
-            transform: [
-              {
-                translateY: top,
-              },
-            ],
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[videoStyle, { position: 'relative' }]}
+          onPress={() => {
+            if (Platform.OS === 'ios') {
+              if (!videoPause) {
+                RNEditViewManager.pause();
+              } else {
+                RNEditViewManager.play();
+              }
+              setVideoPause(!videoPause);
+            }
           }}
         >
+          <FastImage
+            style={[
+              {
+                width: 45,
+                height: 50,
+                top: (videoHeight - 50) / 2,
+                left: (videoWidth - 45) / 2,
+                position: 'absolute',
+                zIndex: 99,
+              },
+              videoPause != true && { display: 'none' },
+            ]}
+            source={postEditPausePng}
+          />
           <VideoEditor
             // editWidth={width1}
             // editHeight={height1}
-            editStyle={{
-              width: width1,
-              height: height1,
+            mediaInfo={{
+              outputSize: { width: srcWidth, height: srcHeight },
             }}
+            editStyle={videoStyle}
             ref={(edit) => (editor = edit)}
             filterName={filterName}
             videoPath={multipleSandBoxData[0]}
@@ -325,17 +749,24 @@ const PostEditor = (props) => {
               onExportVideo(event);
             }}
             onPlayProgress={({ nativeEvent }) => {
+              if (nativeEvent.streamProgress === 0) {
+                //重新播放，重置状态
+                startRef.current = false;
+                lockRef.current = false;
+                stopRef.current = false;
+              }
+
               if (
                 nativeEvent.playProgress * 1000 >= trimmerLeftHandlePosition &&
                 !startRef.current &&
                 !lockRef.current
               ) {
                 startRef.current = true;
-
                 aniRef.current = Animated.timing(
                   // 随时间变化而执行动画
                   scrollAniRef, // 动画中的变量值
                   {
+                    //Math.min((newScrubPosition - ) / videoTime, 1) * cropWidth
                     toValue: Math.min(delta / videoTime, 1) * cropWidth, // 透明度最终变为1，即完全不透明
                     duration: delta, // 让动画持续一段时间
                     useNativeDriver: true,
@@ -354,24 +785,30 @@ const PostEditor = (props) => {
                   startRef.current = false;
 
                   aniRef.current.stop();
-                  RNEditViewManager.pause();
 
-                  RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
+                  // setscrubberPosition(0);
+                  setscrubberPosition(trimmerLeftHandlePosition);
+
                   scrollAniRef.setValue(0);
-                  setTimeout(() => {
-                    stopRef.current = false;
-
-                    RNEditViewManager.play();
-                  }, 500);
+                  stopRef.current = false;
+                  //TODO
+                  if (Platform.OS === 'ios') {
+                    RNEditViewManager.pause();
+                    RNEditViewManager.seekToTime(trimmerLeftHandlePosition / 1000);
+                    setTimeout(() => {
+                      RNEditViewManager.play();
+                    }, 500);
+                  } else {
+                    editor?.onSeek(trimmerLeftHandlePosition);
+                    //android 默认为循环播放
+                    // editor?.onStop()
+                  }
                   return;
                 }
               }
             }}
-            onExportVideo={(event) => {
-              onExportVideo(event);
-            }}
           />
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -380,6 +817,7 @@ const PostEditor = (props) => {
     return (
       <View style={{ bottom: height * 0.15, position: 'absolute' }}>
         <FlatList
+          keyExtractor={(item, index) => "" + index}
           data={filterList}
           initialNumToRender={4}
           horizontal={true}
@@ -399,11 +837,19 @@ const PostEditor = (props) => {
                     ]}
                   >
                     {item.filterName == null ? (
-                      <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
-                        <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+                      <View
+                        style={{
+                          width: 100,
+                          height: 100,
+                          backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <FastImage style={{ width: 44, height: 44 }} source={postNoVolumePng} />
                       </View>
                     ) : (
-                      <Image style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
+                      <FastImage style={{ width: 100, height: 100 }} source={{ uri: item.iconPath }} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -425,13 +871,21 @@ const PostEditor = (props) => {
         rightPosition = 2000;
       }
       scrollAniRef.setValue(0);
-      RNEditViewManager.seekToTime(leftPosition / 1000);
-      setTimeout(() => {
-        lockRef.current = false;
-        RNEditViewManager.play();
-        stopRef.current = false;
-        startRef.current = false;
-      }, 500);
+
+      //TODO
+
+      if (Platform.OS === 'ios') {
+        RNEditViewManager.seekToTime(leftPosition / 1000);
+        setTimeout(() => {
+          lockRef.current = false;
+          RNEditViewManager.play();
+          stopRef.current = false;
+          startRef.current = false;
+        }, 500);
+      } else {
+        editor?.onSeek(leftPosition);
+      }
+
       settrimmerLeftHandlePosition(leftPosition);
       settrimmerRightHandlePosition(rightPosition);
       setscrubberPosition(leftPosition);
@@ -439,17 +893,50 @@ const PostEditor = (props) => {
 
     return (
       <>
-        <View style={{ paddingHorizontal: 5, bottom: 140, position: 'absolute' }}>
+        <View style={{ paddingHorizontal: 0, bottom: 140, position: 'absolute' }}>
           <Trimmer
             onHandleChange={onHandleChange}
             totalDuration={videoTime}
             initialZoomValue={1}
-            maxTrimDuration={trimmerRightHandlePosition}
             trimmerLeftHandlePosition={trimmerLeftHandlePosition}
             trimmerRightHandlePosition={trimmerRightHandlePosition}
             scrubberPosition={scrubberPosition}
-            onScrubbingComplete={() => {
-              // RNEditViewManager.replay();
+            onScrubbingComplete={(newScrubPosition) => {
+
+              stopRef.current = false;
+              startRef.current = true;
+              lockRef.current = false;
+
+              //指示器拖动结束
+              const scrollValue = Math.min(newScrubPosition / videoTime, 1) * cropWidth
+
+              const toValue = Math.min(trimmerRightHandlePosition / videoTime, 1) * cropWidth;
+
+              const duration = trimmerRightHandlePosition - newScrubPosition;
+
+              setscrubberPosition(0);
+
+              scrollAniRef.setValue(scrollValue);
+              aniRef.current = Animated.timing(
+                // 随时间变化而执行动画
+                scrollAniRef, // 动画中的变量值
+                {
+                  toValue: toValue, // 透明度最终变为1，即完全不透明
+                  duration: duration, // 让动画持续一段时间
+                  useNativeDriver: true,
+                },
+              );
+              aniRef.current.start();
+
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.seekToTime(newScrubPosition / 1000);
+                setTimeout(() => {
+                  RNEditViewManager.play();
+                }, 500);
+              } else {
+                editor?.onSeek(newScrubPosition);
+              }
+
             }}
             scrollAniRef={scrollAniRef}
             tintColor='white'
@@ -458,20 +945,36 @@ const PostEditor = (props) => {
             trackBorderColor='#5a3d5c'
             scrubberColor='white'
             onScrubberPressIn={() => {
-              console.log('onScrubberPressIn');
+              //指示器被点击
+              if (continueRef.current) return;
+              stopRef.current = true;
+              startRef.current = false;
+              lockRef.current = true;
+
+              aniRef.current.stop();
+              scrollAniRef.setValue(0);
+
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             onRightHandlePressIn={() => {
               if (continueRef.current) return;
 
               stopRef.current = true;
               startRef.current = false;
-              ``;
               lockRef.current = true;
               aniRef.current.stop();
 
               scrollAniRef.setValue(0);
 
-              RNEditViewManager.pause();
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             trackWidth={cropWidth}
             onLeftHandlePressIn={() => {
@@ -485,14 +988,19 @@ const PostEditor = (props) => {
 
               scrollAniRef.setValue(0);
 
-              RNEditViewManager.pause();
+              if (Platform.OS === 'ios') {
+                RNEditViewManager.pause();
+              } else {
+                editor?.onPause();
+              }
             }}
             trackHeight={50}
           >
             <View style={{ flexDirection: 'row' }}>
-              {coverList.map((i) => {
+              {coverList.map((i, index) => {
                 return (
                   <Image
+                    key={index}
                     source={{ uri: i }}
                     style={{ width: cropWidth / coverList.length, height: 50 }}
                     resizeMode={'cover'}
@@ -510,6 +1018,7 @@ const PostEditor = (props) => {
     return (
       <View style={{ marginTop: 93, paddingHorizontal: 17 }}>
         <FlatList
+          keyExtractor={(item, index) => "" + index}
           data={coverList}
           initialNumToRender={7}
           horizontal={true}
@@ -519,7 +1028,8 @@ const PostEditor = (props) => {
                 {/* 封面选择 */}
                 <TouchableOpacity
                   onPress={() => {
-                    setcoverImage(item);
+                    // coverImage.current = item;
+                    // setcoverImage(item);
                   }}
                 >
                   <Image
@@ -534,26 +1044,48 @@ const PostEditor = (props) => {
       </View>
     );
   };
+  // 裁剪弹框
+  const cropToast = () => {
+    return (
+      <Animated.View
+        style={[
+          styles.toastBox,
+          {
+            opacity: toastAnim,
+          },
+        ]}
+      >
+        <Text style={{ color: '#000', fontSize: 14, fontWeight: '500' }}>{`${I18n.t('Please_trim_the_video_the_length_of_the_video_cannot_exceed_5_minutes_')}`}</Text>
+        <View style={styles.toastShow}></View>
+      </Animated.View>
+    );
+  };
   // 切换底部功能
   const switchProps = () => {
-    const switchProps = ['滤镜', '修剪'];
+    let switchProps;
+    if (fileType !== 'image') {
+      switchProps = [`${I18n.t('Filter')}`, `${I18n.t('prune')}`];
+    } else {
+      switchProps = [`${I18n.t('Filter')}`];
+    }
 
     return (
       <View
         style={{
-          height: height * 0.08,
+          height: 40,
           width: width,
           flexDirection: 'row',
-          justifyContent: 'space-evenly',
+          justifyContent: 'space-around',
           alignItems: 'flex-start',
           position: 'absolute',
-          bottom: 30,
+          bottom: props.insets.bottom,
         }}
       >
+        {/* {videoTime / 1000 > 300 && cropToast()} */}
         {switchProps.map((item, index) => {
           return (
             <TouchableOpacity
-              style={{ width: 50, height: 50, paddingTop: 30 }}
+              style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}
               key={index}
               onPress={() => {
                 setselectBottomModel(item);
@@ -572,125 +1104,176 @@ const PostEditor = (props) => {
     const top = props.params.cropDataRow.positionY;
     const scale = props.params.cropDataRow.scale;
 
-    const Extractor = (imgFilter) => {
-      // const width =props.params.cropDataRow.fittedSize.width
-      // const height =props.params.cropDataRow.fittedSize.height
-      const ImageComponent = (
-        <Image
-          style={{
-            width: width,
-            height: width,
-            // transform:[
-            // {
-            //   scale:scale
-            // },
-            //    {translateX:left},
+    const editImageData = props.params.editImageData;
 
-            //     {translateY:top},
+    let editImageInfo = null;
+    if (editImageData && editImageData.length > 0) {
+      editImageInfo = editImageData[0];
+    }
 
-            //   ]
-          }}
+    const propsImage = () => {
+      if (editImageInfo) {
+        const imageWidth = 100 * editImageInfo.widthScale;
+        const imageHeight = 100 * editImageInfo.heightScale;
+        const translateX = 100 * editImageInfo.translateXScale;
+        const translateY = 100 * editImageInfo.translateYScale;
+        return (<Image style={[{ width: imageWidth, height: imageHeight }, {
+          transform: [
+            { scale: editImageInfo.scale },
+            { translateX: translateX },
+            { translateY: translateY },
+          ]
+        }]}
+          source={{ uri: editImageInfo.uri }} />
+        )
+      } else {
+        return (<Image
+          style={{ width: 100, height: 100, marginRight: 5, marginBottom: 5, marginTop: 20 }}
+          // source={require('./parrot.png')}
           source={{ uri: multipleSandBoxData[0] }}
-        />
-      );
-      switch (imgFilter) {
-        case 'Sepia': {
-          return <Sepia image={ImageComponent} amount={2} />;
-        }
-        case 'Temperature': {
-          return <Temperature amount={0.5} image={ImageComponent} />;
-        }
-        case 'Sepia2': {
-          return <Sepia amount={0.4} image={ImageComponent} />;
-        }
-        default: {
-          return ImageComponent;
-        }
+          resizeMode={'contain'}
+        />)
       }
+
+    };
+    const propsTitles = (title) => {
+      return <Text style={{ color: 'white', fontSize: 16, marginLeft: "auto", marginRight: "auto" }}>{title}</Text>;
     };
 
     return (
       <>
-        <View style={{ width: width, height: width, overflow: 'hidden' }}>
-          <View
-            style={
-              {
-                // overflow: 'hidden',
-                // alignItems: 'center',
-                // justifyContent: 'center',
-              }
-            }
-          >
-            <Grayscale
-              amount={0}
-              onExtractImage={({ nativeEvent }) => {
-                setPhotoFile(nativeEvent.uri);
-              }}
-              extractImageEnabled={true}
-              image={Extractor(imgfilterName)}
-            ></Grayscale>
-          </View>
-        </View>
-        <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+        {/* post 图片展示 */}
+        <PhotoShow
+          {...props}
+          multipleSandBoxData={multipleSandBoxData}
+          imgfilterName={imgfilterName}
+          setPhotoFile={(data) => setPhotoFile(data)}
+          photoFile={photoFile}
+          goback={props.goback}
+        />
+        <ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }} style={{ marginTop: 20 }}>
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('');
             }}
           >
-            <View style={{ width: 100, height: 100, backgroundColor: 'rgba(69, 69, 73, 0.7);' }}>
-              <Image style={{ width: 100, height: 100 }} source={props.noResultPng} />
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'rgba(69, 69, 73, 0.7);',
+                marginRight: 5,
+                marginBottom: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <FastImage style={{ width: 44, height: 44 }} source={postNoVolumePng} />
             </View>
+            {propsTitles('M1')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Tritanomaly');
+            }}
+          >
+            <Tritanomaly style={styles.filterBox} image={propsImage()} />
+            {propsTitles('M2')}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setImgFilterName('Sepia');
+              setImgFilterName('Tritanopia');
             }}
           >
-            <Sepia
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-              amount={2}
-            />
+            <Tritanopia style={styles.filterBox} image={propsImage()} />
+            {propsTitles('M3')}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setImgFilterName('Temperature');
+              setImgFilterName('Deuteranomaly');
             }}
           >
-            <Temperature
-              amount={0.5}
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-            />
+            <Deuteranomaly style={styles.filterBox} image={propsImage()} />
+            {propsTitles('M4')}
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Sepia0.4');
+            }}
+          >
+            <Sepia amount={0.4} image={propsImage()} style={styles.filterBox} />
+            {propsTitles('M5')}
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => {
               setImgFilterName('Sepia2');
             }}
           >
-            <Sepia
-              amount={0.4}
-              image={
-                <Image
-                  style={{ width: 100, height: 100, marginRight: 5 }}
-                  // source={require('./parrot.png')}
-                  source={{ uri: multipleSandBoxData[0] }}
-                  resizeMode={'contain'}
-                />
-              }
-            />
+            <Sepia amount={2} image={propsImage()} style={styles.filterBox} />
+            {propsTitles('M6')}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Browni');
+            }}
+          >
+            <Browni image={propsImage()} style={styles.filterBox} />
+            {propsTitles('M7')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Tint');
+            }}
+          >
+            <Tint amount={0.2} image={propsImage()} style={styles.filterBox} />
+            {propsTitles('M8')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Invert');
+            }}
+          >
+            <Invert image={propsImage()} firstColor={'#FFE580'} secondColor={'pink'} style={styles.filterBox} />
+            {propsTitles('M9')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('Technicolor');
+            }}
+          >
+            <Technicolor image={propsImage()} style={styles.filterBox} />
+            {propsTitles('M10')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossCool');
+            }}
+          >
+            <Emboss style={styles.filterBox} image={<Cool image={propsImage()} />} />
+            {propsTitles('M11')}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossAchromatopsia');
+            }}
+          >
+            <Emboss style={styles.filterBox} image={<Achromatopsia image={propsImage()} />} />
+            {propsTitles('M12')}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setImgFilterName('EmbossPolaroid');
+            }}
+          >
+            <Emboss style={styles.filterBox} image={<Polaroid image={propsImage()} />} />
+            {propsTitles('M13')}
           </TouchableOpacity>
         </ScrollView>
       </>
@@ -699,7 +1282,7 @@ const PostEditor = (props) => {
   if (fileType == 'image') {
     return (
       <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
-        <PostHead
+        <PostHeadWrap
           {...props}
           continueEdit={continueEdit}
           videoMute={videoMute}
@@ -708,13 +1291,22 @@ const PostEditor = (props) => {
         />
 
         {result()}
+        {switchProps()}
       </View>
     );
   }
   return (
+    //TODO
     <View style={{ backgroundColor: 'black', position: 'relative', height: '100%' }}>
-      <Toast ref={toast} position='top' positionValue={300} fadeInDuration={1050} fadeOutDuration={800} opacity={0.8} />
-      <PostHead
+      <Toast
+        ref={toast}
+        position='top'
+        positionValue={height * 0.4}
+        fadeInDuration={1050}
+        fadeOutDuration={800}
+        opacity={0.8}
+      />
+      <PostHeadWrap
         {...props}
         continueEdit={continueEdit}
         continueRef={continueRef}
@@ -723,10 +1315,10 @@ const PostEditor = (props) => {
       />
       {postEditorViewData()}
 
-      {selectBottomModel === '滤镜' && filterEditorFilter()}
-      {selectBottomModel === '修剪' && postTrimer()}
+      {selectBottomModel === `${I18n.t('Filter')}` && filterEditorFilter()}
+      {selectBottomModel === `${I18n.t('prune')}` && postTrimer()}
       {/* {
-        selectBottomModel === '封面' && postCover()
+        selectBottomModel === `${I18n.t('cover')}` && postCover()
       } */}
       {fileType !== 'image' && switchProps()}
     </View>
@@ -742,11 +1334,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8E8E8E',
     fontWeight: '500',
+    lineHeight: 20,
   },
   continueText: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#fff',
+    color: '#836BFF',
     lineHeight: 21,
   },
   textCenter: {
@@ -755,6 +1348,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     lineHeight: 24,
   },
+  toastShow: {
+    width: 0,
+    height: 0,
+    borderWidth: 10,
+    borderTopColor: 'rgba(255,255,255,0.85)',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 48,
+    right: 40,
+  },
+  toastBox: {
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    position: 'absolute',
+    width: 295,
+    height: 48,
+    bottom: 30,
+    left: (width - 295) / 2,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  filterBox: {
+    marginRight: 5,
+    marginBottom: 5,
+    width: 100,
+    height: 100,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });
 
 export default PostEditor;

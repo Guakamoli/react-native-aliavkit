@@ -12,6 +12,7 @@ import android.util.SparseArray;
 
 import com.aliyun.common.utils.FileUtils;
 import com.aliyun.common.utils.StringUtils;
+import com.liulishuo.filedownloader.util.FileDownloadUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class FileDownloaderDBController {
 
     /**
      * 从数据库中读取所有下载任务
+     *
      * @return
      */
     public SparseArray<FileDownloaderModel> getAllTasks() {
@@ -59,8 +61,43 @@ public class FileDownloaderDBController {
         return tasksMap;
     }
 
+
+    /**
+     * 保存字体到字体库
+     *
+     * @param downloaderModel
+     * @return
+     */
+    public synchronized FileDownloaderModel saveFontModel(FileDownloaderModel downloaderModel, String fontPath) {
+        int id = FileDownloadUtils.generateId(downloaderModel.getUrl(), fontPath);
+        downloaderModel.setPath(fontPath);
+        downloaderModel.setTaskId(id);
+
+        final int taskId = downloaderModel.getTaskId();
+        SQLiteDatabase sqliteDatabase = mDBHelper.getWritableDatabase();
+        boolean succeed = false;
+        if (sqliteDatabase.isOpen()) {
+            try {
+                if (!checkExits(taskId)) {
+                    succeed = sqliteDatabase.insert(TABLE_NAME, null, downloaderModel.toContentValues()) != -1;
+                } else {
+                    succeed = sqliteDatabase.update(TABLE_NAME, downloaderModel.toContentValues(), "task_id = ?", new String[]{String.valueOf(taskId)}) != -1;
+                }
+
+            } catch (Exception e) {
+            }
+        }
+        try {
+            sqliteDatabase.close();
+        } catch (SQLException e) {
+        }
+
+        return succeed ? downloaderModel : null;
+    }
+
     /**
      * 添加一个任务，保存到数据库
+     *
      * @param downloaderModel
      * @return
      */
@@ -78,7 +115,7 @@ public class FileDownloaderDBController {
                 if (!checkExits(taskId)) {
                     succeed = sqliteDatabase.insert(TABLE_NAME, null, downloaderModel.toContentValues()) != -1;
                 } else {
-                    succeed = sqliteDatabase.update(TABLE_NAME, downloaderModel.toContentValues(), "task_id = ?", new String[] {String.valueOf(taskId)}) != -1;
+                    succeed = sqliteDatabase.update(TABLE_NAME, downloaderModel.toContentValues(), "task_id = ?", new String[]{String.valueOf(taskId)}) != -1;
                 }
 
             } catch (Exception e) {
@@ -114,6 +151,7 @@ public class FileDownloaderDBController {
 
     /**
      * 删除数据库中的一条任务信息
+     *
      * @param downloadId
      * @return
      */
@@ -138,6 +176,7 @@ public class FileDownloaderDBController {
 
     /**
      * 删除数据库中的一条任务信息
+     *
      * @param id
      * @return
      */
@@ -179,7 +218,7 @@ public class FileDownloaderDBController {
     public synchronized boolean checkExits(int id, int type) {
         boolean exits = false;
         String selection = " where id = ? and type = ?";
-        String[] selectionArgs = new String[] {String.valueOf(id), String.valueOf(type)};
+        String[] selectionArgs = new String[]{String.valueOf(id), String.valueOf(type)};
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         final Cursor c = sqliteDatabase.rawQuery("SELECT * FROM " + TABLE_NAME + selection, selectionArgs);
         if (c.getCount() > 0) {
@@ -192,7 +231,7 @@ public class FileDownloaderDBController {
     public synchronized boolean checkExits(int taskId) {
         boolean exits = false;
         String selection = " where task_id = ?";
-        String[] selectionArgs = new String[] {String.valueOf(taskId)};
+        String[] selectionArgs = new String[]{String.valueOf(taskId)};
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         final Cursor c = sqliteDatabase.rawQuery("SELECT * FROM " + TABLE_NAME + selection, selectionArgs);
         if (c.getCount() > 0) {
@@ -222,6 +261,7 @@ public class FileDownloaderDBController {
 
     /**
      * 查询
+     *
      * @param hashMap key - value
      * @return List<FileDownloaderModel>
      */
@@ -239,7 +279,7 @@ public class FileDownloaderDBController {
                 sqlselection.append(" and ");
             }
         }
-        String [] selectionArgs = list.toArray(new String[list.size()]);
+        String[] selectionArgs = list.toArray(new String[list.size()]);
         List<FileDownloaderModel> modelList = new ArrayList<>();
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         Cursor c = sqliteDatabase.rawQuery(select + TABLE_NAME + sqlselection, selectionArgs);
@@ -286,7 +326,7 @@ public class FileDownloaderDBController {
                 sqlSelection.append(" and ");
             }
         }
-        String [] selectionArgs = list.toArray(new String[list.size()]);
+        String[] selectionArgs = list.toArray(new String[list.size()]);
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         c = sqliteDatabase.rawQuery(select + TABLE_NAME + sqlSelection, selectionArgs);
 
@@ -296,7 +336,7 @@ public class FileDownloaderDBController {
     public synchronized Cursor getResourceById(int id) {
         Cursor c;
         String selection = " where id = ?";
-        String[] selectionArgs = new String[] {String.valueOf(id)};
+        String[] selectionArgs = new String[]{String.valueOf(id)};
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         c = sqliteDatabase.rawQuery("SELECT * FROM " + TABLE_NAME + selection, selectionArgs);
         if (c.getCount() > 0) {
@@ -307,6 +347,7 @@ public class FileDownloaderDBController {
 
     /**
      * 通过type来获取数据库资源
+     *
      * @param type { EffectService }
      * @return List<FileDownloaderModel>
      */
@@ -314,7 +355,7 @@ public class FileDownloaderDBController {
         List<FileDownloaderModel> list = new ArrayList<>();
         Cursor c;
         String selection = " where effecttype = ? order by id";
-        String[] selectionArgs = new String[] {String.valueOf(type)};
+        String[] selectionArgs = new String[]{String.valueOf(type)};
         SQLiteDatabase sqliteDatabase = mDBHelper.getReadableDatabase();
         c = sqliteDatabase.rawQuery("SELECT * FROM " + TABLE_NAME + selection, selectionArgs);
         while (c.moveToNext()) {

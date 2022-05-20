@@ -139,7 +139,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps) {
-    const { imageUri, scale ,videoFile} = this.props;
+    const { imageUri, scale, videoFile } = this.props;
     if (imageUri && prevProps.imageUri !== imageUri) {
       this.init();
     }
@@ -212,7 +212,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       );
     };
     if (!this.props.srcSize.height) {
-      Image.getSize(imageUri, callback, () => {});
+      Image.getSize(imageUri, callback, () => { });
     } else {
       callback(this.props.srcSize.width, this.props.srcSize.height);
     }
@@ -254,6 +254,10 @@ class ImageCropper extends PureComponent<IProps, IState> {
       scale,
       disablePin,
       videoPaused,
+      videoMuted,
+      srcSize,
+      positionX,
+      positionY,
     } = this.props;
 
     const areaWidth = cropAreaWidth!;
@@ -261,24 +265,40 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
     const imageWidth = fittedSize.width;
     const imageHeight = fittedSize.height;
+
+    // //设置缩放最小比例
+    // let initMinScale = scale
+    // if (imageWidth > imageHeight) {
+    //   initMinScale = imageHeight / imageWidth
+    // } else {
+    //   initMinScale = imageWidth / imageHeight
+    // }
+
     return (
       <GestureHandlerRootView>
         {!loading ? (
           <ImageViewer
+            isChangeScale={this.props.isChangeScale}
+            setChangeScale={this.props.setChangeScale}
+            propsX={!!positionX ? positionX : 0}
+            propsY={!!positionY ? positionY : 0}
+            propsScale={!!scale ? scale : 1}
+
             image={imageUri}
             areaWidth={areaWidth}
             areaHeight={areaHeight}
             imageWidth={imageWidth}
             videoFile={videoFile}
             imageHeight={imageHeight}
-            minScale={scale}
+            minScale={this.props.minScale}
+            srcSize={srcSize}
             onMove={this.handleMove}
             containerColor={containerColor}
             imageBackdropColor={areaColor}
             overlay={areaOverlay}
-            propsScale={scale}
             disablePin={disablePin}
             videoPaused={videoPaused}
+            videoMuted={videoMuted}
           />
         ) : null}
       </GestureHandlerRootView>

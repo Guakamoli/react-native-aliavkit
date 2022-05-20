@@ -83,6 +83,34 @@ public final class FileUtils {
     }
 
     /**
+     * 判断文件夹存在并且内容不为空
+     *
+     * @param strFile
+     * @return
+     */
+    public static boolean dirNotEmpty(String strFile) {
+        if (TextUtils.isEmpty(strFile)) {
+            return false;
+        }
+        try {
+            File file = new File(strFile);
+            if (!file.exists()) {
+                return false;
+            }
+            if (!file.isDirectory()) {
+                return false;
+            }
+            File[] files = file.listFiles();
+            if (files == null || files.length == 0) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 判断文件是否存在
      */
     public static boolean fileIsExists(String strFile) {
@@ -252,7 +280,6 @@ public final class FileUtils {
         }
         return true;
     }
-
 
 
 }

@@ -35,7 +35,7 @@ export default class VideoEditorExample extends Component {
   }
 
   startExportVideo() {
-    console.log(this.state.startExportVideo);
+   
     if (this.state.startExportVideo) {
       return;
     }
@@ -49,7 +49,7 @@ export default class VideoEditorExample extends Component {
       itemPerTime: 1000,
     });
 
-    console.log(imgPaths);
+   
   }
 
   async trimVideo() {
@@ -58,13 +58,13 @@ export default class VideoEditorExample extends Component {
       startTime: 2.0,
       endTime: 8.0,
     });
-    console.log(result);
+   
   }
 
   async getFilters() {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     const infos = await RNEditViewManager.getFilterIcons({});
-    console.log('-------:', infos);
+   
   }
 
   //'play: ', { nativeEvent: { target: 685, streamProgress: 4.906666, playProgress: 4.906666 } }
@@ -84,9 +84,9 @@ export default class VideoEditorExample extends Component {
           onExportVideo={this.onExportVideo}
           onPlayProgress={({ nativeEvent }) => {
             // if (nativeEvent.playEnd === true) {
-            //   console.log('playEnd', nativeEvent.playEnd);
+            //  
             // } else {
-            //   console.log('play: ', nativeEvent.playProgress);
+            //  
             // }
           }}
           musicInfo={this.state.setMusic ? this.state.musicInfo : {}}
@@ -103,7 +103,7 @@ export default class VideoEditorExample extends Component {
               }}
               onPress={async () => {
                 const musics = await AVService.getMusics({ name: 'all-music', page: 6, pageSize: 5 });
-                console.log('---- getMusics: ', musics);
+               
                 this.setState({ musics });
               }}
             >
@@ -120,7 +120,7 @@ export default class VideoEditorExample extends Component {
               }}
               onPress={async () => {
                 const song = await AVService.playMusic(this.state.musics[2].songID);
-                console.log('---- playMusic: ', song);
+               
                 this.setState({ musicInfo: song });
               }}
             >
@@ -137,7 +137,7 @@ export default class VideoEditorExample extends Component {
               }}
               onPress={async () => {
                 const playingSong = await AVService.pauseMusic(this.state.musics[2].songID);
-                console.log('---- pauseMusic: ', playingSong);
+               
               }}
             >
               <Text style={{ fontSize: 20, color: 'white' }}>pause</Text>
@@ -156,7 +156,7 @@ export default class VideoEditorExample extends Component {
               onPress={async () => {
                 const status = await AVService.pauseMusic(this.state.musicInfo.songID);
                 if (status === true) {
-                  console.log('---- pauseMusic: ', status);
+                 
                   this.setState({ setMusic: true });
                 }
               }}

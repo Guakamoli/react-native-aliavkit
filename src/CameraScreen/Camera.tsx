@@ -6,6 +6,7 @@ import {
   InteractionManager,
   View,
   // Pressable,
+  TouchableOpacity,
   Image,
   Dimensions,
   Platform,
@@ -13,7 +14,14 @@ import {
   FlatList,
   Easing,
   Pressable,
+  StatusBar,
+  AppState,
 } from 'react-native';
+
+import Reanimated from 'react-native-reanimated';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import { useInterval, useThrottleFn } from 'ahooks';
 import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { connect, useSelector, useDispatch } from 'react-redux';
@@ -65,9 +73,10 @@ const BeautyButton = React.memo((props) => {
         // this.setState({ showBeautify: !this.state.showBeautify });
       }}
     >
-      <Image
-        style={styles.beautifyIcon}
-        source={showBeautify ? props.selectBeautify : props.beautifyImage}
+      <FastImage
+        style={styles.closeIcon}
+        source={require('../../images/ic_beauty_select.png')}
+        // source={showBeautify ? props.selectBeautify : props.beautifyImage}
         resizeMode='contain'
       />
     </Pressable>
@@ -75,27 +84,97 @@ const BeautyButton = React.memo((props) => {
 });
 const RenderLeftButtons = React.memo((props) => {
   return (
-    <>
+    <View style={{
+      position: 'absolute', backgroundColor: 'rgba(0,0,0,0)', width: '100%', height: 40,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingLeft: 20,
+      paddingRight: 20,
+      marginTop: 20,
+    }}>
       {/* 取消 */}
-      <Pressable
-        onPress={() => {
-          props.goback();
-        }}
-        style={styles.closeBox}
-      >
-        <Image style={styles.closeIcon} source={props.closeImage} resizeMode='contain' />
+      <Pressable onPress={() => {
+        props.bassGoBadck();
+      }}>
+        {/* <FastImage style={styles.closeIcon} source={props.closeImage} resizeMode='contain' /> */}
+        <FastImage style={styles.closeIcon} source={require('../../images/ic_story_close.png')} resizeMode='contain' />
       </Pressable>
-      <View style={styles.leftIconBox}>
-        {/* 音乐 */}
-        <Pressable>
-          <Image style={styles.musicIcon} source={props.musicImage} resizeMode='contain' />
-        </Pressable>
-        {/* 美颜 */}
-        <BeautyButton {...props} />
-      </View>
-    </>
+
+      {/* <Pressable onPress={() => {
+        props.setShowColorFilter();
+      }}>
+        <FastImage style={styles.closeIcon} source={props.filterImage} resizeMode='contain' />
+      </Pressable> */}
+
+      <BeautyButton {...props} />
+    </View>
   );
 });
+
+class CameraPreView extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      fadeAnim: new Animated.Value(1)
+    };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.initStory && this.props.type != nextProps.type) {
+      if (nextProps.type === 'story') {
+        setTimeout(() => {
+          Animated.timing(this.state.fadeAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }).start();
+        }, (this.props.type === 'post' || Platform.OS === 'android') ? 250 : 0);
+      } if (nextProps.type === 'post') {
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        Animated.timing(this.state.fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 在第一次绘制 render() 之后
+   */
+  componentDidMount() {
+    Animated.timing(this.state.fadeAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  render() {
+    return (
+      <Animated.View style={{
+        opacity: this.state.fadeAnim,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 1,
+        width: this.props.width,
+        height: this.props.height,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,1)'
+      }}>
+      </Animated.View>
+    );
+  }
+}
 // 拍摄内容渲染
 class PreviewBack extends React.Component {
   constructor(props) {
@@ -107,17 +186,22 @@ class PreviewBack extends React.Component {
   shotPreview = async () => {
     try {
       const image = await this.props.camera.current.capture();
-      if (this.state.previewImage) {
-        CameraRoll.deletePhotos([this.state.previewImage])
-      }
+      const prevImage = this.state.previewImage;
       this.props.camera.current = null;
       setTimeout(() => {
-        this.setState({
-          previewImage: image,
-        });
+        this.setState(
+          {
+            previewImage: image,
+          },
+          () => {
+            if (prevImage) {
+              CameraRoll.deletePhotos([prevImage.uri]);
+            }
+          },
+        );
       }, 0);
     } catch (e) {
-      console.info(e, '拍摄错误');
+
     }
   };
   shouldComponentUpdate(nextProps, nextState) {
@@ -143,7 +227,7 @@ class PreviewBack extends React.Component {
   }
   render() {
     return (
-      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0 }}>
+      <View style={{ position: 'absolute', zIndex: 0, width: width, top: 0, backgroundColor: 'red' }}>
         <BoxBlur
           image={
             <Image
@@ -163,17 +247,127 @@ class RenderCamera extends Component {
     super(props);
     this.state = {
       showCamera: this.props.type === 'story' && this.props.isDrawerOpen,
+      showToast: false,
+      filterPath: null,
+      filterList: [],
+      showFilterLens: false,
+      startPreview: false,
     };
+    // this.fadeAnim = new Animated.Value(1);
   }
+  handleAppStateChange = (e) => {
+    // if (this.props.isDrawerOpen && this.props.type === 'story') {
+    //   if (e.match(/inactive|background/)) {
+    //     this.setState({
+    //       showCamera: false,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   } else {
+    //     this.setState({
+    //       showCamera: true,
+    //     });
+    //     setTimeout(() => {
+    //       AVService.enableHapticIfExist();
+    //     }, 2000);
+    //   }
+    // }
+  };
+  componentDidMount() {
+    this.getRecordColorFilter();
+
+    // //TODOWUYQ
+    // setTimeout(() => {
+    //   this.setState({ startPreview: true });
+    // }, 1000);
+    //
+    // if (Platform.OS === 'ios') {
+    //   AppState.addEventListener('change', this.handleAppStateChange);
+    // }
+  }
+
+  getRecordColorFilter = async () => {
+    const colorFilerList = await AVService.getRecordColorFilter();
+    colorFilerList.unshift({ filterName: "无效果", iconPath: '', path: '' });
+    this.setState({
+      filterList: colorFilerList,
+      filterPath: colorFilerList[0]?.path,
+    });
+  }
+
+
+  componentWillUnmount() {
+    //
+    this.props.camera?.current?.release();
+    // if (Platform.OS === 'ios') {
+    //   AppState.removeEventListener('change', this.handleAppStateChange);
+    // }
+  }
+
+  //恢复录制，用于 post 重新切换成  post, 或者 story 编辑 退出到 story
+  resumeCamera = () => {
+
+    this.props.camera.current?.resumeCamera();
+  }
+
+  //暂停录制，用于 story 切换成 post 或者 story 进入 story 编辑
+  pauseCamera = () => {
+
+    this.props.camera.current?.pauseCamera();
+  }
+
+  setShowColorFilter = () => {
+    if (this.state.showFilterLens) {
+      this.setState({
+        showFilterLens: false
+      });
+    } else {
+      this.setState({
+        showFilterLens: true
+      });
+    }
+  }
+
+
   shouldComponentUpdate(nextProps, nextState) {
-    const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
-    if (propsUpdated) {
+
+    if (this.state.startPreview != nextState.startPreview) {
       return true;
     }
-    const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
-    if (stateUpdated) {
+
+    if (this.state.filterPath != nextState.filterPath) {
       return true;
     }
+
+    if (this.state.filterList != nextState.filterList) {
+      return true;
+    }
+
+    if (this.state.showFilterLens != nextState.showFilterLens) {
+      if (nextState.showFilterLens) {
+        this.props.hideBottomTools();
+        this.props.setShowRenderBottom(false);
+      } else {
+        this.props.showBottomTools();
+        this.props.setShowRenderBottom(true);
+      }
+      return true;
+    }
+
+
+
+    if (this.props.type != nextProps.type && this.props.initStory) {
+      //
+      if (nextProps.type == "story") {
+        this.resumeCamera();
+      }
+      if (nextProps.type == "storyedit" || nextProps.type == "post") {
+        this.pauseCamera();
+      }
+      return true;
+    }
+
     if (nextProps.type !== this.props.type) {
       const showCamera = nextProps.type === 'story' && nextProps.isDrawerOpen ? true : false;
       if (!showCamera) {
@@ -189,6 +383,31 @@ class RenderCamera extends Component {
 
       return false;
     }
+
+    if (this.props.bottomToolsVisibility != nextProps.bottomToolsVisibility) {
+      return true;
+    }
+    if (nextProps.showBeautify != this.props.showBeautify) {
+      if (nextProps.showBeautify) {
+        this.props.hideBottomTools();
+        this.props.setShowRenderBottom(false);
+      } else {
+        this.props.showBottomTools();
+        this.props.setShowRenderBottom(true);
+      }
+      return false;
+    }
+
+    const propsUpdated = stateAttrsUpdate.some((key) => nextProps[key] !== this.props[key]);
+    if (propsUpdated) {
+      return true;
+    }
+    const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
+    if (stateUpdated) {
+      return true;
+    }
+
+
     if (nextProps.isDrawerOpen !== this.props.isDrawerOpen) {
       const showCamera = nextProps.isDrawerOpen && nextProps.type === 'story' ? true : false;
       if (!showCamera) {
@@ -209,49 +428,175 @@ class RenderCamera extends Component {
     }
     return false;
   }
-  renderCamera = () => {
-    const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+
+
+  // 滤镜 box
+  renderFilterBox() {
     return (
-      <View style={{ width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
-        <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} />
+      <View style={{ height: 189, width: width, backgroundColor: 'black', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+        <View style={styles.beautifyBoxHead}>
+          <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
+        </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <FlatList
+            data={this.state.filterList}
+            horizontal={true}
+            keyExtractor={item => item.iconPath}
+            style={{ margin: 0, padding: 0, height: 80 }}
+            renderItem={({ index, item }) => {
+              return (
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.setState({ filterPath: item.path });
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 18,
+                      }}
+                    >
+                      <FastImage
+                        style={[
+                          styles.beautifySelect,
+                          this.state.filterPath == item.path && styles.beautifySelecin,
+                        ]}
+                        source={!item.iconPath ? require('../../images/ic_color_filter_empty.png') : { uri: item.iconPath }}
+                      />
+                      <Text
+                        style={[
+                          styles.filterLensSelectTitle,
+                          this.state.filterPath == item.path && { color: '#836BFF' },
+                        ]}
+                      >
+                        {item.filterName}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              );
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+
+  renderCamera = () => {
+    let CameraFixHeight = width * 16 / 9;
+    const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+    if (CameraFixHeight > fixHeight) {
+      CameraFixHeight = fixHeight;
+    }
+    // console.info("facePasterInfo",this.props.facePasterInfo);
+    return (
+      <View style={{ position: 'relative', width: '100%', height: CameraFixHeight, overflow: 'hidden', borderRadius: 20 }}>
+        {/* <PreviewBack {...this.props} camera={this.props.camera} CameraFixHeight={CameraFixHeight} /> */}
+        <CameraPreView  {...this.props} width={width} height={CameraFixHeight} />
         <View
-          style={{ position: 'absolute', zIndex: 1, width: '100%' }}
+          style={{ width: '100%', height: CameraFixHeight }}
           onLayout={() => {
             setTimeout(() => {
               AVService.enableHapticIfExist();
             }, 0);
           }}
         >
-          {this.state.showCamera ? (
-            <Camera
-              ref={(cam) => (this.props.camera.current = cam)}
-              cameraStyle={{ height: CameraFixHeight, width }}
-              flashMode={FLASH_MODE_AUTO}
-              cameraType={this.props.cameraType}
-              saveToCameraRoll={false}
-              focusMode={'on'}
-              normalBeautyLevel={this.props.normalBeautyLevel * 10}
-              facePasterInfo={this.props.facePasterInfo}
-              torchMode={'off'}
-              onReadCode={() => {}}
-              onRecordingProgress={() => {}}
-            />
-          ) : null}
+          {(this.state.showCamera || this.props.isExample) && (
+            <View style={{ height: CameraFixHeight, width: '100%', position: 'relative' }}>
+              <Camera
+                ref={(cam) => (this.props.camera.current = cam)}
+                cameraStyle={{ height: CameraFixHeight, width }}
+                flashMode={FLASH_MODE_AUTO}
+                cameraType={this.props.cameraType}
+                saveToCameraRoll={false}
+                focusMode={'on'}
+                normalBeautyLevel={this.props.normalBeautyLevel * 10}
+                // facePasterInfo={this.props.facePasterInfo}
+                torchMode={'off'}
+                onReadCode={() => { }}
+                onRecordingProgress={() => { }}
+                filterPath={this.state.filterPath}
+                //TODOWUYQ
+                isStartPreview={this.state.startPreview}
+              />
+            </View>
+          )}
         </View>
       </View>
     );
   };
+
+
+  MultiRecording = () => {
+    return (
+      <View style={{
+        position: "absolute", top: 100, left: 0, right: 0, height: 50, backgroundColor: 'red',
+        paddingLeft: 30,
+        paddingRight: 30,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      }}>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.startMultiRecording((duration: number) => {
+            console.info("startMultiRecording duration", duration);
+          });
+          console.info("startMultiRecording videoPath", videoPath);
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>开始录制</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.stopMultiRecording();
+          console.info("stopMultiRecording videoPath", videoPath);
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>停止录制</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={async () => {
+          const videoPath = await this.props.camera.current?.finishMultiRecording();
+          console.info("finishMultiRecording videoPath", videoPath);
+          this.props.setShootData({
+            fileType: 'video',
+            videoPath,
+            ShootSuccess: true,
+          });
+        }}>
+          <Text style={{
+            color: '#fff',
+            lineHeight: 50
+          }}>完成录制</Text>
+        </TouchableOpacity>
+      </View>
+
+    )
+  }
+
+
   render() {
     return (
-      <View>
+      <View style={{ position: 'relative', height: '100%', width: '100%', backgroundColor: '#000' }}>
         <Pressable
           onPress={() => {
             this.props.setShowBeautify();
+            this.setState({ showFilterLens: false });
           }}
         >
-          <RenderLeftButtons {...this.props} key={'RenderLeftButtons'} />
           {this.renderCamera()}
+
+          {this.props.bottomToolsVisibility && <RenderLeftButtons {...this.props} setShowColorFilter={this.setShowColorFilter} key={'RenderLeftButtons'} />}
+
+          {/* {this.MultiRecording()} */}
+
         </Pressable>
+        {this.state.showFilterLens && this.renderFilterBox()}
       </View>
     );
   }
@@ -260,6 +605,7 @@ const RenderCameraMapStateToProps = (state) => ({
   cameraType: state.shootStory.cameraType,
   normalBeautyLevel: state.shootStory.normalBeautyLevel,
   facePasterInfo: state.shootStory.facePasterInfo,
+  showBeautify: state.shootStory.showBeautify,
 });
 const RenderCameraMapDispatchToProps = (dispatch) => ({
   setShowBeautify: () => dispatch(setShowBeautify(false)),
@@ -344,9 +690,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   beautifyIcon: {
-    width: 28,
-    height: 28,
-    marginTop: 30,
+    width: 40,
+    height: 40,
   },
   closeBox: {
     position: 'absolute',
@@ -355,8 +700,8 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   closeIcon: {
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
   },
   beautifyBoxHead: {
     paddingHorizontal: 20,
@@ -387,6 +732,8 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(0, 0, 0, 1)',
   },
   beautifySelectTitle: {
     fontSize: 20,
@@ -475,6 +822,31 @@ const styles = StyleSheet.create({
 
   propStyle: {
     backgroundColor: '#334',
+
     opacity: 0.8,
+  },
+  toastBox: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: 20,
+    width: 200,
+    height: 40,
+    zIndex: 18,
+    left: (width - 200) / 2,
+    bottom: 120,
+  },
+  toast: {
+    width: 0,
+    height: 0,
+    borderWidth: 8,
+    borderTopColor: 'rgba(255,255,255,0.85)',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 40,
+    left: 100 - 4,
   },
 });

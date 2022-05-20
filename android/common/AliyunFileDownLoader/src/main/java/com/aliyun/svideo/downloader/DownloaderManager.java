@@ -6,6 +6,7 @@ package com.aliyun.svideo.downloader;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
@@ -727,7 +728,8 @@ public class DownloaderManager {
     }
 
     private void initDownloaderConfiger(Context context) {
-        File storeFile = StorageUtils.getFilesDirectory(context);
+//        File storeFile = StorageUtils.getFilesDirectory(context);
+        File storeFile =  new File(getFilesPath(context),"downloads/effectPaster");
         if (!storeFile.exists()) {
             storeFile.mkdirs();
         }
@@ -743,4 +745,25 @@ public class DownloaderManager {
         }
     }
 
+
+    /**
+     * 获取APP沙盒路径
+     *
+     * @param context
+     * @return /storage/emulated/0/Android/data/packageName/files
+     */
+    public static String getFilesPath(Context context) {
+        String filePath;
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !Environment.isExternalStorageRemovable()) {
+            //外部存储可用
+            File exFile = context.getExternalFilesDir(null);
+            if (exFile != null) {
+                return exFile.getPath();
+            }
+            return context.getFilesDir().getPath();
+        } else {
+            //外部存储不可用
+            return context.getFilesDir().getPath();
+        }
+    }
 }

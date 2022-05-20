@@ -33,6 +33,7 @@
 #import "RNMusicInfo.h"
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+#import "AVAsset+VideoInfo.h"
 
 typedef void(^TransCode_blk_t)(CGFloat);
 
@@ -75,6 +76,7 @@ AliyunCropDelegate
 @property (nonatomic, copy) TransCode_blk_t transCode_blk;
 
 @property (nonatomic, strong) NSDictionary *editStyle;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
 
 @end
 
@@ -84,14 +86,16 @@ AliyunCropDelegate
 {
     if (!_mediaConfig) {//默认配置
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 0.5f;
-        _mediaConfig.maxDuration = 30.f;
+        _mediaConfig.minDuration = 0.1f;
+        _mediaConfig.maxDuration = 600.f; //10 min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
         _mediaConfig.backgroundColor = [UIColor blackColor];
         _mediaConfig.videoQuality = AliyunMediaQualityHight;
         _mediaConfig.outputSize = CGSizeMake(1080, 1920);
+//        _mediaConfig.videoQuality =  AliyunMediaQualityHight;
+//        _mediaConfig.outputSize =  CGSizeMake(720, 1280);
     }
     return _mediaConfig;
 }
@@ -136,44 +140,103 @@ AliyunCropDelegate
 
 - (void)setPhotoTaskPathWithPhotoPath:(NSString *)photoPath
 {
-    NSString *editDir = [AliyunPathManager compositionRootDir];
-    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+//    NSString *editDir = [AliyunPathManager compositionRootDir];
+//    NSString *taskPath = [editDir stringByAppendingPathComponent:[AliyunPathManager randomString]];
+//
+//    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
+//    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:0];
+//    [importor addMediaClip:clip];
+//
+//    // set video param
+//    AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
+//    param.fps = self.mediaConfig.fps;
+//    param.gop = self.mediaConfig.gop;
+//    param.bitrate = 10*1000*1000;
+//    param.scaleMode = AliyunScaleModeFill;
+//    param.codecType = AliyunVideoCodecHardware;
+//    [importor setVideoParam:param];
+//
+////    AVDLog(@"PhototaskPath: %@", taskPath);
+//    // generate config
+//    [importor generateProjectConfigure];
+//    // output path
+//    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+//    self.taskPath = taskPath;
     
-    AliyunImporter *importor = [[AliyunImporter alloc] initWithPath:taskPath outputSize:CGSizeMake(1080, 1920)];
-    AliyunClip *clip = [[AliyunClip alloc] initWithImagePath:photoPath duration:3.0 animDuration:0];
-    [importor addMediaClip:clip];
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
+    NSInteger mBitrate = 10*1000*1000;
+ 
+    self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
     
-    // set video param
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:CGSizeMake(mVideoWidth, mVideoHeight)];
+
+    AliyunClip *imageClip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:1];
+    [importer addMediaClip:imageClip];
+    
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
-    param.fps = self.mediaConfig.fps;
-    param.gop = self.mediaConfig.gop;
-    param.bitrate = 10*1000*1000;
-    param.scaleMode = AliyunScaleModeFill;
-    param.codecType = AliyunVideoCodecHardware;
-    [importor setVideoParam:param];
     
-//    AVDLog(@"PhototaskPath: %@", taskPath);
-    // generate config
-    [importor generateProjectConfigure];
-    // output path
-    self.mediaConfig.outputPath = [[taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
-    self.taskPath = taskPath;
+//    if ([RNAVDeviceHelper isBelowIphone_11]) {
+////        param.videoQuality = AliyunVideoQualityVeryHight;// 视频质量
+//        param.videoQuality = AliyunVideoQualityHight;// 视频质量
+//    } else {
+//        param.bitrate = 10*1000*1000; // 10Mbps
+//    }
+    param.bitrate = mBitrate;
+    
+    param.fps = self.mediaConfig.fps; // 帧率
+    param.gop = self.mediaConfig.gop; // 关键帧间隔
+    param.scaleMode = AliyunScaleModeFill; // 缩放模式
+    param.codecType = AliyunVideoCodecHardware; // 编码模式
+
+    [importer setVideoParam:param];
+
+    [importer generateProjectConfigure];
+
+    self.mediaConfig.outputPath = [[_taskPath stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
+    
+    NSLog(@"importer image: %@", self.mediaConfig.outputPath);
 }
 
 /// 单视频接入编辑页面，生成一个新的taskPath
 - (void)setVideoTaskPathWithVideopath:(NSString *)videoPath
 {
+    NSInteger mVideoWidth = 1080;
+    NSInteger mVideoHeight = 1920;
+    NSInteger mBitrate = 10*1000*1000;
+    
+    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
+    CGSize size = [asset avAssetNaturalSize];
+    CGFloat frameWidth = size.width;
+    CGFloat frameHeight = size.height;
+    
+    AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoPath];
+    NSInteger bitRate = nativeParser.getVideoBitrate;
+    
+    if (bitRate < mBitrate) {
+        mBitrate = bitRate;
+    }
+    
+    if (frameWidth < mVideoWidth) {
+        mVideoWidth = frameWidth;
+    }
+    
+    if (frameHeight < mVideoHeight) {
+        mVideoHeight = frameHeight;
+    }
+    
     self.taskPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]];
 //    AVDLog(@"VideotaskPath: %@", self.taskPath);
-    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:self.outputSize];
+    AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:CGSizeMake(mVideoWidth, mVideoHeight)];
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
     param.fps = self.mediaConfig.fps;
     param.gop = self.mediaConfig.gop;
-    if ([RNAVDeviceHelper isBelowIphone_11]) {
-        param.videoQuality = AliyunVideoQualityMedium;
-    } else {
-        param.bitrate = 10*1000*1000; // 10Mbps
-    }
+//    if ([RNAVDeviceHelper isBelowIphone_11]) {
+//        param.videoQuality = AliyunVideoQualityHight;// 视频质量
+//    } else {
+//        param.bitrate = 10*1000*1000; // 10Mbps
+//    }
+    param.bitrate = mBitrate;
     param.scaleMode = AliyunScaleModeFill;
     // 编码模式
     param.codecType = AliyunVideoCodecHardware;
@@ -312,12 +375,37 @@ AliyunCropDelegate
 }
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.mediaConfig.outputSize = outputSize;
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.mediaConfig.maxDuration = maxDuration;
+        }
+        _mediaInfo = mediaInfo;
+    }
+}
 
 - (void)setEditStyle:(NSDictionary *)editStyle
 {
     if (_editStyle != editStyle && ![editStyle isEqualToDictionary:@{}]) {
-        _editWidth = [[editStyle valueForKey:@"width"] floatValue];
-        _editHeight = [[editStyle valueForKey:@"height"] floatValue];
+        _editWidth = [[editStyle objectForKey:@"width"] floatValue];
+        _editHeight = [[editStyle objectForKey:@"height"] floatValue];
     }
 }
 
@@ -412,9 +500,17 @@ AliyunCropDelegate
 }
 
 - (void)setVideoMute:(BOOL)videoMute {
-    if (_videoMute != videoMute) {
-        _videoMute = videoMute;
-        [self.editor setMute:videoMute];
+//    if (_videoMute != videoMute) {
+//        _videoMute = videoMute;
+//        [self.editor setMute:videoMute];
+//    }
+    _videoMute = videoMute;
+    if(videoMute){
+        [self.editor setAudioMixWeight:100];
+        [self.editor setMainStreamsAudioWeight:0];
+    }else{
+        [self.editor setAudioMixWeight:50];
+        [self.editor setMainStreamsAudioWeight:50];
     }
 }
 
@@ -424,7 +520,7 @@ AliyunCropDelegate
     
     if (musicInfo && ![musicInfo isEqualToDictionary:@{}]) {
         AliyunMusicPickModel *model = [AliyunMusicPickModel new];
-        model.path = [musicInfo valueForKey:@"localPath"];
+        model.path = [musicInfo objectForKey:@"localPath"];
         model.startTime = 0;
         
         AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:model.path];
@@ -500,7 +596,22 @@ AliyunCropDelegate
     AliyunEffectMusic *effectMusic = [[AliyunEffectMusic alloc] initWithFile:music.path];
     effectMusic.startTime = music.startTime * 0.001;
     effectMusic.duration = music.duration;
-    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+//    effectMusic.audioMixWeight = (int)roundf(music.volume*100);
+    
+    if (_videoMute){
+        effectMusic.audioMixWeight = 100;
+    }else{
+        effectMusic.audioMixWeight = 50;
+    }
+    
+    if(_videoMute){
+        [self.editor setAudioMixWeight:100];
+        [self.editor setMainStreamsAudioWeight:0];
+    }else{
+        [self.editor setAudioMixWeight:50];
+        [self.editor setMainStreamsAudioWeight:50];
+    }
+    
     int code = [self.editor applyMusic:effectMusic];
     if (code == ALIVC_COMMON_RETURN_SUCCESS) {
         AVDLog(@"composeAACFormatMusic success");
@@ -613,6 +724,25 @@ AliyunCropDelegate
 
 #pragma mark - AliyunIExporterCallback -合成导出回调
 
+
+
+- (NSString *)fileMIMETypeURLSessionWithPath:(NSString*)path {
+    //1.确定请求路径
+    NSURL *url = [NSURL fileURLWithPath:path];
+    //2.创建可变的请求对象
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block NSString *mimeType = nil;
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        mimeType = response.MIMEType;
+        dispatch_semaphore_signal(semaphore);
+    }];
+    [task resume];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return mimeType;
+}
+
+
 ///导出结束
 - (void)exporterDidEnd:(NSString *)outputPath
 {
@@ -624,7 +754,27 @@ AliyunCropDelegate
             [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
         }
     }
-    id event = @{@"exportProgress": @(1.0), @"outputPath":path};
+    
+    AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
+    CGSize size = [asset avAssetNaturalSize];
+    CGFloat frameWidth = size.width;
+    CGFloat frameHeight = size.height;
+    
+    NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil].fileSize;
+    
+    NSString *fileType =[self fileMIMETypeURLSessionWithPath:path];
+    
+    NSString *fileName = [path lastPathComponent];
+    
+    id videoParams = @{@"width":@(frameWidth), @"height":@(frameHeight),@"path":path,@"size":@(fileSize),@"type":fileType,@"name":fileName};
+    
+    id event = @{@"exportProgress": @(1.0), @"outputPath":path, @"videoParams":videoParams};
+     
+//                AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:path];
+//                NSInteger frameWidth2 = nativeParser.getVideoWidth;
+//                NSInteger frameHeight2 = nativeParser.getVideoHeight;
+//                NSInteger bitRate2 = nativeParser.getVideoBitrate;
+    
     _onExportVideo(event);
 }
 
@@ -675,6 +825,7 @@ AliyunCropDelegate
 {
     [self.player stop];
     [_editor stopEdit];
+    [_editor getExporter];
 }
 
 /// 尝试播放视频
@@ -775,6 +926,16 @@ AliyunCropDelegate
     [[self.editor getClipConstructor] updateMediaClip:clip atIndex:0];
     [self.editor startEdit];
     [self play];
+}
+
+- (NSString *)getTaskPath{
+    return _taskPath;
+}
+
+- (BOOL)stopEdit{
+    [self.player stop];
+    int stopCode = [_editor stopEdit];
+    return ALIVC_COMMON_RETURN_SUCCESS == stopCode;
 }
 
 @end

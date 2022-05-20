@@ -15,30 +15,28 @@ import com.aliyun.svideo.downloader.DownloaderManager;
 import com.aliyun.sys.AlivcSdkCore;
 import com.blankj.utilcode.util.LogUtils;
 import com.brentvatne.react.ReactVideoPackage;
+import com.dylanvann.fastimage.FastImageViewPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.facebook.react.shell.MainReactPackage;
+import com.facebook.react.bridge.JSIModulePackage;
+import com.rncamerakit.AliAVkitManager;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 
 import iyegoroff.imagefilterkit.ImageFilterKitPackage;
-import iyegoroff.imagefilterkit.MainReactPackageWithFrescoCache;
-
-import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.horcrux.svg.SvgPackage;
-import com.liulishuo.filedownloader.FileDownloader;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
-import com.rncamerakit.db.MusicFileInfoDao;
 import com.swmansion.reanimated.ReanimatedPackage;
-//import com.swmansion.reanimated.ReanimatedJSIModulePackage;
-//import com.swmansion.reanimated.ReanimatedPackage;
+import com.zoontek.rnlocalize.RNLocalizePackage;
+import com.zoontek.rnpermissions.RNPermissionsPackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import com.swmansion.reanimated.ReanimatedJSIModulePackage; // <- add
 
 public class MainApplication extends MultiDexApplication implements ReactApplication {
 
@@ -49,10 +47,10 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     return BuildConfig.DEBUG;
                 }
 
-//                @Override
-//                protected JSIModulePackage getJSIModulePackage() {
-//                    return new ReanimatedJSIModulePackage();
-//                }
+                @Override
+                protected JSIModulePackage getJSIModulePackage() {
+                    return new ReanimatedJSIModulePackage();
+                }
 
                 @Override
                 protected List<ReactPackage> getPackages() {
@@ -63,27 +61,33 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     packages.add(new ReactVideoPackage());
                     packages.add(new ImageFilterKitPackage());
 
-                    boolean isAddRNGestureHandlerPackage = false;
-                    for (ReactPackage reactPackage : packages) {
-                        if (reactPackage.getClass() == RNGestureHandlerPackage.class) {
-                            isAddRNGestureHandlerPackage = true;
-                            break;
-                        }
-                    }
-                    if (!isAddRNGestureHandlerPackage) {
-                        packages.add(new RNGestureHandlerPackage());
-                    }
+//                    boolean isAddRNGestureHandlerPackage = false;
+//                    for (ReactPackage reactPackage : packages) {
+//                        if (reactPackage.getClass() == RNGestureHandlerPackage.class) {
+//                            isAddRNGestureHandlerPackage = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!isAddRNGestureHandlerPackage) {
+//                        packages.add(new RNGestureHandlerPackage());
+//                    }
+//
+//                    boolean isAddReanimatedPackage = false;
+//                    for (ReactPackage reactPackage : packages) {
+//                        if (reactPackage.getClass() == ReanimatedPackage.class) {
+//                            isAddReanimatedPackage = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!isAddReanimatedPackage) {
+//                        packages.add(new ReanimatedPackage());
+//                    }
 
-                    boolean isAddReanimatedPackage = false;
-                    for (ReactPackage reactPackage : packages) {
-                        if (reactPackage.getClass() == ReanimatedPackage.class) {
-                            isAddReanimatedPackage = true;
-                            break;
-                        }
-                    }
-                    if (!isAddReanimatedPackage) {
-                        packages.add(new ReanimatedPackage());
-                    }
+                    packages.add(new ReanimatedPackage());
+                    packages.add(new RNGestureHandlerPackage());
+                    packages.add(new RNPermissionsPackage());
+                    packages.add(new FastImageViewPackage());
+                    packages.add(new RNLocalizePackage());
 
                     return packages;
                 }
@@ -108,14 +112,14 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
 
         initKitCamera();
 
-        initVideo(this);
+//        initVideo(this);
     }
 
-
     private void initKitCamera() {
-        MusicFileInfoDao.instance.init(this);
-        //下载管理
-        FileDownloader.setupOnApplicationOnCreate(this);
+//        MusicFileInfoDao.instance.init(this);
+//        //下载管理
+//        FileDownloader.setupOnApplicationOnCreate(this);
+        AliAVkitManager.init(this);
     }
 
     /**

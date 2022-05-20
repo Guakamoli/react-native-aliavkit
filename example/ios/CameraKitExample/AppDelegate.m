@@ -10,6 +10,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import <AliyunVideoSDKPro/AliyunVideoSDKPro.h>
 
 #if DEBUG
 //#import <FlipperKit/FlipperClient.h>
@@ -48,6 +49,14 @@ static void InitializeFlipper(UIApplication *application) {
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  
+  // ≥ 3.30.0版本：
+  NSError *error = [AliyunVideoSDKInfo registerSDK]; // 返回error为nil表示注册成功。
+  // 因为注册失败基本属于接入错误，所以建议直接加上Assert就可以在接入调试时显示错误和修复建议。
+  NSAssert2(error == nil, @"注册SDK失败！%@；%@", error.localizedDescription, error.localizedRecoverySuggestion);
+
+  
   return YES;
 }
 
