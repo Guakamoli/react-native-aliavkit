@@ -1,96 +1,100 @@
 
-import React, { Component, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     View,
-    Animated,
-    Easing,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import Animated, { useSharedValue, useAnimatedStyle, Easing, withTiming, withDelay } from 'react-native-reanimated';
 
-export default class PhotoProgress extends Component {
-    static propTypes = ({
-        itemCount: PropTypes.number,
-        itemDuration: PropTypes.number,
-        currentDuration: PropTypes.number,
-        playAnimaton: PropTypes.bool,
-        gapTime: PropTypes.number,
+
+//useSharedValue不能存放在数组中
+const AnimatedProgress = p => {
+    const offset = useSharedValue(p.progress);
+    const animatedStyles = useAnimatedStyle(() => {
+        return {
+            width: (offset.value * 100) + '%',
+            // 百分比计算会有误差
+            // transform: [
+            //     { translateX: (offset.value*100)+'%' },
+            //     {scaleX: offset.value,}
+            // ],
+        };
     });
+    offset.value = withDelay(p.animatedData.delay, withTiming(p.animatedData.toValue, p.animatedData))
+    return (
+        <Animated.View style={[p.next && styles.animated,
+            animatedStyles
+        ]}
+        />
+    )
+}
 
-    componentWillUnmount(){
-        this.state.animatedArray.map(a=>{
-            a.stop();
-        })
-    }
-    componentWillMount(){
-        const {
-            itemCount = 3,          //总共有多少个进度块
-            itemDuration = 2,       //单个进度的时间
-            currentDuration = 0,    //当前进度时间
-            playAnimaton = true,    //是否展示动画
-            gapTime = 0,            //每个进度条之间的间隔时间
-        } = this.props;
+//只对外进度条组件本身
+const PhotoProgress = props => {
+    const {
+        itemCount = 3,          //总共有多少个进度块
+        itemDuration = 2,       //单个进度的时间
+        currentDuration = 0,    //当前进度时间
+        playAnimaton = true,    //是否展示动画
+        gapTime = 0,            //每个进度条之间的间隔时间
+    } = props;
+    const [progressData, setProgressData] = useState([]);
+
+    useEffect(() => {
         //拼接一个数组用于渲染,元素起始时间大于当前时间时,显示为灰色进度条
         const progressData = Array.from({ length: itemCount }, (v, index) => {
             let start = index * itemDuration;
             let end = start + itemDuration;
             let next = end > currentDuration;
-            let progress = Math.max(0, (currentDuration - start) / itemDuration);
-            let width = new Animated.Value(progress);
-            return {
-                key: 'progress_' + index,
-                next,
-                width,
-                start,
-                end,
-                progress,
-            }
-        });
-        const animatedArray = progressData.map((p,index)=>{
-            if (p.next && playAnimaton) {
+            let progress = Math.min(Math.max(0, (currentDuration - start) / itemDuration), 1);
+            let key = 'progress_' + index;
+            let animatedData = {};
+            if (next && playAnimaton) {
                 let delay = 0;
-                if (p.start > currentDuration) {
-                    delay = p.start - currentDuration;
+                if (start > currentDuration) {
+                    delay = start - currentDuration;
                     delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
                     delay *= 1000;
                 }
-                let animatedData = {
+                animatedData = {
                     toValue: 1,
-                    duration: itemDuration * (1 - p.progress) * 1000,
-                    easing: Easing.easeInOut,
+                    duration: itemDuration * (1 - progress) * 1000,
+                    easing: Easing.linear,
                     delay,
-                    useNativeDriver: false,
                 };
-                return Animated.timing(p.width, animatedData);
+            }
+            return {
+                key,
+                next,
+                start,
+                end,
+                progress,
+                animatedData,
             }
         });
-        this.setState({
-            progressData,
-            animatedArray
-        },()=>{
-            animatedArray.map(a=>{
-                a.start();
-            })
-        })
-    }
-    render() {
-        return (
-            <View style={styles.rootView} >
-                {this.state.progressData.map(p => {
-                    return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
-                        <Animated.View style={[p.next && styles.animated, {
-                            width: p.width.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: ['0%', '100%'],
-                            })
-                        }]} />
-                    </View>
-                })}
-            </View >
-        )
-    }
+        setProgressData(progressData);
+    }, [itemCount, itemDuration, currentDuration, playAnimaton, gapTime]);
+
+    return (
+        <View style={styles.rootView} >
+            {progressData.map(p => {
+                return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
+                    <AnimatedProgress {...p} />
+                </View>
+            })}
+        </View >
+    )
 }
 
+
+PhotoProgress.propTypes = ({
+    itemCount: PropTypes.number,
+    itemDuration: PropTypes.number,
+    currentDuration: PropTypes.number,
+    playAnimaton: PropTypes.bool,
+    gapTime: PropTypes.number,
+});
 
 
 const styles = StyleSheet.create({
@@ -122,3 +126,5 @@ const styles = StyleSheet.create({
 })
 
 
+
+export default PhotoProgress;
