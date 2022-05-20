@@ -34,7 +34,7 @@ const AnimatedProgress = p => {
 const PhotoProgress = props => {
     const {
         itemCount = 3,          //总共有多少个进度块
-        itemDuration = 2,       //单个进度的时间
+        itemDuration = 3000,       //单个进度的时间
         currentDuration = 0,    //当前进度时间
         playAnimaton = true,    //是否展示动画
         gapTime = 0,            //每个进度条之间的间隔时间
@@ -55,11 +55,10 @@ const PhotoProgress = props => {
                 if (start > currentDuration) {
                     delay = start - currentDuration;
                     delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
-                    delay *= 1000;
                 }
                 animatedData = {
                     toValue: 1,
-                    duration: itemDuration * (1 - progress) * 1000,
+                    duration: itemDuration * (1 - progress),
                     easing: Easing.linear,
                     delay,
                 };
