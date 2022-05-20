@@ -115,16 +115,23 @@ export default class CameraScreen extends Component<Props, State> {
   }
 
 
-  onUploadVideo = async (uploadData: Array<any>) => {
-    uploadData.map(async (item, index) => {
-      item.path = item.url;
-      item.size = item.fileSize;
-      item.name = item.filename;
-      item.coverImage = '';
-      item.localPath = item.url;
-      return item
+  onUploadVideo = async (data: Array<any>) => {
+    let uploadData: Array<any> = [];
+    data.forEach((item, index) => {
+      const imageInfo = {
+        index: item.index,
+        width: item.width,
+        height: item.height,
+        path: item.url,
+        size: item.fileSize,
+        name: item.filename,
+        type: item.type,
+        coverImage: '',
+        localPath: item.url,
+      }
+      uploadData.push(imageInfo);
     })
-    console.info("onUploadVideo", uploadData);
+    // console.info("onUploadVideo", uploadData);
     this.sendUploadFile(uploadData)
   }
 
@@ -158,7 +165,7 @@ export default class CameraScreen extends Component<Props, State> {
 
       uploadData.push(imageInfo);
     });
-    
+
     this.setState({ uploadData: uploadData });
     this.props.setType('postImageEdit');
 

@@ -14,7 +14,9 @@ import I18n from '../i18n';
 import FastImage from '@rocket.chat/react-native-fast-image';
 
 import RanimatedCarousel from 'react-native-reanimated-carousel';
-import { State } from 'react-native-gesture-handler';
+
+import PhotoProgress from './PhotoProgress'
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,18 +31,24 @@ export default class ImageCarousel extends React.Component {
         this.state = {
             loop: isMulti,
             enabled: isMulti,
+            currentTime: 0,
         }
+        this.intervalTime = 100; //ms
+        this.itemDuration = 3000; //ms
 
-        // setTimeout(() => {
-        //     this.refRanimatedCarousel?.current?.goToIndex(1, true);
-        // }, 3000);
-
+        if (this.data?.length) {
+            this.maxTime = this.data.length * 3000; //ms
+        } else {
+            this.maxTime = 0;
+        }
     }
 
     componentDidMount() {
+        this.startInterva();
     }
 
     componentWillUnmount() {
+        this.stopInterva();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -50,16 +58,64 @@ export default class ImageCarousel extends React.Component {
         if (nextState.enabled !== this.state.enabled) {
             return true;
         }
+        if (nextState.currentTime !== this.state.currentTime) {
+            return true;
+        }
         return false;
     }
 
-    onHandlerStateChange = (event) => {
-        if (event.nativeEvent.state === State.ACTIVE) {
-            //暂停/开启 自动播放
+    startInterva = () => {
+        if (!this.data?.length || this.data?.length <= 1) {
+            return;
         }
+        setTimeout(() => {
+            this.timerInterval = setInterval(() => {
+                let currentTime = this.state.currentTime + this.intervalTime;
+                if (currentTime > this.maxTime) {
+                    currentTime = 0;
+                }
+                if (currentTime < this.maxTime && currentTime % this.itemDuration == 0) {
+                    const imageSelectPosition = parseInt((currentTime / this.itemDuration));
+                    this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+                }
+                this.setState({ currentTime: currentTime });
+            }, this.intervalTime);
+        }, this.intervalTime);
+    }
+
+    stopInterva = () => {
+        clearInterval(this.timerInterval)
+    }
+
+    IndicatorView = () => {
+
+        if (!this.data?.length || this.data?.length <= 1) {
+            return null;
+        }
+        // console.info("IndicatorView currentTime", this.state.currentTime);
+        return (<View style={
+            {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 82,
+                height: 10,
+                width: '100%',
+            }
+        }>
+
+            <PhotoProgress
+                itemCount={this.data?.length}
+                itemDuration={this.itemDuration}
+                currentDuration={this.state.currentTime}
+                playAnimaton={true}
+            />
+
+        </View>)
     }
 
     render() {
+
         return (
             <View style={styles.continueView}>
                 <RanimatedCarousel
@@ -72,8 +128,8 @@ export default class ImageCarousel extends React.Component {
                     loop={this.state.loop}
                     enabled={this.state.enabled}
 
-                    autoPlay={true}
-                    autoPlayInterval={3000}
+                    autoPlay={false}
+                    autoPlayInterval={this.itemDuration}
                     horizontal={true}
 
                     onScrollBegin={() => {
@@ -96,9 +152,10 @@ export default class ImageCarousel extends React.Component {
                             item={item}
                         />
                     )}
-
-
                 />
+
+                {this.IndicatorView()}
+
             </View>)
     }
 }
@@ -136,7 +193,8 @@ const styles = StyleSheet.create({
     continueView: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#000'
+        backgroundColor: '#000',
+        position: 'relative'
     },
 
 })
