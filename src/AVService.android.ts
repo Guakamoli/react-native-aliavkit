@@ -135,9 +135,17 @@ export default class AVService {
     return JSON.parse(musicInfo);
   }
 
-  static async pauseMusic(songID: string) {
+  static async stopMusic(songID: string) {
     return await RNEditorKitModule.stopMusic(songID);
   }
+
+  static async resumeMusic(songID: string) {
+    return await RNEditorKitModule.resumeMusic(songID);
+  }
+
+  // static async pauseMusic(songID: string) {
+  //   return await RNEditorKitModule.pauseMusic(songID);
+  // }
 
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     if (name && name == 'all-music') {

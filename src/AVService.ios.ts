@@ -135,9 +135,19 @@ export default class AVService {
     return await RNMusicService.playMusic(songID);
   }
 
+  static async stopMusic(songID: string) {
+    return await RNMusicService.stopMusic(songID);
+  }
+
+  static async resumeMusic(songID: string) {
+    return await RNMusicService.resumeMusic(songID);
+  }
+
   static async pauseMusic(songID: string) {
     return await RNMusicService.pauseMusic(songID);
   }
+
+
   // name:'all-music' 分页传all-music'，其他传歌曲名
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     return await RNMusicService.getMusics({ name, page, songID, pageSize });

@@ -28,7 +28,12 @@ export default class PostImageEditor extends React.Component {
         this.state = {
             currentMusic: null,
             openMusicView: false,
+            isPlay: true,
         }
+    }
+
+    setPlay = (isPlay) => {
+        this.setState({ isPlay: isPlay });
     }
 
     setCurrentMusic = async (musicInfo) => {
@@ -46,6 +51,9 @@ export default class PostImageEditor extends React.Component {
             return true;
         }
         if (nextState.openMusicView !== this.state.openMusicView) {
+            return true;
+        }
+        if (nextState.isPlay !== this.state.isPlay) {
             return true;
         }
         return false;
@@ -86,7 +94,7 @@ export default class PostImageEditor extends React.Component {
             console.info("_onPostUploadFiles", uploadData);
             this.props.getUploadFile(uploadData);
         }
-        
+
         this._onCleanMusic();
     }
 
@@ -148,22 +156,29 @@ export default class PostImageEditor extends React.Component {
 
 
     render() {
-        const imageW = !this.state.currentMusic?.name ? 148 : 180;
-        const imageH = !this.state.currentMusic?.name ? 4 : 12;
+
+        const isPlayMusic = this.state.currentMusic?.name && this.state.isPlay;
+        const imageW = isPlayMusic ? 180 : 148;
+        const imageH = isPlayMusic ? 12 : 4;
+
         return (
             <View style={styles.continueView}>
-                <ImageCarousel {...this.props}></ImageCarousel>
+                <ImageCarousel
+                    {...this.props}
+                    setPlay={this.setPlay}
+                />
+
 
                 <Image
-                    key={!this.state.currentMusic?.name ? 'pngImage' : 'gifImage'}
+                    key={isPlayMusic ? 'gifImage' : 'pngImage'}
                     style={{
                         position: 'absolute',
-                        bottom: !this.state.currentMusic?.name ? 14 : 10,
+                        bottom: isPlayMusic ? 10 : 14,
                         width: imageW,
                         height: imageH,
                         left: (width - imageW) / 2
                     }}
-                    source={!this.state.currentMusic?.name ? require('../../images/ic_post_music_stop.png') : require('../../images/ic_post_music_play.gif')}
+                    source={isPlayMusic ? require('../../images/ic_post_music_play.gif') : require('../../images/ic_post_music_stop.png')}
                 />
 
                 <PostMusic
@@ -171,6 +186,7 @@ export default class PostImageEditor extends React.Component {
                     setCurrentMusic={this.setCurrentMusic}
                     currentMusic={this.state.currentMusic}
                     openMusicView={this.state.openMusicView}
+                    isPlay={this.state.isPlay}
                     onCloseView={() => {
                         this.setState({ openMusicView: false });
                     }}

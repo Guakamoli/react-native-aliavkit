@@ -136,7 +136,7 @@ export default class VideoEditorExample extends Component {
                 borderRadius: 40,
               }}
               onPress={async () => {
-                const playingSong = await AVService.pauseMusic(this.state.musics[2].songID);
+                const playingSong = await AVService.stopMusic(this.state.musics[2].songID);
                
               }}
             >
@@ -154,9 +154,8 @@ export default class VideoEditorExample extends Component {
             <TouchableOpacity
               style={styles.buttonItem}
               onPress={async () => {
-                const status = await AVService.pauseMusic(this.state.musicInfo.songID);
+                const status = await AVService.stopMusic(this.state.musicInfo.songID);
                 if (status === true) {
-                 
                   this.setState({ setMusic: true });
                 }
               }}

@@ -88,7 +88,26 @@ export default class PostMusic extends React.Component {
             }
             return true;
         }
+
+        if (nextProps.isPlay !== this.props.isPlay) {
+            if (nextProps.isPlay) {
+                if (!!this.playingMusic) {
+                    AVService.resumeMusic(this.playingMusic?.songID);
+                }
+            } else {
+                if (!!this.playingMusic) {
+                    AVService.pauseMusic(this.playingMusic?.songID);
+                }
+            }
+            return true;
+        }
         return false;
+    }
+
+    pauseMusic = async () => {
+        if (!!this.playingMusic) {
+            AVService.stopMusic(this.playingMusic?.songID);
+        }
     }
 
     playMusic = async (musicInfo) => {
@@ -101,12 +120,12 @@ export default class PostMusic extends React.Component {
 
     stopMusic = async () => {
         if (!!this.playingMusic) {
-            AVService.pauseMusic(this.playingMusic?.songID);
+            AVService.stopMusic(this.playingMusic?.songID);
             this.playingMusic = null;
         }
     }
 
-    setSelectMusic = (musicInfo) => {
+    setCurrentMusic = (musicInfo) => {
         this.props.setCurrentMusic(musicInfo)
     }
 
@@ -144,7 +163,7 @@ export default class PostMusic extends React.Component {
             if (this.initMusic) {
                 this.initMusic = false;
                 if (!!musicList?.length && musicList?.length > 0) {
-                    this.setSelectMusic(musicList[this.defaultSelectPostion]);
+                    this.setCurrentMusic(musicList[this.defaultSelectPostion]);
                 }
             }
             //这里把分页加载的数据缓存一份
@@ -229,13 +248,13 @@ export default class PostMusic extends React.Component {
                     style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}
                     onPress={() => {
                         if (this.props.currentMusic) {
-                            this.setSelectMusic(null)
+                            this.setCurrentMusic(null)
                         } else {
-                            this.setSelectMusic(this.lasePlayingMusic);
+                            this.setCurrentMusic(this.lasePlayingMusic);
                         }
                     }}>
                     <FastImage
-                        source={this.props.currentMusic ? require('../../images/ic_post_music_ checked.png') : require('../../images/ic_post_music_ unchecked.png')}
+                        source={this.props.currentMusic ? require('../../images/ic_post_music_checked.png') : require('../../images/ic_post_music_unchecked.png')}
                         style={{ width: 18, height: 18 }} />
                     <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>配乐</Text>
                 </TouchableOpacity>
@@ -291,9 +310,13 @@ export default class PostMusic extends React.Component {
                                 {...this.props}
                                 index={index}
                                 item={item}
-                                onItemClick={(position,) => {
-                                    this.playMusic(item)
-                                    this.setSelectMusic(item)
+                                onItemClick={(position, isSelected) => {
+                                    if (!isSelected) {
+                                        this.playMusic(item)
+                                        this.setCurrentMusic(item)
+                                    } else {
+                                        this.setCurrentMusic(null)
+                                    }
                                 }}
                             />
                         }
@@ -330,7 +353,7 @@ class MusicItem extends React.Component {
         return (
             <TouchableOpacity
                 onPress={() => {
-                    this.props.onItemClick(index);
+                    this.props.onItemClick(index, isSelected);
                 }}>
                 <View style={styles.itemContainer}>
                     <FastImage source={isSelected ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
