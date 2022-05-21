@@ -5,12 +5,17 @@ import {
     View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import Animated, { useSharedValue, useAnimatedStyle, Easing, withTiming, withDelay } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, Easing, withTiming, withDelay, cancelAnimation } from 'react-native-reanimated';
 
 
 //useSharedValue不能存放在数组中
 const AnimatedProgress = p => {
     const offset = useSharedValue(p.progress);
+    // useEffect(() => {
+    //     return ()=>{
+    //         cancelAnimation(offset);
+    //     }
+    // })
     const animatedStyles = useAnimatedStyle(() => {
         return {
             width: (offset.value * 100) + '%',
@@ -55,6 +60,7 @@ const PhotoProgress = props => {
                 if (start > currentDuration) {
                     delay = start - currentDuration;
                     delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
+                    // delay *= 1000;
                 }
                 animatedData = {
                     toValue: 1,
@@ -79,7 +85,7 @@ const PhotoProgress = props => {
         <View style={styles.rootView} >
             {progressData.map(p => {
                 return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
-                    <AnimatedProgress {...p} />
+                    {currentDuration > 0 && <AnimatedProgress {...p} />}
                 </View>
             })}
         </View >
