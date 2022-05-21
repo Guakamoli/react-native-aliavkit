@@ -119,6 +119,38 @@ RCT_EXPORT_METHOD(playMusic:(NSString *)songID
     }
 }
 
+RCT_EXPORT_METHOD(stopMusic:(NSString *)songID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
+
+    if (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+        [self.player pause];
+        BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused);
+        resolve(@(isPaused));
+    }
+}
+
+RCT_EXPORT_METHOD(resumeMusic:(NSString *)songID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
+
+    if (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused) {
+        [self.player play];
+        BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying);
+        resolve(@(isPaused));
+    }
+}
+
 RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

@@ -193,7 +193,7 @@ export default class StoryEditor extends Component<Props, State> {
   pauseMusic(song) {
 
     if (song) {
-      AVService.pauseMusic(song?.songID);
+      AVService.stopMusic(song?.songID);
     }
   }
 

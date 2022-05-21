@@ -119,7 +119,7 @@ const StoryMusic = (props) => {
     if (!song) {
       return;
     }
-    await AVService.pauseMusic(song.songID);
+    await AVService.stopMusic(song.songID);
     getmusicInfo({});
   };
 

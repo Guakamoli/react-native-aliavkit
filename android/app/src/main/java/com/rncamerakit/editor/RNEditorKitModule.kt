@@ -116,6 +116,20 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
         promise.resolve(GsonBuilder().create().toJson(musicInfo))
     }
 
+    @ReactMethod
+    fun resumeMusic(songID: String, promise: Promise) {
+        MediaPlayerManage.instance.resume()
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID, reactContext.applicationContext)
+        promise.resolve(GsonBuilder().create().toJson(musicInfo))
+    }
+
+    @ReactMethod
+    fun pauseMusic(songID: String, promise: Promise) {
+        MediaPlayerManage.instance.pause()
+        val musicInfo: MusicFileBean? = MusicFileInfoDao.instance.query(songID, reactContext.applicationContext)
+        promise.resolve(GsonBuilder().create().toJson(musicInfo))
+    }
+
     //获取滤镜列表
     @ReactMethod
     fun getColorFilterList(promise: Promise) {
