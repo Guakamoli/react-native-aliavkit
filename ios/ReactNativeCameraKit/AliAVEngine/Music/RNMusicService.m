@@ -23,10 +23,12 @@ static NSString * const kJsonURL = @"https://static.paiyaapp.com/music/songs.jso
     RCTPromiseResolveBlock _resolve;
 }
 
+
 @property (nonatomic, strong) AVPlayer *player;
 @property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *musics;
 @property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *downloadingMusics;
 
+@property (nonatomic,strong)NSString *musicPath;
 @end
 
 @implementation RNMusicService
@@ -127,11 +129,12 @@ RCT_EXPORT_METHOD(stopMusic:(NSString *)songID
     if (!music) {
         reject(@"",@"Can't find this music",nil);
     }
-
-    if (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+    if (self.player)
+    {
         [self.player pause];
-        BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused);
-        resolve(@(isPaused));
+         self.player = nil;
+        [self removeObserverForMusicLoop];
+        resolve(@(YES));
     }
 }
 
@@ -197,6 +200,7 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
     if (!path || [path isEqualToString:@""]) {
         return;
     }
+    self.musicPath = path;
     CGFloat start = 0.0;
     AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
     float duration = [asset aliyunDuration];
@@ -216,7 +220,9 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
     
     [self.player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithAsset:mutableComposition]];
     [self.player play];
+    [self addObserverForMusicLoop];
 }
+
 
 - (void)_requestJson:(void(^)(NSArray<RNMusicInfo *> *, NSError *error))complete
 {
@@ -241,4 +247,26 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
 }
 
 
+#pragma mark - loop
+//增加循环播放的监控
+-(void)addObserverForMusicLoop
+{
+    //多监控是最需要避免的隐性泄露
+    [self removeObserverForMusicLoop];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playbackFinished:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
+}
+
+//移除循环播放的监控
+-(void)removeObserverForMusicLoop
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
+}
+//音频或视频播放完成的时候重新开始
+-(void)playbackFinished:(NSNotification*)noti
+{
+    if(self.player && self.musicPath)
+    {
+        [self _playItemAtPath:self.musicPath];
+    }
+}
 @end
