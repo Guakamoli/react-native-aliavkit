@@ -16,6 +16,11 @@ const AnimatedProgress = p => {
     //         cancelAnimation(offset);
     //     }
     // })
+    // useDerivedValue(() => {
+    //     return p.progress;
+    //   });
+    
+    
     const animatedStyles = useAnimatedStyle(() => {
         return {
             width: (offset.value * 100) + '%',
@@ -85,7 +90,7 @@ const PhotoProgress = props => {
         <View style={styles.rootView} >
             {progressData.map(p => {
                 return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
-                    {currentDuration > 0 && <AnimatedProgress {...p} />}
+                    {currentDuration > p.start && <AnimatedProgress {...p} />}
                 </View>
             })}
         </View >
