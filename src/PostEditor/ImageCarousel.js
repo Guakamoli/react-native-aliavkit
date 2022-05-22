@@ -36,6 +36,7 @@ export default class ImageCarousel extends React.Component {
             loop: false,
             currentDuration: 0,
             isPlay: true,    //是否自动播放，单击改变
+            isScroll: false,
         }
         this.intervalTime = 100; //ms  刷新间隔
         this.itemDuration = 3000; //ms 一张图/一个进度条对应的时长
@@ -84,6 +85,9 @@ export default class ImageCarousel extends React.Component {
         if (nextState.currentDuration !== this.state.currentDuration) {
             return true;
         }
+        if (nextState.isScroll !== this.state.isScroll) {
+            return true;
+        }
         if (nextState.isPlay !== this.state.isPlay) {
             if (nextState.isPlay) {
                 this.startInterva();
@@ -104,11 +108,10 @@ export default class ImageCarousel extends React.Component {
         }
         this.timerInterval = setInterval(() => {
             let duration = this.state.currentDuration + this.intervalTime;
-            if (duration > this.maxTime) {
-                duration = 0;
-            }
+            duration = duration % this.maxTime;
             if (duration < this.maxTime && duration % this.itemDuration == 0) {
                 const imageSelectPosition = parseInt((duration / this.itemDuration));
+                console.info("imageSelectPosition", imageSelectPosition);
                 this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
             }
             this.setState({ currentDuration: duration });
@@ -127,8 +130,9 @@ export default class ImageCarousel extends React.Component {
         if (!this.data?.length || this.data?.length <= 1) {
             return null;
         }
+        const playAnimaton = !this.state.isScroll && this.state.isPlay;
         //TODO
-        console.info("currentDuration", this.state.currentDuration, this.state.isPlay);
+        console.info("currentDuration", this.state.currentDuration, playAnimaton);
         return (<View style={
             {
                 position: 'absolute',
@@ -143,7 +147,7 @@ export default class ImageCarousel extends React.Component {
                 itemCount={this.data?.length}
                 itemDuration={this.itemDuration}
                 currentDuration={this.state.currentDuration}
-                playAnimaton={true}
+                playAnimaton={playAnimaton}
             />
         </View>)
     }
@@ -184,7 +188,9 @@ export default class ImageCarousel extends React.Component {
                                 onHandlerStateChange: ({ nativeEvent }) => {
                                     //滑动
                                     if (nativeEvent.state === State.ACTIVE) {
+                                        console.info("滑动开始");
                                         this.carouselTouchType = State.ACTIVE;
+                                        this.setState({ isScroll: true });
                                         this.stopInterva();
                                     } else if (nativeEvent.state === State.END) {
                                         this.carouselTouchType = State.END;
@@ -198,11 +204,28 @@ export default class ImageCarousel extends React.Component {
                             onSnapToItem={(index) => {
                                 //滑动完成
                                 if (this.carouselTouchType === State.END) {
-                                    const duration = index * this.itemDuration;
+                                    this.carouselTouchType = State.UNDETERMINED;
+
+                                    console.info("滑动完成 imageSelectPosition", index);
+
+                                    // 将  duration 设置在下一页的初始位置
+                                    const duration = (index + 1) * this.itemDuration;
                                     this.setState({
                                         currentDuration: duration,
                                     });
-                                    this.startInterva();
+
+                                    //延迟 3秒（this.itemDuration）后继续开始自动滚动
+                                    setTimeout(() => {
+                                        //设置翻页到下一页
+                                        const imageSelectPosition = (index + 1) % this.data?.length;
+                                        this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+
+                                        console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
+
+                                        this.setState({ isScroll: false });
+                                        this.startInterva();
+                                    }, this.itemDuration);
+
                                 }
                             }}
 
@@ -217,9 +240,9 @@ export default class ImageCarousel extends React.Component {
 
                         {!this.state.isPlay && <Image style={
                             {
-                                position: 'absolute', width: 50, height: 50,
+                                position: 'absolute', width: 60, height: 60,
                                 left: (width - 50) / 2,
-                                bottom: height / 2 + 50,
+                                bottom: height / 100 * 55,
                             }
                         }
                             source={require('../../images/ic_post_image_play.png')}
