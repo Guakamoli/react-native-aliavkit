@@ -22,6 +22,7 @@
 #import <React/RCTConvert.h>
 #import <AliyunVideoSDKPro/AliyunVodPublishManager.h>
 #import "AliyunPasterInfo.h"
+#import "ImageCacheTool.h"
 
 static NSString * const kAlivcQuUrlString =  @"https://alivc-demo.aliyuncs.com";
 
@@ -926,12 +927,47 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
         reject(@"",@"no path param",nil);
         return;
     }
+    //增加对file路径
+    if ([path.lowercaseString hasPrefix:@"file://"])
+    {
+        [self _saveFileToSandBox:path resolve:resolve reject:reject];
+        return;
+    }
     if (![path containsString:@"ph://"]) {
         reject(@"",@"no ph:// scheme",nil);
         return;
     }
     [self _saveImageToSandBox:path resolve:resolve reject:reject];
 }
+
+//保持
+- (void)_saveFileToSandBox:(NSString *)sourcePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    //使用UIImage转载相册图片时,不需要file://的前缀
+    NSString *localPath = [sourcePath substringFromIndex:@"file://".length];
+    UIImage *image = [UIImage imageWithContentsOfFile:localPath];
+    if(!image)
+    {
+        resolve(sourcePath);
+        return;
+    }
+    NSString *aliyunPath = [AliyunPathManager compositionRootDir];
+    NSString *randomName = [ImageCacheTool MD5ForUpper32Bate:localPath];
+    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:randomName ] stringByAppendingPathExtension:@"png"];
+    if([UIImage imageWithContentsOfFile:outputPhotoPath])
+    {
+        resolve(outputPhotoPath);
+        return;;
+    }
+    NSData *imageData = UIImagePNGRepresentation(image);
+    BOOL writeSuccess = [imageData writeToFile:outputPhotoPath atomically:YES];
+    if (writeSuccess) {
+        resolve(outputPhotoPath);
+    } else {
+        reject(@"",@"image write fail",nil);
+    }
+}
+
 
 - (void)_saveImageToSandBox:(NSString *)sourcePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {

@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 //图片名称是否有对应的缓存文件
 +(BOOL)checkImageCache:(NSString *)name;
+//固定地址或名称转为md5名称
++(NSString *)MD5ForUpper32Bate:(NSString *)str;
 @end
 
 NS_ASSUME_NONNULL_END
