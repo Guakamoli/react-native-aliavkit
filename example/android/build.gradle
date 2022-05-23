@@ -31,6 +31,24 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+
+    subprojects {
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                if (details.requested.group == 'com.facebook.fresco') {
+                    if (details.requested.name == 'fresco') {
+                        details.useVersion "2.6.0"
+                    } else if (details.requested.name == 'animated-gif') {
+                        details.useVersion "2.6.0"
+                    } else if (details.requested.name == 'animated-webp') {
+                        details.useVersion "2.6.0"
+                    } else if (details.requested.name == 'webpsupport') {
+                        details.useVersion "2.6.0"
+                    }
+                }
+            }
+        }
+    }
 }
 
 
