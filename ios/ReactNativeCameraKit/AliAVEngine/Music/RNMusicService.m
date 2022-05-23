@@ -181,6 +181,11 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
                                                             completionHandler:^(NSURL * _Nullable location,
                                                                                 NSURLResponse * _Nullable response,
                                                                                 NSError * _Nullable error) {
+        //空值会导致崩溃
+        if(!response)
+        {
+            return;
+        }
         NSString *fileName = [NSString stringWithFormat:@"%@-%@", songID, response.suggestedFilename];
         NSString *musicDirPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:@"music"];
         [AliyunPathManager makeDirExist:musicDirPath];

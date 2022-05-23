@@ -481,13 +481,16 @@
         PHAsset *phAsset        = model.asset;
         NSString *filename      = [phAsset valueForKey:@"filename"];
         NSArray *resources      = [PHAssetResource assetResourcesForAsset:phAsset];
+        NSString *photoURI      = [NSString stringWithFormat:@"ph://%@", phAsset.localIdentifier];
         NSString *localPath     = [(PHAssetResource*)resources[0] valueForKey:@"privateFileURL"];
         NSString *fileSize      = [(PHAssetResource*)resources[0] valueForKey:@"fileSize"];
         NSString *duration      = @(model.assetDuration*1000).stringValue;
         BOOL imageType          = phAsset.mediaType == PHAssetMediaTypeImage;
         NSString *type          = imageType ? @"image/" : @"video/";
-        NSString *fileFormat    = [[filename componentsSeparatedByString:@"."]lastObject];
+        NSString *fileFormat    = [[[filename componentsSeparatedByString:@"."]lastObject]lowercaseString];
         NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
+        NSArray *resourceArray = [PHAssetResource assetResourcesForAsset:phAsset];
+        BOOL icloudFile = ![[resourceArray.firstObject valueForKey:@"locallyAvailable"] boolValue];
         NSDictionary *imageData = @{
             @"index":       @(selectData.count),//下标：选择的图片/视频数组的顺序
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
@@ -497,7 +500,9 @@
             @"filename":    filename,//文件名称
             @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"
             @"playableDuration":duration,// 视频时长,图片为0,视频为 ms
-            @"rotation"     :rotation,// 视频角度
+            @"rotation":    rotation,// 视频角度
+            @"icloudFile":  @(icloudFile),//是否为iCloud
+            @"uri":         photoURI?:@""
         };
         [selectData addObject:imageData];
     }
