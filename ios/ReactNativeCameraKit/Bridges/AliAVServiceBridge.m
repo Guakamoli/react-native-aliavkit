@@ -943,23 +943,30 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
 //保持
 - (void)_saveFileToSandBox:(NSString *)sourcePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-    //使用UIImage转载相册图片时,不需要file://的前缀
+    //使用UIImage载入相册图片时,不需要file://的前缀
     NSString *localPath = [sourcePath substringFromIndex:@"file://".length];
-    UIImage *image = [UIImage imageWithContentsOfFile:localPath];
-    if(!image)
+    UIImage *result = [UIImage imageWithContentsOfFile:localPath];
+    if(!result)
     {
         resolve(sourcePath);
         return;
     }
     NSString *aliyunPath = [AliyunPathManager compositionRootDir];
-    NSString *randomName = [ImageCacheTool MD5ForUpper32Bate:localPath];
-    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:randomName ] stringByAppendingPathExtension:@"png"];
+    NSString *outputName = [ImageCacheTool MD5ForUpper32Bate:localPath];
+    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:outputName ] stringByAppendingPathExtension:@"jpg"];
     if([UIImage imageWithContentsOfFile:outputPhotoPath])
     {
         resolve(outputPhotoPath);
         return;;
     }
-    NSData *imageData = UIImagePNGRepresentation(image);
+    if (result.imageOrientation != UIImageOrientationUp) {
+        UIGraphicsBeginImageContextWithOptions(result.size, NO, result.scale);
+        [result drawInRect:(CGRect){0, 0, result.size}];
+        UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        result = normalizedImage;
+    }
+    NSData *imageData = UIImageJPEGRepresentation(result,0.99);
     BOOL writeSuccess = [imageData writeToFile:outputPhotoPath atomically:YES];
     if (writeSuccess) {
         resolve(outputPhotoPath);

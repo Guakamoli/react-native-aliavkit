@@ -495,7 +495,7 @@
             @"index":       @(selectData.count),//下标：选择的图片/视频数组的顺序
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
             @"height":      @(phAsset.pixelHeight),//该图片/视频的高
-            @"url":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
+            @"path":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
             @"fileSize":    fileSize,//文件大小（字节大小）
             @"filename":    filename,//文件名称
             @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"
