@@ -32,7 +32,7 @@ export default class ImageCarousel extends React.Component {
         this.data = this.props.uploadData
         this.isMulti = !!this.data?.length && this.data.length > 1
         this.state = {
-            enabled: this.isMulti,
+            enabled: true,
             loop: false,
             currentDuration: 0,
             isPlay: true,    //是否自动播放，单击改变
@@ -158,7 +158,7 @@ export default class ImageCarousel extends React.Component {
             <Animated.View style={styles.continueView}>
                 <TapGestureHandler
                     shouldCancelWhenOutside={true}
-                    enabled={this.isMulti}
+                    enabled={true}
                     onHandlerStateChange={({ nativeEvent }) => {
                         if (nativeEvent.state === State.END) {
                             //单击
