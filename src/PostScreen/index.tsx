@@ -145,10 +145,10 @@ export default class CameraScreen extends Component<Props, State> {
         const itemCrop = this.cropParams[item.path];
         let imageWidthScale = item.width / width;
         let imageHeightScale = item.height / width;
-        let translateXScale = itemCrop.positionX / width;
-        let translateYScale = itemCrop.positionY / width;
+        let translateXScale = itemCrop?.positionX / width || 1;
+        let translateYScale = itemCrop?.positionY / width || 1;
         const cropParams = {
-          scale: itemCrop.scale,
+          scale: itemCrop?.scale || 1,
           widthScale: imageWidthScale,
           heightScale: imageHeightScale,
           translateXScale: translateXScale,
@@ -157,12 +157,10 @@ export default class CameraScreen extends Component<Props, State> {
 
         let path = item.path;
         let type = item.type;
-        if (Platform.OS === 'ios') {
-          if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
-            //保存到沙盒
-            path = await AVService.saveToSandBox(item.uri);
-            type = 'image/jpg'
-          }
+        if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
+          //保存到沙盒
+          path = await AVService.saveToSandBox(item.uri);
+          type = 'image/jpg'
         }
 
         const imageInfo = {

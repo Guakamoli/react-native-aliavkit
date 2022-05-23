@@ -2,7 +2,8 @@ package com.rncamerakit.utils
 
 import android.Manifest
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -12,7 +13,6 @@ import com.aliyun.svideo.common.utils.ThreadUtils
 import com.aliyun.svideo.common.utils.UriUtils
 import com.blankj.utilcode.util.FileUtils
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 
 
@@ -84,11 +84,10 @@ class AliFileUtils {
             } else {
                 File(fileUri)
             }
-            val outputFileName = System.currentTimeMillis().toString() + "_" + file.name
+            val outputFileName = "img_cache_" + System.nanoTime() + ".jpg"
             val outputPath = com.aliyun.svideo.common.utils.FileUtils.getDiskCachePath(context) +
                     File.separator + "media/image" + File.separator + outputFileName
-            val isSave = saveImageToJPEG(context, file, File(outputPath))
-
+            val isSave = saveImageToJPEG(file, File(outputPath))
             return if (isSave) {
                 outputPath
             } else {
@@ -96,7 +95,7 @@ class AliFileUtils {
             }
         }
 
-        private fun saveImageToJPEG(context: Context, file: File, outputFile: File): Boolean {
+        private fun saveImageToJPEG(file: File, outputFile: File): Boolean {
             val documentFile = DocumentFile.fromFile(file)
             if (documentFile.type?.startsWith("image") == false) {
                 return false
@@ -106,31 +105,20 @@ class AliFileUtils {
             //创建输出目录
             FileUtils.createOrExistsDir(fileParent)
 
-
             //解析原始图片数据
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            val width = bitmap.width
-            val height = bitmap.height
-            val byteData = getFileByteArray(file)
 
-            val image = YuvImage(byteData, ImageFormat.NV21, width, height, null)
+            val fileOutStream = FileOutputStream(outputFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, fileOutStream) //把位图输出到指定的文件中
+            fileOutStream.flush()
+            fileOutStream.close()
 
-            val stream = FileOutputStream(outputFile)
-            if (image.compressToJpeg(Rect(0, 0, width, height), 90, stream)) {
-                stream.flush()
-                stream.close()
-                return true
+            if (!bitmap.isRecycled) {
+                bitmap.recycle()
             }
-            return false
+            return true
         }
 
-        fun  getFileByteArray(file:File):ByteArray{
-            val bytesArray = ByteArray(file.length().toInt())
-            val fis = FileInputStream(file)
-            fis.read(bytesArray) //read file into bytes[]
-            fis.close()
-            return bytesArray
-        }
 
     }
 }

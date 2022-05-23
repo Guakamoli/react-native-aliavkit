@@ -53,7 +53,7 @@ export default class AVService {
     const storyComposeListener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
       //0~1
       if (progressListener) {
-        progressListener( JSON.parse(progress).progress);
+        progressListener(JSON.parse(progress).progress);
       }
     });
     const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);
@@ -128,6 +128,10 @@ export default class AVService {
   //保存图片到相册
   static async saveResourceToPhotoLibrary({ sourcePath, sourceType }) {
     return await RNEditorKitModule.saveMediaStore(sourcePath, sourceType);
+  }
+
+  static async saveToSandBox(uri: string) {
+    return await RNEditorKitModule.saveToSandBox(uri);
   }
 
   static async playMusic(songID: string) {
