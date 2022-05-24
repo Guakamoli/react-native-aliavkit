@@ -209,7 +209,7 @@ export default class PostMusic extends React.Component {
                         }}
                         value={this.state.musicSearchValue}
                         selectionColor='#836BFF'
-                        placeholder={"搜索歌曲名称"}
+                        placeholder={I18n.t('search_music_placeholder')}
                         placeholderTextColor="#83848A"
                         color="#000000"
                     />
@@ -266,7 +266,7 @@ export default class PostMusic extends React.Component {
                     <Animated.View style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}>
                         <Image source={this.props.currentMusic ? require('../../images/ic_post_music_checked.png') : require('../../images/ic_post_music_unchecked.png')}
                             style={{ width: 18, height: 18, display: this.props.openMusicView ? 'flex' : 'none' }} />
-                        <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>配乐</Text>
+                        <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>{I18n.t('Soundtrack')}</Text>
                     </Animated.View>
                 </TapGestureHandler>
             </Animated.View >
