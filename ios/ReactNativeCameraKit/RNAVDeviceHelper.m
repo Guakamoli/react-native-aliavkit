@@ -28,6 +28,10 @@
     struct utsname systemInfo;
     uname(&systemInfo);
     NSString *phoneType = [NSString stringWithCString: systemInfo.machine encoding:NSASCIIStringEncoding];
+    //模拟器兼容
+    if(phoneType.length <= 6){
+        return 404;
+    }
     NSRange range = [phoneType rangeOfString:@","];
     NSRange range1 = NSMakeRange(6, range.location - 6);
     int code;

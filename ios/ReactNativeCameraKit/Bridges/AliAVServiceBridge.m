@@ -953,7 +953,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
     }
     NSString *aliyunPath = [AliyunPathManager compositionRootDir];
     NSString *outputName = [ImageCacheTool MD5ForUpper32Bate:localPath];
-    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:outputName] stringByAppendingPathExtension:@"jpg"];
+    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:outputName ] stringByAppendingPathExtension:@"jpg"];
     if([UIImage imageWithContentsOfFile:outputPhotoPath])
     {
         resolve(outputPhotoPath);
@@ -1068,7 +1068,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
                     UIGraphicsEndImageContext();
                     result = normalizedImage;
                 }
-                NSData *imageData = UIImageJPEGRepresentation(result, 1);
+                NSData *imageData = UIImageJPEGRepresentation(result, 0.95);
                 BOOL writeSuccess = [imageData writeToFile:outputPhotoPath atomically:YES];
                 if (writeSuccess) {
                     resolve(outputPhotoPath);

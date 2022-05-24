@@ -20,6 +20,7 @@
 #import "AliyunCompositionInfo.h"
 
 #import "ImageCacheTool.h"
+#import "AliyunPathManager.h"
 
 
 //RN交互参数
@@ -348,7 +349,97 @@
     return nil;
 }
 
+#pragma mark - iCloud down
+//将iCloud里的图片/视频下载到沙盒中
+//该函数在AliAVServiceBridge是有相同实现,考虑到分属不同功能,这里拷贝了一份代码过来修改
+- (void)loadImageToSandBox:(PHAsset *)asset saveFinishBlock:(void(^)(NSString *))finishBlock
+{
+    NSString *outputPath = [self phSandBoxPath:asset];
+    if (asset.mediaType == PHAssetMediaTypeVideo)
+    {
+        // Option
+        PHVideoRequestOptions *videoRequestOptions = [[PHVideoRequestOptions alloc] init];
+        videoRequestOptions.version = PHVideoRequestOptionsVersionOriginal;
+        videoRequestOptions.deliveryMode = PHVideoRequestOptionsDeliveryModeAutomatic;
+        [videoRequestOptions setProgressHandler:nil];//等待后续需求完整
+        videoRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
+        PHImageManager *manager = [PHImageManager defaultManager];
+        [manager requestExportSessionForVideo:asset
+                                      options:videoRequestOptions
+                                 exportPreset:AVAssetExportPresetHighestQuality
+                                resultHandler:^(AVAssetExportSession * _Nullable exportSession, NSDictionary * _Nullable info) {
+            exportSession.outputURL = [NSURL fileURLWithPath:outputPath];
+            exportSession.shouldOptimizeForNetworkUse = YES;
+            exportSession.outputFileType = AVFileTypeMPEG4; // mp4
+            [exportSession exportAsynchronouslyWithCompletionHandler:^{
+                BOOL completed = [exportSession status]==AVAssetExportSessionStatusCompleted;
+                finishBlock(completed ? outputPath : nil);
+            }];
+        }];
+    } else if (asset.mediaType == PHAssetResourceTypePhoto) {
+        CGSize maxSize = CGSizeMake(1080, 1920);
+        PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
+        imageRequestOptions.resizeMode   = PHImageRequestOptionsResizeModeExact;
+        imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        imageRequestOptions.synchronous = NO;
+        imageRequestOptions.networkAccessAllowed = YES;//打开网络获取iCloud的图片的功能
+        [imageRequestOptions setProgressHandler:nil];//等待后续需求完善
+        CGFloat factor = MAX(maxSize.width,maxSize.height)/MAX(asset.pixelWidth, asset.pixelHeight);
+        if (factor > 1) {
+            factor = 1.0f;
+        }
+        // 最终分辨率必须为偶数
+        CGFloat outputWidth = rint(asset.pixelWidth * factor / 2 ) * 2;
+        CGFloat outputHeight = rint(asset.pixelHeight * factor / 2) * 2;
+        
+        [[PHImageManager defaultManager] requestImageForAsset:asset
+                                                   targetSize:CGSizeMake(outputWidth, outputHeight)
+                                                  contentMode:PHImageContentModeDefault
+                                                      options:imageRequestOptions
+                                                resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            if (!result)
+            {
+                finishBlock(nil);
+                return;
+            }
+            //横向转正
+            if (result.imageOrientation != UIImageOrientationUp)
+            {
+                UIGraphicsBeginImageContextWithOptions(result.size, NO, result.scale);
+                [result drawInRect:(CGRect){0, 0, result.size}];
+                UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                result = normalizedImage;
+            }
+            NSData *imageData = UIImageJPEGRepresentation(result, 0.95);
+            BOOL writeSuccess = [imageData writeToFile:outputPath atomically:YES];
+            finishBlock(writeSuccess?outputPath:nil);
+        }];
+    }
+}
 
+//iCloud资源在本地沙盒中保存需要统一名称
+-(NSString *)phSandBoxPath:(PHAsset *)phAsset
+{
+    NSString *compositionRootDir = [AliyunPathManager compositionRootDir];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:compositionRootDir])
+    {
+        [[NSFileManager defaultManager] createDirectoryAtPath:compositionRootDir withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString *localIdentifier = [phAsset.localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
+    BOOL imageType          = phAsset.mediaType == PHAssetMediaTypeImage;
+    NSString *type          = imageType ? @"jpg" : @"mp4";
+    NSString *outputName = [NSString stringWithFormat:@"phPath_%@.%@", localIdentifier,type];
+    NSString *outputPath = [compositionRootDir stringByAppendingPathComponent:outputName];
+    return outputPath;
+}
+
+//检查iCloud是否已下载到沙盒中
+-(BOOL)checkiCloudSanboxFile:(PHAsset *)phAsset
+{
+    NSString *outputPath = [self phSandBoxPath:phAsset];
+    return [[NSFileManager defaultManager]fileExistsAtPath:outputPath];
+}
 
 #pragma mark - photo view control
 
@@ -475,28 +566,67 @@
         return;
     }
 
-    NSMutableArray *selectData = [NSMutableArray new];
-    for(NSString *indexStr in self.selectedIndexs){
+    //减少层级
+    NSMutableArray *selectedModels = [NSMutableArray new];
+    for(NSString *indexStr in self.selectedIndexs)
+    {
         AliyunAssetModel *model = self.viewDataArray[indexStr.integerValue];
+        [selectedModels addObject:model];
+    }
+    
+    //iCloud资源需要下载处理
+    for(AliyunAssetModel *model in selectedModels)
+    {
+        PHAsset *phAsset          = model.asset;
+        NSArray *resources        = [PHAssetResource assetResourcesForAsset:phAsset];
+        PHAssetResource *resource = (PHAssetResource*)resources[0];
+        BOOL icloudFile           = ![[resource valueForKey:@"locallyAvailable"] boolValue];
+        NSString *fileURL         = [resource valueForKey:@"privateFileURL"];
+        //已有资源的情况就不需要额外处理了
+        if(icloudFile && !fileURL && ![self checkiCloudSanboxFile:phAsset])
+        {
+            //下载iCloud资源不需要多线程
+            [self loadImageToSandBox:phAsset saveFinishBlock:^(NSString *localPath) {
+                if(!localPath)
+                {
+                    self.onErrorCallback(@{@"code":@"10001",@"message":@"file error"});
+                }else{
+                    [self sendSelectPhotoDataToRN];
+                }
+            }];
+            //中断原先提交给RN的流程,等待iCloud下载完成后递归
+            return;
+        }
+    }
+
+    //封装数据交给RN
+    NSMutableArray *selectData = [NSMutableArray new];
+    for(AliyunAssetModel *model in selectedModels)
+    {
         PHAsset *phAsset        = model.asset;
         NSString *filename      = [phAsset valueForKey:@"filename"];
         NSArray *resources      = [PHAssetResource assetResourcesForAsset:phAsset];
+        PHAssetResource *resource = (PHAssetResource*)resources[0];
         NSString *photoURI      = [NSString stringWithFormat:@"ph://%@", phAsset.localIdentifier];
-        NSString *localPath     = [(PHAssetResource*)resources[0] valueForKey:@"privateFileURL"];
-        NSString *fileSize      = [(PHAssetResource*)resources[0] valueForKey:@"fileSize"];
+        NSString *fileURL       = [resource valueForKey:@"privateFileURL"];
+        NSString *fileSize      = [resource valueForKey:@"fileSize"];
         NSString *duration      = @(model.assetDuration*1000).stringValue;
         BOOL imageType          = phAsset.mediaType == PHAssetMediaTypeImage;
         NSString *type          = imageType ? @"image/" : @"video/";
         NSString *fileFormat    = [[[filename componentsSeparatedByString:@"."]lastObject]lowercaseString];
         NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
-        NSArray *resourceArray = [PHAssetResource assetResourcesForAsset:phAsset];
-        BOOL icloudFile = ![[resourceArray.firstObject valueForKey:@"locallyAvailable"] boolValue];
+        NSString *localPath     = [NSString stringWithFormat:@"%@",fileURL];
+        BOOL icloudFile         = ![[resource valueForKey:@"locallyAvailable"] boolValue];
+        if(icloudFile && !fileURL)
+        {
+            localPath = [self phSandBoxPath:phAsset];
+        }
         NSDictionary *imageData = @{
             @"index":       @(selectData.count),//下标：选择的图片/视频数组的顺序
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
             @"height":      @(phAsset.pixelHeight),//该图片/视频的高
-            @"path":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
-            @"url":         [NSString stringWithFormat:@"%@",localPath],//兼容
+            @"path":        localPath,//文件本地地址
+            @"url":         localPath,//兼容
             @"fileSize":    fileSize,//文件大小（字节大小）
             @"filename":    filename,//文件名称
             @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"
@@ -507,7 +637,9 @@
         };
         [selectData addObject:imageData];
     }
-    if(selectData.count > 0){
+    
+    if(selectData.count > 0)
+    {
         NSNumber *selectedIndex = @0;
         AliyunAssetModel *model = self.viewDataArray[self.lastSelectIndex];
         for(NSDictionary *imageData in selectData)
