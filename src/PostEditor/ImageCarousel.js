@@ -51,6 +51,8 @@ export default class ImageCarousel extends React.Component {
         this.appState = '';
 
         this.carouselTouchType = State.UNDETERMINED;
+
+        this.carouselPosition = 0;
     }
 
     _handleAppStateChange = (nextAppState) => {
@@ -199,38 +201,52 @@ export default class ImageCarousel extends React.Component {
 
                             onScrollBegin={() => {
                                 //开始滑动
+
                             }}
                             onSnapToItem={(index) => {
+
+
                                 //滑动完成
                                 if (this.carouselTouchType === State.END) {
                                     this.carouselTouchType = State.UNDETERMINED;
 
                                     console.info("滑动完成 imageSelectPosition", index);
 
-                                    // 将  duration 设置在下一页的初始位置
-                                    const duration = (index + 1) * this.itemDuration;
-                                    this.setState({
-                                        currentDuration: duration,
-                                    });
                                     if (!this.state.isPlay) {
                                         return
                                     }
-                                    //延迟 3秒（this.itemDuration）后继续开始自动滚动
-                                    this.snapToItemTimeout = setTimeout(() => {
-                                        if (!this.state.isPlay) {
-                                            return
-                                        }
-                                        //设置翻页到下一页
-                                        const imageSelectPosition = (index + 1) % this.data?.length;
-                                        this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
 
-                                        console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
+                                    if (index !== this.carouselPosition) {
+                                        //下标改变了 将  duration 设置在下一页的初始位置
+                                        const duration = (index + 1) * this.itemDuration;
+                                        this.setState({
+                                            currentDuration: duration,
+                                        });
 
+                                        //延迟 3秒（this.itemDuration）后继续开始自动滚动
+                                        this.snapToItemTimeout = setTimeout(() => {
+                                            if (!this.state.isPlay) {
+                                                return
+                                            }
+                                            //设置翻页到下一页
+                                            const imageSelectPosition = (index + 1) % this.data?.length;
+                                            this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+                                            console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
+                                            this.setState({ isScroll: false });
+                                            this.startInterva();
+                                        }, this.itemDuration);
+                                    } else {
+                                        //下标没改变，继续播放
                                         this.setState({ isScroll: false });
                                         this.startInterva();
-                                    }, this.itemDuration);
+                                    }
+
+
+
+
 
                                 }
+                                this.carouselPosition = index;
                             }}
 
                             renderItem={({ index, item }) => (

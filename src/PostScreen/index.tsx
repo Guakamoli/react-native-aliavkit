@@ -132,8 +132,9 @@ export default class CameraScreen extends Component<Props, State> {
         coverImage: '',
         localPath: item.path,
       }
-      uploadData.push(imageInfo);
+      uploadData[item.index] = imageInfo
     })
+    this.setVideoPlayer(false);
     // console.info("onUploadVideo", uploadData);
     this.sendUploadFile(uploadData)
   }
