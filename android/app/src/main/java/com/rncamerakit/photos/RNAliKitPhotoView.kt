@@ -285,7 +285,11 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             map.putInt("index", i)
             map.putInt("width", videoWidth.toInt())
             map.putInt("height", videoHeight.toInt())
-            map.putString("url", "file://" + info.filePath)
+
+//            map.putString("url", "file://" + info.filePath)
+            map.putString("path", "file://" + info.filePath)
+            map.putString("uri", info.fileUri)
+
             map.putDouble("fileSize", videoFile.length().toDouble())
             map.putString("filename", videoFile.name)
             map.putString("type", info.mimeType)

@@ -90,7 +90,7 @@ export default class PostContent extends Component {
         if (nextState.imageItem !== this.state.imageItem) {
             const imageItem = nextState.imageItem;
             if (!!imageItem) {
-                const itemCropData = this.cropParams[imageItem.url];
+                const itemCropData = this.cropParams[imageItem.path];
 
                 const isVideo = imageItem?.type?.includes('video');
                 // const videoPaused = !isVideo;
@@ -189,7 +189,7 @@ export default class PostContent extends Component {
         }
 
         const fileSize = { width: imageItem.width, height: imageItem.height }
-        const fileUri = imageItem.url
+        const fileUri = imageItem.path
         const isVideo = imageItem.type.includes('video')
 
         return (
@@ -217,7 +217,7 @@ export default class PostContent extends Component {
                     areaColor='black'
                     areaOverlay={<View></View>}
                     setCropperParams={(cropperParams) => {
-                        let newKey = imageItem.url;
+                        let newKey = imageItem.path;
                         this.cropParams[newKey] = cropperParams;
                         this.moveScale = cropperParams.scale;
 

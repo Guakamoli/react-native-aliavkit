@@ -48,6 +48,13 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
         return "RNEditorKitModule"
     }
 
+    @ReactMethod
+    fun saveToSandBox(uri: String, promise: Promise) {
+        val context = reactContext
+        val boxPath = AliFileUtils.saveToSandBox(context, uri)
+        promise.resolve(boxPath)
+    }
+
 //    /**
 //     * 获取音乐地址，本地存在返回本地地址；本地不存在，先下载后返回下载的地址
 //     */
@@ -217,7 +224,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
             val cropMap: HashMap<String, Any> = HashMap<String, Any>()
 //            cropMap["path"] = ""
 //            cropMap["isCroped"] = false
-            val jsonString =  GsonBuilder().create().toJson(cropMap)
+            val jsonString = GsonBuilder().create().toJson(cropMap)
             mPostCropPromise?.resolve(jsonString)
         }
         mPostAliyunICrop?.cancel()
@@ -242,9 +249,9 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     @ReactMethod
     fun stopEdit(promise: Promise) {
         val isStop = mView?.stopEdit()
-        if(isStop == true){
+        if (isStop == true) {
             promise.resolve(isStop)
-        }else{
+        } else {
             promise.resolve(false)
         }
     }

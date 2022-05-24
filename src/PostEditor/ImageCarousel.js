@@ -72,6 +72,7 @@ export default class ImageCarousel extends React.Component {
 
     componentWillUnmount() {
         this.stopInterva();
+        clearTimeout(this.snapToItemTimeout)
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
 
@@ -120,10 +121,8 @@ export default class ImageCarousel extends React.Component {
     }
 
     stopInterva = () => {
-        if (!!this.timerInterval) {
-            clearInterval(this.timerInterval)
-            this.timerInterval = null;
-        }
+        clearInterval(this.timerInterval)
+        this.timerInterval = null;
     }
 
     IndicatorView = () => {
@@ -213,9 +212,14 @@ export default class ImageCarousel extends React.Component {
                                     this.setState({
                                         currentDuration: duration,
                                     });
-
+                                    if (!this.state.isPlay) {
+                                        return
+                                    }
                                     //延迟 3秒（this.itemDuration）后继续开始自动滚动
-                                    setTimeout(() => {
+                                    this.snapToItemTimeout = setTimeout(() => {
+                                        if (!this.state.isPlay) {
+                                            return
+                                        }
                                         //设置翻页到下一页
                                         const imageSelectPosition = (index + 1) % this.data?.length;
                                         this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
@@ -245,6 +249,7 @@ export default class ImageCarousel extends React.Component {
                                 bottom: height / 100 * 55,
                             }
                         }
+                            resizeMode={'contain'}
                             source={require('../../images/ic_post_image_play.png')}
                         />}
                     </Animated.View>

@@ -53,7 +53,7 @@ export default class AVService {
     const storyComposeListener = DeviceEventEmitter.addListener('storyComposeVideo', (progress) => {
       //0~1
       if (progressListener) {
-        progressListener( JSON.parse(progress).progress);
+        progressListener(JSON.parse(progress).progress);
       }
     });
     const videoParam = await RNEditorKitModule.storyComposeVideo(jsonPath);
@@ -130,6 +130,10 @@ export default class AVService {
     return await RNEditorKitModule.saveMediaStore(sourcePath, sourceType);
   }
 
+  static async saveToSandBox(uri: string) {
+    return await RNEditorKitModule.saveToSandBox(uri);
+  }
+
   static async playMusic(songID: string) {
     const musicInfo = await RNEditorKitModule.playMusic(songID);
     return JSON.parse(musicInfo);
@@ -143,9 +147,9 @@ export default class AVService {
     return await RNEditorKitModule.resumeMusic(songID);
   }
 
-  // static async pauseMusic(songID: string) {
-  //   return await RNEditorKitModule.pauseMusic(songID);
-  // }
+  static async pauseMusic(songID: string) {
+    return await RNEditorKitModule.pauseMusic(songID);
+  }
 
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     if (name && name == 'all-music') {
