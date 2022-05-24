@@ -63,7 +63,7 @@ const PhotoProgress = props => {
             let progress = Math.min(Math.max(0, (currentDuration - start) / itemDuration), 1);
             let key = 'progress_' + index;
             let animatedData = {
-                toValue: 0,
+                toValue: playAnimaton ? 0 : progress,
                 duration: 0,
                 delay: 0,
             };
