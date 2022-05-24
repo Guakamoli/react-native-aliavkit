@@ -1068,7 +1068,7 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
                     UIGraphicsEndImageContext();
                     result = normalizedImage;
                 }
-                NSData *imageData = UIImageJPEGRepresentation(result, 1);
+                NSData *imageData = UIImageJPEGRepresentation(result, 0.95);
                 BOOL writeSuccess = [imageData writeToFile:outputPhotoPath atomically:YES];
                 if (writeSuccess) {
                     resolve(outputPhotoPath);
