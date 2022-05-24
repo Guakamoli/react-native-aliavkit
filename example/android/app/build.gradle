@@ -147,6 +147,13 @@ dependencies {
     implementation project(':@react-native-community-image-editor')
     implementation project(':react-native-fast-image')
     implementation project(':react-native-localize')
+
+
+    implementation 'com.facebook.fresco:fresco:2.6.0'
+    implementation 'com.facebook.fresco:animated-gif:2.6.0'
+    implementation 'com.facebook.fresco:animated-base:2.6.0'
+    implementation 'com.facebook.fresco:animated-webp:2.6.0'
+    implementation 'com.facebook.fresco:webpsupport:2.6.0'
 }
 
 task copyDownloadableDepsToLibs(type: Copy) {

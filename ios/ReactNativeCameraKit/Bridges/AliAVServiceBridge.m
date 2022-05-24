@@ -946,20 +946,21 @@ RCT_EXPORT_METHOD(saveToSandBox:(NSDictionary *)options
     //使用UIImage转载相册图片时,不需要file://的前缀
     NSString *localPath = [sourcePath substringFromIndex:@"file://".length];
     UIImage *result = [UIImage imageWithContentsOfFile:localPath];
-   if(!result)
-   {
+    if(!result)
+    {
         resolve(sourcePath);
         return;
     }
     NSString *aliyunPath = [AliyunPathManager compositionRootDir];
     NSString *outputName = [ImageCacheTool MD5ForUpper32Bate:localPath];
-    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:outputName ] stringByAppendingPathExtension:@"jpg"];
+    NSString *outputPhotoPath = [[aliyunPath stringByAppendingPathComponent:outputName] stringByAppendingPathExtension:@"jpg"];
     if([UIImage imageWithContentsOfFile:outputPhotoPath])
     {
         resolve(outputPhotoPath);
         return;;
     }
-    if (result.imageOrientation != UIImageOrientationUp) {
+    if (result.imageOrientation != UIImageOrientationUp)
+    {
         UIGraphicsBeginImageContextWithOptions(result.size, NO, result.scale);
         [result drawInRect:(CGRect){0, 0, result.size}];
         UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();

@@ -265,7 +265,8 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         } else {
             val sql =
-                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
+//                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
+                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC"
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         }
         val infoList: MutableList<MusicFileBean> = ArrayList()
