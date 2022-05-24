@@ -211,7 +211,7 @@
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             //分页处理
-            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){0,0} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
+            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){2,60*60} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
                 weakSelf.libraryDataArray = models;
                 weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];
@@ -496,6 +496,7 @@
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
             @"height":      @(phAsset.pixelHeight),//该图片/视频的高
             @"path":         [NSString stringWithFormat:@"%@",localPath],//文件本地地址
+            @"url":         [NSString stringWithFormat:@"%@",localPath],//兼容
             @"fileSize":    fileSize,//文件大小（字节大小）
             @"filename":    filename,//文件名称
             @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"
