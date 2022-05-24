@@ -6,7 +6,8 @@ import {
     Text,
     TouchableOpacity,
     Dimensions,
-    Image
+    Image,
+    Alert
 } from 'react-native';
 
 import I18n from '../i18n';
@@ -63,7 +64,24 @@ export default class PostImageEditor extends React.Component {
      * 返回页面
      */
     _goBack = () => {
-        this.props.setType('post');
+        Alert.alert(
+            I18n.t('post_image_editor_back_msg'),
+            "",
+            [
+                {
+                    text: `${I18n.t('Cancel')}`,
+                    style: "default",
+                },
+                {
+                    text: `${I18n.t('confirm')}`,
+                    onPress: () => this.props.setType('post'),
+                    style: "default",
+                },
+            ],
+            {
+                cancelable: true,
+            }
+        );
     }
 
     /**
@@ -130,7 +148,7 @@ export default class PostImageEditor extends React.Component {
                         <View style={styles.musicTextContinue}>
                             <FastImage style={styles.musicImg} source={require('../../images/ic_post_upload_music.png')} resizeMode='contain' />
                             <Text style={styles.musicText} ref={this.refMarqueeText} >
-                                {this.state.currentMusic?.name || '选择音乐'}
+                                {this.state.currentMusic?.name || I18n.t('selectMusic')}
                             </Text>
                         </View>
                     </TouchableOpacity>

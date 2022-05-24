@@ -191,6 +191,7 @@ export default class ImageCarousel extends React.Component {
                                     if (nativeEvent.state === State.ACTIVE) {
                                         console.info("滑动开始");
                                         this.carouselTouchType = State.ACTIVE;
+                                        clearTimeout(this.snapToItemTimeout)
                                         this.setState({ isScroll: true });
                                         this.stopInterva();
                                     } else if (nativeEvent.state === State.END) {
@@ -204,8 +205,6 @@ export default class ImageCarousel extends React.Component {
 
                             }}
                             onSnapToItem={(index) => {
-
-
                                 //滑动完成
                                 if (this.carouselTouchType === State.END) {
                                     this.carouselTouchType = State.UNDETERMINED;
@@ -240,10 +239,6 @@ export default class ImageCarousel extends React.Component {
                                         this.setState({ isScroll: false });
                                         this.startInterva();
                                     }
-
-
-
-
 
                                 }
                                 this.carouselPosition = index;
