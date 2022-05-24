@@ -35,8 +35,9 @@ export default class ImageCarousel extends React.Component {
             enabled: true,
             loop: false,
             currentDuration: 0,
+            playAnimaton: true,
+
             isPlay: true,    //是否自动播放，单击改变
-            isScroll: false,
         }
         this.intervalTime = 100; //ms  刷新间隔
         this.itemDuration = 3000; //ms 一张图/一个进度条对应的时长
@@ -52,8 +53,15 @@ export default class ImageCarousel extends React.Component {
 
         this.carouselTouchType = State.UNDETERMINED;
 
-        this.carouselPosition = 0;
+        this.carouselPosition = 0;//滑动后的当前下标
+
+        this.intervalDuration = 0;//计时器当前的时间
+
+        this.replayTimeOut = 0;//重新播放的延时
+
     }
+
+
 
     _handleAppStateChange = (nextAppState) => {
         if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
@@ -88,18 +96,20 @@ export default class ImageCarousel extends React.Component {
         if (nextState.currentDuration !== this.state.currentDuration) {
             return true;
         }
-        if (nextState.isScroll !== this.state.isScroll) {
+        if (nextState.playAnimaton !== this.state.playAnimaton) {
             return true;
         }
         if (nextState.isPlay !== this.state.isPlay) {
-            if (nextState.isPlay) {
-                this.startInterva();
-            } else {
-                this.stopInterva();
-            }
             return true;
         }
         return false;
+    }
+
+    setProgressStatus = (duration, isAnimaton) => {
+        this.setState({
+            currentDuration: duration,
+            playAnimaton: isAnimaton
+        });
     }
 
     startInterva = () => {
@@ -110,14 +120,15 @@ export default class ImageCarousel extends React.Component {
             return;
         }
         this.timerInterval = setInterval(() => {
-            let duration = this.state.currentDuration + this.intervalTime;
+            let duration = this.intervalDuration + this.intervalTime;
             duration = duration % this.maxTime;
             if (duration < this.maxTime && duration % this.itemDuration == 0) {
                 const imageSelectPosition = parseInt((duration / this.itemDuration));
                 console.info("imageSelectPosition", imageSelectPosition);
                 this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
             }
-            this.setState({ currentDuration: duration });
+            this.intervalDuration = duration;
+            console.info("this.intervalDuration", this.intervalDuration);
         }, this.intervalTime);
 
     }
@@ -131,9 +142,7 @@ export default class ImageCarousel extends React.Component {
         if (!this.data?.length || this.data?.length <= 1) {
             return null;
         }
-        const playAnimaton = !this.state.isScroll && this.state.isPlay;
-        //TODO
-        console.info("currentDuration", this.state.currentDuration, playAnimaton);
+        console.info("currentDuration", this.state.currentDuration, this.state.playAnimaton);
         return (<View style={
             {
                 position: 'absolute',
@@ -148,7 +157,7 @@ export default class ImageCarousel extends React.Component {
                 itemCount={this.data?.length}
                 itemDuration={this.itemDuration}
                 currentDuration={this.state.currentDuration}
-                playAnimaton={playAnimaton}
+                playAnimaton={this.state.playAnimaton}
             />
         </View>)
     }
@@ -163,9 +172,35 @@ export default class ImageCarousel extends React.Component {
                     onHandlerStateChange={({ nativeEvent }) => {
                         if (nativeEvent.state === State.END) {
                             //单击
+                            console.info("单击");
+
                             const isPlay = !this.state.isPlay;
+
                             this.setState({ isPlay: isPlay });
                             this.props.setPlay(isPlay);
+
+
+
+                            if (this.replayTimeOut) {
+                                setTimeout(() => {
+                                    if (isPlay) {
+                                        const imageSelectPosition = (this.carouselPosition + 1) % this.data?.length;
+                                        this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+                                        this.startInterva();
+                                    } else {
+                                        this.stopInterva();
+                                    }
+                                    this.setProgressStatus(this.intervalDuration, isPlay);
+                                }, this.replayTimeOut)
+                                this.replayTimeOut = 0;
+                            } else {
+                                if (isPlay) {
+                                    this.startInterva();
+                                } else {
+                                    this.stopInterva();
+                                }
+                                this.setProgressStatus(this.intervalDuration, isPlay);
+                            }
                         }
                     }}
                 >
@@ -189,11 +224,12 @@ export default class ImageCarousel extends React.Component {
                                 onHandlerStateChange: ({ nativeEvent }) => {
                                     //滑动
                                     if (nativeEvent.state === State.ACTIVE) {
-                                        console.info("滑动开始");
+
                                         this.carouselTouchType = State.ACTIVE;
+                                        this.setProgressStatus(this.intervalDuration, false);
                                         clearTimeout(this.snapToItemTimeout)
-                                        this.setState({ isScroll: true });
                                         this.stopInterva();
+
                                     } else if (nativeEvent.state === State.END) {
                                         this.carouselTouchType = State.END;
                                     }
@@ -208,35 +244,35 @@ export default class ImageCarousel extends React.Component {
                                 //滑动完成
                                 if (this.carouselTouchType === State.END) {
                                     this.carouselTouchType = State.UNDETERMINED;
-
                                     console.info("滑动完成 imageSelectPosition", index);
+                                    if (index !== this.carouselPosition) {  //下标改变了 将  duration 设置在下一页的初始位置
+                                        this.intervalDuration = (index + 1) * this.itemDuration;
+                                        this.setProgressStatus(this.intervalDuration, false);
 
-                                    if (!this.state.isPlay) {
-                                        return
-                                    }
-
-                                    if (index !== this.carouselPosition) {
-                                        //下标改变了 将  duration 设置在下一页的初始位置
-                                        const duration = (index + 1) * this.itemDuration;
-                                        this.setState({
-                                            currentDuration: duration,
-                                        });
-
+                                        //暂停播放不继续播放
+                                        if (!this.state.isPlay) {
+                                            this.carouselPosition = index;
+                                            this.replayTimeOut = this.itemDuration;
+                                            return
+                                        }
                                         //延迟 3秒（this.itemDuration）后继续开始自动滚动
                                         this.snapToItemTimeout = setTimeout(() => {
-                                            if (!this.state.isPlay) {
-                                                return
-                                            }
+                                            this.setProgressStatus(this.intervalDuration, true);
                                             //设置翻页到下一页
                                             const imageSelectPosition = (index + 1) % this.data?.length;
                                             this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
                                             console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
-                                            this.setState({ isScroll: false });
                                             this.startInterva();
                                         }, this.itemDuration);
                                     } else {
+                                        //暂停播放不继续播放
+                                        if (!this.state.isPlay) {
+                                            // this.carouselPosition = index;
+                                            // this.replayTimeOut = this.itemDuration;
+                                            return
+                                        }
                                         //下标没改变，继续播放
-                                        this.setState({ isScroll: false });
+                                        this.setProgressStatus(this.intervalDuration, true);
                                         this.startInterva();
                                     }
 
