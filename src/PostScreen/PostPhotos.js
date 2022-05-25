@@ -31,6 +31,10 @@ export default class PostPhotos extends Component {
             isStoragePermission: false,
             isPhotoLimited: false,
         };
+
+        if (!!props.selectMultiple) {
+            props.setSelectMultiple()
+        }
     }
 
     getPhotos = async (isGetPermissions = false) => {
