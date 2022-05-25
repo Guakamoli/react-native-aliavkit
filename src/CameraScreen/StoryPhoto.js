@@ -25,105 +25,7 @@ const photoItemWidth = (width - 2) / 3.0;
 const photoItemHeight = photoItemWidth * 16 / 9;
 
 import AVService from '../AVService';
-class PhotoItemView extends React.Component {
-    constructor(props) {
-        super(props)
-    }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return false;
-    }
-
-    formatSeconds = (s) => {
-        let t = '';
-        if (s > -1) {
-            let min = Math.floor(s / 60) % 60;
-            let sec = s % 60;
-            if (min < 10) {
-                t += '0';
-            }
-            t += min + ':';
-            if (sec < 10) {
-                t += '0';
-            }
-            t += sec;
-        }
-        return t;
-    };
-
-    onItemClick = async () => {
-
-        const videoType = this.props.item?.type?.indexOf('video') !== -1;
-
-        if (!!videoType && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-            console.info("onItemClick", videoType, this.props.item.image.playableDuration);
-            this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
-            return;
-        }
-        let selectUri = this.props.item.image.uri;
-
-        if (Platform.OS === 'ios') {
-            if ("image" === this.props.item.type) {
-                const imageIndex = this.props.item?.image?.filename?.lastIndexOf(".");
-                //获取后缀
-                const imageType = this.props.item?.image?.filename?.substr(imageIndex + 1).toLowerCase();
-
-                console.info("imageType", imageType);
-
-                //不是通用格式，需要先转换
-                if (!!imageType && (imageType !== 'jpg' || imageType !== 'png')) {
-                    selectUri = await AVService.saveToSandBox(selectUri);
-                } else {
-                    let myAssetId = selectUri.slice(5);
-                    selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-                }
-            } else {
-                let myAssetId = selectUri.slice(5);
-                selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-            }
-        }
-        console.info("selectUri", selectUri, "item type", this.props.item.type.includes('video'), this.props.item.type, this.props.item.image);
-        this.props.selectedPhoto(selectUri, this.props.item.type.includes('video') ? 'video' : 'image');
-        setTimeout(() => {
-            this.props.hideBottomSheet();
-        }, 250);
-    }
-
-    render() {
-        let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
-
-        const videoType = this.props.item?.type?.indexOf('video') !== -1;
-
-        return (
-            <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
-
-                {Platform.OS === 'android' ?
-                    <NativeViewGestureHandler
-                        disallowInterruption={false}
-                        shouldActivateOnStart={false}
-                        onHandlerStateChange={(event) => {
-                            if (event.nativeEvent.state === State.END) {
-                                this.onItemClick();
-                            }
-                        }}
-                    >
-                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
-                    </NativeViewGestureHandler>
-                    :
-                    <TouchableOpacity
-                        onPress={() => {
-                            this.onItemClick();
-                        }}>
-                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
-                    </TouchableOpacity>
-                }
-
-                {!!videoType && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
-            </View>
-        )
-    }
-
-}
 
 class StoryPhoto extends React.Component {
 
@@ -141,14 +43,14 @@ class StoryPhoto extends React.Component {
         this.bottomSheetRef;
         this.bottomSheetInnerRef;
 
-        this.getPhotosNum = 36;
+        // this.getPhotosNum = 36;
     }
 
     /**
      * 在第一次绘制 render() 之后执行
      */
     componentDidMount() {
-        this.getPhotos();
+        // this.getPhotos();
     }
 
     /**
@@ -190,47 +92,47 @@ class StoryPhoto extends React.Component {
     }
 
 
-    getPhotos = async () => {
-        const storagePermission = await RNGetPermissions.checkStoragePermissions();
+    // getPhotos = async () => {
+    //     const storagePermission = await RNGetPermissions.checkStoragePermissions();
 
-        console.info("storagePermission", storagePermission);
+    //     console.info("storagePermission", storagePermission);
 
-        if (storagePermission?.permissionStatus === 'limited') {
-            this.setState({ isPhotoLimited: true });
-        } else {
-            this.setState({ isPhotoLimited: false });
-        }
-        if (!storagePermission?.isGranted) {
-            if (await RNGetPermissions.getStoragePermissions(true)) {
-                this.getPhotos();
-            }
-            return;
-        }
-        CameraRoll.getPhotos({
-            first: this.getPhotosNum,
-            assetType: 'All',
-            include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
-        })
-            .then(data => {
-                if (!data?.edges?.length) {
-                    return;
-                }
-                const photoList = [];
-                for (let i = 0; i < data.edges.length; i++) {
-                    const itemInfo = data.edges[i].node
-                    photoList.push(data.edges[i].node);
-                }
-                let firstPhotoUri = photoList[0]?.image?.uri
-                this.props.setFirstPhotoUri(firstPhotoUri);
-                this.setState({
-                    photoList: photoList,
-                    bottomSheetRefreshing: false
-                });
-            })
-            .catch((err) => {
-                //Error Loading Images
-            });
-    }
+    //     if (storagePermission?.permissionStatus === 'limited') {
+    //         this.setState({ isPhotoLimited: true });
+    //     } else {
+    //         this.setState({ isPhotoLimited: false });
+    //     }
+    //     if (!storagePermission?.isGranted) {
+    //         if (await RNGetPermissions.getStoragePermissions(true)) {
+    //             this.getPhotos();
+    //         }
+    //         return;
+    //     }
+    //     CameraRoll.getPhotos({
+    //         first: this.getPhotosNum,
+    //         assetType: 'All',
+    //         include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
+    //     })
+    //         .then(data => {
+    //             if (!data?.edges?.length) {
+    //                 return;
+    //             }
+    //             const photoList = [];
+    //             for (let i = 0; i < data.edges.length; i++) {
+    //                 const itemInfo = data.edges[i].node
+    //                 photoList.push(data.edges[i].node);
+    //             }
+    //             let firstPhotoUri = photoList[0]?.image?.uri
+    //             this.props.setFirstPhotoUri(firstPhotoUri);
+    //             this.setState({
+    //                 photoList: photoList,
+    //                 bottomSheetRefreshing: false
+    //             });
+    //         })
+    //         .catch((err) => {
+    //             //Error Loading Images
+    //         });
+    // }
 
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
@@ -268,7 +170,7 @@ class StoryPhoto extends React.Component {
             const imageIndex = itemPath?.lastIndexOf(".");
             const imageType = itemPath?.substr(imageIndex + 1).toLowerCase();
             //不是通用格式，需要先转换
-            if (!!imageType && (imageType !== 'jpg' && imageType !== 'png')) 
+            if (!!imageType && (imageType !== 'jpg' && imageType !== 'png'&& imageType !== 'jpeg')) 
             {
                 console.log(imageType);
                 itemPath = await AVService.saveToSandBox(itemUri);
