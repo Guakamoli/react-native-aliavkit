@@ -194,7 +194,7 @@ export default class PostMusic extends React.Component {
             <Animated.View style={styles.headContinue}>
                 <Animated.View style={{ backgroundColor: '#D8D8D8', width: 32, height: 4, borderRadius: 2, marginTop: 10 }} />
                 <Animated.View style={styles.searchMusicContinue}>
-                    <Animated.Image source={require('../../images/ic_post_music_ search.png')} style={styles.searchMusicImage} />
+                    <Animated.Image source={require('../../images/ic_post_music_search.png')} style={styles.searchMusicImage} />
                     <TextInput
                         style={[styles.musicFindSearchInput]}
                         multiline={false}

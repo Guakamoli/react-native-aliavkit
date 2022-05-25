@@ -185,6 +185,7 @@ export default class PostImageEditor extends React.Component {
                     {...this.props}
                     data = {this.props.uploadData}
                     setPlay={this.setPlay}
+                    openMusicView={this.state.openMusicView}
                 />
 
 
