@@ -83,7 +83,6 @@ export default class ImageCarousel extends React.Component {
 
     componentWillUnmount() {
         this.stopInterva();
-        clearTimeout(this.snapToItemTimeout)
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
 
@@ -101,6 +100,16 @@ export default class ImageCarousel extends React.Component {
             return true;
         }
         if (nextState.isPlay !== this.state.isPlay) {
+            return true;
+        }
+        if (nextProps.openMusicView !== this.props.openMusicView) {
+            if (!nextProps.openMusicView) {
+                this.setProgressStatus(this.intervalDuration, true);
+                this.startInterva();
+            } else {
+                this.setProgressStatus(this.intervalDuration, false);
+                this.stopInterva();
+            }
             return true;
         }
         return false;
@@ -137,6 +146,8 @@ export default class ImageCarousel extends React.Component {
 
     stopInterva = () => {
         clearInterval(this.timerInterval)
+        clearTimeout(this.snapToItemTimeout)
+        clearTimeout(this.tapGestureHandlerTimeout)
         this.timerInterval = null;
     }
 
@@ -183,9 +194,10 @@ export default class ImageCarousel extends React.Component {
                             if (!!this.props.setPlay) {
                                 this.props.setPlay(isPlay);
                             }
-
+                            clearTimeout(this.snapToItemTimeout)
+                            clearTimeout(this.tapGestureHandlerTimeout)
                             if (this.replayTimeOut) {
-                                setTimeout(() => {
+                                this.tapGestureHandlerTimeout = setTimeout(() => {
                                     if (isPlay) {
                                         const imageSelectPosition = (this.carouselPosition + 1) % this.data?.length;
                                         this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
@@ -231,6 +243,8 @@ export default class ImageCarousel extends React.Component {
                                         this.carouselTouchType = State.ACTIVE;
                                         this.setProgressStatus(this.intervalDuration, false);
                                         clearTimeout(this.snapToItemTimeout)
+                                        clearTimeout(this.tapGestureHandlerTimeout)
+
                                         this.stopInterva();
 
                                     } else if (nativeEvent.state === State.END) {
@@ -250,6 +264,7 @@ export default class ImageCarousel extends React.Component {
                                     console.info("滑动完成 imageSelectPosition", index);
                                     if (index !== this.carouselPosition) {  //下标改变了 将  duration 设置在下一页的初始位置
                                         this.intervalDuration = (index + 1) * this.itemDuration;
+                                        this.setProgressStatus(this.intervalDuration, true);
                                         this.setProgressStatus(this.intervalDuration, false);
 
                                         //暂停播放不继续播放
@@ -258,6 +273,8 @@ export default class ImageCarousel extends React.Component {
                                             this.replayTimeOut = this.itemDuration;
                                             return
                                         }
+                                        clearTimeout(this.snapToItemTimeout)
+                                        clearTimeout(this.tapGestureHandlerTimeout)
                                         //延迟 3秒（this.itemDuration）后继续开始自动滚动
                                         this.snapToItemTimeout = setTimeout(() => {
                                             this.setProgressStatus(this.intervalDuration, true);
