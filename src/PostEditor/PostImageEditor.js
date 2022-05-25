@@ -183,6 +183,7 @@ export default class PostImageEditor extends React.Component {
             <View style={styles.continueView}>
                 <ImageCarousel
                     {...this.props}
+                    data = {this.props.uploadData}
                     setPlay={this.setPlay}
                 />
 

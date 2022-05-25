@@ -29,7 +29,8 @@ export default class ImageCarousel extends React.Component {
 
         this.refRanimatedCarousel = React.createRef();
 
-        this.data = this.props.uploadData
+        this.data = this.props.data
+
         this.isMulti = !!this.data?.length && this.data.length > 1
         this.state = {
             enabled: true,
@@ -178,9 +179,10 @@ export default class ImageCarousel extends React.Component {
                             const isPlay = !this.state.isPlay;
 
                             this.setState({ isPlay: isPlay });
-                            this.props.setPlay(isPlay);
 
-
+                            if (!!this.props.setPlay) {
+                                this.props.setPlay(isPlay);
+                            }
 
                             if (this.replayTimeOut) {
                                 setTimeout(() => {
@@ -325,10 +327,12 @@ class ImageItem extends React.Component {
 
         const itemHeight = item.height / item.width * width;
 
+        const imageUri = !!item.path ? item.path : item.uri;
+
         return (
             <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                 < FastImage
-                    source={{ uri: item.path }}
+                    source={{ uri: imageUri }}
                     style={{ width: width, height: itemHeight, backgroundColor: 'rgba(100,100,100,0.5)' }}
                     resizeMode='cover'
                     placeholderStyle={{ backgroundColor: 'transparent' }}
