@@ -152,7 +152,6 @@ class StoryPhoto extends React.Component {
             return;
         }
         const itemData = seelctData.data[0];
-        console.log(itemData);
         //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
         const itemUri = itemData.uri;
         const itemType = itemData.type.toLowerCase();
