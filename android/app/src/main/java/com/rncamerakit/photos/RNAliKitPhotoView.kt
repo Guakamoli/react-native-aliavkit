@@ -3,6 +3,7 @@ package com.rncamerakit.photos
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
@@ -28,6 +29,9 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private var mWidth = 0
     private var mHeight = 0
     private var mNumColumns = 4
+    private var mItemWidth = 0
+    private var mItemHeight = 0
+
     private var mInitViewLoad: Boolean = false
     private var mMultiSelect: Boolean = false
     private var mPhotoAdapter: PhotoAdapter? = null
@@ -35,6 +39,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private var mPhotoList: MutableList<MediaInfo> = ArrayList()
 
     private var mCurrentClickPosition = 0
+    private var mDefaultSelectedPosition = 0
     private var mSelectedPhotoList: MutableList<MediaInfo> = ArrayList()
 
     /**
@@ -47,11 +52,25 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
     enum class EventEmitterKeys(private val mName: String) {
         EVENT_SELECTED_PHOTO_CALLBACK("onSelectedPhotoCallback"),
-        EVENT_MAX_SELECT_COUNT_CALLBACK("onMaxSelectCountCallback");
+        EVENT_MAX_SELECT_COUNT_CALLBACK("onMaxSelectCountCallback"),
+        EVENT_MAX_GET_FIRST_PHOTO_CALLBACK("onGetFirstPhotoCallback");
 
         override fun toString(): String {
             return mName
         }
+    }
+
+    fun setItemWidth(itemWidth: Int) {
+        this.mItemWidth = itemWidth
+    }
+
+    fun setItemHeight(itemHeight: Int) {
+        this.mItemHeight = itemHeight
+    }
+
+    fun setDefaultSelectedPosition(position: Int) {
+        mCurrentClickPosition = position
+        mDefaultSelectedPosition = position
     }
 
     init {
@@ -115,11 +134,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         }
     }
 
-    fun setItemWidth(itemWidth: Int) {
-    }
-
-    fun setItemHeight(itemHeight: Int) {
-    }
 
     private fun initViews() {
         val view = LayoutInflater.from(mContext).inflate(R.layout.view_ali_kit_photos, this, true)
@@ -206,7 +220,18 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
     private fun filAdapter() {
         if (mPhotoAdapter == null) {
-            mPhotoAdapter = PhotoAdapter(context, mPhotoList, mSelectedPhotoMap, this.mWidth/mNumColumns, this.mWidth/mNumColumns)
+
+            val itemWidth = if (mItemWidth == 0) {
+                this.mWidth/mNumColumns
+            } else {
+                this.mItemWidth
+            }
+            val itemHeight = if (mItemHeight == 0) {
+                this.mWidth/mNumColumns
+            } else {
+                this.mItemHeight
+            }
+            mPhotoAdapter = PhotoAdapter(context, mPhotoList, mSelectedPhotoMap, itemWidth, itemHeight, mDefaultSelectedPosition)
             mPhotoAdapter?.setMultiSelect(mMultiSelect)
             mPhotoRecyclerView?.layoutManager = GridLayoutManager(context, mNumColumns)
             mPhotoRecyclerView?.addItemDecoration(GridSpacingItemDecoration(mNumColumns, 2, false))
@@ -230,9 +255,13 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             override fun onCompletion() {
                 super.onCompletion()
                 if (mPhotoList.isNotEmpty()) {
-                    val photoList: MutableList<MediaInfo> = ArrayList()
-                    photoList.add(mPhotoList[0])
-                    sendRNSelectedPhotos(0, photoList)
+                    if (mDefaultSelectedPosition >= 0) {
+                        val photoList: MutableList<MediaInfo> = ArrayList()
+                        photoList.add(mPhotoList[0])
+                        sendRNSelectedPhotos(0, photoList)
+                    }
+
+                    sendFirstPhoto(mPhotoList[0])
                 }
             }
         })
@@ -257,6 +286,11 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         }
     }
 
+    fun sendFirstPhoto(info: MediaInfo) {
+        val map: WritableMap = Arguments.createMap()
+        map.putString("uri", info.fileUri)
+        mEventEmitter?.receiveEvent(id, EventEmitterKeys.EVENT_MAX_GET_FIRST_PHOTO_CALLBACK.toString(), map)
+    }
 
     fun sendRNSelectedPhotos(selectPosition: Int, photoList: MutableList<MediaInfo>) {
         val arrayList = WritableNativeArray()
@@ -310,4 +344,25 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         mPhotoAdapter?.onDestroy()
     }
 
+    private var mRawX = 0f
+    private var mRawY = 0f
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN -> {
+                mRawX = ev.rawX
+                mRawY = ev.rawY
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val distanceX = ev.rawX - mRawX
+                val distanceY = ev.rawY - mRawY
+                Log.e("AAA","distanceX:$distanceX; distanceY:$distanceY")
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+
+            }
+            else -> {
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 }

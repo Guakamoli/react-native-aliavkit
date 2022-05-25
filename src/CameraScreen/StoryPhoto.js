@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable } from 'react-native'
+import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, } from 'react-native'
+
+import Animated from 'react-native-reanimated';
 
 import CameraRoll from '@react-native-community/cameraroll';
 
@@ -10,7 +12,7 @@ import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
-import { State, NativeViewGestureHandler } from 'react-native-gesture-handler';
+import { State, TapGestureHandler, PanGestureHandler } from 'react-native-gesture-handler';
 
 import I18n from '../i18n';
 
@@ -21,7 +23,7 @@ import AVkitPhotoView from '../AVKitPhotoView';
 
 const { width, height } = Dimensions.get('window');
 
-const photoItemWidth = (width - 2) / 3.0;
+const photoItemWidth = width / 3.0;
 const photoItemHeight = photoItemWidth * 16 / 9;
 
 import AVService from '../AVService';
@@ -38,6 +40,7 @@ class StoryPhoto extends React.Component {
             multipleSelectList: [],
             bottomSheetRefreshing: false,
             isPhotoLimited: false,
+            isStoragePermission: false,
         };
         this.bottomSheetRef;
         this.bottomSheetInnerRef;
@@ -49,7 +52,7 @@ class StoryPhoto extends React.Component {
      * 在第一次绘制 render() 之后执行
      */
     componentDidMount() {
-        // this.getPhotos();
+        this.getPhotos();
     }
 
     /**
@@ -66,6 +69,9 @@ class StoryPhoto extends React.Component {
             return true;
         }
         if (this.state.isPhotoLimited !== nextState.isPhotoLimited) {
+            return true;
+        }
+        if (nextState.isStoragePermission !== this.state.isStoragePermission) {
             return true;
         }
         if (this.state.photoList !== nextState.photoList) {
@@ -90,38 +96,26 @@ class StoryPhoto extends React.Component {
         //当组件要被从界面上移除的时候调用 ,可以做组件相关的清理工作
     }
 
-    // getPhotos = async () => {
-    //     const storagePermission = await RNGetPermissions.checkStoragePermissions();
-    //     // console.info("storagePermission", storagePermission);
-    //     if (storagePermission?.permissionStatus === 'limited') {
-    //         this.setState({ isPhotoLimited: true });
-    //     } else {
-    //         this.setState({ isPhotoLimited: false });
-    //     }
-    //     if (!storagePermission?.isGranted) {
-    //         if (await RNGetPermissions.getStoragePermissions(true)) {
-    //             this.getPhotos();
-    //         }
-    //         return;
-    //     }
-    //     CameraRoll.getPhotos({
-    //         first: 1,
-    //         assetType: 'All',
-    //         include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
-    //     })
-    //         .then(data => {
-    //             // console.log(data);
-    //             if (!data?.edges?.length) {
-    //                 return;
-    //             }
-    //             let firstPhotoUri = data.edges[0].node?.image?.uri
-    //             //console.log(firstPhotoUri);
-    //             this.props.setFirstPhotoUri(firstPhotoUri);
-    //         })
-    //         .catch((err) => {
-    //             //Error Loading Images
-    //         });
-    // }
+    getPhotos = async () => {
+        const storagePermission = await RNGetPermissions.checkStoragePermissions();
+        //  console.info("storagePermission", storagePermission);
+        if (storagePermission?.permissionStatus === 'limited') {
+            this.setState({ isPhotoLimited: true });
+        } else {
+            this.setState({ isPhotoLimited: false });
+        }
+        if (!storagePermission?.isGranted) {
+            if (await RNGetPermissions.getStoragePermissions(true)) {
+                this.setState({
+                    isStoragePermission: true
+                });
+            }
+            return;
+        }
+        this.setState({
+            isStoragePermission: true
+        });
+    }
 
 
     openBottomSheet = () => {
@@ -145,11 +139,9 @@ class StoryPhoto extends React.Component {
     }
 
     //返回第一个相册数据
-    getFirstPhotoCallback = (firstData) =>{
-        console.log("getFirstPhotoCallback");
-        console.log(firstData);
-        if(firstData)
-        {
+    getFirstPhotoCallback = (firstData) => {
+        console.log("getFirstPhotoCallback", firstData);
+        if (firstData) {
             this.props.setFirstPhotoUri(firstData.uri);
         }
     }
@@ -188,7 +180,7 @@ class StoryPhoto extends React.Component {
         return (
             <View style={[styles.bottomSheetHead, { height: this.state.isPhotoLimited ? 120 : 55 }]}>
                 {Platform.OS === 'android' ?
-                    <NativeViewGestureHandler
+                    <TapGestureHandler
                         disallowInterruption={true}
                         shouldActivateOnStart={true}
                         onHandlerStateChange={(event) => {
@@ -197,10 +189,10 @@ class StoryPhoto extends React.Component {
                             }
                         }}
                     >
-                        <View style={styles.bottomSheetHeadClose}>
+                        <Animated.View style={styles.bottomSheetHeadClose}>
                             <Text style={styles.bottomSheetHeadCloseText}>{I18n.t('close')}</Text>
-                        </View>
-                    </NativeViewGestureHandler>
+                        </Animated.View>
+                    </TapGestureHandler>
                     :
                     <TouchableOpacity
                         style={styles.bottomSheetHeadClose}
@@ -261,15 +253,22 @@ class StoryPhoto extends React.Component {
                         return null
                     }}
                 >
-                    <AVkitPhotoView {...this.props}
-                        numColumns={3}
-                        pageSize={45}
-                        style={{ width, height, backgroundColor: 'black' }}
-                        multiSelect={false}
-                        onSelectedPhotoCallback={this.clickItemCallback}
-                        getFirstPhotoCallback = {this.getFirstPhotoCallback}
-                        defaultSelectedPosition = {-1}
-                    ></AVkitPhotoView>
+                    <Animated.View style={{ width, height, backgroundColor: 'black', position: 'relative' }}>
+                        {this.state.isStoragePermission && <AVkitPhotoView
+                            {...this.props}
+                            numColumns={3}
+                            pageSize={45}
+                            itemWidth={photoItemWidth}
+                            itemHeight={photoItemHeight}
+                            style={{ width, height, backgroundColor: 'black' }}
+                            multiSelect={false}
+                            onSelectedPhotoCallback={this.clickItemCallback}
+                            getFirstPhotoCallback={this.getFirstPhotoCallback}
+                            defaultSelectedPosition={-1}
+                        />}
+                    </Animated.View>
+
+
                 </ScrollBottomSheet>
             </View>
         )
@@ -295,7 +294,6 @@ const styles = StyleSheet.create({
     },
 
     photoView: {
-        flex: 1,
         width: width,
         zIndex: 1,
     },

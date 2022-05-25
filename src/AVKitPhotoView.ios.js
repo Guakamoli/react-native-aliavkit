@@ -127,7 +127,6 @@ export default class AVkitPhotoView extends React.Component {
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
 
-                onSelectedPhotos={this._onSelectedPhotos}
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}
                 onGetFirstPhotoCallback={this._getFirstPhotoCallback}

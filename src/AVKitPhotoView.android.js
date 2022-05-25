@@ -16,7 +16,7 @@ export default class AVkitPhotoView extends React.Component {
             multiSelect: !!props?.multiSelect,
             maxSelectCount: !!props?.maxSelectCount ? props.maxSelectCount : 10,
             defaultSelectedPosition: !!props?.defaultSelectedPosition ? props.defaultSelectedPosition : 0,
-            defaultSelectedStatus:!!props.defaultSelectedStatus,
+            defaultSelectedStatus: !!props.defaultSelectedStatus,
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
@@ -50,7 +50,7 @@ export default class AVkitPhotoView extends React.Component {
 
 
     _onSelectedPhotoCallback = event => {
-        // console.info("_onSelectedPhotos",event.nativeEvent);
+        // console.info("_onSelectedPhotoCallback",event.nativeEvent);
         if (this.props.onSelectedPhotoCallback) {
             // selectedIndex： 当前选中的 图片/视频 数组下标，单选模式固定返回0
             // selectedData：  选择的图片、视频的数组，单选模式其中只有一条数据，多选模式中视频也应该只有一条数据
@@ -75,7 +75,7 @@ export default class AVkitPhotoView extends React.Component {
      * 多选图片超出最大选择
      * @param {} event 
      */
-     _onMaxSelectCountCallback = event => {
+    _onMaxSelectCountCallback = event => {
         console.info("_onMaxSelectCountCallback 最多选择十张图片");
         if (this.props.onMaxSelectCountCallback) {
             this.props.onMaxSelectCountCallback();
@@ -94,6 +94,7 @@ export default class AVkitPhotoView extends React.Component {
     }
     //原生返回第一个相册数据
     _getFirstPhotoCallback = event => {
+        // console.info("_getFirstPhotoCallback",event.nativeEvent);
         if (this.props.getFirstPhotoCallback) {
             this.props.getFirstPhotoCallback(event.nativeEvent);
         }
@@ -116,6 +117,7 @@ export default class AVkitPhotoView extends React.Component {
         // onErrorCallback: 错误日志回调
         return (
             <NativePhotoView
+                style={{ backgroundColor: 'transparent' }}
                 {...this.props}
                 pageSize={this.state.pageSize}
                 numColumns={this.state.numColumns}
@@ -126,10 +128,9 @@ export default class AVkitPhotoView extends React.Component {
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
 
-                onSelectedPhotos={this._onSelectedPhotos}
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}
-                getFirstPhotoCallback={this._getFirstPhotoCallback}
+                onGetFirstPhotoCallback={this._getFirstPhotoCallback}
 
                 onErrorCallback={this._onErrorCallback}
             />
