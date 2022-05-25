@@ -35,6 +35,8 @@
 @property (nonatomic) NSUInteger maxSelectCount;
 // 默认选中下标
 @property (nonatomic) NSUInteger defaultSelectedPosition;
+//默认选中数据
+@property (nonatomic) BOOL defaultSelectedStatus;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemWidth;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
@@ -218,7 +220,10 @@
                 [weakSelf.collectionView reloadData];
                 [weakSelf addObserver];
                 //默认选中第一张照片
-                [weakSelf selectDataUpdate:MIN(models.count,self.defaultSelectedPosition)];
+                if(weakSelf.defaultSelectedStatus)
+                {
+                    [weakSelf selectDataUpdate:MIN(models.count,self.defaultSelectedPosition)];
+                }
             }];
         });
     }];
@@ -581,14 +586,20 @@
         NSArray *resources        = [PHAssetResource assetResourcesForAsset:phAsset];
         PHAssetResource *resource = (PHAssetResource*)resources[0];
         BOOL icloudFile           = ![[resource valueForKey:@"locallyAvailable"] boolValue];
-        NSString *fileURL         = [resource valueForKey:@"privateFileURL"];
+        NSString *fileURL         = [NSString stringWithFormat:@"%@",[resource valueForKey:@"privateFileURL"]];
+        //判断当前图片是否需要处理旋转
+        UIImage *fileImage      = fileURL.length>10&&!self.defaultSelectedStatus?[UIImage imageWithContentsOfFile:[fileURL substringFromIndex:@"file://".length]]:nil;
+        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
         //已有资源的情况就不需要额外处理了
-        if(icloudFile && !fileURL && ![self checkiCloudSanboxFile:phAsset])
+        if((icloudFile || imageTurnStatus) && ![self checkiCloudSanboxFile:phAsset])
         {
             //下载iCloud资源不需要多线程
+            __weak typeof(self) weakSelf = self;
             [self loadImageToSandBox:phAsset saveFinishBlock:^(NSString *localPath) {
-                if(!localPath)
-                {
+                __strong __typeof(weakSelf)strongSelf = weakSelf;
+                if(!strongSelf){
+                    //iCloud数据回来前已经销毁了当前组件
+                }else if(!localPath){
                     self.onErrorCallback(@{@"code":@"10001",@"message":@"file error"});
                 }else{
                     [self sendSelectPhotoDataToRN];
@@ -617,7 +628,10 @@
         NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
         NSString *localPath     = [NSString stringWithFormat:@"%@",fileURL];
         BOOL icloudFile         = ![[resource valueForKey:@"locallyAvailable"] boolValue];
-        if(icloudFile && !fileURL)
+        //判断当前图片是否需要处理旋转
+        UIImage *fileImage      = localPath.length>10&&!self.defaultSelectedStatus?[UIImage imageWithContentsOfFile:[localPath substringFromIndex:@"file://".length]]:nil;
+        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
+        if((icloudFile && !fileURL) || imageTurnStatus)
         {
             localPath = [self phSandBoxPath:phAsset];
         }
