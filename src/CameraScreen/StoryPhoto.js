@@ -50,21 +50,7 @@ class StoryPhoto extends React.Component {
      */
     componentDidMount() {
         // this.getPhotos();
-        // const storagePermission = await RNGetPermissions.checkStoragePermissions();
 
-        // console.info("storagePermission", storagePermission);
-
-        // if (storagePermission?.permissionStatus === 'limited') {
-        //     this.setState({ isPhotoLimited: true });
-        // } else {
-        //     this.setState({ isPhotoLimited: false });
-        // }
-        // if (!storagePermission?.isGranted) {
-        //     if (await RNGetPermissions.getStoragePermissions(true)) {
-        //         this.getPhotos();
-        //     }
-        //     return;
-        // }
     }
 
     /**
@@ -105,6 +91,39 @@ class StoryPhoto extends React.Component {
         //当组件要被从界面上移除的时候调用 ,可以做组件相关的清理工作
     }
 
+    // getPhotos = async () => {
+    //     const storagePermission = await RNGetPermissions.checkStoragePermissions();
+    //     // console.info("storagePermission", storagePermission);
+    //     if (storagePermission?.permissionStatus === 'limited') {
+    //         this.setState({ isPhotoLimited: true });
+    //     } else {
+    //         this.setState({ isPhotoLimited: false });
+    //     }
+    //     if (!storagePermission?.isGranted) {
+    //         if (await RNGetPermissions.getStoragePermissions(true)) {
+    //             this.getPhotos();
+    //         }
+    //         return;
+    //     }
+    //     CameraRoll.getPhotos({
+    //         first: 1,
+    //         assetType: 'All',
+    //         include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
+    //     })
+    //         .then(data => {
+    //             // console.log(data);
+    //             if (!data?.edges?.length) {
+    //                 return;
+    //             }
+    //             let firstPhotoUri = data.edges[0].node?.image?.uri
+    //             //console.log(firstPhotoUri);
+    //             this.props.setFirstPhotoUri(firstPhotoUri);
+    //         })
+    //         .catch((err) => {
+    //             //Error Loading Images
+    //         });
+    // }
+
 
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
@@ -126,6 +145,16 @@ class StoryPhoto extends React.Component {
         }
     }
 
+    //返回第一个相册数据
+    getFirstPhotoCallback = (firstData) =>{
+        console.log("getFirstPhotoCallback");
+        console.log(firstData);
+        if(firstData)
+        {
+            this.props.setFirstPhotoUri(firstData.uri);
+        }
+    }
+
     clickItemCallback = async (seelctData) => {
         //理论不会出现
         if (seelctData.data.length == 0) {
@@ -138,16 +167,13 @@ class StoryPhoto extends React.Component {
         let itemPath = itemData.path;
         const playableDuration = itemData.playableDuration;
         const videoType = itemType.includes('video');
-        if (!!videoType && playableDuration && playableDuration > 60.0*1000)
-        {
+        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000) {
             this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
-        if (itemType.includes('image')) 
-        {
+        if (itemType.includes('image')) {
             //不是通用格式，需要先转换
-            if (itemType !== 'image/jpg' && itemType !== 'image/png'&& itemType !== 'image/jpeg')
-            {
+            if (itemType !== 'image/jpg' && itemType !== 'image/png' && itemType !== 'image/jpeg') {
                 itemPath = await AVService.saveToSandBox(itemUri);
             }
         }
@@ -237,11 +263,13 @@ class StoryPhoto extends React.Component {
                     }}
                 >
                     <AVkitPhotoView {...this.props}
-                        numColumns = {3}
-                        pageSize = {45}
+                        numColumns={3}
+                        pageSize={45}
                         style={{ width, height, backgroundColor: 'black' }}
                         multiSelect={false}
                         onSelectedPhotoCallback={this.clickItemCallback}
+                        getFirstPhotoCallback = {this.getFirstPhotoCallback}
+                        defaultSelectedPosition = {-1}
                     ></AVkitPhotoView>
                 </ScrollBottomSheet>
             </View>

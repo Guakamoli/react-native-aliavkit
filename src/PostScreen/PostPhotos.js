@@ -234,7 +234,6 @@ export default class PostPhotos extends Component {
                 <AVkitPhotoView {...this.props}
                     style={{ height: height - 50 - 50 - width - this.props.insets.bottom, width: width, backgroundColor: 'black' }}
                     multiSelect={this.props.selectMultiple}
-                    defaultSelectedStatus={true}
                     onSelectedPhotoCallback={this.onSelectedPhotoCallback}
                     onMaxSelectCountCallback={this.onMaxSelectCountCallback}
                 ></AVkitPhotoView>

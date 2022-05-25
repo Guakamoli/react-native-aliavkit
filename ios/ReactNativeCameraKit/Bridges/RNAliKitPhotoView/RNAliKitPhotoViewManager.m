@@ -41,8 +41,6 @@ RCT_EXPORT_VIEW_PROPERTY(multiSelect, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(maxSelectCount, NSInteger)
 //默认选中下标
 RCT_EXPORT_VIEW_PROPERTY(defaultSelectedPosition, NSInteger)
-//默认选中数据
-RCT_EXPORT_VIEW_PROPERTY(defaultSelectedStatus, BOOL)
 // itemWidth: 相册一张图片的宽度（为0则不设置，默认是：屏幕宽度 / 列数）。post用不到，后续 story 相册，UI宽高不一样会用到
 RCT_EXPORT_VIEW_PROPERTY(itemWidth, CGFloat)
 // itemHeight: 同itemWidth
@@ -66,5 +64,8 @@ RCT_EXPORT_VIEW_PROPERTY(onSelectedPhotoCallback, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMaxSelectCountCallback, RCTBubblingEventBlock)
 //error回调
 RCT_EXPORT_VIEW_PROPERTY(onErrorCallback, RCTBubblingEventBlock)
+//返回第一个相册数据
+RCT_EXPORT_VIEW_PROPERTY(onGetFirstPhotoCallback, RCTBubblingEventBlock)
+
 @end
 

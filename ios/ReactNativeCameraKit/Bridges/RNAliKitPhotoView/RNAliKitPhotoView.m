@@ -35,8 +35,6 @@
 @property (nonatomic) NSUInteger maxSelectCount;
 // 默认选中下标
 @property (nonatomic) NSUInteger defaultSelectedPosition;
-//默认选中数据
-@property (nonatomic) BOOL defaultSelectedStatus;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemWidth;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
@@ -47,6 +45,8 @@
 @property (nonatomic, copy) RCTBubblingEventBlock onMaxSelectCountCallback;
 /** error回调 (errorCode,errorMessage)=>{}*/
 @property (nonatomic, copy) RCTBubblingEventBlock onErrorCallback;
+//返回第一个相册数据
+@property (nonatomic, copy) RCTBubblingEventBlock onGetFirstPhotoCallback;
 @end
 
 //photoView内部交互参数
@@ -219,10 +219,22 @@
                 weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];
                 [weakSelf addObserver];
+                //没有照片就不需要往下走了
+                if(models.count == 0)
+                {
+                    return;
+                }
                 //默认选中第一张照片
-                if(weakSelf.defaultSelectedStatus)
+                if(weakSelf.defaultSelectedPosition != -1)
                 {
                     [weakSelf selectDataUpdate:MIN(models.count,self.defaultSelectedPosition)];
+                }
+                if(weakSelf.onGetFirstPhotoCallback)
+                {
+                    AliyunAssetModel *model = models[0];
+                    PHAsset *phAsset        = model.asset;
+                    NSString *photoURI      = [NSString stringWithFormat:@"ph://%@", phAsset.localIdentifier];
+                    weakSelf.onGetFirstPhotoCallback(@{@"uri":photoURI});
                 }
             }];
         });
@@ -588,7 +600,7 @@
         BOOL icloudFile           = ![[resource valueForKey:@"locallyAvailable"] boolValue];
         NSString *fileURL         = [NSString stringWithFormat:@"%@",[resource valueForKey:@"privateFileURL"]];
         //判断当前图片是否需要处理旋转
-        UIImage *fileImage      = fileURL.length>10&&!self.defaultSelectedStatus?[UIImage imageWithContentsOfFile:[fileURL substringFromIndex:@"file://".length]]:nil;
+        UIImage *fileImage      = fileURL.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[fileURL substringFromIndex:@"file://".length]]:nil;
         BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
         //已有资源的情况就不需要额外处理了
         if((icloudFile || imageTurnStatus) && ![self checkiCloudSanboxFile:phAsset])
@@ -629,7 +641,7 @@
         NSString *localPath     = [NSString stringWithFormat:@"%@",fileURL];
         BOOL icloudFile         = ![[resource valueForKey:@"locallyAvailable"] boolValue];
         //判断当前图片是否需要处理旋转
-        UIImage *fileImage      = localPath.length>10&&!self.defaultSelectedStatus?[UIImage imageWithContentsOfFile:[localPath substringFromIndex:@"file://".length]]:nil;
+        UIImage *fileImage      = localPath.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[localPath substringFromIndex:@"file://".length]]:nil;
         BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
         if((icloudFile && !fileURL) || imageTurnStatus)
         {
@@ -665,6 +677,11 @@
             }
         }
         self.onSelectedPhotoCallback(@{@"selectedIndex":selectedIndex, @"data":selectData});
+        //story中只有单选模式,选中后将本地数据清空
+        if(self.defaultSelectedPosition == -1)
+        {
+            self.selectedIndexs = [NSMutableArray new];
+        }
     }else{
         self.onSelectedPhotoCallback(@{@"selectedIndex":@(0), @"data":@[]});
     }

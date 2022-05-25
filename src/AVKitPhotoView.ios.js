@@ -16,7 +16,6 @@ export default class AVkitPhotoView extends React.Component {
             multiSelect: !!props?.multiSelect,
             maxSelectCount: !!props?.maxSelectCount ? props.maxSelectCount : 10,
             defaultSelectedPosition: !!props?.defaultSelectedPosition ? props.defaultSelectedPosition : 0,
-            defaultSelectedStatus:props.defaultSelectedStatus,
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
@@ -92,6 +91,12 @@ export default class AVkitPhotoView extends React.Component {
             this.props.onErrorCallback(event.nativeEvent);
         }
     }
+    //原生返回第一个相册数据
+    _getFirstPhotoCallback = event => {
+        if (this.props.getFirstPhotoCallback) {
+            this.props.getFirstPhotoCallback(event.nativeEvent);
+        }
+    }
 
 
     render() {
@@ -101,7 +106,6 @@ export default class AVkitPhotoView extends React.Component {
         // maxSelectCount: 多选最大数量，目前仅限图片
 
         // defaultSelectedPosition: 默认选中位置，默认0
-        // defaultSelectedStatus : 默认选中数据
 
         // itemWidth: 相册一张图片的宽度（为0则不设置，默认是：屏幕宽度 / 列数）。post用不到，后续 story 相册，UI宽高不一样会用到
         // itemHeight: 同itemWidth
@@ -117,13 +121,13 @@ export default class AVkitPhotoView extends React.Component {
                 multiSelect={this.state.multiSelect}
                 maxSelectCount={this.state.maxSelectCount}
                 defaultSelectedPosition={this.state.defaultSelectedPosition}
-                defaultSelectedStatus={this.state.defaultSelectedStatus}
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
 
                 onSelectedPhotos={this._onSelectedPhotos}
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}
+                onGetFirstPhotoCallback={this._getFirstPhotoCallback}
 
                 onErrorCallback={this._onErrorCallback}
             />
