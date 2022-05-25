@@ -16,6 +16,9 @@ import I18n from '../i18n';
 
 import { openSettings } from 'react-native-permissions';
 
+import AVkitPhotoView from '../AVKitPhotoView';
+
+
 const { width, height } = Dimensions.get('window');
 
 const photoItemWidth = (width - 2) / 3.0;
@@ -116,22 +119,6 @@ class PhotoItemView extends React.Component {
                 }
 
                 {!!videoType && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
-
-                {/* {!this.state.singleSelect && (
-                    <Pressable
-                        style={[styles.bottomSheetItemCheckbox, {}]}
-                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
-                        onPress={() => {
-                            item.isSelected = !item.isSelected;
-                            this.forceUpdate()
-                        }}>
-                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
-                            {item?.isSelected &&
-                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
-                            }
-                        </View>
-                    </Pressable>
-                )} */}
             </View>
         )
     }
@@ -265,6 +252,36 @@ class StoryPhoto extends React.Component {
         }
     }
 
+    clickItemCallback = async (seelctData) => {
+        //理论不会出现
+        if (seelctData.data.length == 0) {
+            return;
+        }
+        const itemData = seelctData.data[0];
+        //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
+        const itemUri = itemData.uri;
+        const itemType = itemData.type;
+        let itemPath = itemData.path;
+
+        if (itemType.includes('image')) {
+            //获取后缀
+            const imageIndex = itemPath?.lastIndexOf(".");
+            const imageType = itemPath?.substr(imageIndex + 1).toLowerCase();
+            //不是通用格式，需要先转换
+            if (!!imageType && (imageType !== 'jpg' && imageType !== 'png')) 
+            {
+                console.log(imageType);
+                itemPath = await AVService.saveToSandBox(itemUri);
+            }
+        }
+        // console.log(itemPath);
+        this.props.selectedPhoto(itemPath, itemType.includes('video') ? 'video' : 'image');
+        setTimeout(() => {
+            this.hideBottomSheet();
+        }, 250);
+    }
+
+
     PhotoHandleView = () => {
         return (
             <View style={[styles.bottomSheetHead, { height: this.state.isPhotoLimited ? 120 : 55 }]}>
@@ -320,14 +337,14 @@ class StoryPhoto extends React.Component {
                     snapPoints={[0, height]}
                     //初始显示对应 snapPoints 中的下标
                     initialSnapIndex={1}
-                    data={this.state.photoList}
+                    data={[]}
                     keyExtractor={(item, index) => {
                         return index
                     }}
                     friction={0.8}
-                    numColumns={3}
-                    initialNumToRender={9}
-                    refreshing={this.state.bottomSheetRefreshing}
+                    numColumns={1}
+                    initialNumToRender={1}
+                    // refreshing={this.state.bottomSheetRefreshing}
                     enableOverScroll={true}
                     containerStyle={styles.contentContainerStyle}
                     contentContainerStyle={styles.contentContainerStyle}
@@ -337,28 +354,18 @@ class StoryPhoto extends React.Component {
                             this.props.onCloseView();
                         }
                     }}
-
-                    onEndReachedThreshold={0.5}
-                    onEndReached={() => {
-                        //上拉加载更多
-                        this.getPhotosNum += 18;
-                        this.setState({ bottomSheetRefreshing: true });
-                        this.getPhotos();
-                    }}
                     renderHandle={() => this.PhotoHandleView()}
-                    renderItem={({ index, item }) => (
-                        <PhotoItemView
-                            {...this.props}
-                            index={index}
-                            item={item}
-                            hideBottomSheet={this.hideBottomSheet}
-                        />
-
-                    )}
                     ListEmptyComponent={() => {
-                        return null;
+                        return (
+                            <AVkitPhotoView {...this.props}
+                                style={{ width, height, backgroundColor: 'black' }}
+                                multiSelect={false}
+                                onSelectedPhotoCallback={this.clickItemCallback}
+                            ></AVkitPhotoView>
+                        )
                     }}
-                />
+                >
+                </ScrollBottomSheet>
             </View>
         )
     }
@@ -422,25 +429,6 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
 
-    bottomSheetItemCheckbox: {
-        borderRadius: 22,
-        borderWidth: 1,
-        width: 22,
-        height: 22,
-        borderColor: 'white',
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        overflow: 'hidden',
-        position: 'absolute',
-        right: 6,
-        top: 6,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    bottomSheetItemCheckImage: {
-        width: 22,
-        height: 22,
-    },
 
     bottonSheetItemVideoTime: {
         position: 'absolute',
