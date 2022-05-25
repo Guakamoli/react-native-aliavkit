@@ -9,6 +9,8 @@ import Entry from './Entry';
 
 import AVService from './AVService';
 
+import ImageCarousel from './PostEditor/ImageCarousel';
+
 const { CameraKit } = NativeModules;
 
 // Start with portrait/pointing up, increment while moving counter-clockwise
@@ -22,4 +24,4 @@ export const Orientation = {
 export default CameraKit;
 
 
-export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry, AVService };
+export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry, AVService, ImageCarousel };

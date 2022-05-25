@@ -194,7 +194,7 @@ export default class PostMusic extends React.Component {
             <Animated.View style={styles.headContinue}>
                 <Animated.View style={{ backgroundColor: '#D8D8D8', width: 32, height: 4, borderRadius: 2, marginTop: 10 }} />
                 <Animated.View style={styles.searchMusicContinue}>
-                    <Animated.Image source={require('../../images/ic_post_music_ search.png')} style={styles.searchMusicImage} />
+                    <Animated.Image source={require('../../images/ic_post_music_search.png')} style={styles.searchMusicImage} />
                     <TextInput
                         style={[styles.musicFindSearchInput]}
                         multiline={false}
@@ -266,7 +266,7 @@ export default class PostMusic extends React.Component {
                     <Animated.View style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}>
                         <Image source={this.props.currentMusic ? require('../../images/ic_post_music_checked.png') : require('../../images/ic_post_music_unchecked.png')}
                             style={{ width: 18, height: 18, display: this.props.openMusicView ? 'flex' : 'none' }} />
-                        <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>{I18n.t('Soundtrack')}</Text>
+                        <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 10 }}>{I18n.t('Soundtrack')}</Text>
                     </Animated.View>
                 </TapGestureHandler>
             </Animated.View >
