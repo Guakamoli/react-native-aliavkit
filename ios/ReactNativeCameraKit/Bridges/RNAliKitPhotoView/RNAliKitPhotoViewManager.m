@@ -66,5 +66,8 @@ RCT_EXPORT_VIEW_PROPERTY(onSelectedPhotoCallback, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMaxSelectCountCallback, RCTBubblingEventBlock)
 //error回调
 RCT_EXPORT_VIEW_PROPERTY(onErrorCallback, RCTBubblingEventBlock)
+//返回第一个相册数据
+RCT_EXPORT_VIEW_PROPERTY(onGetFirstPhotoCallback, RCTBubblingEventBlock)
+
 @end
 

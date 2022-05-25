@@ -26,7 +26,6 @@ const photoItemHeight = photoItemWidth * 16 / 9;
 
 import AVService from '../AVService';
 
-
 class StoryPhoto extends React.Component {
 
     constructor(props) {
@@ -91,12 +90,9 @@ class StoryPhoto extends React.Component {
         //当组件要被从界面上移除的时候调用 ,可以做组件相关的清理工作
     }
 
-
     // getPhotos = async () => {
     //     const storagePermission = await RNGetPermissions.checkStoragePermissions();
-
-    //     console.info("storagePermission", storagePermission);
-
+    //     // console.info("storagePermission", storagePermission);
     //     if (storagePermission?.permissionStatus === 'limited') {
     //         this.setState({ isPhotoLimited: true });
     //     } else {
@@ -109,30 +105,24 @@ class StoryPhoto extends React.Component {
     //         return;
     //     }
     //     CameraRoll.getPhotos({
-    //         first: this.getPhotosNum,
+    //         first: 1,
     //         assetType: 'All',
     //         include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
     //     })
     //         .then(data => {
+    //             // console.log(data);
     //             if (!data?.edges?.length) {
     //                 return;
     //             }
-    //             const photoList = [];
-    //             for (let i = 0; i < data.edges.length; i++) {
-    //                 const itemInfo = data.edges[i].node
-    //                 photoList.push(data.edges[i].node);
-    //             }
-    //             let firstPhotoUri = photoList[0]?.image?.uri
+    //             let firstPhotoUri = data.edges[0].node?.image?.uri
+    //             //console.log(firstPhotoUri);
     //             this.props.setFirstPhotoUri(firstPhotoUri);
-    //             this.setState({
-    //                 photoList: photoList,
-    //                 bottomSheetRefreshing: false
-    //             });
     //         })
     //         .catch((err) => {
     //             //Error Loading Images
     //         });
     // }
+
 
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
@@ -154,6 +144,16 @@ class StoryPhoto extends React.Component {
         }
     }
 
+    //返回第一个相册数据
+    getFirstPhotoCallback = (firstData) =>{
+        console.log("getFirstPhotoCallback");
+        console.log(firstData);
+        if(firstData)
+        {
+            this.props.setFirstPhotoUri(firstData.uri);
+        }
+    }
+
     clickItemCallback = async (seelctData) => {
         //理论不会出现
         if (seelctData.data.length == 0) {
@@ -162,22 +162,22 @@ class StoryPhoto extends React.Component {
         const itemData = seelctData.data[0];
         //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
         const itemUri = itemData.uri;
-        const itemType = itemData.type;
+        const itemType = itemData.type.toLowerCase();
         let itemPath = itemData.path;
-
+        const playableDuration = itemData.playableDuration;
+        const videoType = itemType.includes('video');
+        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000) {
+            this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
+            return;
+        }
         if (itemType.includes('image')) {
-            //获取后缀
-            const imageIndex = itemPath?.lastIndexOf(".");
-            const imageType = itemPath?.substr(imageIndex + 1).toLowerCase();
             //不是通用格式，需要先转换
-            if (!!imageType && (imageType !== 'jpg' && imageType !== 'png'&& imageType !== 'jpeg')) 
-            {
-                console.log(imageType);
+            if (itemType !== 'image/jpg' && itemType !== 'image/png' && itemType !== 'image/jpeg') {
                 itemPath = await AVService.saveToSandBox(itemUri);
             }
         }
         // console.log(itemPath);
-        this.props.selectedPhoto(itemPath, itemType.includes('video') ? 'video' : 'image');
+        this.props.selectedPhoto(itemPath, videoType ? 'video' : 'image');
         setTimeout(() => {
             this.hideBottomSheet();
         }, 250);
@@ -234,7 +234,7 @@ class StoryPhoto extends React.Component {
                     testID='action-sheet'
                     ref={(ref) => (this.bottomSheetRef = ref)}
                     innerRef={(ref) => (this.bottomSheetInnerRef = ref)}
-                    componentType="FlatList"
+                    componentType="ScrollView"
                     //snapPoints 是组件距离屏幕顶部的距离
                     snapPoints={[0, height]}
                     //初始显示对应 snapPoints 中的下标
@@ -258,15 +258,18 @@ class StoryPhoto extends React.Component {
                     }}
                     renderHandle={() => this.PhotoHandleView()}
                     ListEmptyComponent={() => {
-                        return (
-                            <AVkitPhotoView {...this.props}
-                                style={{ width, height, backgroundColor: 'black' }}
-                                multiSelect={false}
-                                onSelectedPhotoCallback={this.clickItemCallback}
-                            ></AVkitPhotoView>
-                        )
+                        return null
                     }}
                 >
+                    <AVkitPhotoView {...this.props}
+                        numColumns={3}
+                        pageSize={45}
+                        style={{ width, height, backgroundColor: 'black' }}
+                        multiSelect={false}
+                        onSelectedPhotoCallback={this.clickItemCallback}
+                        getFirstPhotoCallback = {this.getFirstPhotoCallback}
+                        defaultSelectedPosition = {-1}
+                    ></AVkitPhotoView>
                 </ScrollBottomSheet>
             </View>
         )

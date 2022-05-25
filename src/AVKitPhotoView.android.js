@@ -92,6 +92,12 @@ export default class AVkitPhotoView extends React.Component {
             this.props.onErrorCallback(event.nativeEvent);
         }
     }
+    //原生返回第一个相册数据
+    _getFirstPhotoCallback = event => {
+        if (this.props.getFirstPhotoCallback) {
+            this.props.getFirstPhotoCallback(event.nativeEvent);
+        }
+    }
 
 
     render() {
@@ -123,6 +129,7 @@ export default class AVkitPhotoView extends React.Component {
                 onSelectedPhotos={this._onSelectedPhotos}
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}
+                getFirstPhotoCallback={this._getFirstPhotoCallback}
 
                 onErrorCallback={this._onErrorCallback}
             />
