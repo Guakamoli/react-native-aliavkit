@@ -26,6 +26,7 @@ const photoItemHeight = photoItemWidth * 16 / 9;
 
 import AVService from '../AVService';
 
+
 class StoryPhoto extends React.Component {
 
     constructor(props) {
