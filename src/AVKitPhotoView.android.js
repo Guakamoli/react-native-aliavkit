@@ -16,6 +16,7 @@ export default class AVkitPhotoView extends React.Component {
             multiSelect: !!props?.multiSelect,
             maxSelectCount: !!props?.maxSelectCount ? props.maxSelectCount : 10,
             defaultSelectedPosition: !!props?.defaultSelectedPosition ? props.defaultSelectedPosition : 0,
+            defaultSelectedStatus:!!props.defaultSelectedStatus,
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
@@ -121,6 +122,7 @@ export default class AVkitPhotoView extends React.Component {
                 multiSelect={this.state.multiSelect}
                 maxSelectCount={this.state.maxSelectCount}
                 defaultSelectedPosition={this.state.defaultSelectedPosition}
+                defaultSelectedStatus={this.state.defaultSelectedStatus}
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
 

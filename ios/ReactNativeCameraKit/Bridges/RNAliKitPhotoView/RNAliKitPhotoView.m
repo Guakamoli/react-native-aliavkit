@@ -35,6 +35,8 @@
 @property (nonatomic) NSUInteger maxSelectCount;
 // 默认选中下标
 @property (nonatomic) NSUInteger defaultSelectedPosition;
+//默认选中数据
+@property (nonatomic) BOOL defaultSelectedStatus;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemWidth;
 /**高优先级设置每个item的宽高,不做上下线干涉*/

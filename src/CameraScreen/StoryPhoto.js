@@ -50,7 +50,6 @@ class StoryPhoto extends React.Component {
      */
     componentDidMount() {
         // this.getPhotos();
-
     }
 
     /**
