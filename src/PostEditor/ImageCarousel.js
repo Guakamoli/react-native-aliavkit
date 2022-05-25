@@ -128,7 +128,8 @@ export default class ImageCarousel extends React.Component {
                 this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
             }
             this.intervalDuration = duration;
-            console.info("this.intervalDuration", this.intervalDuration);
+            // console.info("this.intervalDuration", this.intervalDuration);
+            this.setProgressStatus(this.intervalDuration, this.state.playAnimaton);
         }, this.intervalTime);
 
     }
@@ -142,7 +143,7 @@ export default class ImageCarousel extends React.Component {
         if (!this.data?.length || this.data?.length <= 1) {
             return null;
         }
-        console.info("currentDuration", this.state.currentDuration, this.state.playAnimaton);
+        // console.info("currentDuration", this.state.currentDuration, this.state.playAnimaton);
         return (<View style={
             {
                 position: 'absolute',

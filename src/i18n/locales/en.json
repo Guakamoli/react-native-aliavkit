@@ -39,6 +39,6 @@
     "canera_to_setting":" Manage",
     "confirm": "confirm",
     "selectMusic": "Music",
-    "post_image_editor_back_msg": "退出后编辑内容将丢失",
+    "post_image_editor_back_msg": "Your edits will be discarded after exiting",
     "search_music_placeholder": "搜索歌曲名称",
 }
