@@ -411,7 +411,7 @@
         // 最终分辨率必须为偶数
         CGFloat outputWidth = rint(asset.pixelWidth * factor / 2 ) * 2;
         CGFloat outputHeight = rint(asset.pixelHeight * factor / 2) * 2;
-        
+
         [[PHImageManager defaultManager] requestImageForAsset:asset
                                                    targetSize:CGSizeMake(outputWidth, outputHeight)
                                                   contentMode:PHImageContentModeDefault
@@ -593,7 +593,7 @@
         AliyunAssetModel *model = self.viewDataArray[indexStr.integerValue];
         [selectedModels addObject:model];
     }
-    
+
     //iCloud资源需要下载处理
     for(AliyunAssetModel *model in selectedModels)
     {
@@ -667,7 +667,7 @@
         };
         [selectData addObject:imageData];
     }
-    
+
     if(selectData.count > 0)
     {
         NSNumber *selectedIndex = @0;
