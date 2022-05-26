@@ -38,7 +38,7 @@ export default class PostMusic extends React.Component {
             musicSearchValue: '',
             bottomSheetRefreshing: false,
         };
-        this.defaultSelectPostion = 2;
+        this.defaultSelectPostion = 0;
         this.page = 1;
         this.pageSize = 20;
         this.isMore = true;
