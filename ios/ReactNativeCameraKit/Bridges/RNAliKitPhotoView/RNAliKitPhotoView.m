@@ -287,6 +287,7 @@
     BOOL selectStatus   = [self.selectedIndexs containsObject:@(indexPath.item).stringValue];
     cell.photoIndex     = 0;
     cell.indexPath      = indexPath;
+    [cell setStoryMode:self.defaultSelectedPosition == -1];
     if(!self.multiSelect){
         //非多选状态下页面只有默认状态和白色模版状态
         cell.cellStatus     = selectStatus ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
@@ -600,12 +601,12 @@
         NSArray *resources        = [PHAssetResource assetResourcesForAsset:phAsset];
         PHAssetResource *resource = (PHAssetResource*)resources[0];
         BOOL icloudFile           = ![[resource valueForKey:@"locallyAvailable"] boolValue];
-        NSString *fileURL         = [NSString stringWithFormat:@"%@",[resource valueForKey:@"privateFileURL"]];
+//        NSString *fileURL         = [NSString stringWithFormat:@"%@",[resource valueForKey:@"privateFileURL"]];
         //判断当前图片是否需要处理旋转
-        UIImage *fileImage      = fileURL.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[fileURL substringFromIndex:@"file://".length]]:nil;
-        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
+//        UIImage *fileImage      = fileURL.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[fileURL substringFromIndex:@"file://".length]]:nil;
+//        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
         //已有资源的情况就不需要额外处理了
-        if((icloudFile || imageTurnStatus) && ![self checkiCloudSanboxFile:phAsset])
+        if((icloudFile) && ![self checkiCloudSanboxFile:phAsset])
         {
             //下载iCloud资源不需要多线程
             __weak typeof(self) weakSelf = self;
@@ -629,7 +630,6 @@
     for(AliyunAssetModel *model in selectedModels)
     {
         PHAsset *phAsset        = model.asset;
-        NSString *filename      = [phAsset valueForKey:@"filename"];
         NSArray *resources      = [PHAssetResource assetResourcesForAsset:phAsset];
         PHAssetResource *resource = (PHAssetResource*)resources[0];
         NSString *photoURI      = [NSString stringWithFormat:@"ph://%@", phAsset.localIdentifier];
@@ -638,23 +638,25 @@
         NSString *duration      = @(model.assetDuration*1000).stringValue;
         BOOL imageType          = phAsset.mediaType == PHAssetMediaTypeImage;
         NSString *type          = imageType ? @"image/" : @"video/";
-        NSString *fileFormat    = [[[filename componentsSeparatedByString:@"."]lastObject]lowercaseString];
         NSString *rotation      = @"0";//视频和照片都会自动旋转,暂时拿不到角度
         NSString *localPath     = [NSString stringWithFormat:@"%@",fileURL];
         BOOL icloudFile         = ![[resource valueForKey:@"locallyAvailable"] boolValue];
         //判断当前图片是否需要处理旋转
-        UIImage *fileImage      = localPath.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[localPath substringFromIndex:@"file://".length]]:nil;
-        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
-        if((icloudFile && !fileURL) || imageTurnStatus)
+//        UIImage *fileImage      = localPath.length>10&&self.defaultSelectedPosition==-1?[UIImage imageWithContentsOfFile:[localPath substringFromIndex:@"file://".length]]:nil;
+//        BOOL imageTurnStatus    = fileImage.imageOrientation != UIImageOrientationUp;
+        if((icloudFile && !fileURL))
         {
             localPath = [self phSandBoxPath:phAsset];
         }
+//        NSString *filename      = [phAsset valueForKey:@"filename"];
+        NSString *filename      = [[localPath componentsSeparatedByString:@"/"]lastObject];
+        NSString *fileFormat    = [[[filename componentsSeparatedByString:@"."]lastObject]lowercaseString];
         NSDictionary *imageData = @{
             @"index":       @(selectData.count),//下标：选择的图片/视频数组的顺序
             @"width":       @(phAsset.pixelWidth),//该图片/视频的宽, 视频可能需要根据角度宽高对换
             @"height":      @(phAsset.pixelHeight),//该图片/视频的高
             @"path":        localPath,//文件本地地址
-            @"url":         localPath,//兼容
+//            @"url":         localPath,//兼容
             @"fileSize":    fileSize,//文件大小（字节大小）
             @"filename":    filename,//文件名称
             @"type":        [type stringByAppendingString:fileFormat],//"video/mp4" "image/jpeg"

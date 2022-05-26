@@ -152,13 +152,15 @@ class StoryPhoto extends React.Component {
             return;
         }
         const itemData = seelctData.data[0];
+        console.log(itemData);
         //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
         const itemUri = itemData.uri;
         const itemType = itemData.type.toLowerCase();
         let itemPath = itemData.path;
         const playableDuration = itemData.playableDuration;
         const videoType = itemType.includes('video');
-        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000) {
+        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000)
+        {
             this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
@@ -267,8 +269,6 @@ class StoryPhoto extends React.Component {
                             defaultSelectedPosition={-1}
                         />}
                     </Animated.View>
-
-
                 </ScrollBottomSheet>
             </View>
         )
