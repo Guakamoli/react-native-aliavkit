@@ -1,7 +1,8 @@
 package com.rncamerakit.photos
 
-import android.annotation.SuppressLint
+import android.R.attr.path
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -346,11 +347,33 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             }
 
             val videoFile = File(filePath)
-            val nativeParser = NativeParser()
-            nativeParser.init(filePath)
-            val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
-            var videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toDouble()
-            var videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toDouble()
+
+            var rotation: Int = 0
+            var videoWidth: Int = 0
+            var videoHeight: Int = 0
+
+            if (info.type == MediaStorage.TYPE_VIDEO) {
+                val nativeParser = NativeParser()
+                nativeParser.init(filePath)
+                rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+                videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toDouble().toInt()
+                videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toDouble().toInt()
+                nativeParser.release()
+            } else {
+                val options = BitmapFactory.Options()
+                options.inJustDecodeBounds = true
+                val bitmap = BitmapFactory.decodeFile(filePath, options)
+                options.inSampleSize = 1
+                options.inJustDecodeBounds = false;
+                videoWidth = options.outWidth
+                videoHeight = options.outHeight
+//                if (bitmap?.isRecycled != true) {
+//                    bitmap.recycle()
+//                }
+            }
+
+
+
             if (rotation == 90 || rotation == 270) {
                 val temp = videoHeight
                 videoHeight = videoWidth
@@ -371,7 +394,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             map.putString("type", info.mimeType)
             map.putInt("playableDuration", info.duration)
             map.putInt("rotation", rotation)
-            nativeParser.release()
+
             arrayList.pushMap(map)
         }
 

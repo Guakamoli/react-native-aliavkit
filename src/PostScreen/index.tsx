@@ -23,8 +23,6 @@ import PostPhotos from './PostPhotos'
 
 import PostImageEditor from '../PostEditor/PostImageEditor'
 
-import AVService from '../AVService';
-
 
 let multipleData: any = [];
 
@@ -141,47 +139,42 @@ export default class CameraScreen extends Component<Props, State> {
 
   onUploadImage = async (data: Array<any>) => {
     let uploadData: Array<any> = [];
-    let results = await Promise.all(
-      data.map(async (item, index) => {
-        const itemCrop = this.cropParams[item.path];
-        let imageWidthScale = item.width / width;
-        let imageHeightScale = item.height / width;
-        let translateXScale = itemCrop?.positionX / width || 1;
-        let translateYScale = itemCrop?.positionY / width || 1;
-        const cropParams = {
-          scale: itemCrop?.scale || 1,
-          widthScale: imageWidthScale,
-          heightScale: imageHeightScale,
-          translateXScale: translateXScale,
-          translateYScale: translateYScale,
-        }
+    // let results = await Promise.all(
+    data.map((item, index) => {
+      const itemCrop = this.cropParams[item.path];
+      let imageWidthScale = item.width / width;
+      let imageHeightScale = item.height / width;
+      let translateXScale = itemCrop?.positionX / width || 1;
+      let translateYScale = itemCrop?.positionY / width || 1;
+      const cropParams = {
+        scale: itemCrop?.scale || 1,
+        widthScale: imageWidthScale,
+        heightScale: imageHeightScale,
+        translateXScale: translateXScale,
+        translateYScale: translateYScale,
+      }
 
-        let path = item.path;
-        let type = item.type;
-        if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
-          //保存到沙盒
-          path = await AVService.saveToSandBox(item.uri);
-          type = 'image/jpg'
-        }
+      let path = item.path;
+      let type = item.type;
 
-        const imageInfo = {
-          index: item.index,
-          width: item.width,
-          height: item.height,
-          path: path,
-          size: item.fileSize,
-          name: item.filename,
-          type: type,
-          coverImage: '',
-          localPath: path,
-          cropParams: cropParams
-        }
-        uploadData[item.index] = imageInfo
-        return item;
-      }),
-    );
+      const imageInfo = {
+        index: item.index,
+        width: item.width,
+        height: item.height,
+        path: path,
+        size: item.fileSize,
+        name: item.filename,
+        type: type,
+        coverImage: '',
+        localPath: path,
+        cropParams: cropParams
+      }
+      uploadData[item.index] = imageInfo
+      return item;
+    }),
+      // );
 
-    this.setState({ uploadData: uploadData });
+      this.setState({ uploadData: uploadData });
     this.props.setType('postImageEdit');
 
     // console.info("onUploadImage", uploadData);
