@@ -86,31 +86,46 @@ export default class PostImageEditor extends React.Component {
         );
     }
 
+    getFileName = (path) => {
+        var pos1 = path.lastIndexOf('/');
+        var pos2 = path.lastIndexOf('\\');
+        var pos = Math.max(pos1, pos2)
+        if (pos < 0)
+            return path;
+        else
+            return path.substring(pos + 1);
+    }
+
     /**
      * 上传图片
      */
     _onPostUploadFiles = async () => {
-        this._onCleanMusic();
+
         let uploadData = this.props.uploadData.slice()
 
-        console.info("uploadData", uploadData);
-        let results = await Promise.all(
-            uploadData.map(async (item, index) => {
-                console.info("uploadData item", item);
-                let path = item.path;
-                let type = item.type;
-                if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
-                    //保存到沙盒
-                    path = await AVService.saveToSandBox(path);
-                    type = 'image/jpg'
-                }
-                item.path = path;
-                item.localPath = path;
-                item.type = type;
+        for (var i = 0; i < uploadData.length; i++) {
+            var item = uploadData[i];
 
-                return item;
-            }),
-        )
+            let path = item.path;
+            let type = item.type;
+
+            if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
+                //保存到沙盒
+                path = await AVService.saveToSandBox(path);
+                type = 'image/jpg'
+            }
+
+            if (!path.startsWith("file://")) {
+                path = "file://" + path
+            }
+
+            item.path = path;
+            item.localPath = path;
+            item.type = type;
+            item.name = this.getFileName(path);
+        }
+
+        // console.info("uploadData", uploadData);
 
         const musicInfo = this.state.currentMusic
         if (!!musicInfo) {
@@ -130,9 +145,9 @@ export default class PostImageEditor extends React.Component {
             }
             uploadData.push(audioInfo);
         }
-
+        this._onCleanMusic();
         if (!!this.props.getUploadFile) {
-            console.info("_onPostUploadFiles", uploadData);
+            // console.info("_onPostUploadFiles", uploadData);
             this.props.getUploadFile(uploadData);
         }
     }
