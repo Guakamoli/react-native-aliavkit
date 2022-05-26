@@ -172,6 +172,8 @@ AliyunCropDelegate
     AliyunImporter *importer =[[AliyunImporter alloc] initWithPath:self.taskPath outputSize:CGSizeMake(mVideoWidth, mVideoHeight)];
 
     AliyunClip *imageClip = [[AliyunClip alloc] initWithImagePath:photoPath duration:5.0 animDuration:1];
+    imageClip.mediaType = AliyunClipImage;
+    
     [importer addMediaClip:imageClip];
     
     AliyunVideoParam *param = [[AliyunVideoParam alloc] init];
@@ -416,6 +418,26 @@ AliyunCropDelegate
             _imagePath = imagePath;
             if ([imagePath containsString:@"file://"]) { //in case path contains scheme
                 _imagePath = [NSURL URLWithString:imagePath].path;
+            }
+            UIImage *result = [UIImage imageWithContentsOfFile:_imagePath];
+            //横向转正
+            if (result.imageOrientation != UIImageOrientationUp)
+            {
+                UIGraphicsBeginImageContextWithOptions(result.size, NO, result.scale);
+                [result drawInRect:(CGRect){0, 0, result.size}];
+                UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                result = normalizedImage;
+                NSData *imageData = UIImageJPEGRepresentation(result, 0.95);
+                NSString *compositionRootDir = [AliyunPathManager compositionRootDir];
+                if (![[NSFileManager defaultManager] fileExistsAtPath:compositionRootDir])
+                {
+                    [[NSFileManager defaultManager] createDirectoryAtPath:compositionRootDir withIntermediateDirectories:YES attributes:nil error:nil];
+                }
+                NSString *outputName = [[_imagePath stringByAppendingPathComponent:@"/"]lastPathComponent];
+                NSString *outputPath = [compositionRootDir stringByAppendingPathComponent:outputName];
+                [imageData writeToFile:outputPath atomically:YES];
+                _imagePath = [NSURL URLWithString:outputPath].path;
             }
             AVDLog(@"imagePath：%@",_imagePath);
         }
@@ -749,7 +771,7 @@ AliyunCropDelegate
     __block NSString *path = outputPath;
     if (_saveToPhotoLibrary) {
         if (self.imagePath) {
-            [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
+            [self saveResourceType:PHAssetResourceTypePhoto withPath:path];
         } else if(self.videoPath) {
             [self saveResourceType:PHAssetResourceTypeVideo withPath:path];
         }
