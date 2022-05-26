@@ -26,7 +26,8 @@ class PhotoAdapter(
     private val mList: List<MediaInfo>,
     private val mSelectedPhotoMap: HashMap<Int, Int>,
     private val mItemWidth: Int,
-    private val mItemHeight: Int
+    private val mItemHeight: Int,
+    private val mDefaultSelectedPosition: Int
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -143,6 +144,12 @@ class PhotoAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is PhotoViewHolder) {
+
+            var params = holder.thumbnailImage.layoutParams
+            params.width = this.mItemWidth
+            params.height = this.mItemHeight
+            holder.thumbnailImage.layoutParams = params
+
             val info: MediaInfo = mList[position]
             //每一个imageView都需要设置tag，video异步生成缩略图，需要对应最后设置给imageView的info key
             holder.thumbnailImage.setTag(R.id.tag_first, ThumbnailGenerator.generateKey(info.type, info.id))
@@ -172,15 +179,22 @@ class PhotoAdapter(
                     })
             }
 
-            if (mCurrentClickPosition == position) {
-                holder.selectedBgView.visibility = View.VISIBLE
-            } else {
-                holder.selectedBgView.visibility = View.GONE
+            if (mDefaultSelectedPosition >= 0) {
+                if (mCurrentClickPosition == position) {
+                    holder.selectedBgView.visibility = View.VISIBLE
+                } else {
+                    holder.selectedBgView.visibility = View.GONE
+                }
             }
-
             setMultiSelectChanged(info, holder as PhotoViewHolder, position)
 
             holder.itemView.setOnClickListener {
+
+                if (mDefaultSelectedPosition == -1) {
+                    mItemListener?.onAddPhotoClick(position, info)
+                    return@setOnClickListener
+                }
+
                 if (position == mOldCurrentClickPosition && mSelectedPhotoMap[position] != null) {
                     return@setOnClickListener
                 }

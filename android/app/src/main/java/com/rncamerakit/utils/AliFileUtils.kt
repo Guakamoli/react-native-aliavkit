@@ -80,7 +80,7 @@ class AliFileUtils {
                 return ""
             }
             val file: File = if (fileUri.startsWith("content://") || fileUri.startsWith("file://")) {
-                File(com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(fileUri)).absolutePath)
+                com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(fileUri))
             } else {
                 File(fileUri)
             }

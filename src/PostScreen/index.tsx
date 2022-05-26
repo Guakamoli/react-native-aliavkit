@@ -132,8 +132,9 @@ export default class CameraScreen extends Component<Props, State> {
         coverImage: '',
         localPath: item.path,
       }
-      uploadData.push(imageInfo);
+      uploadData[item.index] = imageInfo
     })
+    this.setVideoPlayer(false);
     // console.info("onUploadVideo", uploadData);
     this.sendUploadFile(uploadData)
   }
@@ -175,17 +176,16 @@ export default class CameraScreen extends Component<Props, State> {
           localPath: path,
           cropParams: cropParams
         }
-
-        uploadData.push(imageInfo);
+        uploadData[item.index] = imageInfo
         return item;
       }),
     );
 
-    // this.setState({ uploadData: uploadData });
-    // this.props.setType('postImageEdit');
+    this.setState({ uploadData: uploadData });
+    this.props.setType('postImageEdit');
 
     // console.info("onUploadImage", uploadData);
-    this.sendUploadFile(uploadData)
+    // this.sendUploadFile(uploadData)
   }
 
   sendUploadFile(data) {

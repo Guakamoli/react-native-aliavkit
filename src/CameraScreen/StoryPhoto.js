@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable } from 'react-native'
+import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, Platform } from 'react-native'
+
+import Animated from 'react-native-reanimated';
 
 import CameraRoll from '@react-native-community/cameraroll';
 
@@ -8,135 +10,25 @@ import RNGetPermissions from '../permissions/RNGetPermissions';
 
 import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
 
+import BottomSheet from 'reanimated-bottom-sheet';
+
 import FastImage from '@rocket.chat/react-native-fast-image';
 
-import { State, NativeViewGestureHandler } from 'react-native-gesture-handler';
+import { State, TapGestureHandler, PanGestureHandler } from 'react-native-gesture-handler';
 
 import I18n from '../i18n';
 
 import { openSettings } from 'react-native-permissions';
 
+import AVkitPhotoView from '../AVKitPhotoView';
+
+
 const { width, height } = Dimensions.get('window');
 
-const photoItemWidth = (width - 2) / 3.0;
+const photoItemWidth = width / 3.0;
 const photoItemHeight = photoItemWidth * 16 / 9;
 
 import AVService from '../AVService';
-class PhotoItemView extends React.Component {
-    constructor(props) {
-        super(props)
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return false;
-    }
-
-    formatSeconds = (s) => {
-        let t = '';
-        if (s > -1) {
-            let min = Math.floor(s / 60) % 60;
-            let sec = s % 60;
-            if (min < 10) {
-                t += '0';
-            }
-            t += min + ':';
-            if (sec < 10) {
-                t += '0';
-            }
-            t += sec;
-        }
-        return t;
-    };
-
-    onItemClick = async () => {
-
-        const videoType = this.props.item?.type?.indexOf('video') !== -1;
-
-        if (!!videoType && this.props.item.image.playableDuration && this.props.item.image.playableDuration > 60.0) {
-            console.info("onItemClick", videoType, this.props.item.image.playableDuration);
-            this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
-            return;
-        }
-        let selectUri = this.props.item.image.uri;
-
-        if (Platform.OS === 'ios') {
-            if ("image" === this.props.item.type) {
-                const imageIndex = this.props.item?.image?.filename?.lastIndexOf(".");
-                //获取后缀
-                const imageType = this.props.item?.image?.filename?.substr(imageIndex + 1).toLowerCase();
-
-                console.info("imageType", imageType);
-
-                //不是通用格式，需要先转换
-                if (!!imageType && (imageType !== 'jpg' || imageType !== 'png')) {
-                    selectUri = await AVService.saveToSandBox(selectUri);
-                } else {
-                    let myAssetId = selectUri.slice(5);
-                    selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-                }
-            } else {
-                let myAssetId = selectUri.slice(5);
-                selectUri = await CameraRoll.requestPhotoAccess(myAssetId);
-            }
-        }
-        console.info("selectUri", selectUri, "item type", this.props.item.type.includes('video'), this.props.item.type, this.props.item.image);
-        this.props.selectedPhoto(selectUri, this.props.item.type.includes('video') ? 'video' : 'image');
-        setTimeout(() => {
-            this.props.hideBottomSheet();
-        }, 250);
-    }
-
-    render() {
-        let videoDuration = this.formatSeconds(Math.ceil(this.props.item.image.playableDuration ?? 0));
-
-        const videoType = this.props.item?.type?.indexOf('video') !== -1;
-
-        return (
-            <View style={[styles.bottomSheetItem, { marginStart: this.props.index % 3 === 0 ? 0 : 1 }]}>
-
-                {Platform.OS === 'android' ?
-                    <NativeViewGestureHandler
-                        disallowInterruption={false}
-                        shouldActivateOnStart={false}
-                        onHandlerStateChange={(event) => {
-                            if (event.nativeEvent.state === State.END) {
-                                this.onItemClick();
-                            }
-                        }}
-                    >
-                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
-                    </NativeViewGestureHandler>
-                    :
-                    <TouchableOpacity
-                        onPress={() => {
-                            this.onItemClick();
-                        }}>
-                        <Image style={{ width: '100%', height: '100%' }} resizeMode='center' source={{ uri: this.props.item?.image?.uri }} />
-                    </TouchableOpacity>
-                }
-
-                {!!videoType && <Text style={styles.bottonSheetItemVideoTime}>{videoDuration}</Text>}
-
-                {/* {!this.state.singleSelect && (
-                    <Pressable
-                        style={[styles.bottomSheetItemCheckbox, {}]}
-                        hitSlop={{ left: 10, top: 10, right: 10, bottom: 10 }}
-                        onPress={() => {
-                            item.isSelected = !item.isSelected;
-                            this.forceUpdate()
-                        }}>
-                        <View style={[styles.bottomSheetItemCheckImage, {}]}>
-                            {item?.isSelected &&
-                                < FastImage style={styles.bottomSheetItemCheckImage} source={require('../../images/postFileSelect.png')} />
-                            }
-                        </View>
-                    </Pressable>
-                )} */}
-            </View>
-        )
-    }
-
-}
 
 class StoryPhoto extends React.Component {
 
@@ -150,11 +42,12 @@ class StoryPhoto extends React.Component {
             multipleSelectList: [],
             bottomSheetRefreshing: false,
             isPhotoLimited: false,
+            isStoragePermission: false,
         };
         this.bottomSheetRef;
         this.bottomSheetInnerRef;
 
-        this.getPhotosNum = 36;
+        // this.getPhotosNum = 36;
     }
 
     /**
@@ -180,6 +73,9 @@ class StoryPhoto extends React.Component {
         if (this.state.isPhotoLimited !== nextState.isPhotoLimited) {
             return true;
         }
+        if (nextState.isStoragePermission !== this.state.isStoragePermission) {
+            return true;
+        }
         if (this.state.photoList !== nextState.photoList) {
             return true;
         }
@@ -202,12 +98,9 @@ class StoryPhoto extends React.Component {
         //当组件要被从界面上移除的时候调用 ,可以做组件相关的清理工作
     }
 
-
     getPhotos = async () => {
         const storagePermission = await RNGetPermissions.checkStoragePermissions();
-
-        console.info("storagePermission", storagePermission);
-
+        //  console.info("storagePermission", storagePermission);
         if (storagePermission?.permissionStatus === 'limited') {
             this.setState({ isPhotoLimited: true });
         } else {
@@ -215,35 +108,17 @@ class StoryPhoto extends React.Component {
         }
         if (!storagePermission?.isGranted) {
             if (await RNGetPermissions.getStoragePermissions(true)) {
-                this.getPhotos();
+                this.setState({
+                    isStoragePermission: true
+                });
             }
             return;
         }
-        CameraRoll.getPhotos({
-            first: this.getPhotosNum,
-            assetType: 'All',
-            include: ['playableDuration', 'filename', 'fileSize', 'imageSize'],
-        })
-            .then(data => {
-                if (!data?.edges?.length) {
-                    return;
-                }
-                const photoList = [];
-                for (let i = 0; i < data.edges.length; i++) {
-                    const itemInfo = data.edges[i].node
-                    photoList.push(data.edges[i].node);
-                }
-                let firstPhotoUri = photoList[0]?.image?.uri
-                this.props.setFirstPhotoUri(firstPhotoUri);
-                this.setState({
-                    photoList: photoList,
-                    bottomSheetRefreshing: false
-                });
-            })
-            .catch((err) => {
-                //Error Loading Images
-            });
+        this.setState({
+            isStoragePermission: true
+        });
     }
+
 
     openBottomSheet = () => {
         this.bottomSheetRef?.snapTo(0);
@@ -265,11 +140,49 @@ class StoryPhoto extends React.Component {
         }
     }
 
+    //返回第一个相册数据
+    getFirstPhotoCallback = (firstData) => {
+        console.log("getFirstPhotoCallback", firstData);
+        if (firstData) {
+            this.props.setFirstPhotoUri(firstData.uri);
+        }
+    }
+
+    clickItemCallback = async (seelctData) => {
+        //理论不会出现
+        if (seelctData.data.length == 0) {
+            return;
+        }
+        const itemData = seelctData.data[0];
+        //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
+        const itemUri = itemData.uri;
+        const itemType = itemData.type.toLowerCase();
+        let itemPath = itemData.path;
+        const playableDuration = itemData.playableDuration;
+        const videoType = itemType.includes('video');
+        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000) {
+            this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
+            return;
+        }
+        if (itemType.includes('image')) {
+            //不是通用格式，需要先转换
+            if (itemType !== 'image/jpg' && itemType !== 'image/png' && itemType !== 'image/jpeg') {
+                itemPath = await AVService.saveToSandBox(itemUri);
+            }
+        }
+        // console.log(itemPath);
+        this.props.selectedPhoto(itemPath, videoType ? 'video' : 'image');
+        setTimeout(() => {
+            this.hideBottomSheet();
+        }, 250);
+    }
+
+
     PhotoHandleView = () => {
         return (
             <View style={[styles.bottomSheetHead, { height: this.state.isPhotoLimited ? 120 : 55 }]}>
                 {Platform.OS === 'android' ?
-                    <NativeViewGestureHandler
+                    <TapGestureHandler
                         disallowInterruption={true}
                         shouldActivateOnStart={true}
                         onHandlerStateChange={(event) => {
@@ -278,10 +191,10 @@ class StoryPhoto extends React.Component {
                             }
                         }}
                     >
-                        <View style={styles.bottomSheetHeadClose}>
+                        <Animated.View style={styles.bottomSheetHeadClose}>
                             <Text style={styles.bottomSheetHeadCloseText}>{I18n.t('close')}</Text>
-                        </View>
-                    </NativeViewGestureHandler>
+                        </Animated.View>
+                    </TapGestureHandler>
                     :
                     <TouchableOpacity
                         style={styles.bottomSheetHeadClose}
@@ -315,19 +228,19 @@ class StoryPhoto extends React.Component {
                     testID='action-sheet'
                     ref={(ref) => (this.bottomSheetRef = ref)}
                     innerRef={(ref) => (this.bottomSheetInnerRef = ref)}
-                    componentType="FlatList"
+                    componentType="ScrollView"
                     //snapPoints 是组件距离屏幕顶部的距离
                     snapPoints={[0, height]}
                     //初始显示对应 snapPoints 中的下标
                     initialSnapIndex={1}
-                    data={this.state.photoList}
+                    data={[]}
                     keyExtractor={(item, index) => {
                         return index
                     }}
                     friction={0.8}
-                    numColumns={3}
-                    initialNumToRender={9}
-                    refreshing={this.state.bottomSheetRefreshing}
+                    numColumns={1}
+                    initialNumToRender={1}
+                    // refreshing={this.state.bottomSheetRefreshing}
                     enableOverScroll={true}
                     containerStyle={styles.contentContainerStyle}
                     contentContainerStyle={styles.contentContainerStyle}
@@ -337,37 +250,65 @@ class StoryPhoto extends React.Component {
                             this.props.onCloseView();
                         }
                     }}
-
-                    onEndReachedThreshold={0.5}
-                    onEndReached={() => {
-                        //上拉加载更多
-                        this.getPhotosNum += 18;
-                        this.setState({ bottomSheetRefreshing: true });
-                        this.getPhotos();
-                    }}
                     renderHandle={() => this.PhotoHandleView()}
-                    renderItem={({ index, item }) => (
-                        <PhotoItemView
-                            {...this.props}
-                            index={index}
-                            item={item}
-                            hideBottomSheet={this.hideBottomSheet}
-                        />
-
-                    )}
                     ListEmptyComponent={() => {
-                        return null;
+                        return null
                     }}
-                />
+                >
+                    {this.PhotoContentView()}
+                </ScrollBottomSheet>
             </View>
         )
     }
 
 
+
+    PhotoContentView = () => {
+        return (
+            <View style={{ width, height: height - (!!this.state.isPhotoLimited ? 120 : 55), backgroundColor: 'black' }}>
+                {this.state.isStoragePermission && <AVkitPhotoView
+                    {...this.props}
+                    numColumns={3}
+                    pageSize={45}
+                    itemWidth={photoItemWidth}
+                    itemHeight={photoItemHeight}
+                    style={{ width, height, backgroundColor: 'black' }}
+                    multiSelect={false}
+                    onSelectedPhotoCallback={this.clickItemCallback}
+                    getFirstPhotoCallback={this.getFirstPhotoCallback}
+                    defaultSelectedPosition={-1}
+                />}
+            </View>
+        )
+
+    }
+
+
+    PhotoViewAndroid = () => {
+        return (
+            <BottomSheet
+                ref={(ref) => (this.bottomSheetRef = ref)}
+                snapPoints={[height, 0]}
+                initialSnap={1}
+                borderRadius={0}
+                enabledGestureInteraction={true}
+                enabledHeaderGestureInteraction={true}
+                enabledContentGestureInteraction={false}
+                renderHeader={this.PhotoHandleView}
+                renderContent={this.PhotoContentView}
+
+                onCloseEnd={() => {
+                    this.hideBottomSheet();
+                    this.props.onCloseView();
+                }}
+            />
+        )
+    }
+
     render() {
         return (
             <View style={[styles.container, { height: this.props.openPhotos ? height : 0 }]}>
-                {this.PhotoView()}
+                {Platform.OS === 'android' ? this.PhotoViewAndroid() : this.PhotoView()}
             </View >
         );
     }
@@ -383,7 +324,6 @@ const styles = StyleSheet.create({
     },
 
     photoView: {
-        flex: 1,
         width: width,
         zIndex: 1,
     },
@@ -422,25 +362,6 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
 
-    bottomSheetItemCheckbox: {
-        borderRadius: 22,
-        borderWidth: 1,
-        width: 22,
-        height: 22,
-        borderColor: 'white',
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        overflow: 'hidden',
-        position: 'absolute',
-        right: 6,
-        top: 6,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    bottomSheetItemCheckImage: {
-        width: 22,
-        height: 22,
-    },
 
     bottonSheetItemVideoTime: {
         position: 'absolute',

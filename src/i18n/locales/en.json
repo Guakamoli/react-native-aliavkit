@@ -37,4 +37,8 @@
     "close":"Close",
     "camera_jurisdictions":"You've given Paiya access to a select number of videos.",
     "canera_to_setting":" Manage",
+    "confirm": "confirm",
+    "selectMusic": "Music",
+    "post_image_editor_back_msg": "Your edits will be discarded after exiting",
+    "search_music_placeholder": "Search the music name"
 }

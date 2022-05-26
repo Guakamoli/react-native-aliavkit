@@ -24,15 +24,15 @@
         android:layout_marginBottom="6dp"
         android:textColor="#ffffff"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/thumbnailImage"
+        app:layout_constraintEnd_toEndOf="@id/thumbnailImage" />
 
     <View
         android:id="@+id/selectedBgView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="#80FFFFFF"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/thumbnailImage"
         app:layout_constraintEnd_toEndOf="@id/thumbnailImage"
         app:layout_constraintStart_toStartOf="@id/thumbnailImage"
@@ -43,8 +43,8 @@
         android:layout_width="26dp"
         android:layout_height="26dp"
         android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="@id/thumbnailImage"
+        app:layout_constraintTop_toTopOf="@id/thumbnailImage">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/checkView"

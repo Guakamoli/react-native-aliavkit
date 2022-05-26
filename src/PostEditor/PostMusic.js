@@ -1,6 +1,9 @@
 import React, { createRef, useRef } from 'react';
 
-import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, TextInput, FlatList } from 'react-native'
+import {
+    StyleSheet, View, Text, Image, Dimensions, TouchableOpacity,
+    Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Keyboard
+} from 'react-native'
 
 import I18n from '../i18n';
 
@@ -14,6 +17,8 @@ import Animated, {
     EasingNode,
     Value
 } from 'react-native-reanimated';
+
+import { State, TapGestureHandler } from 'react-native-gesture-handler';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +38,7 @@ export default class PostMusic extends React.Component {
             musicSearchValue: '',
             bottomSheetRefreshing: false,
         };
-        this.defaultSelectPostion = 2;
+        this.defaultSelectPostion = 0;
         this.page = 1;
         this.pageSize = 20;
         this.isMore = true;
@@ -131,10 +136,8 @@ export default class PostMusic extends React.Component {
 
 
     getSearchMusic = async (name = '') => {
-        console.info("getSearchMusic name", name)
         if (name) {
             const musics = await AVService.getMusics({ name: name, page: this.page, pageSize: this.pageSize });
-            console.info("getSearchMusic musics", musics)
             this.setState({
                 musicList: musics,
                 bottomSheetRefreshing: false
@@ -177,6 +180,7 @@ export default class PostMusic extends React.Component {
 
 
     hideBottomSheet = () => {
+        Keyboard.dismiss();
         this.refScrollBottomSheet?.current?.snapTo(1);
         setTimeout(() => {
             this.props.onCloseView();
@@ -187,10 +191,10 @@ export default class PostMusic extends React.Component {
 
     MusicHeadView = () => {
         return (
-            <View style={styles.headContinue}>
-                <View style={{ backgroundColor: '#D8D8D8', width: 32, height: 4, borderRadius: 2, marginTop: 10 }}></View>
-                <View style={styles.searchMusicContinue}>
-                    <Image source={require('../../images/ic_post_music_ search.png')} style={styles.searchMusicImage} />
+            <Animated.View style={styles.headContinue}>
+                <Animated.View style={{ backgroundColor: '#D8D8D8', width: 32, height: 4, borderRadius: 2, marginTop: 10 }} />
+                <Animated.View style={styles.searchMusicContinue}>
+                    <Animated.Image source={require('../../images/ic_post_music_search.png')} style={styles.searchMusicImage} />
                     <TextInput
                         style={[styles.musicFindSearchInput]}
                         multiline={false}
@@ -205,30 +209,32 @@ export default class PostMusic extends React.Component {
                         }}
                         value={this.state.musicSearchValue}
                         selectionColor='#836BFF'
-                        placeholder={"搜索歌曲名称"}
+                        placeholder={I18n.t('search_music_placeholder')}
                         placeholderTextColor="#83848A"
                         color="#000000"
                     />
 
                     {!!this.state.musicSearchValue && (
-                        <TouchableOpacity
-                            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 38, justifyContent: 'center', alignItems: 'center' }}
-                            onPress={async () => {
-                                this.setState({ musicSearchValue: '' });
-                            }}  >
-                            <Image source={require('../../images/ic_post_music_close.png')} style={{ width: 18, height: 18 }} />
-                        </TouchableOpacity>
+                        <TapGestureHandler
+                            shouldCancelWhenOutside={true}
+                            onHandlerStateChange={(event) => {
+                                if (event.nativeEvent.state === State.END) {
+                                    this.setState({ musicSearchValue: '' });
+                                }
+                            }}
+                        >
+                            <Animated.View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 38, justifyContent: 'center', alignItems: 'center' }}>
+                                <Image source={require('../../images/ic_post_music_close.png')} style={{ width: 18, height: 18 }} />
+                            </Animated.View>
+                        </TapGestureHandler>
                     )}
-
-
-                </View>
-            </View>
+                </Animated.View>
+            </Animated.View>
         )
     }
 
 
     MusicFootView = () => {
-
         return (
             <Animated.View
                 style={
@@ -241,92 +247,104 @@ export default class PostMusic extends React.Component {
                                 }
                             ]
                         }
+                        , { height: this.props.openMusicView ? 64 : 0 }
                     ]
                 }
             >
-                <TouchableOpacity
-                    style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}
-                    onPress={() => {
-                        if (this.props.currentMusic) {
-                            this.setCurrentMusic(null)
-                        } else {
-                            this.setCurrentMusic(this.lasePlayingMusic);
+                <TapGestureHandler
+                    shouldCancelWhenOutside={true}
+                    onHandlerStateChange={(event) => {
+                        if (event.nativeEvent.state === State.END) {
+                            if (this.props.currentMusic) {
+                                this.setCurrentMusic(null)
+                            } else {
+                                this.setCurrentMusic(this.lasePlayingMusic);
+                            }
                         }
-                    }}>
-                    <FastImage
-                        source={this.props.currentMusic ? require('../../images/ic_post_music_checked.png') : require('../../images/ic_post_music_unchecked.png')}
-                        style={{ width: 18, height: 18 }} />
-                    <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 8 }}>配乐</Text>
-                </TouchableOpacity>
-            </Animated.View>
+                    }}
+                >
+                    <Animated.View style={{ width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', }}>
+                        <Image source={this.props.currentMusic ? require('../../images/ic_post_music_checked.png') : require('../../images/ic_post_music_unchecked.png')}
+                            style={{ width: 18, height: 18, display: this.props.openMusicView ? 'flex' : 'none' }} />
+                        <Text style={{ color: '#000000', fontSize: 16, fontWeight: '500', marginStart: 10 }}>{I18n.t('Soundtrack')}</Text>
+                    </Animated.View>
+                </TapGestureHandler>
+            </Animated.View >
         )
     }
+
 
     render() {
 
         return (
-            <View style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0, display: this.props.openMusicView ? 'flex' : 'none' }]}>
-                <Pressable style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0 }]}
-                    onPress={async () => {
-                        this.hideBottomSheet();
+            <Animated.View style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0, }]}>
+                <TapGestureHandler
+                    shouldCancelWhenOutside={true}
+                    onHandlerStateChange={(event) => {
+                        if (event.nativeEvent.state === State.END) {
+                            this.hideBottomSheet();
+
+                        }
                     }}
                 >
-                    <ScrollBottomSheet
-                        testID='action-sheet'
-                        ref={this.refScrollBottomSheet}
-                        innerRef={(ref) => (this.innerRefScrollBottomSheet = ref)}
-                        componentType='FlatList'
-                        snapPoints={[height / 4, height]}
-                        initialSnapIndex={1}
-                        data={this.state.musicList}
-                        keyExtractor={(item, index) => {
-                            return index
-                        }}
-                        enableOverScroll={true}
-                        containerStyle={styles.contentContainerStyle}
+                    <Animated.View style={[styles.continue, { height: this.props.openMusicView ? '100%' : 0, }]}>
+                        <TapGestureHandler onHandlerStateChange={true} >
+                            <ScrollBottomSheet
+                                testID='action-sheet'
+                                ref={this.refScrollBottomSheet}
+                                innerRef={(ref) => (this.innerRefScrollBottomSheet = ref)}
+                                componentType='FlatList'
+                                snapPoints={[height / 4, height]}
+                                initialSnapIndex={1}
+                                data={this.state.musicList}
+                                keyExtractor={(item, index) => {
+                                    return index
+                                }}
+                                enableOverScroll={true}
+                                containerStyle={styles.contentContainerStyle}
 
-                        animatedPositionCurate={this.animatedPositionCurate?.current}
+                                animatedPositionCurate={this.animatedPositionCurate?.current}
 
-                        onSettle={(index) => {
-                            if (index === 1) {
-                                this.props.onCloseView();
-                            }
-                        }}
-
-                        refreshing={this.state.bottomSheetRefreshing}
-                        onEndReached={() => {
-                            if (this.isMore) {
-                                //上拉加载更多
-                                this.page++
-                                this.setState({ bottomSheetRefreshing: true });
-                                this.getMusic();
-                            }
-                        }}
-
-                        renderHandle={() => this.MusicHeadView()}
-                        renderItem={({ index, item }) => {
-                            // console.info("renderItem", index, item);
-                            return <MusicItem
-                                {...this.props}
-                                index={index}
-                                item={item}
-                                onItemClick={(position, isSelected) => {
-                                    if (!isSelected) {
-                                        this.playMusic(item)
-                                        this.setCurrentMusic(item)
-                                    } else {
-                                        this.setCurrentMusic(null)
+                                onSettle={(index) => {
+                                    if (index === 1) {
+                                        this.props.onCloseView();
                                     }
                                 }}
+
+                                refreshing={this.state.bottomSheetRefreshing}
+                                onEndReached={() => {
+                                    if (this.isMore) {
+                                        //上拉加载更多
+                                        this.page++
+                                        this.setState({ bottomSheetRefreshing: true });
+                                        this.getMusic();
+                                    }
+                                }}
+
+                                renderHandle={() => this.MusicHeadView()}
+                                renderItem={({ index, item }) => {
+                                    return <MusicItem
+                                        {...this.props}
+                                        index={index}
+                                        item={item}
+                                        onItemClick={(position, isSelected) => {
+                                            if (!isSelected) {
+                                                this.stopMusic()
+                                                this.setCurrentMusic(item)
+                                            } else {
+                                                this.setCurrentMusic(null)
+                                            }
+                                        }}
+                                    />
+                                }
+
+                                }
                             />
-                        }
-
-                        }
-                    />
-                </Pressable>
-                {this.MusicFootView()}
-            </View >
-
+                        </TapGestureHandler>
+                        {this.MusicFootView()}
+                    </Animated.View>
+                </TapGestureHandler>
+            </Animated.View >
         )
     }
 
@@ -351,17 +369,21 @@ class MusicItem extends React.Component {
         const { item, index, currentMusic } = this.props;
         const isSelected = item?.songID === currentMusic?.songID
         return (
-            <TouchableOpacity
-                onPress={() => {
-                    this.props.onItemClick(index, isSelected);
-                }}>
-                <View style={styles.itemContainer}>
-                    <FastImage source={isSelected ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
-                    <View style={styles.itemMusicName}>
-                        <Text style={[styles.itemMusicNameText, { color: isSelected ? '#7166F9' : '#000000' }]}>{item.name}</Text>
-                    </View>
-                </View>
-            </TouchableOpacity>
+            <TapGestureHandler
+                shouldCancelWhenOutside={true}
+                onHandlerStateChange={(event) => {
+                    if (event.nativeEvent.state === State.END) {
+                        this.props.onItemClick(index, isSelected);
+                    }
+                }}
+            >
+                <Animated.View style={styles.itemContainer}>
+                    <Animated.Image source={isSelected ? require('../../images/ic_post_item_music.png') : require('../../images/ic_post_item_music_unselect.png')} style={{ width: 14, height: 16 }} />
+                    <Animated.View style={styles.itemMusicName}>
+                        <Animated.Text style={[styles.itemMusicNameText, { color: isSelected ? '#7166F9' : '#000000' }]}>{item.name}</Animated.Text>
+                    </Animated.View>
+                </Animated.View>
+            </TapGestureHandler>
         )
     }
 
@@ -405,7 +427,7 @@ const styles = StyleSheet.create({
 
     },
     continue: {
-        width: '100%', height: '100%', position: 'absolute'
+        width: '100%', height: '100%', position: 'absolute', zIndex: 100
     },
 
     contentContainerStyle: {
@@ -424,15 +446,16 @@ const styles = StyleSheet.create({
         height: 63,
         flexDirection: 'row',
         flex: 1,
-        justifyContent: 'center', alignItems: 'center'
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: '#E1E1E1',
     },
 
     itemMusicName: {
         flex: 1,
         height: 63,
         marginStart: 15,
-        borderBottomWidth: 1,
-        borderColor: '#E1E1E1',
     },
     itemMusicNameText: {
         fontSize: 15,

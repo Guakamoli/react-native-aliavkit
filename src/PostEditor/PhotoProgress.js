@@ -10,17 +10,21 @@ import Animated, { useSharedValue, useAnimatedStyle, Easing, withTiming, withDel
 
 //useSharedValue不能存放在数组中
 const AnimatedProgress = p => {
+    const {
+        progress,
+        animatedData,
+    } = p;
     const offset = useSharedValue(p.progress);
-    // useEffect(() => {
-    //     return ()=>{
-    //         cancelAnimation(offset);
-    //     }
-    // })
-    // useDerivedValue(() => {
-    //     return p.progress;
-    //   });
-    
-    
+    useEffect(() => {
+        return () => {
+            cancelAnimation(offset);
+        }
+    })
+    useEffect(() => {
+        offset.value = p.progress;
+        offset.value = withDelay(p.animatedData.delay, withTiming(p.animatedData.toValue, p.animatedData))
+    }, [progress, animatedData]);
+
     const animatedStyles = useAnimatedStyle(() => {
         return {
             width: (offset.value * 100) + '%',
@@ -31,7 +35,6 @@ const AnimatedProgress = p => {
             // ],
         };
     });
-    offset.value = withDelay(p.animatedData.delay, withTiming(p.animatedData.toValue, p.animatedData))
     return (
         <Animated.View style={[p.next && styles.animated,
             animatedStyles
@@ -59,13 +62,16 @@ const PhotoProgress = props => {
             let next = end > currentDuration;
             let progress = Math.min(Math.max(0, (currentDuration - start) / itemDuration), 1);
             let key = 'progress_' + index;
-            let animatedData = {};
+            let animatedData = {
+                toValue: playAnimaton ? 0 : progress,
+                duration: 0,
+                delay: 0,
+            };
             if (next && playAnimaton) {
                 let delay = 0;
                 if (start > currentDuration) {
                     delay = start - currentDuration;
                     delay += (index - Math.floor(currentDuration / itemDuration)) * gapTime;
-                    // delay *= 1000;
                 }
                 animatedData = {
                     toValue: 1,
@@ -90,7 +96,7 @@ const PhotoProgress = props => {
         <View style={styles.rootView} >
             {progressData.map(p => {
                 return <View style={[styles.progress, p.next && styles.blank]} key={p.key} >
-                    {currentDuration > p.start && <AnimatedProgress {...p} />}
+                    <AnimatedProgress {...p} />
                 </View>
             })}
         </View >

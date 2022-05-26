@@ -147,9 +147,9 @@ export default class AVService {
     return await RNEditorKitModule.resumeMusic(songID);
   }
 
-  // static async pauseMusic(songID: string) {
-  //   return await RNEditorKitModule.pauseMusic(songID);
-  // }
+  static async pauseMusic(songID: string) {
+    return await RNEditorKitModule.pauseMusic(songID);
+  }
 
   static async getMusics({ name, page, songID, pageSize }: MusicRequestType) {
     if (name && name == 'all-music') {

@@ -29,14 +29,16 @@ export default class ImageCarousel extends React.Component {
 
         this.refRanimatedCarousel = React.createRef();
 
-        this.data = this.props.uploadData
+        this.data = this.props.data
+
         this.isMulti = !!this.data?.length && this.data.length > 1
         this.state = {
             enabled: true,
             loop: false,
             currentDuration: 0,
+            playAnimaton: true,
+
             isPlay: true,    //是否自动播放，单击改变
-            isScroll: false,
         }
         this.intervalTime = 100; //ms  刷新间隔
         this.itemDuration = 3000; //ms 一张图/一个进度条对应的时长
@@ -51,7 +53,16 @@ export default class ImageCarousel extends React.Component {
         this.appState = '';
 
         this.carouselTouchType = State.UNDETERMINED;
+
+        this.carouselPosition = 0;//滑动后的当前下标
+
+        this.intervalDuration = 0;//计时器当前的时间
+
+        this.replayTimeOut = 0;//重新播放的延时
+
     }
+
+
 
     _handleAppStateChange = (nextAppState) => {
         if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
@@ -85,18 +96,30 @@ export default class ImageCarousel extends React.Component {
         if (nextState.currentDuration !== this.state.currentDuration) {
             return true;
         }
-        if (nextState.isScroll !== this.state.isScroll) {
+        if (nextState.playAnimaton !== this.state.playAnimaton) {
             return true;
         }
         if (nextState.isPlay !== this.state.isPlay) {
-            if (nextState.isPlay) {
+            return true;
+        }
+        if (nextProps.openMusicView !== this.props.openMusicView) {
+            if (!nextProps.openMusicView) {
+                this.setProgressStatus(this.intervalDuration, true);
                 this.startInterva();
             } else {
+                this.setProgressStatus(this.intervalDuration, false);
                 this.stopInterva();
             }
             return true;
         }
         return false;
+    }
+
+    setProgressStatus = (duration, isAnimaton) => {
+        this.setState({
+            currentDuration: duration,
+            playAnimaton: isAnimaton
+        });
     }
 
     startInterva = () => {
@@ -107,32 +130,32 @@ export default class ImageCarousel extends React.Component {
             return;
         }
         this.timerInterval = setInterval(() => {
-            let duration = this.state.currentDuration + this.intervalTime;
+            let duration = this.intervalDuration + this.intervalTime;
             duration = duration % this.maxTime;
             if (duration < this.maxTime && duration % this.itemDuration == 0) {
                 const imageSelectPosition = parseInt((duration / this.itemDuration));
                 console.info("imageSelectPosition", imageSelectPosition);
                 this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
             }
-            this.setState({ currentDuration: duration });
+            this.intervalDuration = duration;
+            // console.info("this.intervalDuration", this.intervalDuration);
+            this.setProgressStatus(this.intervalDuration, this.state.playAnimaton);
         }, this.intervalTime);
 
     }
 
     stopInterva = () => {
-        if (!!this.timerInterval) {
-            clearInterval(this.timerInterval)
-            this.timerInterval = null;
-        }
+        clearInterval(this.timerInterval)
+        clearTimeout(this.snapToItemTimeout)
+        clearTimeout(this.tapGestureHandlerTimeout)
+        this.timerInterval = null;
     }
 
     IndicatorView = () => {
         if (!this.data?.length || this.data?.length <= 1) {
             return null;
         }
-        const playAnimaton = !this.state.isScroll && this.state.isPlay;
-        //TODO
-        console.info("currentDuration", this.state.currentDuration, playAnimaton);
+        // console.info("currentDuration", this.state.currentDuration, this.state.playAnimaton);
         return (<View style={
             {
                 position: 'absolute',
@@ -147,7 +170,7 @@ export default class ImageCarousel extends React.Component {
                 itemCount={this.data?.length}
                 itemDuration={this.itemDuration}
                 currentDuration={this.state.currentDuration}
-                playAnimaton={playAnimaton}
+                playAnimaton={this.state.playAnimaton}
             />
         </View>)
     }
@@ -162,9 +185,37 @@ export default class ImageCarousel extends React.Component {
                     onHandlerStateChange={({ nativeEvent }) => {
                         if (nativeEvent.state === State.END) {
                             //单击
+                            console.info("单击");
+
                             const isPlay = !this.state.isPlay;
+
                             this.setState({ isPlay: isPlay });
-                            this.props.setPlay(isPlay);
+
+                            if (!!this.props.setPlay) {
+                                this.props.setPlay(isPlay);
+                            }
+                            clearTimeout(this.snapToItemTimeout)
+                            clearTimeout(this.tapGestureHandlerTimeout)
+                            if (this.replayTimeOut) {
+                                this.tapGestureHandlerTimeout = setTimeout(() => {
+                                    if (isPlay) {
+                                        const imageSelectPosition = (this.carouselPosition + 1) % this.data?.length;
+                                        this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+                                        this.startInterva();
+                                    } else {
+                                        this.stopInterva();
+                                    }
+                                    this.setProgressStatus(this.intervalDuration, isPlay);
+                                }, this.replayTimeOut)
+                                this.replayTimeOut = 0;
+                            } else {
+                                if (isPlay) {
+                                    this.startInterva();
+                                } else {
+                                    this.stopInterva();
+                                }
+                                this.setProgressStatus(this.intervalDuration, isPlay);
+                            }
                         }
                     }}
                 >
@@ -188,10 +239,14 @@ export default class ImageCarousel extends React.Component {
                                 onHandlerStateChange: ({ nativeEvent }) => {
                                     //滑动
                                     if (nativeEvent.state === State.ACTIVE) {
-                                        console.info("滑动开始");
+
                                         this.carouselTouchType = State.ACTIVE;
-                                        this.setState({ isScroll: true });
+                                        this.setProgressStatus(this.intervalDuration, false);
+                                        clearTimeout(this.snapToItemTimeout)
+                                        clearTimeout(this.tapGestureHandlerTimeout)
+
                                         this.stopInterva();
+
                                     } else if (nativeEvent.state === State.END) {
                                         this.carouselTouchType = State.END;
                                     }
@@ -200,33 +255,49 @@ export default class ImageCarousel extends React.Component {
 
                             onScrollBegin={() => {
                                 //开始滑动
+
                             }}
                             onSnapToItem={(index) => {
                                 //滑动完成
                                 if (this.carouselTouchType === State.END) {
                                     this.carouselTouchType = State.UNDETERMINED;
-
                                     console.info("滑动完成 imageSelectPosition", index);
+                                    if (index !== this.carouselPosition) {  //下标改变了 将  duration 设置在下一页的初始位置
+                                        this.intervalDuration = (index + 1) * this.itemDuration;
+                                        this.setProgressStatus(this.intervalDuration, true);
+                                        this.setProgressStatus(this.intervalDuration, false);
 
-                                    // 将  duration 设置在下一页的初始位置
-                                    const duration = (index + 1) * this.itemDuration;
-                                    this.setState({
-                                        currentDuration: duration,
-                                    });
-
-                                    //延迟 3秒（this.itemDuration）后继续开始自动滚动
-                                    setTimeout(() => {
-                                        //设置翻页到下一页
-                                        const imageSelectPosition = (index + 1) % this.data?.length;
-                                        this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
-
-                                        console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
-
-                                        this.setState({ isScroll: false });
+                                        //暂停播放不继续播放
+                                        if (!this.state.isPlay) {
+                                            this.carouselPosition = index;
+                                            this.replayTimeOut = this.itemDuration;
+                                            return
+                                        }
+                                        clearTimeout(this.snapToItemTimeout)
+                                        clearTimeout(this.tapGestureHandlerTimeout)
+                                        //延迟 3秒（this.itemDuration）后继续开始自动滚动
+                                        this.snapToItemTimeout = setTimeout(() => {
+                                            this.setProgressStatus(this.intervalDuration, true);
+                                            //设置翻页到下一页
+                                            const imageSelectPosition = (index + 1) % this.data?.length;
+                                            this.refRanimatedCarousel?.current.goToIndex(imageSelectPosition, imageSelectPosition !== 0);
+                                            console.info("滑动完成 setTimeout imageSelectPosition", imageSelectPosition);
+                                            this.startInterva();
+                                        }, this.itemDuration);
+                                    } else {
+                                        //暂停播放不继续播放
+                                        if (!this.state.isPlay) {
+                                            // this.carouselPosition = index;
+                                            // this.replayTimeOut = this.itemDuration;
+                                            return
+                                        }
+                                        //下标没改变，继续播放
+                                        this.setProgressStatus(this.intervalDuration, true);
                                         this.startInterva();
-                                    }, this.itemDuration);
+                                    }
 
                                 }
+                                this.carouselPosition = index;
                             }}
 
                             renderItem={({ index, item }) => (
@@ -245,6 +316,7 @@ export default class ImageCarousel extends React.Component {
                                 bottom: height / 100 * 55,
                             }
                         }
+                            resizeMode={'contain'}
                             source={require('../../images/ic_post_image_play.png')}
                         />}
                     </Animated.View>
@@ -272,10 +344,12 @@ class ImageItem extends React.Component {
 
         const itemHeight = item.height / item.width * width;
 
+        const imageUri = !!item.path ? item.path : item.uri;
+
         return (
             <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                 < FastImage
-                    source={{ uri: item.path }}
+                    source={{ uri: imageUri }}
                     style={{ width: width, height: itemHeight, backgroundColor: 'rgba(100,100,100,0.5)' }}
                     resizeMode='cover'
                     placeholderStyle={{ backgroundColor: 'transparent' }}
