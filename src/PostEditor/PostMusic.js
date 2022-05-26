@@ -446,15 +446,16 @@ const styles = StyleSheet.create({
         height: 63,
         flexDirection: 'row',
         flex: 1,
-        justifyContent: 'center', alignItems: 'center'
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: '#E1E1E1',
     },
 
     itemMusicName: {
         flex: 1,
         height: 63,
         marginStart: 15,
-        borderBottomWidth: 1,
-        borderColor: '#E1E1E1',
     },
     itemMusicNameText: {
         fontSize: 15,

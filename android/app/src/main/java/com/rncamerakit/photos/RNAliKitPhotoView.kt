@@ -1,9 +1,9 @@
 package com.rncamerakit.photos
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
@@ -139,6 +139,48 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         val view = LayoutInflater.from(mContext).inflate(R.layout.view_ali_kit_photos, this, true)
         mPhotoRecyclerView = view.findViewById<RecyclerView>(R.id.photosRecyclerView)
         filAdapter()
+//        view.parent.requestDisallowInterceptTouchEvent(true)
+
+//        mPhotoRecyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//
+//            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+//                super.onScrollStateChanged(recyclerView, newState)
+//            }
+//
+//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+//                if (!recyclerView.canScrollVertically(-1)) {
+////                    Log.e("BBB", " 滑动到顶部了 ")
+//                    mISTop = true
+//                } else {
+//                    mISTop = false
+//                }
+//            }
+//        })
+
+//        mPhotoRecyclerView?.setOnTouchListener(object : OnTouchListener {
+//            @SuppressLint("ClickableViewAccessibility")
+//            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+//                when (event?.getAction()) {
+//                    MotionEvent.ACTION_DOWN -> {
+//                        mRawY = event?.rawY
+//                    }
+//                    MotionEvent.ACTION_MOVE -> {
+//                        val distanceY: Float = event.getRawY() - mRawY
+////                        if (distanceY > 0) {
+////                            Log.e("BBB", " 向上滑动 ")
+////                        }
+//                    }
+//                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+//
+//                    }
+//                    else -> {
+//
+//                    }
+//                }
+//                return false
+//            }
+//        })
 
         mPhotoAdapter?.setOnPhotoItemListener(object : PhotoAdapter.OnPhotoItemListener() {
             override fun onAddPhotoClick(position: Int, info: MediaInfo) {
@@ -344,25 +386,4 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         mPhotoAdapter?.onDestroy()
     }
 
-    private var mRawX = 0f
-    private var mRawY = 0f
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        when (ev.action) {
-            MotionEvent.ACTION_DOWN -> {
-                mRawX = ev.rawX
-                mRawY = ev.rawY
-            }
-            MotionEvent.ACTION_MOVE -> {
-                val distanceX = ev.rawX - mRawX
-                val distanceY = ev.rawY - mRawY
-                Log.e("AAA","distanceX:$distanceX; distanceY:$distanceY")
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-
-            }
-            else -> {
-            }
-        }
-        return super.dispatchTouchEvent(ev)
-    }
 }
