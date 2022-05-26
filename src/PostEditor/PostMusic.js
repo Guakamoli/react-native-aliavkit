@@ -188,6 +188,13 @@ export default class PostMusic extends React.Component {
     }
 
 
+    MusicEmptyView = () => {
+        return (
+            <View style={{ width: width, alignItems: 'center' }}>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: '#000', marginTop: 80 }}>{I18n.t('not_found_music')}</Text>
+            </View>
+        )
+    }
 
     MusicHeadView = () => {
         return (
@@ -321,6 +328,7 @@ export default class PostMusic extends React.Component {
                                     }
                                 }}
 
+                                ListEmptyComponent={() => this.MusicEmptyView()}
                                 renderHandle={() => this.MusicHeadView()}
                                 renderItem={({ index, item }) => {
                                     return <MusicItem
@@ -336,9 +344,8 @@ export default class PostMusic extends React.Component {
                                             }
                                         }}
                                     />
-                                }
+                                }}
 
-                                }
                             />
                         </TapGestureHandler>
                         {this.MusicFootView()}
