@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, } from 'react-native'
+import { AppState, StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, Pressable, Platform } from 'react-native'
 
 import Animated from 'react-native-reanimated';
 
@@ -9,6 +9,8 @@ import CameraRoll from '@react-native-community/cameraroll';
 import RNGetPermissions from '../permissions/RNGetPermissions';
 
 import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
+
+import BottomSheet from 'reanimated-bottom-sheet';
 
 import FastImage from '@rocket.chat/react-native-fast-image';
 
@@ -152,15 +154,13 @@ class StoryPhoto extends React.Component {
             return;
         }
         const itemData = seelctData.data[0];
-        console.log(itemData);
         //原生相册模块会过滤2-60s的视频,这里就不需要判断视频长度了
         const itemUri = itemData.uri;
         const itemType = itemData.type.toLowerCase();
         let itemPath = itemData.path;
         const playableDuration = itemData.playableDuration;
         const videoType = itemType.includes('video');
-        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000)
-        {
+        if (!!videoType && playableDuration && playableDuration > 60.0 * 1000) {
             this.props.myRef?.current?.show?.(`${I18n.t('selected_video_time_60')}`, 2000);
             return;
         }
@@ -255,30 +255,60 @@ class StoryPhoto extends React.Component {
                         return null
                     }}
                 >
-                    <Animated.View style={{ width, height, backgroundColor: 'black', position: 'relative' }}>
-                        {this.state.isStoragePermission && <AVkitPhotoView
-                            {...this.props}
-                            numColumns={3}
-                            pageSize={45}
-                            itemWidth={photoItemWidth}
-                            itemHeight={photoItemHeight}
-                            style={{ width, height, backgroundColor: 'black' }}
-                            multiSelect={false}
-                            onSelectedPhotoCallback={this.clickItemCallback}
-                            getFirstPhotoCallback={this.getFirstPhotoCallback}
-                            defaultSelectedPosition={-1}
-                        />}
-                    </Animated.View>
+                    {this.PhotoContentView()}
                 </ScrollBottomSheet>
             </View>
         )
     }
 
 
+
+    PhotoContentView = () => {
+        return (
+            <View style={{ width, height: height - (!!this.state.isPhotoLimited ? 120 : 55), backgroundColor: 'black' }}>
+                {this.state.isStoragePermission && <AVkitPhotoView
+                    {...this.props}
+                    numColumns={3}
+                    pageSize={45}
+                    itemWidth={photoItemWidth}
+                    itemHeight={photoItemHeight}
+                    style={{ width, height, backgroundColor: 'black' }}
+                    multiSelect={false}
+                    onSelectedPhotoCallback={this.clickItemCallback}
+                    getFirstPhotoCallback={this.getFirstPhotoCallback}
+                    defaultSelectedPosition={-1}
+                />}
+            </View>
+        )
+
+    }
+
+
+    PhotoViewAndroid = () => {
+        return (
+            <BottomSheet
+                ref={(ref) => (this.bottomSheetRef = ref)}
+                snapPoints={[height, 0]}
+                initialSnap={1}
+                borderRadius={0}
+                enabledGestureInteraction={true}
+                enabledHeaderGestureInteraction={true}
+                enabledContentGestureInteraction={false}
+                renderHeader={this.PhotoHandleView}
+                renderContent={this.PhotoContentView}
+
+                onCloseEnd={() => {
+                    this.hideBottomSheet();
+                    this.props.onCloseView();
+                }}
+            />
+        )
+    }
+
     render() {
         return (
             <View style={[styles.container, { height: this.props.openPhotos ? height : 0 }]}>
-                {this.PhotoView()}
+                {Platform.OS === 'android' ? this.PhotoViewAndroid() : this.PhotoView()}
             </View >
         );
     }

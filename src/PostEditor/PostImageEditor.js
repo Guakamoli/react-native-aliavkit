@@ -153,7 +153,7 @@ export default class PostImageEditor extends React.Component {
                         </View>
                     </TouchableOpacity>
 
-                    {!!this.state.currentMusic?.name && <View style={{ height: '100%', width: 1, backgroundColor: '#fff' }} />}
+                    {!!this.state.currentMusic?.name && <View style={{ height: '100%', width: 1, backgroundColor: '#999999' }} />}
                     {!!this.state.currentMusic?.name &&
                         <TouchableOpacity onPress={this._onCleanMusic} style={styles.closeMusicContinue}>
                             <FastImage style={styles.musicCloseImg} source={require('../../images/postClose.png')} resizeMode='contain' />
