@@ -18,6 +18,8 @@ import FastImage from '@rocket.chat/react-native-fast-image';
 import ImageCarousel from './ImageCarousel'
 import PostMusic from './PostMusic'
 
+import AVService from '../AVService';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -87,9 +89,29 @@ export default class PostImageEditor extends React.Component {
     /**
      * 上传图片
      */
-    _onPostUploadFiles = () => {
+    _onPostUploadFiles = async () => {
         this._onCleanMusic();
         let uploadData = this.props.uploadData.slice()
+
+        console.info("uploadData", uploadData);
+        let results = await Promise.all(
+            uploadData.map(async (item, index) => {
+                console.info("uploadData item", item);
+                let path = item.path;
+                let type = item.type;
+                if (item.type !== 'image/jpg' && item.type !== 'image/png' && item.type !== 'image/jpeg') {
+                    //保存到沙盒
+                    path = await AVService.saveToSandBox(path);
+                    type = 'image/jpg'
+                }
+                item.path = path;
+                item.localPath = path;
+                item.type = type;
+
+                return item;
+            }),
+        )
+
         const musicInfo = this.state.currentMusic
         if (!!musicInfo) {
             const url = musicInfo.url;
