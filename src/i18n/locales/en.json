@@ -40,5 +40,6 @@
     "confirm": "confirm",
     "selectMusic": "Music",
     "post_image_editor_back_msg": "Your edits will be discarded after exiting",
-    "search_music_placeholder": "Search the music name"
+    "search_music_placeholder": "Search the music name",
+    "not_found_music": "Not Found Music"
 }

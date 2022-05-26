@@ -40,5 +40,6 @@
     "confirm": "确认",
     "selectMusic": "选择音乐",
     "post_image_editor_back_msg": "退出后编辑内容将丢失",
-    "search_music_placeholder": "搜索歌曲名称"
+    "search_music_placeholder": "搜索歌曲名称",
+    "not_found_music": "没有找到相关音乐"
 }
