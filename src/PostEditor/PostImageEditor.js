@@ -47,6 +47,7 @@ export default class PostImageEditor extends React.Component {
     }
 
     componentWillUnmount() {
+        this._onCleanMusic();
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -130,7 +131,7 @@ export default class PostImageEditor extends React.Component {
 
         const musicInfo = this.state.currentMusic
         if (!!musicInfo) {
-            const url = musicInfo.url;
+            let url = musicInfo.url;
             const filelaseIndex = url.lastIndexOf('.')
             let type = url.substr(filelaseIndex + 1)
             type = 'audio/' + type
