@@ -204,8 +204,10 @@ class PhotoAdapter(
                 }
 
                 if (mSelectedPhotoMap.size >= 10) {
-                    mItemListener?.onMaxSelectCountCallback()
-                    return@setOnClickListener
+                    if (mSelectedPhotoMap[position] == null) {
+                        mItemListener?.onMaxSelectCountCallback()
+                        return@setOnClickListener
+                    }
                 }
 
                 if (mSelectedPhotoMap.isEmpty()) {
