@@ -166,8 +166,12 @@ class StoryPhoto extends React.Component {
         }
         if (itemType.includes('image')) {
             //不是通用格式，需要先转换
-            if (itemType !== 'image/jpg' && itemType !== 'image/png' && itemType !== 'image/jpeg') {
+            if (Platform.OS === 'android') {
                 itemPath = await AVService.saveToSandBox(itemUri);
+            } else {
+                if (itemType !== 'image/jpg' && itemType !== 'image/png' && itemType !== 'image/jpeg') {
+                    itemPath = await AVService.saveToSandBox(itemUri);
+                }
             }
         }
         // console.log(itemPath);
