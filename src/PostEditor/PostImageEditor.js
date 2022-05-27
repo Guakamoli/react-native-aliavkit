@@ -134,6 +134,11 @@ export default class PostImageEditor extends React.Component {
             const filelaseIndex = url.lastIndexOf('.')
             let type = url.substr(filelaseIndex + 1)
             type = 'audio/' + type
+
+            if (url.includes(' ')) {
+                url = encodeURI(url)
+            }
+            
             const audioInfo = {
                 title: musicInfo.name,
                 type: type,
