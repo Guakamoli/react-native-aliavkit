@@ -314,6 +314,7 @@ export default class PostMusic extends React.Component {
 
                                 onSettle={(index) => {
                                     if (index === 1) {
+                                        Keyboard.dismiss();
                                         this.props.onCloseView();
                                     }
                                 }}
