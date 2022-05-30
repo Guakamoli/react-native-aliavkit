@@ -146,7 +146,7 @@ export default class StoryEditor extends Component<Props, State> {
 
     const { AsyncStorage } = this.props;
 
-    if(!!AsyncStorage){
+    if (!!AsyncStorage) {
       const isExport = await AsyncStorage.getItem("StoryExportVideo");
       if (isExport === null) {
         AsyncStorage.setItem('StoryExportVideo', "StoryExportVideo");
@@ -273,6 +273,14 @@ export default class StoryEditor extends Component<Props, State> {
         onPress: () => {
           if (this.props.fileType == 'video') {
             this.setState({ musicOpen: !musicOpen });
+
+
+
+            if (!musicOpen) {
+              this.setState({ musicExport: false })
+            }
+
+
           }
         },
       },
@@ -333,6 +341,8 @@ export default class StoryEditor extends Component<Props, State> {
       // 测试代码：保存到相册
       // CameraRoll.save(this.props.imagePath, { type: 'photo' })
       //
+
+      console.info("musicExport", this.state.musicExport)
       return (
         <View
           style={{
@@ -376,10 +386,10 @@ export default class StoryEditor extends Component<Props, State> {
         <TouchableOpacity
           onPress={() => {
             //关闭音乐列表，有设置过音乐，将音乐同步到视频中，并且暂停播放的音乐
-            // if(this.musicInfo?.songID){
-            //   this.pauseMusic(this.musicInfo)
-            //   this.setState({ musicExport: true })
-            // }
+            if (this.musicInfo?.songID) {
+              this.pauseMusic(this.musicInfo)
+              this.setState({ musicExport: true })
+            }
             this.setState({ showFilterLens: false, musicOpen: false });
           }}
           activeOpacity={1}

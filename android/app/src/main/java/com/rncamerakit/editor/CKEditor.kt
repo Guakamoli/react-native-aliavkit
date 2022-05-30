@@ -81,6 +81,13 @@ class CKEditor(val reactContext: ThemedReactContext) :
         return mProjectConfigure
     }
 
+    fun saveEffects(){
+        mAliyunIEditor?.stop()
+        mAliyunIEditor?.saveEffectToLocal()
+        mAliyunIEditor?.applySourceChange()
+    }
+
+
     fun stopEdit(): Boolean {
         val stopCode = mAliyunIEditor?.stop()
         return AliyunErrorCode.ALIVC_COMMON_RETURN_SUCCESS == stopCode
@@ -334,6 +341,11 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
     private var lastMusicBean: EffectBean? = null
 
+    fun removeMusic(){
+        if(lastMusicBean!=null){
+            mAliyunIEditor?.removeMusic(lastMusicBean)
+        }
+    }
     /**
      * 背景音乐
      */

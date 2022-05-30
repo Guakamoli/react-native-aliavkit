@@ -564,6 +564,8 @@ AliyunCropDelegate
                 [self composeAACFormatMusic:model];
             }
         }
+    }else{
+        int code = [self.editor removeMusics];
     }
 }
 
