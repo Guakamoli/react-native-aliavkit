@@ -1,7 +1,7 @@
 import React, { createRef, useRef } from 'react';
 
 import {
-    StyleSheet, View, Text, Image, Dimensions, TouchableOpacity,
+    StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, AppState,
     Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Keyboard
 } from 'react-native'
 
@@ -31,6 +31,7 @@ export default class PostMusic extends React.Component {
 
     constructor(props) {
         super(props)
+        this.appState = '';
         this.refScrollBottomSheet = React.createRef();
         this.innerRefScrollBottomSheet = React.createRef();
         this.state = {
@@ -59,13 +60,28 @@ export default class PostMusic extends React.Component {
 
     }
 
+    _handleAppStateChange = (nextAppState) => {
+        if (this.appState.match(/inactive|background/) && nextAppState === 'active') {
+            if (!!this.playingMusic) {
+                AVService.resumeMusic(this.playingMusic?.songID);
+            }
+        } else {
+            if (!!this.playingMusic) {
+                AVService.pauseMusic(this.playingMusic?.songID);
+            }
+        }
+
+        this.appState = nextAppState;
+    };
+
     componentDidMount() {
         this.getMusic();
-
+        AppState.addEventListener('change', this._handleAppStateChange);
     }
 
     componentWillUnmount() {
         this.stopMusic();
+        AppState.removeEventListener('change', this._handleAppStateChange);
     }
 
     shouldComponentUpdate(nextProps, nextState) {

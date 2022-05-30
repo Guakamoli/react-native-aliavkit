@@ -258,6 +258,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
 
     @ReactMethod
     fun storyComposeVideo(jsonPath: String, promise: Promise) {
+        mView?.saveEffects()
         mStoryComposePromise = promise
         mComposeManager = ComposeManager(reactContext)
         mComposeManager?.startCompose(jsonPath, promise, isVideo = true, isSaveToPhotoLibrary = false, isStoryCompose = true)

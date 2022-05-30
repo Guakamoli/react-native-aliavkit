@@ -157,6 +157,8 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
             bean.url = url
 
             view.setMusicInfo(bean)
+        }else{
+            view.removeMusic()
         }
 
     }
