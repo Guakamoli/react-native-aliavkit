@@ -7,7 +7,8 @@ import {
     TouchableOpacity,
     Dimensions,
     Image,
-    Alert
+    Alert,
+    Platform,
 } from 'react-native';
 
 import I18n from '../i18n';
@@ -139,7 +140,7 @@ export default class PostImageEditor extends React.Component {
             if (url.includes(' ')) {
                 url = encodeURI(url)
             }
-            
+
             const audioInfo = {
                 title: musicInfo.name,
                 type: type,
@@ -190,7 +191,7 @@ export default class PostImageEditor extends React.Component {
                     <TouchableOpacity onPress={this._onSelectMusic}>
                         <View style={styles.musicTextContinue}>
                             <FastImage style={styles.musicImg} source={require('../../images/ic_post_upload_music.png')} resizeMode='contain' />
-                            <Text style={styles.musicText} ref={this.refMarqueeText} ellipsizeMode={'tail'} numberOfLines={1} >
+                            <Text style={[styles.musicText, { minWidth: Platform.OS === 'android' ? 50 : 0 }]} ref={this.refMarqueeText} ellipsizeMode={'tail'} numberOfLines={1} >
                                 {this.state.currentMusic?.name || I18n.t('selectMusic')}
                             </Text>
                         </View>
@@ -339,6 +340,7 @@ const styles = StyleSheet.create({
     musicText: {
         height: '100%',
         maxWidth: 80,
+
         marginStart: 12,
         marginEnd: 12,
         lineHeight: 32,
