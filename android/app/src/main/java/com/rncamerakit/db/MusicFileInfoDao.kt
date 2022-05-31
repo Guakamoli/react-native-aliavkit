@@ -261,12 +261,13 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
         }
         val offset = (page - 1)*total
         val cursor = if (TextUtils.isEmpty(queryMsg)) {
-            val sql = "SELECT * FROM $tableName ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
+//            val sql = "SELECT * FROM $tableName ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
+            val sql = "SELECT * FROM $tableName LIMIT $total OFFSET $offset"
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         } else {
             val sql =
 //                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC LIMIT $total OFFSET $offset"
-                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%' ORDER BY SONG_ID ASC"
+                "SELECT * FROM $tableName WHERE NAME LIKE '%$queryMsg%' OR ARTIST LIKE '%$queryMsg%'"
             mDatabase?.rawQuery(sql, null) ?: throw SQLException("Cursor is null")
         }
         val infoList: MutableList<MusicFileBean> = ArrayList()
