@@ -43,6 +43,8 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private var mDefaultSelectedPosition = 0
     private var mSelectedPhotoList: MutableList<MediaInfo> = ArrayList()
 
+    private var queryMediaManager: QueryMediaManager? = null
+
     /**
      * key 选中图片在相册的下标，
      * value 选中图片在选中数组中的下标
@@ -82,6 +84,8 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         mPhotoList.clear()
         mSelectedPhotoList.clear()
 
+        queryMediaManager = QueryMediaManager()
+
         reactContext.runOnUiQueueThread {
             initViews()
             initMedias()
@@ -91,7 +95,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             override fun onHostResume() {
                 //TODO 这里做刷新相册
                 if (mInitViewLoad) {
-//                    QueryMediaManager.instance.initLoad(mContext)
+//                   queryMediaManager.initLoad(mContext)
                 }
             }
 
@@ -288,8 +292,9 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     }
 
     private fun initMedias() {
-        QueryMediaManager.instance.initLoad(mContext)
-        QueryMediaManager.instance.setOnQueryMediaListener(object : QueryMediaManager.OnQueryMediaListener() {
+
+        queryMediaManager?.initLoad(mContext.applicationContext)
+        queryMediaManager?.setOnQueryMediaListener(object : QueryMediaManager.OnQueryMediaListener() {
             override fun onDataUpdate(photoList: MutableList<MediaInfo>, baseCount: Int) {
                 super.onDataUpdate(photoList, baseCount)
                 updatePhotoList(photoList, baseCount)
@@ -405,7 +410,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     }
 
     fun onDestroy() {
-        QueryMediaManager.instance.onDestroy()
+        queryMediaManager?.onDestroy()
         mPhotoAdapter?.onDestroy()
     }
 

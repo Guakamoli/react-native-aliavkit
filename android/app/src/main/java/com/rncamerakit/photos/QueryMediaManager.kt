@@ -23,14 +23,6 @@ class QueryMediaManager {
         open fun onCompletion() {}
     }
 
-    companion object {
-        @JvmField
-        val instance = SingletonHolder.holder
-    }
-
-    private object SingletonHolder {
-        val holder = QueryMediaManager()
-    }
 
     private var mMediaStorage: MediaStorage? = null
 
