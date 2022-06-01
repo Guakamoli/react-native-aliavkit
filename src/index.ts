@@ -1,19 +1,14 @@
 import { NativeModules } from 'react-native';
 
 import Camera from './Camera';
-import CameraScreen, { CameraType } from './CameraScreen';
-import PostUpload from './PostScreen';
-
-import PostEditor from './PostEditor';
-import Entry from './Entry';
+import VideoEditor from './VideoEditor';
 
 import AVService from './AVService';
 
-import ImageCarousel from './PostEditor/ImageCarousel';
+import AVKitPhotoView from './AVKitPhotoView';
 
 const { CameraKit } = NativeModules;
 
-// Start with portrait/pointing up, increment while moving counter-clockwise
 export const Orientation = {
   PORTRAIT: 0, // ⬆️
   LANDSCAPE_LEFT: 1, // ⬅️
@@ -23,5 +18,4 @@ export const Orientation = {
 
 export default CameraKit;
 
-
-export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry, AVService, ImageCarousel };
+export { Camera, VideoEditor, AVService, AVKitPhotoView};
