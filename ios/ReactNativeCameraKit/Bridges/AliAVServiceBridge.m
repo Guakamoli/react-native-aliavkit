@@ -130,6 +130,7 @@ RCT_EXPORT_METHOD(enableHapticIfExist)
         NSString *fileName = [path lastPathComponent];
         id videoParams = @{@"width":@(frameWidth), @"height":@(frameHeight),@"path":path,@"size":@(fileSize),@"type":fileType,@"name":fileName};
         _videoComposeResolve(videoParams);
+        _videoComposeResolve = nil;
     }
     
 }
@@ -151,12 +152,19 @@ RCT_EXPORT_METHOD(storyCancelCompose:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    if(![self isBlankObject:self.publishManager]){
-        [self.publishManager cancelExport];
-    }
-    if(_videoComposeResolve != nil){
-        id composeParam = @{};
-        _videoComposeResolve(composeParam);
+    @try {
+        if(![self isBlankObject:self.publishManager]){
+            [self.publishManager cancelExport];
+        }
+        if(_videoComposeResolve != nil){
+            id composeParam = @{};
+            _videoComposeResolve(composeParam);
+            _videoComposeResolve = nil;
+        }
+    } @catch (NSException *exception) {
+
+    } @finally {
+
     }
     resolve(@(TRUE));
 }
@@ -191,15 +199,21 @@ RCT_EXPORT_METHOD(postCancelCrop:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
-    if(![self isBlankObject:self.cutPanel]){
-        [self.cutPanel cancel];
+    @try {
+        if(![self isBlankObject:self.cutPanel]){
+            [self.cutPanel cancel];
+        }
+        if(_videoCropResolve != nil){
+            id cropParam = @{};
+            _videoCropResolve(cropParam);
+            _videoCropResolve = nil;
+        }
+    } @catch (NSException *exception) {
+
+    } @finally {
+
     }
-    if(_videoCropResolve != nil){
-//        id cropParam = @{@"path":@"", @"isCroped":@(NO)};
-        id cropParam = @{};
-        _videoCropResolve(cropParam);
-        _videoCropResolve = nil;
-    }
+    
     resolve(@(TRUE));
 }
 
