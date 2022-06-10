@@ -106,8 +106,10 @@ class PhotoAdapter(
                 if (info.type == MediaStorage.TYPE_PHOTO) {
                     if (isOfficial == null || isOfficial == true) {
                         holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_dark)
+                        holder.tvCheckView.setTextColor(Color.parseColor("#000000"))
                     } else {
                         holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected)
+                        holder.tvCheckView.setTextColor(Color.parseColor("#ffffff"))
                     }
                     holder.tvCheckView.text = (mSelectedPhotoMap[position]).toString()
                 } else {
@@ -202,6 +204,12 @@ class PhotoAdapter(
                             holder.thumbnailImage.setImageBitmap(thumbnail)
                         }
                     })
+            }
+            val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
+            if (isOfficial == null || isOfficial == true) {
+                holder.selectedBgView.setBackgroundColor(Color.parseColor("#66000000"))
+            } else {
+                holder.selectedBgView.setBackgroundColor(Color.parseColor("#80FFFFFF"))
             }
 
             if (mDefaultSelectedPosition >= 0) {
