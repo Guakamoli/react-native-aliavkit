@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.rncamerakit.R
 import java.io.File
+import java.lang.reflect.Field
 import kotlin.math.roundToInt
 
 class PhotoAdapter(
@@ -101,12 +102,21 @@ class PhotoAdapter(
                 holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_unselected)
                 holder.tvCheckView.text = ""
             } else {
+                val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
                 if (info.type == MediaStorage.TYPE_PHOTO) {
-                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected)
+                    if (isOfficial == null || isOfficial == true) {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_dark)
+                    } else {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected)
+                    }
                     holder.tvCheckView.text = (mSelectedPhotoMap[position]).toString()
                 } else {
                     holder.tvCheckView.text = ""
-                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video)
+                    if (isOfficial == null || isOfficial == true) {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video_dark)
+                    } else {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video)
+                    }
                 }
             }
 
@@ -140,6 +150,21 @@ class PhotoAdapter(
                 mItemListener?.onAddPhotoClick(position, info)
             }
         }
+    }
+
+    private fun getBuildConfigValue(context: Context, fieldName: String): Any? {
+        try {
+            val clazz = Class.forName(context.packageName + ".BuildConfig")
+            val field: Field = clazz.getField(fieldName)
+            return field.get(null)
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
