@@ -24,4 +24,7 @@
 #define ScreenWidth  [UIScreen mainScreen].bounds.size.width
 #define ScreenHeight  [UIScreen mainScreen].bounds.size.height
 
+// --
+#define IS_REVOCHAT ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"co.goduck.revochat.ios"])
+
 #endif /* ShortCut_h */

@@ -8,6 +8,7 @@
 
 #import "AliyunCompositionCell.h"
 
+#import "ShortCut.h"
 
 //蓝湖上375的pt需要转换为实际可用的尺寸
 #define pt375(pt) (pt * [UIScreen mainScreen].bounds.size.width/375)
@@ -76,9 +77,17 @@
     UIButton *selectView = [UIButton new];
     selectView.layer.cornerRadius = pt375(20/2);
     selectView.clipsToBounds = YES;
-    selectView.layer.borderWidth = pt375((1.1));
+    selectView.layer.borderWidth = !IS_REVOCHAT ? pt375((1.4)) : pt375((1.1));
     selectView.layer.borderColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:1.0].CGColor;
-    selectView.backgroundColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:0.3];
+    if (!IS_REVOCHAT) {
+        selectView.backgroundColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:0.2];
+        selectView.layer.shadowColor = [UIColor colorWithRed:0/255.0 green:0/255.0 blue:0/255.0 alpha:0.2].CGColor;
+        selectView.layer.shadowOffset = CGSizeMake(0,2);
+        selectView.layer.shadowOpacity = 1;
+        selectView.layer.shadowRadius = 9;
+    } else {
+        selectView.backgroundColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:0.3];
+    }
     [selectView addTarget:self action:@selector(selectPhotoEvent:) forControlEvents:(UIControlEventTouchUpInside)];
     [self addSubview:self.selectView = selectView];
 
@@ -86,16 +95,21 @@
         //使用本地pod关联的图片资源不能直接拿取
         NSString *lutName = [NSString stringWithFormat:@"AliKitPhotoView/ic_record_complete.png"];
         NSString *fullPath = [[NSBundle mainBundle] pathForResource:lutName ofType:nil];
-        UIImageView *checkImageView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:fullPath]];
+        UIImageView *checkImageView = [[UIImageView alloc]initWithImage:[[UIImage imageNamed:fullPath] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+        checkImageView.tintColor = !IS_REVOCHAT ? [UIColor blackColor] : [UIColor whiteColor];
         checkImageView.userInteractionEnabled = NO;
         [selectView addSubview:self.checkImageView = checkImageView];
 
         UILabel *numberLabel = [UILabel new];
         numberLabel.numberOfLines = 0;
-        numberLabel.textColor = [UIColor whiteColor];
-        numberLabel.font = [UIFont systemFontOfSize:pt375(13)];
+        if (!IS_REVOCHAT) {
+            numberLabel.textColor = [UIColor blackColor];
+            numberLabel.font = [UIFont systemFontOfSize:pt375(13) weight:UIFontWeightMedium];
+        } else {
+            numberLabel.textColor = [UIColor whiteColor];
+            numberLabel.font = [UIFont systemFontOfSize:pt375(13)];
+        }
         numberLabel.textAlignment = NSTextAlignmentCenter;
-        numberLabel.backgroundColor=[UIColor colorWithRed:131/255.0 green:107/255.0 blue:255/255.0 alpha:1.0];
         numberLabel.userInteractionEnabled = NO;
         [selectView addSubview:self.numberLabel = numberLabel];
     }
@@ -110,7 +124,7 @@
     CGFloat selectViewGap = pt375(5);
     CGFloat selectViewWidth = pt375(20);
     self.selectView.frame = CGRectMake(CGRectGetWidth(self.frame) - selectViewWidth - selectViewGap, selectViewGap, selectViewWidth, selectViewWidth);
-    self.checkImageView.frame = CGRectInset(self.selectView.bounds, pt375(-1.1), pt375(-1.1));
+    self.checkImageView.frame = CGRectInset(self.selectView.bounds, pt375(1), pt375(1));
     self.numberLabel.frame = self.checkImageView.frame;
 }
 
@@ -129,9 +143,13 @@
             self.userInteractionEnabled = NO;
             self.selectView.alpha = 0;
             break;
-        //已选中 白色蒙层
+        //已选中, 加蒙层
         case AYPhotoCellStatusSelect:
-            self.shadowView.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.5];
+            if (!IS_REVOCHAT) {
+                self.shadowView.backgroundColor = [[UIColor blackColor]colorWithAlphaComponent:.5];
+            } else {
+                self.shadowView.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.5];
+            }
             break;
         default:
             break;
@@ -141,17 +159,36 @@
     self.selectView.hidden = NO;
     self.checkImageView.hidden = YES;
     self.numberLabel.hidden = YES;
+
     switch (selectStatus) {
         case AYPhotoSelectStatusDefault://默认不显示
             self.selectView.hidden = YES;
             break;
         case AYPhotoSelectStatusUnchecked://显示圆圈,未选中状态
+            self.selectView.layer.borderWidth = !IS_REVOCHAT ? pt375((1.4)) : pt375((1.1));
+            if (!IS_REVOCHAT) {
+                self.selectView.backgroundColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:0.2];
+            } else {
+                self.selectView.backgroundColor = [UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:0.3];
+            }
             break;
         case AYPhotoSelectStatusCheck://显示圆圈,勾选状态
             self.checkImageView.hidden = NO;
+            if (!IS_REVOCHAT) {
+                self.selectView.backgroundColor = [UIColor colorWithRed:142/255.0 green:249/255.0 blue:2/255.0 alpha:1.0];
+                self.selectView.layer.borderWidth = 0;
+            } else {
+                self.selectView.backgroundColor = [UIColor colorWithRed:131/255.0 green:107/255.0 blue:255/255.0 alpha:1.0];
+            }
             break;
         case AYPhotoSelectStatusNumber://显示圆圈,数字状态
             self.numberLabel.hidden = NO;
+            if (!IS_REVOCHAT) {
+                self.selectView.backgroundColor = [UIColor colorWithRed:142/255.0 green:249/255.0 blue:2/255.0 alpha:1.0];
+                self.selectView.layer.borderWidth = 0;
+            } else {
+                self.selectView.backgroundColor = [UIColor colorWithRed:131/255.0 green:107/255.0 blue:255/255.0 alpha:1.0];
+            }
             break;
         default:
             break;
