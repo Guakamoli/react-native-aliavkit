@@ -74,7 +74,8 @@ class CropManager {
 
             param.inputPath = videoPath
             val file = File(videoPath)
-            val fileName = "Crop_" + System.currentTimeMillis() + "_" + file.name
+//            val fileName = "Crop_" + System.currentTimeMillis() + "_" + file.name
+            val fileName = "Crop_post_video_" + System.currentTimeMillis() + ".mp4"
             val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
             Log.e("AAA", "视频输出路径：$outputPath")
             param.outputPath = outputPath
@@ -302,7 +303,8 @@ class CropManager {
             val aliyunCrop = AliyunCropCreator.createCropInstance(context)
 
             val file = File(imagePath)
-            val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
+//            val fileName = "crop_" + System.currentTimeMillis() + "_" + file.name
+            val fileName = "Crop_image" + System.currentTimeMillis() + ".jpg"
 
             val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
 
@@ -426,8 +428,8 @@ class CropManager {
                 if (readableMap.hasKey("endTime")) readableMap.getInt("endTime")*1000 else duration
 
             val file = File(videoPath)
-            val fileName = "crop_" + file.name
-
+//            val fileName = "crop_" + file.name
+            val fileName = "Crop_video_" + System.currentTimeMillis() + ".mp4"
             val outputPath = FileUtils.createFile(getEditorDirs(context), fileName).path
 
             //设置裁剪参数
@@ -632,7 +634,8 @@ class CropManager {
                     override fun onThumbnailReady(bitmap: Bitmap, longTime: Long, index: Int) {
                         if (!bitmap.isRecycled) {
 
-                            val name = File(videoPath).nameWithoutExtension
+//                            val name = File(videoPath).nameWithoutExtension
+                            val name = System.currentTimeMillis()
                             var videoFramePath = FileUtils.createFile(
                                 getVideoFrameDirs(context),
                                 "VideoFrame-$name-$longTime.jpg"
@@ -675,7 +678,8 @@ class CropManager {
 //            }
 //            var videoFramePath =
 //                FileUtils.getDiskCachePath(context) + File.separator + "Media" + File.separator + "videoFrame" + File.separator
-//            val name = File(videoPath).nameWithoutExtension
+//            // val name = File(videoPath).nameWithoutExtension
+//            val name = System.currentTimeMillis()
 //            videoFramePath = FileUtils.createFile(
 //                videoFramePath,
 //                "VideoFrame-$name-$longTime.jpg"
