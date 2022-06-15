@@ -566,6 +566,7 @@ AliyunCropDelegate
         }
     }else{
         int code = [self.editor removeMusics];
+        [[self.editor getPlayer] resume];
     }
 }
 
