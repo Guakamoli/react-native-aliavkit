@@ -142,6 +142,7 @@ class DownloadUtils {
                 val md5Value = SPUtils.getInstance().getString(spKey)
                 if (md5Text != md5Value) {
                     baseInfo = GsonManage.fromJson(text, MusicFileBaseInfo::class.java)
+                    MusicFileInfoDao.instance.deleteAll()
                     MusicFileInfoDao.instance.insertList(baseInfo?.songs)
                     SPUtils.getInstance().put(spKey, md5Text)
                 }
