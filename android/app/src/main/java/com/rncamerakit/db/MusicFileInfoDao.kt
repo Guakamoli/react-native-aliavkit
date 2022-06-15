@@ -84,7 +84,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
             throw SQLException("SQLiteDatabase is null")
         }
         list?.forEach { info ->
-            if (!haveInfo(info.songID)) {
+//            if (!haveInfo(info.songID)) {
                 val values = ContentValues()
                 values.put("SONG_ID", info.songID)
                 values.put("NAME", info.name)
@@ -95,7 +95,7 @@ class MusicFileInfoDao private constructor() : IMusicFileInfoDao {
                 values.put("COVER", info.cover)
                 values.put("URL", info.url)
                 mDatabase?.insert(tableName, null, values)
-            }
+//            }
         }
         close()
     }
