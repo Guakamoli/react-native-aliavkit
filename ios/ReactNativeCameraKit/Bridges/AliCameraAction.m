@@ -304,11 +304,12 @@
 
 - (void)destroyRecorder
 {
-    //美颜引擎释放
-    [[BeautyEngineManager shareManager] cleanQueenEngine];
     //录制释放
+    [_recorder stopPreview];
     [_recorder destroyRecorder];
     _recorder = nil;
+    //美颜引擎释放
+    [[BeautyEngineManager shareManager] cleanQueenEngine];
   
 }
 

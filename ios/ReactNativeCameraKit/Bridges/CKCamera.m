@@ -101,20 +101,22 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
-    if (!self.superview && _isPresented) {
-        if (self.cameraAction.isRecording) {
-            [self.cameraAction stopRecordVideo:nil];
-        }
-        [self.cameraAction stopPreview];
-        [self destroyRecorder];
-//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-//            [self.cameraAction.cameraPreview removeFromSuperview];
+//    if (!self.superview && _isPresented) {
+//        if (self.cameraAction.isRecording) {
+//            [self.cameraAction stopRecordVideo:nil];
 //        }
-        _isPresented = NO;
-        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-    }else{
-        
-    }
+//        [self.cameraAction stopPreview];
+//        [self.cameraAction removeNotification];
+//        [self.cameraAction destroyRecorder];
+//
+////        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+////            [self.cameraAction.cameraPreview removeFromSuperview];
+////        }
+//        _isPresented = NO;
+//        [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+//    }else{
+//
+//    }
 }
 
 - (void)didMoveToWindow
@@ -133,14 +135,13 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
         _isPresented = YES;
-    }
-    if (!self.window && _isPresented) {
+    }else if (!self.window && _isPresented) {
         if (self.cameraAction.isRecording) {
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
         [self.cameraAction removeNotification];
-        [self destroyRecorder];
+        [self.cameraAction destroyRecorder];
         
 //        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
 //            [self.cameraAction.cameraPreview removeFromSuperview];
@@ -207,7 +208,7 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
         CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
         if (outputSize.width != 0 && outputSize.height != 0 ) {
-            self.cameraAction.mediaConfig.outputSize = outputSize;            
+            self.cameraAction.mediaConfig.outputSize = outputSize;
         }
         if ([mediaInfo objectForKey:@"minDuration"]) {
             CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
