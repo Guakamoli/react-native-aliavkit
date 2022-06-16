@@ -50,7 +50,7 @@
 {
     if(scaleAspectFit)
     {
-        self.photoView.contentMode = UIViewContentModeScaleAspectFit;
+        self.photoView.contentMode = UIViewContentModeScaleAspectFill;
     }else{
         self.photoView.contentMode = UIViewContentModeScaleAspectFill;
     }
