@@ -120,6 +120,11 @@ RCT_EXPORT_METHOD(destroyRecorder)
     [self.camera destroyRecorder];
 }
 
+RCT_EXPORT_METHOD(releaseCamera)
+{
+    [self.camera destroyRecorder];
+}
+
 RCT_EXPORT_METHOD(resumeCamera)
 {
     [self.camera resumeCamera];
