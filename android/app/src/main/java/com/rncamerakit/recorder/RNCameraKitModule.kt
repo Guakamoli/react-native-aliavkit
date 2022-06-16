@@ -220,4 +220,9 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
         mView?.onRelease()
     }
 
+    @ReactMethod
+    fun releaseCamera(promise: Promise) {
+        mView?.onRelease()
+    }
+
 }
