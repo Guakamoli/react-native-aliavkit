@@ -74,7 +74,7 @@ class EffectPasterManage private constructor() {
     }
 
     abstract class OnGifEffectPasterCallback {
-        open fun onPath(path: String) {}
+        open fun onPath(path: String, paster: PreviewPasterForm) {}
     }
 
     fun setEffectPaster(paster: PreviewPasterForm, mReactContext: ReactContext?, callback: OnGifEffectPasterCallback) {
@@ -94,10 +94,10 @@ class EffectPasterManage private constructor() {
         }
         if (FileUtils.dirNotEmpty(path)) {
             Log.e("AAA", "local effectPaster progress：$path")
-            callback.onPath(path)
+            callback.onPath(path, paster)
         } else {
             if (TextUtils.isEmpty(paster?.url)) {
-                callback.onPath("")
+                callback.onPath("", paster)
                 return
             }
             //需要下载
@@ -116,7 +116,7 @@ class EffectPasterManage private constructor() {
                 override fun onFinish(downloadId: Int, path: String) {
                     Log.e("AAA", "下载完成 path：$path")
                     RNAliavkitEventEmitter.downloadPasterProgress(mReactContext, 100, paster.sort)
-                    callback.onPath(path)
+                    callback.onPath(path, paster)
                 }
 
                 override fun onError(task: BaseDownloadTask, e: Throwable) {
