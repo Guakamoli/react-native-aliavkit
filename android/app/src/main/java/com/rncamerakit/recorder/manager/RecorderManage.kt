@@ -397,6 +397,9 @@ class RecorderManage(
         }
     }
 
+
+//    private var currentPaster?PreviewPasterForm = null
+
     /**
      * 设置人脸贴纸
      */
@@ -406,15 +409,17 @@ class RecorderManage(
         }
         EffectPasterManage.instance.setEffectPaster(paster, mReactContext,
             object : EffectPasterManage.OnGifEffectPasterCallback() {
-                override fun onPath(path: String) {
-                    super.onPath(path)
-//                    if (mEffectPaster != null) {
-//                        mRecorder?.removePaster(mEffectPaster)
-//                    }
-                    Log.e("AAA", "set effectPaster path：$path")
-                    val source = Source(path)
-                    mEffectPaster = EffectPaster(source)
-                    val addPaster = mRecorder?.addPaster(mEffectPaster)
+                override fun onPath(path: String, pasterForm: PreviewPasterForm) {
+                    super.onPath(path, pasterForm)
+                    if (paster.id == pasterForm.id) {
+                        if (mEffectPaster != null) {
+                            mRecorder?.removePaster(mEffectPaster)
+                        }
+                        Log.e("AAA", "set effectPaster path：$path")
+                        val source = Source(path)
+                        mEffectPaster = EffectPaster(source)
+                        val addPaster = mRecorder?.addPaster(mEffectPaster)
+                    }
                 }
             })
     }
