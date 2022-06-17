@@ -20,6 +20,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
     companion object {
         @SuppressLint("StaticFieldLeak")
         var mView: CKCamera? = null
+        var mPreviewPasterForm: PreviewPasterForm? = null
     }
 
     override fun getName(): String {
@@ -208,6 +209,7 @@ class RNCameraKitModule(private val reactContext: ReactApplicationContext) :
 
             previewPaster.path =
                 if (readableMap.hasKey("path")) readableMap.getString("path") else ""
+            RNCameraKitModule.mPreviewPasterForm = previewPaster
             reactContext.runOnUiQueueThread {
                 mView?.mRecorderManage?.setFaceEffectPaster(previewPaster, reactContext)
             }

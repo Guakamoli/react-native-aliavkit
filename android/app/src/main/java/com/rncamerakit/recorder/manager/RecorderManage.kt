@@ -33,6 +33,7 @@ import com.rncamerakit.crop.CropManager
 import com.rncamerakit.db.MusicFileBean
 import com.rncamerakit.recorder.ImplRecordCallback
 import com.rncamerakit.recorder.OnRecorderCallbacks
+import com.rncamerakit.recorder.RNCameraKitModule
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
 import org.jetbrains.anko.doAsync
@@ -398,8 +399,6 @@ class RecorderManage(
     }
 
 
-//    private var currentPaster?PreviewPasterForm = null
-
     /**
      * 设置人脸贴纸
      */
@@ -411,10 +410,10 @@ class RecorderManage(
             object : EffectPasterManage.OnGifEffectPasterCallback() {
                 override fun onPath(path: String, pasterForm: PreviewPasterForm) {
                     super.onPath(path, pasterForm)
-                    if (paster.id == pasterForm.id) {
-                        if (mEffectPaster != null) {
-                            mRecorder?.removePaster(mEffectPaster)
-                        }
+                    if (mEffectPaster != null) {
+                        mRecorder?.removePaster(mEffectPaster)
+                    }
+                    if (RNCameraKitModule.mPreviewPasterForm?.id == pasterForm.id) {
                         Log.e("AAA", "set effectPaster path：$path")
                         val source = Source(path)
                         mEffectPaster = EffectPaster(source)
