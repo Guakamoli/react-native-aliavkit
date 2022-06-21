@@ -105,7 +105,7 @@ class CropManager {
         }
 
 
-        fun cropPostVideo(reactContext: ReactContext, videoPath: String, promise: Promise): AliyunICrop? {
+        fun postCropVideo(reactContext: ReactContext, videoPath: String, promise: Promise): AliyunICrop? {
             if (TextUtils.isEmpty(videoPath)) {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return null
@@ -158,18 +158,35 @@ class CropManager {
                             mBitrate = (bitRate/1000).toInt()
                         }
                     } else {
-                        //沿用原视频码率
-                        if (bitRate < mBitrate*1000) {
-                            mBitrate = (bitRate/1000).toInt()
+                        val file = File(videoPath)
+                        val fileSuffix = file.name.substring(file.name.lastIndexOf("."))
+                        //宽高比特率都比设定值小时，并且是 mp4 通用文件，不需要裁剪，直接返回原视频路径
+                        if (bitRate < mBitrate*1000 && fileSuffix.contains("mp4")) {
+                            //TODO
+                            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
+
+                            cropMap["index"] = 0
+                            cropMap["localPath"] = videoPath
+                            cropMap["name"] = file.name
+                            cropMap["path"] = videoPath
+                            cropMap["coverImage"] = ""
+
+                            cropMap["size"] = file.length()
+
+                            if (rotation == 90 || rotation == 270) {
+                                cropMap["width"] = frameHeight
+                                cropMap["height"] = frameWidth
+                            }else{
+                                cropMap["width"] = frameWidth
+                                cropMap["height"] = frameHeight
+                            }
+
+                            cropMap["type"] = "video/mp4"
+                            cropMap["isCroped"] = false
+                            RNAliavkitEventEmitter.postVideoCrop(reactContext, 100)
+                            promise.resolve(GsonBuilder().create().toJson(cropMap))
+                            return null
                         }
-//                        //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
-//                        if (bitRate < mBitrate*1000) {
-//                            val cropMap: HashMap<String, Any> = HashMap<String, Any>()
-//                            cropMap["path"] = videoPath
-//                            cropMap["isCroped"] = 0
-//                            promise.resolve(GsonBuilder().create().toJson(cropMap))
-//                            return null
-//                        }
                         mVideoWidth = frameWidth
                         mVideoHeight = frameHeight
                     }

@@ -279,16 +279,38 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
                 mBitrate = bitRate;
             }
         } else {
-            if (bitRate < mBitrate) {
-                mBitrate = bitRate;
+            
+            NSString *fileType =[self fileMIMETypeURLSessionWithPath:videoPath];
+            
+            //转小写
+            fileType = [fileType lowercaseStringWithLocale:[NSLocale currentLocale]];
+            
+            //宽高比特率都比设定值小时，并且是通用格式 mp4，不需要裁剪，直接返回原视频路径
+            if (bitRate < mBitrate && [fileType containsString:@"mp4"]) {
+                //TODO
+                NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:videoPath error:nil].fileSize;
+              
+                NSString *fileName = [videoPath lastPathComponent];
+                id cropParam = @{
+                    @"index":@0,
+                    @"localPath":videoPath,
+                    @"name":fileName,
+                    @"path":videoPath,
+                    @"coverImage":@"",
+                    
+                    @"size":@(fileSize),
+                    @"width":@(frameWidth),
+                    @"height":@(frameHeight),
+                    
+                    @"type":@"video/mp4",
+                    
+                    @"isCroped":@(NO)
+                };
+                //设置裁剪进度 100%
+                [self sendEventWithName:@"postVideoCrop" body:@{@"progress":@(1.0)}];
+                resolve(cropParam);
+                return;
             }
-//            //宽高比特率都比设定值小时，不需要裁剪，直接返回原视频路径
-//            if (bitRate < mBitrate) {
-//                //TODO
-//                id cropParam = @{@"path":videoPath, @"isCroped":@(FALSE)};
-//                resolve(cropParam);
-//                return;
-//            }
             mVideoWidth = frameWidth;
             mVideoHeight = frameHeight;
         }
