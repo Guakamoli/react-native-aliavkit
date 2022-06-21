@@ -226,10 +226,26 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         reject(@"",@"no path param",nil);
         return;
     }
-//    if (![videoPath containsString:@"ph://"]) {
-//        reject(@"",@"no ph:// scheme",nil);
-//        return;
-//    }
+
+    if ([videoPath containsString:@"ph://"]) {
+        NSString *_assetId = [videoPath stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
+        PHAsset *phAsset = [PHAsset fetchAssetsWithLocalIdentifiers:@[_assetId] options:nil].firstObject;
+        
+        if (phAsset.mediaType != PHAssetMediaTypeVideo) {
+            reject(@"",@"asset is not video",nil);
+            return;
+        }
+
+        __weak typeof(self) weakSelf = self;
+        [[AliyunPhotoLibraryManager sharedManager] getVideoWithAsset:phAsset
+                                                          completion:^(AVAsset *avAsset, NSDictionary *info) {
+            AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
+            NSString *sourcePath = [urlAsset.URL path];
+            [weakSelf postCropVideo:sourcePath resolve:resolve rejecter:reject];
+        }];
+        return;
+    }
+
     _postCropLocalPath = videoPath;
     _videoCropResolve = resolve;
     _videoCropReject = reject;
