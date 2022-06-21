@@ -237,7 +237,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun postCropVideo(videoPath: String, promise: Promise) {
         mPostCropPromise = promise
         val context = reactContext
-        mPostAliyunICrop = CropManager.cropPostVideo(context, videoPath, promise)
+        mPostAliyunICrop = CropManager.postCropVideo(context, videoPath, promise)
     }
 
     @ReactMethod
