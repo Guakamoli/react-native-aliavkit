@@ -19,7 +19,8 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
     fun uncheckPhoto(options: ReadableMap, promise: Promise) {
         if (options.toHashMap().size > 0) {
             if (options.hasKey("index")) {
-                val uncheckIndex = options.getInt("id")
+                val uncheckIndex = options.getInt("index")
+                mView?.uncheckPhoto(uncheckIndex)
             }
         }
     }
