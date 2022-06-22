@@ -69,5 +69,27 @@ RCT_EXPORT_VIEW_PROPERTY(onErrorCallback, RCTBubblingEventBlock)
 //返回第一个相册数据
 RCT_EXPORT_VIEW_PROPERTY(onGetFirstPhotoCallback, RCTBubblingEventBlock)
 
+
+/**
+ * 取消照片选中
+ * 
+ */
+RCT_EXPORT_METHOD(uncheckPhoto :(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    //  (NSDictionary*)options
+    // {
+    //     index:下标：选择的图片/视频数组的顺序,
+    //     width:该图片/视频的宽, 视频可能需要根据角度宽高对换
+    //     height:该图片/视频的高,
+    //     url:文件本地地址
+    //     fileSize:文件大小（字节大小）,
+    //     filename:文件名称,
+    //     type: 文件类型： 格式为 "video/mp4" 或者  "image/jpeg",
+    //     playableDuration: 视频时长,图片为0,视频为 ms
+    //     rotation: 视频角度
+    // }
+}
 @end
 

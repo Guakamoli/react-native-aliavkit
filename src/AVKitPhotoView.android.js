@@ -23,6 +23,11 @@ export default class AVkitPhotoView extends React.Component {
         }
     };
 
+
+    resumeCamera = async (options) => {
+        return await RNAliKitPhotoViewModule.uncheckPhoto(options);
+    }
+
     /**
      * 
      * @param {*} multiSelect 是否多选

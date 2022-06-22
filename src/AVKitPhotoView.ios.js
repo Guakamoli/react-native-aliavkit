@@ -16,12 +16,16 @@ export default class AVkitPhotoView extends React.Component {
             multiSelect: !!props?.multiSelect,
             maxSelectCount: !!props?.maxSelectCount ? props.maxSelectCount : 10,
             defaultSelectedPosition: !!props?.defaultSelectedPosition ? props.defaultSelectedPosition : 0,
-            defaultSelectedStatus:props.defaultSelectedStatus,
+            defaultSelectedStatus: props.defaultSelectedStatus,
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
         }
     };
+
+    resumeCamera = async (options) => {
+        return await RNAlikitPhotoViewManager.uncheckPhoto(options);
+    }
 
     /**
      * 

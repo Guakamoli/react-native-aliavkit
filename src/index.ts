@@ -11,6 +11,8 @@ const { CameraKit } = NativeModules;
 
 const CameraModule = Platform.OS === 'ios' ? NativeModules.CKCameraManager : NativeModules.RNCameraKitModule;
 
+const PhotoModule = Platform.OS === 'ios' ? NativeModules.RNAliKitPhotoViewManager : NativeModules.RNAliKitPhotoViewModule;
+
 export const Orientation = {
   PORTRAIT: 0, // ⬆️
   LANDSCAPE_LEFT: 1, // ⬅️
@@ -20,4 +22,4 @@ export const Orientation = {
 
 export default CameraKit;
 
-export { Camera, VideoEditor, AVService, AVKitPhotoView, CameraModule };
+export { Camera, VideoEditor, AVService, AVKitPhotoView, CameraModule, PhotoModule };

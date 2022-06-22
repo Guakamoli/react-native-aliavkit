@@ -9,7 +9,9 @@ export default class PostPickerExample extends Component {
         <AVKitPhotoView {...this.props}
           style={{ ...StyleSheet.absoluteFill, backgroundColor: 'black' }}
           multiSelect={true}
-          defaultSelectedStatus={true}
+          numColumns={3}
+          pageSize={90}
+          defaultSelectedPosition={-1}
           onSelectedPhotoCallback={() => {}}
           onMaxSelectCountCallback={() => {}}
         ></AVKitPhotoView>
