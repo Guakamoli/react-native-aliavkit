@@ -23,7 +23,7 @@ export default class AVkitPhotoView extends React.Component {
         }
     };
 
-    resumeCamera = async (options) => {
+    uncheckPhoto = async (options) => {
         return await RNAlikitPhotoViewManager.uncheckPhoto(options);
     }
 
