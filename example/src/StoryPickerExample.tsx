@@ -13,11 +13,12 @@ export default class StoryPickerExample extends Component {
       <View style={styles.cameraContainer}>
         <AVKitPhotoView {...this.props}
           style={{ ...StyleSheet.absoluteFill, backgroundColor: 'black' }}
-          numColumns={3}
-          itemWidth={photoItemWidth}
-          itemHeight={photoItemHeight}
+          // itemWidth={photoItemWidth}
+          // itemHeight={photoItemHeight}
           multiSelect={false}
-          defaultSelectedStatus={true}
+          numColumns={3}
+          pageSize={90}
+          defaultSelectedPosition={-1}
           onSelectedPhotoCallback={() => { }}
           onMaxSelectCountCallback={() => { }}
         ></AVKitPhotoView>
