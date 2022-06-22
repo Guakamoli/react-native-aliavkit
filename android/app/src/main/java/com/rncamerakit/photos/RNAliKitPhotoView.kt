@@ -176,38 +176,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
                 super.onRemovePhotoClick(position, info)
                 val removeListPosition = mSelectedPhotoMap[position]
                 removeListPosition?.let {
-                    mSelectedPhotoList.removeAt(it - 1)
-                    mSelectedPhotoMap.remove(position)
-
-                    var maxValue: Int = 0
-                    var maxKey: Int = 0
-                    for ((key, value) in mSelectedPhotoMap) {
-                        if (value > removeListPosition) {
-                            mSelectedPhotoMap[key] = value - 1
-                        }
-                        mPhotoAdapter?.notifyItemChanged(key)
-
-                        if (value > maxValue) {
-                            maxValue = value
-                            maxKey = key
-                        }
-                        Log.e("AAA", "key:$key" + "；value:" + mSelectedPhotoMap[key])
-                    }
-
-                    if (position == mCurrentClickPosition) {
-                        mCurrentClickPosition = maxKey
-                    }
-
-                    if (mSelectedPhotoMap.isEmpty()) {
-                        mPhotoAdapter?.notifyItemRangeChanged(0, mPhotoList.size, "MultiSelectChanged")
-                    } else {
-                        mPhotoAdapter?.notifyItemChanged(position)
-                    }
-
-                    if (mSelectedPhotoList.isNotEmpty()) {
-                        mPhotoAdapter?.setCurrentClickPosition(mCurrentClickPosition)
-                    }
-
+                    removeSelected(it - 1,position)
                     Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
                     sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
                 }
@@ -379,6 +348,50 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         map.putInt("selectedIndex", selectPosition)
         map.putArray("data", arrayList)
         mEventEmitter?.receiveEvent(id, EventEmitterKeys.EVENT_SELECTED_PHOTO_CALLBACK.toString(), map)
+    }
+
+    fun uncheckPhoto(removeListPosition: Int) {
+        var uncheckPosition: Int? = null
+        for ((key, value) in mSelectedPhotoMap) {
+            if (value - 1 == removeListPosition) {
+                uncheckPosition = key
+                break
+            }
+        }
+        uncheckPosition?.let {
+            removeSelected(removeListPosition,uncheckPosition)
+        }
+    }
+
+    fun removeSelected(removeListPosition: Int, removeSelectPosition: Int) {
+        mSelectedPhotoList.removeAt(removeListPosition)
+        mSelectedPhotoMap.remove(removeSelectPosition)
+        var maxValue: Int = 0
+        var maxKey: Int = 0
+        for ((key, value) in mSelectedPhotoMap) {
+            if (value > removeListPosition) {
+                mSelectedPhotoMap[key] = value - 1
+            }
+            mPhotoAdapter?.notifyItemChanged(key)
+
+            if (value > maxValue) {
+                maxValue = value
+                maxKey = key
+            }
+        }
+        if (removeSelectPosition == mCurrentClickPosition) {
+            mCurrentClickPosition = maxKey
+        }
+
+        if (mSelectedPhotoMap.isEmpty()) {
+            mPhotoAdapter?.notifyItemRangeChanged(0, mPhotoList.size, "MultiSelectChanged")
+        } else {
+            mPhotoAdapter?.notifyItemChanged(removeSelectPosition)
+        }
+
+        if (mSelectedPhotoList.isNotEmpty()) {
+            mPhotoAdapter?.setCurrentClickPosition(mCurrentClickPosition)
+        }
     }
 
     fun onDestroy() {
