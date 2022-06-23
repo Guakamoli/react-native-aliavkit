@@ -153,10 +153,10 @@
         [self resetPhotoView];
     }
 }
-- (void)setMultiSelect:(BOOL)videoMute
+- (void)setMultiSelect:(BOOL)multiSelect
 {
-    if(_multiSelect != videoMute){
-        _multiSelect = videoMute;
+    if(_multiSelect != multiSelect){
+        _multiSelect = multiSelect;
         [self resetPhotoView];
     }
 }
@@ -287,11 +287,11 @@
     BOOL selectStatus   = [self.selectedIndexs containsObject:@(indexPath.item).stringValue];
     cell.photoIndex     = 0;
     cell.indexPath      = indexPath;
-    [cell setStoryMode:self.defaultSelectedPosition == -1];
+
     if(!self.multiSelect){
         //非多选状态下页面只有默认状态和白色模版状态
         cell.cellStatus     = selectStatus ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
-        cell.selectStatus   = AYPhotoSelectStatusDefault;
+        cell.selectStatus   = selectStatus ? AYPhotoSelectStatusCheck : AYPhotoSelectStatusDefault;
     }else if(self.selectedIndexs.count == 0){
         //多选情况下允许不选择
         cell.cellStatus     =  AYPhotoCellStatusDefault;
@@ -681,15 +681,26 @@
             }
         }
         self.onSelectedPhotoCallback(@{@"selectedIndex":selectedIndex, @"data":selectData});
-        //story中只有单选模式,选中后将本地数据清空
-        if(self.defaultSelectedPosition == -1)
-        {
-            self.selectedIndexs = [NSMutableArray new];
-        }
+
     }else{
         self.onSelectedPhotoCallback(@{@"selectedIndex":@(0), @"data":@[]});
     }
 }
 
-@end
+- (void)uncheckPhoto:(NSInteger)index
+{
+    if (!self.multiSelect) {
+        self.selectedIndexs = [NSMutableArray new];
+    } else {
+        NSString *indexStr = self.selectedIndexs[index];
+        [self.selectedIndexs removeObjectAtIndex:index];
 
+        if (self.selectedIndexs.count > 0 && self.lastSelectIndex == [indexStr integerValue]) {
+            self.lastSelectIndex = [self.selectedIndexs.lastObject integerValue];
+        }
+    }
+    [self.collectionView reloadData];
+    //[self sendSelectPhotoDataToRN];
+}
+
+@end

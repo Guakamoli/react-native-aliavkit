@@ -12,6 +12,8 @@
 
 @interface RNAliKitPhotoViewManager ()
 
+@property (nonatomic, weak) RNAliKitPhotoView *photoView;
+
 @end
 
 @implementation RNAliKitPhotoViewManager
@@ -22,8 +24,10 @@ RCT_EXPORT_MODULE();
 - (UIView *)view
 {
     //相册不属于公有组件,每次都创建新对象关联到RN中
-    return [RNAliKitPhotoView new];
+    RNAliKitPhotoView *view = [RNAliKitPhotoView new];
+    return self.photoView = view;
 }
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
@@ -74,9 +78,9 @@ RCT_EXPORT_VIEW_PROPERTY(onGetFirstPhotoCallback, RCTBubblingEventBlock)
  * 取消照片选中
  * 
  */
-RCT_EXPORT_METHOD(uncheckPhoto :(NSDictionary*)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:  (RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(uncheckPhoto:(NSDictionary*)options
+                       resolve:(RCTPromiseResolveBlock)resolve
+                        reject:(RCTPromiseRejectBlock)reject)
 {
     //  (NSDictionary*)options
     // {
@@ -90,6 +94,20 @@ RCT_EXPORT_METHOD(uncheckPhoto :(NSDictionary*)options
     //     playableDuration: 视频时长,图片为0,视频为 ms
     //     rotation: 视频角度
     // }
+    RNAliKitPhotoView *view = self.photoView;
+    if (!view) {
+        reject(@"", @"no photoview found", nil);
+        return;
+    }
+    
+    NSNumber *index = options[@"index"];
+    @try {
+        [view uncheckPhoto:[index integerValue]];
+        resolve(nil);
+    }
+    @catch (NSException *exception) {
+        reject(exception.name, exception.reason, nil);
+    }
 }
-@end
 
+@end

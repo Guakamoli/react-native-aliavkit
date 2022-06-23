@@ -2,7 +2,7 @@ import React from 'react';
 
 import { requireNativeComponent, NativeModules } from 'react-native';
 
-const { RNAlikitPhotoViewManager } = NativeModules;
+const { RNAliKitPhotoViewManager } = NativeModules;
 const NativePhotoView = requireNativeComponent('RNAliKitPhotoView');
 
 
@@ -24,7 +24,7 @@ export default class AVkitPhotoView extends React.Component {
     };
 
     uncheckPhoto = async (options) => {
-        return await RNAlikitPhotoViewManager.uncheckPhoto(options);
+        return await RNAliKitPhotoViewManager.uncheckPhoto(options);
     }
 
     /**
