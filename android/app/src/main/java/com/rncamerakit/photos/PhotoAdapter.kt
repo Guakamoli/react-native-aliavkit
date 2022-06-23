@@ -62,9 +62,11 @@ class PhotoAdapter(
 
     fun setCurrentClickPosition(position: Int) {
         mCurrentClickPosition = position
-        notifyItemChanged(mOldCurrentClickPosition)
-        notifyItemChanged(mCurrentClickPosition)
-        mOldCurrentClickPosition = mCurrentClickPosition
+        if(position>=0){
+            notifyItemChanged(mOldCurrentClickPosition)
+            notifyItemChanged(mCurrentClickPosition)
+            mOldCurrentClickPosition = mCurrentClickPosition
+        }
     }
 
     init {
@@ -147,6 +149,7 @@ class PhotoAdapter(
         //取消多选选中
         holder.flCheckView.setOnClickListener {
             if (!mMultiSelect) {
+                mItemListener?.onRemovePhotoClick(position, info)
                 return@setOnClickListener
             }
             if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {

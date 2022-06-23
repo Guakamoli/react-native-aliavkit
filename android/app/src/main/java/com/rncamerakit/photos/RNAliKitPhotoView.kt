@@ -174,10 +174,17 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
             override fun onRemovePhotoClick(position: Int, info: MediaInfo) {
                 super.onRemovePhotoClick(position, info)
-                val removeListPosition = mSelectedPhotoMap[position]
-                removeListPosition?.let {
-                    removeSelected(it - 1,position)
-                    Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
+                if(mMultiSelect){
+                    val removeListPosition = mSelectedPhotoMap[position]
+                    removeListPosition?.let {
+                        removeSelected(it - 1, position)
+                        Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
+                        sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
+                    }
+                }else{
+                    mPhotoAdapter?.setCurrentClickPosition(-1)
+                    mSelectedPhotoList.clear()
+                    filAdapter()
                     sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
                 }
             }
@@ -352,15 +359,22 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
     fun uncheckPhoto(removeListPosition: Int) {
         var uncheckPosition: Int? = null
-        for ((key, value) in mSelectedPhotoMap) {
-            if (value - 1 == removeListPosition) {
-                uncheckPosition = key
-                break
+        if (mMultiSelect) {
+            for ((key, value) in mSelectedPhotoMap) {
+                if (value - 1 == removeListPosition) {
+                    uncheckPosition = key
+                    break
+                }
             }
+            uncheckPosition?.let {
+                removeSelected(removeListPosition, uncheckPosition)
+            }
+        } else {
+            mPhotoAdapter?.setCurrentClickPosition(-1)
+            mSelectedPhotoList.clear()
+            filAdapter()
         }
-        uncheckPosition?.let {
-            removeSelected(removeListPosition,uncheckPosition)
-        }
+
     }
 
     fun removeSelected(removeListPosition: Int, removeSelectPosition: Int) {
