@@ -392,10 +392,11 @@ RCT_EXPORT_METHOD(getRecordColorFilter:(NSDictionary*)options
     NSArray *names = @[@"柔柔",@"优雅",@"红润",@"阳光",@"海蓝",@"炽黄",@"浓烈",@"闪耀",@"朝阳",@"经典",@"粉桃",@"雪梨",@"鲜果",@"麦茶",@"灰白",@"波普",@"光圈",@"海盐",@"黑白",@"胶片",@"焦黄",@"蓝调",@"迷糊",@"思念",@"素描",@"鱼眼",@"马赛克",@"模糊"];
     NSMutableArray *infos = [NSMutableArray array];
     for (NSString *name in names) {
+        NSString *displayName = NSLocalizedStringFromTable(name, @"RNAliAVKit", nil);
         NSString *iconPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"Filter/%@/icon.png",name]];
         NSString *path = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"Filter/%@",name]];
 //        [infos addObject:@{@"iconPath":iconPath,@"filterName":name}];
-        [infos addObject:@{@"filterName":name,@"iconPath":iconPath,@"path":path}];
+        [infos addObject:@{@"filterName":name,@"displayName":displayName,@"iconPath":iconPath,@"path":path}];
     }
     if (infos.count) {
         resolve(infos);
@@ -411,8 +412,9 @@ RCT_EXPORT_METHOD(getFilterIcons:(NSDictionary*)options
     NSArray *names = @[@"柔柔",@"优雅",@"红润",@"阳光",@"海蓝",@"炽黄",@"浓烈",@"闪耀",@"朝阳",@"经典",@"粉桃",@"雪梨",@"鲜果",@"麦茶",@"灰白",@"波普",@"光圈",@"海盐",@"黑白",@"胶片",@"焦黄",@"蓝调",@"迷糊",@"思念",@"素描",@"鱼眼",@"马赛克",@"模糊"];
     NSMutableArray *infos = [NSMutableArray array];
     for (NSString *name in names) {
+        NSString *displayName = NSLocalizedStringFromTable(name, @"RNAliAVKit", nil);
         NSString *iconPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"Filter/%@/icon.png",name]];
-        [infos addObject:@{@"iconPath":iconPath,@"filterName":name}];
+        [infos addObject:@{@"iconPath":iconPath,@"filterName":name,@"displayName":displayName}];
     }
     if (infos.count) {
         resolve(infos);

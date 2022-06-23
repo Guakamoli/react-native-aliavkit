@@ -20,7 +20,7 @@ export default function PostPickerExample() {
     <View style={styles.cameraContainer}>
       <AVKitPhotoView {...this.props}
         ref={ref}
-        style={{ ...StyleSheet.absoluteFill, backgroundColor: 'black' }}
+        style={{ flex: 1, backgroundColor: 'black' }}
         multiSelect={true}
         numColumns={3}
         pageSize={90}

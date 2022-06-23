@@ -63,8 +63,8 @@ export default class VideoEditorExample extends Component {
 
   async getFilters() {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
-    const infos = await RNEditViewManager.getFilterIcons({});
-   
+    const infos = await AVService.getFilterIcons({});
+    console.info("getFilters", infos);
   }
 
   //'play: ', { nativeEvent: { target: 685, streamProgress: 4.906666, playProgress: 4.906666 } }
@@ -188,6 +188,8 @@ const styles = StyleSheet.create({
   outContainer: {
     flex: 1,
     backgroundColor: 'black',
+    paddingTop: 48,
+    paddingBottom: 20,
   },
   editContainer: {
     flex: 1,

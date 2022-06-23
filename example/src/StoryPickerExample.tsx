@@ -24,7 +24,7 @@ export default function StoryPickerExample() {
     <View style={styles.cameraContainer}>
       <AVKitPhotoView {...this.props}
         ref={ref}
-        style={{ ...StyleSheet.absoluteFill, backgroundColor: 'black' }}
+        style={{ flex: 1, backgroundColor: 'black' }}
         // itemWidth={photoItemWidth}
         // itemHeight={photoItemHeight}
         multiSelect={false}
