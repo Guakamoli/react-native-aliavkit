@@ -149,7 +149,7 @@ class PhotoAdapter(
         //取消多选选中
         holder.flCheckView.setOnClickListener {
             if (!mMultiSelect) {
-//                mItemListener?.onRemovePhotoClick(position, info)
+                mItemListener?.onRemovePhotoClick(position, info)
                 return@setOnClickListener
             }
             if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {
