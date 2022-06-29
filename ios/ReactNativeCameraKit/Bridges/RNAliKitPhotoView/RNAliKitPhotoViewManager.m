@@ -51,6 +51,10 @@ RCT_EXPORT_VIEW_PROPERTY(defaultSelectedStatus, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(itemWidth, CGFloat)
 // itemHeight: 同itemWidth
 RCT_EXPORT_VIEW_PROPERTY(itemHeight, CGFloat)
+
+//相册显示类型 sortMode: "all" "vidoe" "photo"
+RCT_EXPORT_VIEW_PROPERTY(sortMode, NSString*)
+
 //onRecordingProgress:()=>(selectedIndex,selectedData)
 // selectedIndex： 当前选中的 图片/视频 数组下标，单选模式固定返回0
 // selectedData：  选择的图片、视频的数组，单选模式其中只有一条数据，多选模式中视频也应该只有一条数据

@@ -7,8 +7,6 @@ import com.aliyun.svideo.media.MediaStorage
 import com.facebook.react.uimanager.events.RCTEventEmitter
 
 
-
-
 class QueryMediaManager {
 
     private var mListener: OnQueryMediaListener? = null
@@ -26,11 +24,18 @@ class QueryMediaManager {
 
     private var mMediaStorage: MediaStorage? = null
 
-    fun initLoad(context: Context) {
+    fun initLoad(context: Context, sortMode: String?) {
         mMediaStorage = MediaStorage(context, JSONSupportImpl())
 
-        //显示视频和图片
-        mMediaStorage?.setSortMode(MediaStorage.SORT_MODE_MERGE)
+        if (sortMode == "video") {
+            mMediaStorage?.setSortMode(MediaStorage.SORT_MODE_VIDEO)
+        } else if (sortMode == "photo") {
+            mMediaStorage?.setSortMode(MediaStorage.SORT_MODE_PHOTO)
+        } else {
+            //显示视频和图片
+            mMediaStorage?.setSortMode(MediaStorage.SORT_MODE_MERGE)
+        }
+
         //设置显示的最小时长和最大时长
         mMediaStorage?.setVideoDurationRange(2000, 100*60*1000)
 

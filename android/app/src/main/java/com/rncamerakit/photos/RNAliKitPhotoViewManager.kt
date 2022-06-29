@@ -54,6 +54,11 @@ class RNAliKitPhotoViewManager : SimpleViewManager<RNAliKitPhotoView>() {
         view.setDefaultSelectedPosition(itemHeight)
     }
 
+    @ReactProp(name = "sortMode")
+    fun setSortMode(view: RNAliKitPhotoView, sortMode: String?) {
+        view.setSortMode(sortMode)
+    }
+
 
     override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
         val builder: MapBuilder.Builder<String, Any> = MapBuilder.builder<String, Any>()
