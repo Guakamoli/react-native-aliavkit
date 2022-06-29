@@ -20,6 +20,9 @@ export default class AVkitPhotoView extends React.Component {
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
+
+            // sortMode : "all"  "video"  "photo"
+            sortMode: !!props?.sortMode ? props.sortMode : 'all',
         }
     };
 
@@ -130,6 +133,8 @@ export default class AVkitPhotoView extends React.Component {
                 defaultSelectedStatus={this.state.defaultSelectedStatus}
                 itemWidth={this.state.itemWidth}
                 itemHeight={this.state.itemHeight}
+
+                sortMode={this.state.sortMode}
 
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}

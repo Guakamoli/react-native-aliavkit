@@ -42,6 +42,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     private var mSelectedPhotoList: MutableList<MediaInfo> = ArrayList()
 
     private var queryMediaManager: QueryMediaManager? = null
+    private var mSortMode: String? = "all"
 
     /**
      * key 选中图片在相册的下标，
@@ -76,6 +77,10 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         mDefaultSelectedPosition = position
     }
 
+    fun setSortMode(sortMode: String?) {
+        sortMode?.let { mSortMode = sortMode }
+    }
+
     init {
         mInitViewLoad = false
         mEventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
@@ -83,8 +88,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         this.mHeight = ScreenUtils.getHeight(reactContext)
         mPhotoList.clear()
         mSelectedPhotoList.clear()
-
-        queryMediaManager = QueryMediaManager()
 
         reactContext.runOnUiQueueThread {
             initViews()
@@ -174,14 +177,14 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
             override fun onRemovePhotoClick(position: Int, info: MediaInfo) {
                 super.onRemovePhotoClick(position, info)
-                if(mMultiSelect){
+                if (mMultiSelect) {
                     val removeListPosition = mSelectedPhotoMap[position]
                     removeListPosition?.let {
                         removeSelected(it - 1, position)
                         Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
                         sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
                     }
-                }else{
+                } else {
                     mPhotoAdapter?.setCurrentClickPosition(-1)
                     mSelectedPhotoList.clear()
                     filAdapter()
@@ -225,8 +228,8 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     }
 
     private fun initMedias() {
-
-        queryMediaManager?.initLoad(mContext.applicationContext)
+        queryMediaManager = QueryMediaManager()
+        queryMediaManager?.initLoad(mContext.applicationContext, mSortMode)
         queryMediaManager?.setOnQueryMediaListener(object : QueryMediaManager.OnQueryMediaListener() {
             override fun onDataUpdate(photoList: MutableList<MediaInfo>, baseCount: Int) {
                 super.onDataUpdate(photoList, baseCount)

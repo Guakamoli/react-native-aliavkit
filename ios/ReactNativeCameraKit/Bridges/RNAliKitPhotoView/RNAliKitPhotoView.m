@@ -41,6 +41,10 @@
 @property (nonatomic) CGFloat itemWidth;
 /**高优先级设置每个item的宽高,不做上下线干涉*/
 @property (nonatomic) CGFloat itemHeight;
+
+//相册显示类型 sortMode: "all" "vidoe" "photo"
+@property (nonatomic) NSString* sortMode;
+
 /**每次点击照片/视频后回调RN,注意是点击不是选择*/
 @property (nonatomic, copy) RCTBubblingEventBlock onSelectedPhotoCallback;
 /** 触发最大照片选择回调*/
@@ -173,6 +177,10 @@
         _itemHeight = itemHeight;
         [self resetPhotoView];
     }
+}
+- (void)setSortMode:(NSString*)sortMode
+{
+    // 这里设置相册展示类型：图片/视频
 }
 
 #pragma mark - setup view
