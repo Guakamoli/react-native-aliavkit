@@ -23,6 +23,11 @@ export default class AVkitPhotoView extends React.Component {
         }
     };
 
+
+    uncheckPhoto = async (options) => {
+        return await RNAliKitPhotoViewModule.uncheckPhoto(options);
+    }
+
     /**
      * 
      * @param {*} multiSelect 是否多选
@@ -50,7 +55,13 @@ export default class AVkitPhotoView extends React.Component {
 
 
     _onSelectedPhotoCallback = event => {
-        // console.info("_onSelectedPhotoCallback",event.nativeEvent);
+        // const data = event.nativeEvent.data
+        // console.info("_onSelectedPhotoCallback", data);
+        // if (data.length >= 5) {
+        //     setTimeout(() => {
+        //         this.uncheckPhoto(data[2])
+        //     }, 2000);
+        // }
         if (this.props.onSelectedPhotoCallback) {
             // selectedIndex： 当前选中的 图片/视频 数组下标，单选模式固定返回0
             // selectedData：  选择的图片、视频的数组，单选模式其中只有一条数据，多选模式中视频也应该只有一条数据

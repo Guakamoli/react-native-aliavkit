@@ -46,16 +46,6 @@
     return self;
 }
 
--(void)setStoryMode:(BOOL)scaleAspectFit
-{
-    if(scaleAspectFit)
-    {
-        self.photoView.contentMode = UIViewContentModeScaleAspectFill;
-    }else{
-        self.photoView.contentMode = UIViewContentModeScaleAspectFill;
-    }
-}
-
 - (void)setup
 {
     //基础图像层

@@ -12,6 +12,8 @@
 
 @interface RNAliKitPhotoViewManager ()
 
+@property (nonatomic, weak) RNAliKitPhotoView *photoView;
+
 @end
 
 @implementation RNAliKitPhotoViewManager
@@ -22,8 +24,10 @@ RCT_EXPORT_MODULE();
 - (UIView *)view
 {
     //相册不属于公有组件,每次都创建新对象关联到RN中
-    return [RNAliKitPhotoView new];
+    RNAliKitPhotoView *view = [RNAliKitPhotoView new];
+    return self.photoView = view;
 }
+
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();
@@ -69,5 +73,41 @@ RCT_EXPORT_VIEW_PROPERTY(onErrorCallback, RCTBubblingEventBlock)
 //返回第一个相册数据
 RCT_EXPORT_VIEW_PROPERTY(onGetFirstPhotoCallback, RCTBubblingEventBlock)
 
-@end
 
+/**
+ * 取消照片选中
+ * 
+ */
+RCT_EXPORT_METHOD(uncheckPhoto:(NSDictionary*)options
+                       resolve:(RCTPromiseResolveBlock)resolve
+                        reject:(RCTPromiseRejectBlock)reject)
+{
+    //  (NSDictionary*)options
+    // {
+    //     index:下标：选择的图片/视频数组的顺序,
+    //     width:该图片/视频的宽, 视频可能需要根据角度宽高对换
+    //     height:该图片/视频的高,
+    //     url:文件本地地址
+    //     fileSize:文件大小（字节大小）,
+    //     filename:文件名称,
+    //     type: 文件类型： 格式为 "video/mp4" 或者  "image/jpeg",
+    //     playableDuration: 视频时长,图片为0,视频为 ms
+    //     rotation: 视频角度
+    // }
+    RNAliKitPhotoView *view = self.photoView;
+    if (!view) {
+        reject(@"", @"no photoview found", nil);
+        return;
+    }
+    
+    NSNumber *index = options[@"index"];
+    @try {
+        [view uncheckPhoto:[index integerValue]];
+        resolve(nil);
+    }
+    @catch (NSException *exception) {
+        reject(exception.name, exception.reason, nil);
+    }
+}
+
+@end

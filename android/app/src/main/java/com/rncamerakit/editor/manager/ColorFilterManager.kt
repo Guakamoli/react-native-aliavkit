@@ -28,10 +28,10 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
             val mColorFilterList: MutableList<ColorFilter> = ArrayList()
 //            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
             EditorCommon.getColorFilterList(mContext).forEach { path ->
-//                val name = File(path).name
-                val name = getFilterName(mContext, path)
+                val name = File(path).name
+                val displayName = getFilterName(mContext, path)
                 val icon = "file://$path/icon.png"
-                mColorFilterList.add(ColorFilter(name, icon, path))
+                mColorFilterList.add(ColorFilter(displayName, name, icon, path))
             }
             promise.resolve(GsonBuilder().create().toJson(mColorFilterList))
         }
@@ -43,10 +43,10 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
             val mColorFilterList: MutableList<ColorFilter> = ArrayList()
 //            mColorFilterList.add(ColorFilter("无效果", "ic_color_filter_empty", ""))
             RecordCommon.getColorFilterList(mContext).forEach { path ->
-//                val name = File(path).name
-                val name = getFilterName(mContext, path)
+                val name = File(path).name
+                val displayName = getFilterName(mContext, path)
                 val icon = "file://$path/icon.png"
-                mColorFilterList.add(ColorFilter(name, icon, path))
+                mColorFilterList.add(ColorFilter(displayName, name, icon, path))
             }
             Log.e("AAA", "mColorFilterList:" + mColorFilterList.size)
 //            val obj = Arguments.fromList(mColorFilterList)
@@ -115,5 +115,5 @@ class ColorFilterManager(private val reactContext: ThemedReactContext) {
     }
 
 
-    internal class ColorFilter(var filterName: String, var iconPath: String, var path: String)
+    internal class ColorFilter(var displayName: String, var filterName: String, var iconPath: String, var path: String)
 }

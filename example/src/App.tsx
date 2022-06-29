@@ -10,10 +10,11 @@ import {
 // import BarcodeScreenExample from './BarcodeScreenExample';
 import PostPickerExample from './PostPickerExample';
 import StoryPickerExample from './StoryPickerExample';
+import VideoEditorExample from './VideoEditorExample';
 
 type State = {
   // example?: CameraExample | CameraScreenExample | BarcodeScreenExample;
-  example?: PostPickerExample | StoryPickerExample;
+  example?: PostPickerExample | StoryPickerExample | VideoEditorExample;
 }
 
 export default class App extends Component {
@@ -50,9 +51,9 @@ export default class App extends Component {
               Story Picker
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: PostPickerExample })}>
+          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: VideoEditorExample })}>
             <Text style={styles.buttonText}>
-              Picker
+              Video Editor
             </Text>
           </TouchableOpacity>
         </View>

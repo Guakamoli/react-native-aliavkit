@@ -12,4 +12,6 @@
 //交互属性不需要声明,只在manager写对应的宏
 @interface RNAliKitPhotoView : UIView
 
+- (void)uncheckPhoto:(NSInteger)index;
+
 @end

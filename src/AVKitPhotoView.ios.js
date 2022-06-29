@@ -2,7 +2,7 @@ import React from 'react';
 
 import { requireNativeComponent, NativeModules } from 'react-native';
 
-const { RNAlikitPhotoViewManager } = NativeModules;
+const { RNAliKitPhotoViewManager } = NativeModules;
 const NativePhotoView = requireNativeComponent('RNAliKitPhotoView');
 
 
@@ -16,12 +16,16 @@ export default class AVkitPhotoView extends React.Component {
             multiSelect: !!props?.multiSelect,
             maxSelectCount: !!props?.maxSelectCount ? props.maxSelectCount : 10,
             defaultSelectedPosition: !!props?.defaultSelectedPosition ? props.defaultSelectedPosition : 0,
-            defaultSelectedStatus:props.defaultSelectedStatus,
+            defaultSelectedStatus: props.defaultSelectedStatus,
 
             itemWidth: !!props?.itemWidth ? props.itemWidth : 0,
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
         }
     };
+
+    uncheckPhoto = async (options) => {
+        return await RNAliKitPhotoViewManager.uncheckPhoto(options);
+    }
 
     /**
      * 

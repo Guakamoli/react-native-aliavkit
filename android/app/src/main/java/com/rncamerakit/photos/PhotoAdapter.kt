@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import com.aliyun.svideo.media.ThumbnailGenerator
 import com.aliyun.svideo.media.ThumbnailGenerator.OnThumbnailGenerateListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.rncamerakit.R
 import java.io.File
 import java.lang.reflect.Field
@@ -50,7 +52,7 @@ class PhotoAdapter(
 
     fun setMultiSelect(multiSelect: Boolean) {
         this.mMultiSelect = multiSelect
-        if (mList.size > mCurrentClickPosition) {
+        if (mCurrentClickPosition >= 0 && mList.size > mCurrentClickPosition) {
             mMultiFileType = mList[mCurrentClickPosition].type
         }
     }
@@ -62,13 +64,20 @@ class PhotoAdapter(
 
     fun setCurrentClickPosition(position: Int) {
         mCurrentClickPosition = position
-        notifyItemChanged(mOldCurrentClickPosition)
-        notifyItemChanged(mCurrentClickPosition)
-        mOldCurrentClickPosition = mCurrentClickPosition
+        if (position >= 0) {
+            notifyItemChanged(mOldCurrentClickPosition)
+            notifyItemChanged(mCurrentClickPosition)
+            mOldCurrentClickPosition = mCurrentClickPosition
+        }
     }
 
     init {
         mThumbnailGenerator = ThumbnailGenerator(mContext)
+        mCurrentClickPosition = mDefaultSelectedPosition
+        mOldCurrentClickPosition = mDefaultSelectedPosition
+        if (mCurrentClickPosition >= 0 && mList.size > mCurrentClickPosition) {
+            mMultiFileType = mList[mCurrentClickPosition].type
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -87,12 +96,22 @@ class PhotoAdapter(
 
 
     fun setMultiSelectChanged(info: MediaInfo, holder: PhotoViewHolder, position: Int) {
-        if (!mMultiSelect) {
-            holder.tvCheckView.visibility = View.GONE
-            holder.unSelectedBgView.visibility = View.GONE
+        val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
 
-            holder.flCheckView.visibility = View.GONE
+        if (!mMultiSelect) {
+//            holder.tvCheckView.visibility = View.GONE
+//            holder.flCheckView.visibility = View.GONE
+            holder.unSelectedBgView.visibility = View.GONE
             holder.tvCheckView.text = ""
+            if (mCurrentClickPosition != position) {
+                holder.tvCheckView.setBackgroundColor(Color.TRANSPARENT)
+            } else {
+                if (isOfficial == null || isOfficial == true) {
+                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video_dark)
+                } else {
+                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video)
+                }
+            }
         } else {
 
             holder.flCheckView.visibility = View.VISIBLE
@@ -102,7 +121,6 @@ class PhotoAdapter(
                 holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_unselected)
                 holder.tvCheckView.text = ""
             } else {
-                val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
                 if (info.type == MediaStorage.TYPE_PHOTO) {
                     if (isOfficial == null || isOfficial == true) {
                         holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_dark)
@@ -132,6 +150,10 @@ class PhotoAdapter(
 
         //取消多选选中
         holder.flCheckView.setOnClickListener {
+            if (!mMultiSelect) {
+                mItemListener?.onRemovePhotoClick(position, info)
+                return@setOnClickListener
+            }
             if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {
                 return@setOnClickListener
             }
@@ -181,29 +203,36 @@ class PhotoAdapter(
             //每一个imageView都需要设置tag，video异步生成缩略图，需要对应最后设置给imageView的info key
             holder.thumbnailImage.setTag(R.id.tag_first, ThumbnailGenerator.generateKey(info.type, info.id))
             val viewDrawable: Drawable = ColorDrawable(Color.GRAY)
-            val uri: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                info.fileUri
+
+
+            val uri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.parse(info.fileUri)
             } else if (info.thumbnailPath != null && onCheckFileExists(info.thumbnailPath)) {
-                "file://" + info.thumbnailPath
+                Uri.fromFile(File(info.thumbnailPath))
             } else {
-                "file://" + info.filePath
+                Uri.fromFile(File(info.filePath))
             }
-            Glide.with(mContext).load(uri)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .dontAnimate()
-                .thumbnail()
-                .placeholder(viewDrawable)
-                .into(holder.thumbnailImage)
+
+
             if (info.type == MediaStorage.TYPE_PHOTO) {
                 holder.durationText.text = ""
+                Glide.with(mContext).load(uri)
+                    .dontAnimate()
+                    .thumbnail()
+//                .placeholder(viewDrawable)
+                    .into(holder.thumbnailImage)
             } else {
+                Glide.with(mContext)
+                    .setDefaultRequestOptions(RequestOptions.frameOf(100*1000))
+                    .load(uri)
+                    .into(holder.thumbnailImage)
                 holder.durationText.text = convertDuration2Text(info.duration.toLong())
-                mThumbnailGenerator?.generateThumbnail(info.type, info.id, 0,
-                    OnThumbnailGenerateListener { key, thumbnail ->
-                        if (key == holder.thumbnailImage.getTag(R.id.tag_first) as Int) {
-                            holder.thumbnailImage.setImageBitmap(thumbnail)
-                        }
-                    })
+//                mThumbnailGenerator?.generateThumbnail(info.type, info.id, 0,
+//                    OnThumbnailGenerateListener { key, thumbnail ->
+//                        if (key == holder.thumbnailImage.getTag(R.id.tag_first) as Int) {
+//                            holder.thumbnailImage.setImageBitmap(thumbnail)
+//                        }
+//                    })
             }
             val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
             if (isOfficial == null || isOfficial == true) {
@@ -212,21 +241,15 @@ class PhotoAdapter(
                 holder.selectedBgView.setBackgroundColor(Color.parseColor("#80FFFFFF"))
             }
 
-            if (mDefaultSelectedPosition >= 0) {
-                if (mCurrentClickPosition == position) {
-                    holder.selectedBgView.visibility = View.VISIBLE
-                } else {
-                    holder.selectedBgView.visibility = View.GONE
-                }
+            if (mCurrentClickPosition == position) {
+                holder.selectedBgView.visibility = View.VISIBLE
+            } else {
+                holder.selectedBgView.visibility = View.GONE
             }
             setMultiSelectChanged(info, holder as PhotoViewHolder, position)
 
             holder.itemView.setOnClickListener {
 
-                if (mDefaultSelectedPosition == -1) {
-                    mItemListener?.onAddPhotoClick(position, info)
-                    return@setOnClickListener
-                }
 
                 if (position == mOldCurrentClickPosition && mSelectedPhotoMap[position] != null) {
                     return@setOnClickListener

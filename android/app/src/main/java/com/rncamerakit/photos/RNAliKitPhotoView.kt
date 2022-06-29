@@ -1,6 +1,5 @@
 package com.rncamerakit.photos
 
-import android.R.attr.path
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -22,7 +21,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.rncamerakit.R
 import java.io.File
-
 
 class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reactContext.applicationContext) {
 
@@ -72,7 +70,9 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
     }
 
     fun setDefaultSelectedPosition(position: Int) {
-        mCurrentClickPosition = position
+        if (position >= 0) {
+            mCurrentClickPosition = position
+        }
         mDefaultSelectedPosition = position
     }
 
@@ -144,48 +144,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         val view = LayoutInflater.from(mContext).inflate(R.layout.view_ali_kit_photos, this, true)
         mPhotoRecyclerView = view.findViewById<RecyclerView>(R.id.photosRecyclerView)
         filAdapter()
-//        view.parent.requestDisallowInterceptTouchEvent(true)
-
-//        mPhotoRecyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//
-//            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-//                super.onScrollStateChanged(recyclerView, newState)
-//            }
-//
-//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-//                if (!recyclerView.canScrollVertically(-1)) {
-////                    Log.e("BBB", " 滑动到顶部了 ")
-//                    mISTop = true
-//                } else {
-//                    mISTop = false
-//                }
-//            }
-//        })
-
-//        mPhotoRecyclerView?.setOnTouchListener(object : OnTouchListener {
-//            @SuppressLint("ClickableViewAccessibility")
-//            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-//                when (event?.getAction()) {
-//                    MotionEvent.ACTION_DOWN -> {
-//                        mRawY = event?.rawY
-//                    }
-//                    MotionEvent.ACTION_MOVE -> {
-//                        val distanceY: Float = event.getRawY() - mRawY
-////                        if (distanceY > 0) {
-////                            Log.e("BBB", " 向上滑动 ")
-////                        }
-//                    }
-//                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-//
-//                    }
-//                    else -> {
-//
-//                    }
-//                }
-//                return false
-//            }
-//        })
 
         mPhotoAdapter?.setOnPhotoItemListener(object : PhotoAdapter.OnPhotoItemListener() {
             override fun onAddPhotoClick(position: Int, info: MediaInfo) {
@@ -216,41 +174,17 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
             override fun onRemovePhotoClick(position: Int, info: MediaInfo) {
                 super.onRemovePhotoClick(position, info)
-                val removeListPosition = mSelectedPhotoMap[position]
-                removeListPosition?.let {
-                    mSelectedPhotoList.removeAt(it - 1)
-                    mSelectedPhotoMap.remove(position)
-
-                    var maxValue: Int = 0
-                    var maxKey: Int = 0
-                    for ((key, value) in mSelectedPhotoMap) {
-                        if (value > removeListPosition) {
-                            mSelectedPhotoMap[key] = value - 1
-                        }
-                        mPhotoAdapter?.notifyItemChanged(key)
-
-                        if (value > maxValue) {
-                            maxValue = value
-                            maxKey = key
-                        }
-                        Log.e("AAA", "key:$key" + "；value:" + mSelectedPhotoMap[key])
+                if(mMultiSelect){
+                    val removeListPosition = mSelectedPhotoMap[position]
+                    removeListPosition?.let {
+                        removeSelected(it - 1, position)
+                        Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
+                        sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
                     }
-
-                    if (position == mCurrentClickPosition) {
-                        mCurrentClickPosition = maxKey
-                    }
-
-                    if (mSelectedPhotoMap.isEmpty()) {
-                        mPhotoAdapter?.notifyItemRangeChanged(0, mPhotoList.size, "MultiSelectChanged")
-                    } else {
-                        mPhotoAdapter?.notifyItemChanged(position)
-                    }
-
-                    if (mSelectedPhotoList.isNotEmpty()) {
-                        mPhotoAdapter?.setCurrentClickPosition(mCurrentClickPosition)
-                    }
-
-                    Log.e("AAA", "mCurrentClickPosition：$mCurrentClickPosition")
+                }else{
+                    mPhotoAdapter?.setCurrentClickPosition(-1)
+                    mSelectedPhotoList.clear()
+                    filAdapter()
                     sendRNSelectedPhotos(mCurrentClickPosition, mSelectedPhotoList)
                 }
             }
@@ -282,7 +216,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             mPhotoAdapter?.setMultiSelect(mMultiSelect)
             mPhotoRecyclerView?.layoutManager = GridLayoutManager(context, mNumColumns)
             mPhotoRecyclerView?.addItemDecoration(GridSpacingItemDecoration(mNumColumns, 2, false))
-//            mPhotoRecyclerView?.itemAnimator = DefaultItemAnimator()
             (mPhotoRecyclerView?.itemAnimator as DefaultItemAnimator).supportsChangeAnimations = false
             mPhotoRecyclerView?.adapter = mPhotoAdapter
         } else {
@@ -304,12 +237,28 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
                 super.onCompletion()
                 if (mPhotoList.isNotEmpty()) {
                     if (mDefaultSelectedPosition >= 0) {
-                        val photoList: MutableList<MediaInfo> = ArrayList()
-                        photoList.add(mPhotoList[0])
-                        sendRNSelectedPhotos(0, photoList)
+                        val info = mPhotoList[mDefaultSelectedPosition];
+                        mCurrentClickPosition = mDefaultSelectedPosition
+                        if (mMultiSelect) {
+                            if (info.type == MediaStorage.TYPE_VIDEO) {
+                                mSelectedPhotoMap.clear()
+                                mSelectedPhotoList.clear()
+                            }
+                            if (mSelectedPhotoMap[mDefaultSelectedPosition] == null) {
+                                //多选
+                                mSelectedPhotoList.add(info)
+                                mSelectedPhotoMap[mDefaultSelectedPosition] = mSelectedPhotoList.size
+                            }
+                            val selectPosition: Int? = mSelectedPhotoMap[mDefaultSelectedPosition]
+                            selectPosition?.let { sendRNSelectedPhotos(it - 1, mSelectedPhotoList) }
+                        } else {
+                            //单选
+                            mSelectedPhotoList.clear()
+                            mSelectedPhotoList.add(info)
+                            sendRNSelectedPhotos(0, mSelectedPhotoList)
+                        }
+                        filAdapter()
                     }
-
-                    sendFirstPhoto(mPhotoList[0])
                 }
             }
         })
@@ -390,7 +339,6 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             map.putInt("width", videoWidth.toInt())
             map.putInt("height", videoHeight.toInt())
 
-//            map.putString("url", "file://" + info.filePath)
             map.putString("path", "file://" + info.filePath)
             map.putString("uri", info.fileUri)
 
@@ -407,6 +355,57 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
         map.putInt("selectedIndex", selectPosition)
         map.putArray("data", arrayList)
         mEventEmitter?.receiveEvent(id, EventEmitterKeys.EVENT_SELECTED_PHOTO_CALLBACK.toString(), map)
+    }
+
+    fun uncheckPhoto(removeListPosition: Int) {
+        var uncheckPosition: Int? = null
+        if (mMultiSelect) {
+            for ((key, value) in mSelectedPhotoMap) {
+                if (value - 1 == removeListPosition) {
+                    uncheckPosition = key
+                    break
+                }
+            }
+            uncheckPosition?.let {
+                removeSelected(removeListPosition, uncheckPosition)
+            }
+        } else {
+            mPhotoAdapter?.setCurrentClickPosition(-1)
+            mSelectedPhotoList.clear()
+            filAdapter()
+        }
+
+    }
+
+    fun removeSelected(removeListPosition: Int, removeSelectPosition: Int) {
+        mSelectedPhotoList.removeAt(removeListPosition)
+        mSelectedPhotoMap.remove(removeSelectPosition)
+        var maxValue: Int = 0
+        var maxKey: Int = 0
+        for ((key, value) in mSelectedPhotoMap) {
+            if (value > removeListPosition) {
+                mSelectedPhotoMap[key] = value - 1
+            }
+            mPhotoAdapter?.notifyItemChanged(key)
+
+            if (value > maxValue) {
+                maxValue = value
+                maxKey = key
+            }
+        }
+        if (removeSelectPosition == mCurrentClickPosition) {
+            mCurrentClickPosition = maxKey
+        }
+
+        if (mSelectedPhotoMap.isEmpty()) {
+            mPhotoAdapter?.notifyItemRangeChanged(0, mPhotoList.size, "MultiSelectChanged")
+        } else {
+            mPhotoAdapter?.notifyItemChanged(removeSelectPosition)
+        }
+
+        if (mSelectedPhotoList.isNotEmpty()) {
+            mPhotoAdapter?.setCurrentClickPosition(mCurrentClickPosition)
+        }
     }
 
     fun onDestroy() {
