@@ -1,66 +1,126 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+
 import {
   StyleSheet,
-  Text,
   View,
+  Text,
+  Image,
+  TextInput,
+  FlatList,
+  Pressable,
   TouchableOpacity,
+  Dimensions,
+  Platform,
+  Keyboard,
+  Easing,
+  Animated
 } from 'react-native';
 
-// import CameraScreenExample from './CameraScreenExample';
-// import BarcodeScreenExample from './BarcodeScreenExample';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
+
 import PostPickerExample from './PostPickerExample';
 import StoryPickerExample from './StoryPickerExample';
 import VideoEditorExample from './VideoEditorExample';
+import HeadPortraitScreenExample from './headPortrait';
 
-type State = {
-  // example?: CameraExample | CameraScreenExample | BarcodeScreenExample;
-  example?: PostPickerExample | StoryPickerExample | VideoEditorExample;
-}
-
-export default class App extends Component {
-  state: State;
+export const isIOS = Platform.OS === 'ios';
+export const isAndroid = !isIOS;
+export default class App extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      example: undefined,
     };
   }
-
   render() {
-    if (this.state.example) {
-      const Example = this.state.example;
-      return <Example />;
-    }
+    const defaultHeader = {
+      headerBackTitleVisible: false,
+      cardOverlayEnabled: true,
+      cardStyle: { backgroundColor: 'transparent' }
+    };
+
     return (
-      <View style={{ flex: 1 }}>
-        <View style={styles.headerContainer}>
-          <Text style={{ fontSize: 60 }}>🎈</Text>
-          <Text style={styles.headerText}>
-            React Native Camera Kit
-          </Text>
-        </View>
-        <View style={styles.container}>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: PostPickerExample })}>
-            <Text style={styles.buttonText}>
-              Post Picker
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: StoryPickerExample })}>
-            <Text style={styles.buttonText}>
-              Story Picker
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => this.setState({ example: VideoEditorExample })}>
-            <Text style={styles.buttonText}>
-              Video Editor
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{ ...defaultHeader }}
+        >
+          <Stack.Screen
+            name='HomeExample'
+            component={HomeExample}
+          />
+          <Stack.Screen
+            name='PostPickerExample'
+            component={PostPickerExample}
+          />
+          <Stack.Screen
+            name='StoryPickerExample'
+            component={StoryPickerExample}
+          />
+          <Stack.Screen
+            name='VideoEditorExample'
+            component={VideoEditorExample}
+          />
+          <Stack.Screen
+            name='HeadPortraitScreenExample'
+            component={HeadPortraitScreenExample}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+
+
     );
   }
 }
+
+const HomeExample = (props) => {
+
+  const { navigation } = props;
+
+  useEffect(() => () => {
+
+  }, []);
+
+  const onNavigation = async (screenName: string, data: Object = {}) => {
+    navigation.navigate(screenName, data);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.headerContainer}>
+        <Text style={{ fontSize: 60 }}>🎈</Text>
+        <Text style={styles.headerText}>
+          React Native Camera Kit
+        </Text>
+      </View>
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("PostPickerExample")}>
+          <Text style={styles.buttonText}>
+            Post Picker
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("StoryPickerExample")}>
+          <Text style={styles.buttonText}>
+            Story Picker
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoEditorExample")}>
+          <Text style={styles.buttonText}>
+            Video Editor
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("HeadPortraitScreenExample")}>
+          <Text style={styles.buttonText}>
+            Head Portrait
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+}
+
 
 const styles = StyleSheet.create({
   container: {

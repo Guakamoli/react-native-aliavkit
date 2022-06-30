@@ -5,6 +5,8 @@ import { requireNativeComponent, NativeModules } from 'react-native';
 const { RNAliKitPhotoViewManager } = NativeModules;
 const NativePhotoView = requireNativeComponent('RNAliKitPhotoView');
 
+import { SortModeEnum } from './index';
+
 
 export default class AVkitPhotoView extends React.Component {
 
@@ -22,7 +24,7 @@ export default class AVkitPhotoView extends React.Component {
             itemHeight: !!props?.itemHeight ? props.itemHeight : 0,
 
             // sortMode : "all"  "video"  "photo"
-            sortMode: !!props?.sortMode ? props.sortMode : 'all',
+            sortMode: !!props?.sortMode ? props.sortMode : SortModeEnum.SORT_MODE_ALL,
         }
     };
 
