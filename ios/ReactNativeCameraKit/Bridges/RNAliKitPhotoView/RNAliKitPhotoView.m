@@ -495,7 +495,7 @@
     NSString *indexStr      = @(indexPath.item).stringValue;
     //已有数据
     BOOL cellSelectStatus   = [self.selectedIndexs containsObject:indexStr];
-    //多选模式下,照片只能通过右上角勾选按钮删除
+    //照片只能通过右上角勾选按钮删除
     if(self.multiSelect && cellSelectStatus)
     {
         if(self.lastSelectIndex != indexPath.item)
@@ -505,8 +505,10 @@
             [self.collectionView reloadData];
             [self sendSelectPhotoDataToRN];
         }else{
-            //多选模式下,已选中视频/照片的第二次点击不做处理
+            //已选中视频/照片的第二次点击不做处理
         }
+    }else if (cellSelectStatus) {
+        //已选中视频/照片的第二次点击不做处理
     }else{
         [self selectDataUpdate:indexPath.item];
     }
@@ -535,9 +537,9 @@
     NSInteger dataIndex = [self.selectedIndexs indexOfObject:indexStr];
     //单选情况的逻辑比较简单,不能取消和替换元素
     if(!self.multiSelect){
-        //单选下,不允许取消,点击无效处理
+        //单选下,开放允许取消
         if(containIndex){
-            return;
+            self.selectedIndexs = [NSMutableArray new];
         }else{
             self.selectedIndexs  = [NSMutableArray arrayWithObject:indexStr];
             self.lastSelectIndex = index;
@@ -551,14 +553,11 @@
         if(containIndex)
         {
             [self.selectedIndexs removeObjectAtIndex:dataIndex];
-            //多选下如果删除了当前选中的照片,即从选中已选照片中最后的一张
-            if(self.selectedIndexs.count > 0)
+            //多选下如果删除了当前选中的照片,即重选中已选照片中最后的一张
+            if(self.selectedIndexs.count > 0 && self.lastSelectIndex == index) //index为取消元素的下标
             {
-                NSString *lastObj = self.selectedIndexs[self.selectedIndexs.count-1];
-                if(self.lastSelectIndex == index)//index为取消元素的下标
-                {
-                    self.lastSelectIndex = [lastObj integerValue];
-                }
+                NSString *lastObj = [self.selectedIndexs lastObject];
+                self.lastSelectIndex = [lastObj integerValue];
             }
         }else {
             //是否已选中视频
@@ -578,7 +577,7 @@
                 [self.selectedIndexs addObject:indexStr];
             }
             //多选模式下,新增照片是选中状态(白色蒙版)
-            NSString *lastObj = self.selectedIndexs[self.selectedIndexs.count-1];
+            NSString *lastObj = [self.selectedIndexs lastObject];
             self.lastSelectIndex = [lastObj integerValue];
         }
     }
@@ -704,7 +703,8 @@
         [self.selectedIndexs removeObjectAtIndex:index];
 
         if (self.selectedIndexs.count > 0 && self.lastSelectIndex == [indexStr integerValue]) {
-            self.lastSelectIndex = [self.selectedIndexs.lastObject integerValue];
+            NSString *lastObj = [self.selectedIndexs lastObject];
+            self.lastSelectIndex = [lastObj integerValue];
         }
     }
     [self.collectionView reloadData];

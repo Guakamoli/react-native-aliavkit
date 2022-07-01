@@ -401,8 +401,8 @@ static CGFloat kQUScreenScale;
     NSInteger videoCount;
     __block NSArray *photoArray;
     PHFetchOptions *option = [[PHFetchOptions alloc] init];
-    option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO],
-                               [NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:NO]];
+    option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:NO],
+                               [NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
 
     option.predicate = [self configurePredicateWithAllowImage:allowPickingImage allowVideo:allowPickingVideo range:range];
     PHAssetCollection *cameraRoll = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil].lastObject;
