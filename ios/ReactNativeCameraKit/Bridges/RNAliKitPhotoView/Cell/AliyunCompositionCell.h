@@ -50,6 +50,5 @@ typedef NS_ENUM(NSInteger,AYPhotoSelectStatus){
 @property (nonatomic,strong)NSIndexPath *indexPath;
 //右上角取消事件
 @property (nonatomic, weak) id <AYCellDelegate> delegate;
-//storyUI显示模式不同
--(void)setStoryMode:(BOOL)scaleAspectFit;
+
 @end
