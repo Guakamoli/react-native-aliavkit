@@ -12,6 +12,7 @@ import {
     Dimensions,
     Platform,
     Keyboard,
+    SafeAreaView
 } from 'react-native';
 
 import { HeaderBackButton } from '@react-navigation/elements';
@@ -41,29 +42,31 @@ const CropImagePreview = (props) => {
     }
 
     return (
-        <View style={styles.cropContainer}>
-            <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
-            <View style={styles.continueHeadView}>
-                <HeaderBackButton
-                    label=''
-                    tintColor='#FFFFFF'
-                    onPress={navigation.goBack}
-                    style={{ left: Platform.OS === 'android' ? 0 : 8 }}
-                />
-                <Text style={styles.textClean}>预览</Text>
-                <TouchableOpacity onPress={() => {
-                    onReset();
-                }}>
-                    <Text style={styles.textConfirm}>重置</Text>
-                </TouchableOpacity>
-            </View>
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.cropContainer}>
+                <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
+                <View style={styles.continueHeadView}>
+                    <HeaderBackButton
+                        label=''
+                        tintColor='#FFFFFF'
+                        onPress={navigation.goBack}
+                        style={{ left: Platform.OS === 'android' ? 0 : 8 }}
+                    />
+                    <Text style={styles.textClean}>预览</Text>
+                    <TouchableOpacity onPress={() => {
+                        onReset();
+                    }}>
+                        <Text style={styles.textConfirm}>重置</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <CropImageView
-                style={{ width: width, height: height - 50, backgroundColor: 'black' }}
-                imageUri={imageUri}
-                reset={reset}
-            />
-        </View>
+                <CropImageView
+                    style={{ width: width, height: height - 50, backgroundColor: 'black' }}
+                    imageUri={imageUri}
+                    reset={reset}
+                />
+            </View>
+        </SafeAreaView>
     )
 
 }

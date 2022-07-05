@@ -12,6 +12,7 @@ import {
     Dimensions,
     Platform,
     Keyboard,
+    SafeAreaView
 } from 'react-native';
 
 import { HeaderBackButton } from '@react-navigation/elements';
@@ -36,9 +37,9 @@ const CropHeadPortrait = (props) => {
     const [reset, setReset] = useState(false);
 
     useEffect(() => {
-		return () => {
-		};
-	}, []);
+        return () => {
+        };
+    }, []);
 
     const onCropError = (data) => {
         console.info("onCropError", data);
@@ -60,40 +61,42 @@ const CropHeadPortrait = (props) => {
     }
 
     return (
-        <View style={styles.cropContainer}>
-            <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
-            <View style={styles.continueHeadView}>
-                <TouchableOpacity onPress={navigation.goBack}>
-                    <Text style={styles.textClean}>取消</Text>
-                </TouchableOpacity>
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.cropContainer}>
+                <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
+                <View style={styles.continueHeadView}>
+                    <TouchableOpacity onPress={navigation.goBack}>
+                        <Text style={styles.textClean}>取消</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => {
-                    setImageAngle((imageAngle + 90) % 360);
-                }}>
-                    <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                    onReset();
-                }}>
-                    <Text style={styles.textConfirm}>重置</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                    setStartCrop(true);
-                }}>
-                    <Text style={styles.textConfirm}>确认</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        setImageAngle((imageAngle + 90) % 360);
+                    }}>
+                        <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        onReset();
+                    }}>
+                        <Text style={styles.textConfirm}>重置</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                        setStartCrop(true);
+                    }}>
+                        <Text style={styles.textConfirm}>确认</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <CropImageView
+                    style={{ width: width, height: height - 50, backgroundColor: 'black' }}
+                    angle={imageAngle}
+                    imageUri={imageUri}
+                    startCrop={startCrop}
+                    reset={reset}
+                    onCropped={onCropped}
+                    onCropError={onCropError}
+                />
             </View>
-
-            <CropImageView
-                style={{ width: width, height: height - 50, backgroundColor: 'black' }}
-                angle={imageAngle}
-                imageUri={imageUri}
-                startCrop={startCrop}
-                reset={reset}
-                onCropped={onCropped}
-                onCropError={onCropError}
-            />
-        </View>
+        </SafeAreaView>
     )
 }
 

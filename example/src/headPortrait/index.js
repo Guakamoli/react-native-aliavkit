@@ -20,6 +20,7 @@ import {
     Dimensions,
     Platform,
     Keyboard,
+    SafeAreaView
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -60,41 +61,43 @@ const HeadPortraitScreen = (props) => {
     };
 
     return (
-        <View style={styles.cameraContainer}>
-            <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
-            <View style={styles.continueHeadView} >
-                <HeaderBackButton
-                    label=''
-                    tintColor='#FFFFFF'
-                    onPress={navigation.goBack}
-                    style={{ position: 'absolute', left: Platform.OS === 'android' ? 0 : 8 }}
-                />
-                <Text style={styles.textCenter}>最近项目</Text>
-            </View>
-
-            {isPhotoLimited && (
-                <View style={styles.photoLimitedContainer}>
-                    <Text style={styles.photoLimitedText}>{'点击“'}</Text>
-                    <Pressable onPress={RNGetPermissions.openSettings}>
-                        <Text style={[styles.photoLimitedText, { color: '#8EF902' }]}>{'去设置'}</Text>
-                    </Pressable>
-                    <Text style={styles.photoLimitedText}>{'”切换至允许访问所有照片。'}</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.cameraContainer}>
+                <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
+                <View style={styles.continueHeadView} >
+                    <HeaderBackButton
+                        label=''
+                        tintColor='#FFFFFF'
+                        onPress={navigation.goBack}
+                        style={{ position: 'absolute', left: Platform.OS === 'android' ? 0 : 8 }}
+                    />
+                    <Text style={styles.textCenter}>最近项目</Text>
                 </View>
-            )}
 
-            {isStoragePermission && (
-                <AVKitPhotoView
-                    style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
-                    multiSelect={false}
-                    numColumns={3}
-                    pageSize={90}
-                    sortMode={SortModeEnum.SORT_MODE_PHOTO}
-                    defaultSelectedPosition={-1}
-                    onSelectedPhotoCallback={onSelectedPhotoCallback}
-                    onMaxSelectCountCallback={() => { }}
-                />
-            )}
-        </View>
+                {isPhotoLimited && (
+                    <View style={styles.photoLimitedContainer}>
+                        <Text style={styles.photoLimitedText}>{'点击“'}</Text>
+                        <Pressable onPress={RNGetPermissions.openSettings}>
+                            <Text style={[styles.photoLimitedText, { color: '#8EF902' }]}>{'去设置'}</Text>
+                        </Pressable>
+                        <Text style={styles.photoLimitedText}>{'”切换至允许访问所有照片。'}</Text>
+                    </View>
+                )}
+
+                {isStoragePermission && (
+                    <AVKitPhotoView
+                        style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
+                        multiSelect={false}
+                        numColumns={3}
+                        pageSize={90}
+                        sortMode={SortModeEnum.SORT_MODE_PHOTO}
+                        defaultSelectedPosition={-1}
+                        onSelectedPhotoCallback={onSelectedPhotoCallback}
+                        onMaxSelectCountCallback={() => { }}
+                    />
+                )}
+            </View>
+        </SafeAreaView>
     )
 }
 
