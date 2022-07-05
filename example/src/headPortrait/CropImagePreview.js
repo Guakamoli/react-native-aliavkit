@@ -28,8 +28,9 @@ const CropImagePreview = (props) => {
 
     const [reset, setReset] = useState(false);
 
-    useEffect(() => () => {
-
+    useEffect(() => {
+        return () => {
+        };
     }, []);
 
     const onReset = () => {

@@ -35,9 +35,10 @@ const CropHeadPortrait = (props) => {
 
     const [reset, setReset] = useState(false);
 
-    useEffect(() => () => {
-
-    }, []);
+    useEffect(() => {
+		return () => {
+		};
+	}, []);
 
     const onCropError = (data) => {
         console.info("onCropError", data);

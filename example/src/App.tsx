@@ -98,9 +98,11 @@ const HomeExample = (props) => {
 
   const { navigation } = props;
 
-  useEffect(() => () => {
+  useEffect(() => {
+		return () => {
+		};
+	}, []);
 
-  }, []);
 
   const onNavigation = async (screenName: string, data: Object = {}) => {
     navigation.navigate(screenName, data);
