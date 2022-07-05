@@ -202,7 +202,7 @@ class RNKitCropImageView(val reactContext: ThemedReactContext) : FrameLayout(rea
      */
     fun setReset() {
         mGestureCropImageView?.imageMatrix = Matrix()
-        mGestureCropImageView?.setImageToWrapCropBounds()
+        mGestureCropImageView?.setImageToWrapCropBounds(false)
     }
 
     override fun requestLayout() {

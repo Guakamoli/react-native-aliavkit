@@ -33,6 +33,8 @@ const CropHeadPortrait = (props) => {
 
     const [startCrop, setStartCrop] = useState(false);
 
+    const [reset, setReset] = useState(false);
+
     useEffect(() => () => {
 
     }, []);
@@ -49,6 +51,13 @@ const CropHeadPortrait = (props) => {
         navigation.navigate("CropImagePreview", { imageUri: data.uri });
     }
 
+    const onReset = () => {
+        setReset(true)
+        setTimeout(() => {
+            setReset(false)
+        }, 1000);
+    }
+
     return (
         <View style={styles.cropContainer}>
             <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
@@ -63,6 +72,11 @@ const CropHeadPortrait = (props) => {
                     <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => {
+                    onReset();
+                }}>
+                    <Text style={styles.textConfirm}>重置</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
                     setStartCrop(true);
                 }}>
                     <Text style={styles.textConfirm}>确认</Text>
@@ -74,6 +88,7 @@ const CropHeadPortrait = (props) => {
                 angle={imageAngle}
                 imageUri={imageUri}
                 startCrop={startCrop}
+                reset={reset}
                 onCropped={onCropped}
                 onCropError={onCropError}
             />
