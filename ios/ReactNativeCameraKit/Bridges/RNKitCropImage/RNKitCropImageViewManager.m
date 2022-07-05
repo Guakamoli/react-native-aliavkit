@@ -36,8 +36,12 @@ RCT_EXPORT_VIEW_PROPERTY(angle, NSUInteger)
 //是否去裁剪图片
 RCT_EXPORT_VIEW_PROPERTY(startCrop, BOOL)
 
+//重置缩放、旋转、平移的状态
+RCT_EXPORT_VIEW_PROPERTY(reset, BOOL)
+
 //图片裁剪完成回调
 RCT_EXPORT_VIEW_PROPERTY(onCropped, RCTBubblingEventBlock)
-
+//图片裁剪错误回调
+RCT_EXPORT_VIEW_PROPERTY(onCropError, RCTBubblingEventBlock)
 
 @end

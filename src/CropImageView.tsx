@@ -13,7 +13,7 @@ import { requireNativeComponent, NativeModules } from 'react-native';
 
 const NativeCropImageView = isAndroid ? requireNativeComponent<NativeProps>('RNKitCropImageViewManager') : requireNativeComponent<NativeProps>('RNKitCropImageView');
 
-const CropImageViewModule = isAndroid ? NativeModules.RNKitCropImageViewModule : NativeModules.RNKitCropImageViewManager;
+// const CropImageViewModule = isAndroid ? NativeModules.RNKitCropImageViewModule : NativeModules.RNKitCropImageViewManager;
 
 
 export type ImageAngle = 0 | 90 | 180 | 270;
@@ -22,18 +22,24 @@ export interface BaseProps {
     imageUri: string;
     angle?: ImageAngle;
     startCrop: boolean;
+    reset: boolean;
 }
-interface NativeProps extends  BaseProps{
+interface NativeProps extends BaseProps {
     onCropped?(data: any): void;
+    onCropError?(data: any): void;
 }
 
 export interface onCroppedData {
-    imagePath:string;
+    path: string;
+    uri: string;
     imageWidth: number;
     imageHeight: number;
+    offsetX: number;
+    offsetY: number;
 }
-export interface Props extends  BaseProps{
+export interface Props extends BaseProps {
     onCropped?(data: onCroppedData): void;
+    onCropError?(errorMsg: string): void;
 }
 
 type State = {
@@ -63,12 +69,21 @@ export default class CropImageView extends React.Component<Props, State> {
         if (nextProps.startCrop !== this.props.startCrop) {
             return true;
         }
+        if (nextProps.reset !== this.props.reset) {
+            return true;
+        }
         return false;
     }
 
 
+    onCropError = ({ nativeEvent }) => {
+        // console.info("onCropError", nativeEvent);
+        if (this.props.onCropError) {
+            this.props.onCropError(nativeEvent);
+        }
+    }
     onCropped = ({ nativeEvent }) => {
-        console.info("onCropped", nativeEvent);
+        // console.info("onCropped", nativeEvent);
         if (this.props.onCropped) {
             this.props.onCropped(nativeEvent);
         }
@@ -77,10 +92,9 @@ export default class CropImageView extends React.Component<Props, State> {
     render(): React.ReactNode {
         return (
             <NativeCropImageView
-                angle={this.props.angle}
-                imageUri={this.props.imageUri}
-                startCrop={this.props.startCrop}
+                {...this.props}
                 onCropped={this.onCropped}
+                onCropError={this.onCropError}
             />
         );
     }

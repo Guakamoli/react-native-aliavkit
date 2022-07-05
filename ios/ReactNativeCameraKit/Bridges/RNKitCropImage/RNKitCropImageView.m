@@ -24,8 +24,12 @@
 @property (nonatomic) NSUInteger angle;
 //是否去裁剪图片
 @property (nonatomic) BOOL startCrop;
+//重置缩放、旋转、平移的状态
+@property (nonatomic) BOOL reset;
 //图片裁剪完成回调
 @property (nonatomic, copy) RCTBubblingEventBlock onCropped;
+//图片裁剪错误回调
+@property (nonatomic, copy) RCTBubblingEventBlock onCropError;
 
 @end
 

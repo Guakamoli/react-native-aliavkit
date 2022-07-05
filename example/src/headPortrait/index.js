@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import { AVKitPhotoView, PhotoModule, SortModeEnum } from 'react-native-aliavkit';
 
+import { HeaderBackButton } from '@react-navigation/elements';
+
 import {
     StyleSheet,
     View,
@@ -9,6 +11,7 @@ import {
     Image,
     TextInput,
     FlatList,
+    StatusBar,
     Pressable,
     TouchableOpacity,
     Dimensions,
@@ -21,22 +24,33 @@ import {
 const { width, height } = Dimensions.get('window');
 
 
-const HeadPortraitScreenExample = (props) => {
+const HeadPortraitScreen = (props) => {
 
+    const { navigation } = props;
 
     useEffect(() => () => {
 
     }, []);
 
-
-    const onSelectedPhotoCallback = (data) => {
-        console.info("onSelectedPhotoCallback", data?.data)
+    const onSelectedPhotoCallback = ({ data }) => {
+        navigation.navigate("CropHeadPortrait", { imageUri: data[0].uri });
     };
 
     return (
         <View style={styles.cameraContainer}>
+            <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
+            <View style={styles.continueHeadView} >
+                <HeaderBackButton
+                    label=''
+                    tintColor='#FFFFFF'
+                    onPress={navigation.goBack}
+                    style={{ position: 'absolute', left: Platform.OS === 'android' ? 0 : 8 }}
+                />
+                <Text style={styles.textCenter}>最近项目</Text>
+            </View>
+
             <AVKitPhotoView
-                style={{ flex: 1, backgroundColor: 'black' }}
+                style={{ width: width, height: height, backgroundColor: 'black' }}
                 multiSelect={false}
                 numColumns={3}
                 pageSize={90}
@@ -44,17 +58,30 @@ const HeadPortraitScreenExample = (props) => {
                 defaultSelectedPosition={-1}
                 onSelectedPhotoCallback={onSelectedPhotoCallback}
                 onMaxSelectCountCallback={() => { }}
-            ></AVKitPhotoView>
+            />
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    continueHeadView: {
+        height: 50,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
+        position: 'relative',
+    },
+    textCenter: {
+        fontSize: 17,
+        fontWeight: '500',
+        color: '#fff',
+        lineHeight: 24,
+    },
     cameraContainer: {
         flex: 1,
         backgroundColor: 'black',
     },
-
 })
 
-export default HeadPortraitScreenExample
+export default HeadPortraitScreen

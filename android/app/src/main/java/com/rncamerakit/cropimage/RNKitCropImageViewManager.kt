@@ -1,5 +1,6 @@
 package com.rncamerakit.cropimage
 
+import android.text.TextUtils
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -28,21 +29,33 @@ class RNKitCropImageViewManager : SimpleViewManager<RNKitCropImageView>() {
         return builder.build()
     }
 
+    //文件地址
     @ReactProp(name = "imageUri")
-    fun setImageUri(view: RNKitCropImageView, imageUri: String) {
-        view.setImageUri(imageUri)
+    fun setImageUri(view: RNKitCropImageView, imageUri: String?) {
+        if (!TextUtils.isEmpty(imageUri)) {
+            view.setImageUri(imageUri)
+        }
+
     }
 
     @ReactProp(name = "angle", defaultInt = 0)
     fun setAngle(view: RNKitCropImageView, angle: Int) {
-        view.setAngle(angle)
+        if (angle%90 == 0) {
+            view.setAngle(angle.toFloat())
+        }
     }
 
-
-    @ReactProp(name = "isStartCrop", defaultBoolean = false)
+    @ReactProp(name = "startCrop", defaultBoolean = false)
     fun setStartCrop(view: RNKitCropImageView, isStartCrop: Boolean) {
         if (isStartCrop) {
             view.setStartCrop()
+        }
+    }
+
+    @ReactProp(name = "reset", defaultBoolean = false)
+    fun setReset(view: RNKitCropImageView, isReset: Boolean) {
+        if (isReset) {
+            view.setReset()
         }
     }
 

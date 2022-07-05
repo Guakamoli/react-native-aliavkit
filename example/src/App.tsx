@@ -24,7 +24,9 @@ const Stack = createStackNavigator();
 import PostPickerExample from './PostPickerExample';
 import StoryPickerExample from './StoryPickerExample';
 import VideoEditorExample from './VideoEditorExample';
-import HeadPortraitScreenExample from './headPortrait';
+import HeadPortraitScreen from './headPortrait';
+import CropHeadPortrait from './headPortrait/CropHeadPortrait';
+import CropImagePreview from './headPortrait/CropImagePreview';
 
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = !isIOS;
@@ -64,8 +66,25 @@ export default class App extends React.Component {
             component={VideoEditorExample}
           />
           <Stack.Screen
-            name='HeadPortraitScreenExample'
-            component={HeadPortraitScreenExample}
+            name='HeadPortraitScreen'
+            component={HeadPortraitScreen}
+            options={{
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name='CropHeadPortrait'
+            component={CropHeadPortrait}
+            options={{
+              headerShown: false
+            }}
+          />
+           <Stack.Screen
+            name='CropImagePreview'
+            component={CropImagePreview}
+            options={{
+              headerShown: false
+            }}
           />
         </Stack.Navigator>
       </NavigationContainer>
@@ -111,7 +130,7 @@ const HomeExample = (props) => {
             Video Editor
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("HeadPortraitScreenExample")}>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("HeadPortraitScreen")}>
           <Text style={styles.buttonText}>
             Head Portrait
           </Text>
