@@ -226,6 +226,8 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
         reject(@"",@"no path param",nil);
         return;
     }
+    
+    NSString *videoFilePath = videoPath;
 
     if ([videoPath containsString:@"ph://"]) {
         NSString *_assetId = [videoPath stringByReplacingOccurrencesOfString:@"ph://" withString:@""];
@@ -307,11 +309,12 @@ RCT_EXPORT_METHOD(postCropVideo:(NSString *)videoPath
                 NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:videoPath error:nil].fileSize;
               
                 NSString *fileName = [videoPath lastPathComponent];
+              
                 id cropParam = @{
                     @"index":@0,
                     @"localPath":videoPath,
                     @"name":fileName,
-                    @"path":videoPath,
+                    @"path":videoFilePath,
                     @"coverImage":@"",
                     
                     @"size":@(fileSize),
@@ -933,11 +936,12 @@ RCT_EXPORT_METHOD(clearResources:(NSDictionary *)options
         NSInteger fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:_videoCropOutputPath error:nil].fileSize;
         NSString *fileType =[self fileMIMETypeURLSessionWithPath:_videoCropOutputPath];
         NSString *fileName = [_videoCropOutputPath lastPathComponent];
+        NSString *filePath = [@"file://" stringByAppendingString:_videoCropOutputPath];
         id cropParam = @{
             @"index":@0,
             @"localPath":_postCropLocalPath,
             @"name":fileName,
-            @"path":_videoCropOutputPath,
+            @"path":filePath,
             @"coverImage":@"",
             
             @"size":@(fileSize),

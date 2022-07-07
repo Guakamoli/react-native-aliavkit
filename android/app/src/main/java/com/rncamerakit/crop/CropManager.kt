@@ -105,12 +105,12 @@ class CropManager {
         }
 
 
-        fun postCropVideo(reactContext: ReactContext, videoPath: String, promise: Promise): AliyunICrop? {
-            if (TextUtils.isEmpty(videoPath)) {
+        fun postCropVideo(reactContext: ReactContext, filePath: String, promise: Promise): AliyunICrop? {
+            if (TextUtils.isEmpty(filePath)) {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return null
             }
-            var videoPath = videoPath
+            var videoPath = filePath
             if (videoPath != null) {
                 if (videoPath.startsWith("content://") || videoPath.startsWith("file://")) {
                     videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
@@ -168,7 +168,7 @@ class CropManager {
                             cropMap["index"] = 0
                             cropMap["localPath"] = videoPath
                             cropMap["name"] = file.name
-                            cropMap["path"] = videoPath
+                            cropMap["path"] = filePath
                             cropMap["coverImage"] = ""
 
                             cropMap["size"] = file.length()
@@ -176,7 +176,7 @@ class CropManager {
                             if (rotation == 90 || rotation == 270) {
                                 cropMap["width"] = frameHeight
                                 cropMap["height"] = frameWidth
-                            }else{
+                            } else {
                                 cropMap["width"] = frameWidth
                                 cropMap["height"] = frameHeight
                             }
@@ -250,7 +250,7 @@ class CropManager {
                     cropMap["index"] = 0
                     cropMap["localPath"] = videoPath
                     cropMap["name"] = outputPathFile.name
-                    cropMap["path"] = videoParam.outputPath
+                    cropMap["path"] = "file://" + videoParam.outputPath
                     cropMap["coverImage"] = ""
 
                     cropMap["size"] = outputPathFile.length()
