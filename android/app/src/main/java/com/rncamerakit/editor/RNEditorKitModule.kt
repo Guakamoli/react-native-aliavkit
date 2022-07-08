@@ -353,8 +353,10 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
 
 
     @ReactMethod
-    fun exportWaterMarkVideo(videoPath: String, promise: Promise) {
-        WatermarkManager.exportWaterMarkVideo(reactContext, videoPath, promise)
+    fun exportWaterMarkVideo(options: ReadableMap, promise: Promise) {
+        val videoPath = if (options.hasKey("videoPath")) options.getString("videoPath") else ""
+        val revoId = if (options.hasKey("revoId")) options.getString("revoId") else ""
+        WatermarkManager.exportWaterMarkVideo(reactContext, videoPath, revoId, promise)
     }
 
 }

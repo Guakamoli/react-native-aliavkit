@@ -74,9 +74,9 @@ const HeadPortraitScreen = (props) => {
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
         });
-        const waterMarkVideoPath = await EditorModule.exportWaterMarkVideo(videoUri);
-
+        const waterMarkVideoPath = await EditorModule.exportWaterMarkVideo({ videoPath: videoUri, revoId: "哈哈哈哈哈哈" });
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
+        navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });
     }
 
 

@@ -30,6 +30,8 @@ import CropImagePreview from './headPortrait/CropImagePreview';
 
 import VideoWatermarkScreen from './watermark';
 
+import PlayerVideo from './watermark/PlayerVideo';
+
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = !isIOS;
 export default class App extends React.Component {
@@ -94,6 +96,10 @@ export default class App extends React.Component {
             options={{
               headerShown: false
             }}
+          />
+           <Stack.Screen
+            name='PlayerVideo'
+            component={PlayerVideo}
           />
         </Stack.Navigator>
       </NavigationContainer>
