@@ -19,9 +19,9 @@ import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
+import com.rncamerakit.watermark.WatermarkManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import java.net.FileNameMap
 import java.net.URLConnection
@@ -349,6 +349,12 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun release(promise: Promise) {
         MediaPlayerManage.instance.release()
         mView?.onRelease()
+    }
+
+
+    @ReactMethod
+    fun exportWaterMarkVideo(videoPath: String, promise: Promise) {
+        WatermarkManager.exportWaterMarkVideo(reactContext, videoPath, promise)
     }
 
 }

@@ -142,6 +142,11 @@ class RNAliavkitEventEmitter {
                 ?.emit("postVideoCrop", "" + progress.toDouble()/100)
         }
 
+        fun onExportWaterMarkVideo(reactContext: ReactContext?, progress: Int) {
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("onExportWaterMarkVideo", "" + progress.toDouble()/100)
+        }
+
     }
 
 }
