@@ -10,19 +10,18 @@
 #import "RNKitCropImageViewManager.h"
 #import "RNKitCropImageView.h"
 
-@interface RNAliKitPhotoViewManager ()
+@interface RNKitCropImageViewManager ()
 
 @property (nonatomic, weak) RNKitCropImageView *mCropImageView;
 
 @end
 
-@implementation RNAliKitPhotoViewManager
+@implementation RNKitCropImageViewManager
 
 RCT_EXPORT_MODULE();
 
 - (UIView *)view
 {
-    //相册不属于公有组件,每次都创建新对象关联到RN中
     RNKitCropImageView *view = [RNKitCropImageView new];
     return self.mCropImageView = view;
 }
