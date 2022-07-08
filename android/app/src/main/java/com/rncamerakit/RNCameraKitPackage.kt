@@ -4,6 +4,8 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import com.rncamerakit.cropimage.RNKitCropImageViewManager
+import com.rncamerakit.cropimage.RNKitCropImageViewModule
 import com.rncamerakit.editor.CKEditorManager
 import com.rncamerakit.editor.RNEditorKitModule
 import com.rncamerakit.photos.RNAliKitPhotoViewManager
@@ -18,6 +20,7 @@ class RNCameraKitPackage : ReactPackage {
         modules.add(RNCameraKitModule(reactContext))
         modules.add(RNEditorKitModule(reactContext))
         modules.add(RNAliKitPhotoViewModule(reactContext))
+        modules.add(RNKitCropImageViewModule(reactContext))
         return modules
     }
 
@@ -26,6 +29,8 @@ class RNCameraKitPackage : ReactPackage {
         viewManagers.add(CKCameraManager())
         viewManagers.add(CKEditorManager())
         viewManagers.add(RNAliKitPhotoViewManager())
+        viewManagers.add(RNKitCropImageViewManager())
         return viewManagers
     }
+
 }
