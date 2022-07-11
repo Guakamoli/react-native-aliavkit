@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-import { AVKitPhotoView, EditorModule, SortModeEnum } from 'react-native-aliavkit';
+import { AVKitPhotoView, EditorModule, SortModeEnum, AVService } from 'react-native-aliavkit';
 
 import { HeaderBackButton } from '@react-navigation/elements';
 
@@ -37,6 +37,12 @@ const HeadPortraitScreen = (props) => {
     const [isStoragePermission, setStoragePermission] = useState(false);
     const [isPhotoLimited, setPhotoLimited] = useState(false);
 
+    const [isExport, setExport] = useState(false);
+
+    const [exportProgress, setExportProgress] = useState(0);
+
+    const exportAngle = useRef(new Reanimated.Value(0));
+
     var videoUri = '';
 
     useEffect(() => {
@@ -69,14 +75,21 @@ const HeadPortraitScreen = (props) => {
 
 
     const exportWaterMarkVideo = async () => {
-        DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
-        DeviceEventEmitter.addListener('onExportWaterMarkVideo', (progress) => {
+        setExport(true)
+        exportAngle?.current?.setValue(0);
+        setExportProgress(0)
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, revoId: "哈哈哈哈哈哈" }, (progress) => {
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
+            setExportProgress(parseInt(progress * 100))
+            exportAngle?.current?.setValue(progress * 360);
+
         });
-        const waterMarkVideoPath = await EditorModule.exportWaterMarkVideo({ videoPath: videoUri, revoId: "哈哈哈哈哈哈" });
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
         navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });
+        setExport(false)
+        setExportProgress(0)
+        exportAngle?.current?.setValue(0);
     }
 
 
@@ -102,7 +115,6 @@ const HeadPortraitScreen = (props) => {
                         borderRadius: 15,
                     }}
                 >
-
                     <ReanimatedArcBase
                         color='rgba(216,216,216,0.4)'
                         diameter={100}
@@ -115,24 +127,20 @@ const HeadPortraitScreen = (props) => {
                             position: 'absolute',
                         }}
                     />
-
-                    {/* <ReanimatedArcBase
+                    <ReanimatedArcBase
                         color='#FFF'
                         diameter={100}
                         width={5}
-                        arcSweepAngle={this.downloadAngle}
+                        arcSweepAngle={exportAngle?.current}
                         lineCap='round'
                         rotation={360}
                         hideSmallAngle={false}
                         style={{
                             position: 'absolute',
                         }}
-                    /> */}
-
-
+                    />
                 </Reanimated.View>
-
-
+                <Text style={{ fontSize: 17, color: "#fff", position: 'absolute' }}>{exportProgress}%</Text>
             </View>
         )
     }
@@ -178,7 +186,7 @@ const HeadPortraitScreen = (props) => {
                         onMaxSelectCountCallback={() => { }}
                     />
                 )}
-                {/* {LoadingView()} */}
+                {isExport && LoadingView()}
             </View>
         </SafeAreaView>
     )

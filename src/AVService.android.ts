@@ -9,7 +9,43 @@ type MusicRequestType = {
   pageSize: number;
 };
 
+interface ExportParam {
+  videoPath: string;
+  revoId?: string;
+}
+
 export default class AVService {
+
+
+  /**
+   * 
+   * @returns story 取消导出水印视频
+   */
+  static async cancelExportWaterMarkVideo() {
+    RNEditorKitModule.cancelExportWaterMarkVideo();
+    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+  }
+
+  /**
+   * 导出视频带水印
+   * @param exportParam 
+   * @param progressListener 
+   * @returns 
+   */
+  static async exportWaterMarkVideo(exportParam: ExportParam, progressListener: (progress: number) => void) {
+    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+    DeviceEventEmitter.addListener('onExportWaterMarkVideo', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(progress);
+      }
+    });
+    const waterMarkVideoPath = await RNEditorKitModule.exportWaterMarkVideo(exportParam);
+    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+    return waterMarkVideoPath;
+  }
+
+
 
   static async setFacePasterInfo(facePasterInfo) {
     RNCameraKitModule.setFacePasterInfo(facePasterInfo);

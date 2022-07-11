@@ -16,6 +16,7 @@ import com.aliyun.svideosdk.common.struct.effect.ActionTranslate
 import com.aliyun.svideosdk.common.struct.effect.EffectPicture
 import com.aliyun.svideosdk.common.struct.encoder.VideoCodecs
 import com.aliyun.svideosdk.editor.AliyunIComposeCallBack
+import com.aliyun.svideosdk.editor.AliyunIEditor
 import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
 import com.duanqu.transcode.NativeParser
@@ -30,6 +31,12 @@ import java.io.File
 class WatermarkManager {
 
     companion object {
+
+        var mAliyunIEditor: AliyunIEditor? = null
+
+        fun cancelExportWaterMarkVideo(){
+            mAliyunIEditor?.cancelCompose()
+        }
 
         fun exportWaterMarkVideo(reactContext: ReactApplicationContext, videoPath: String?, revoId: String?, promise: Promise) {
             if (TextUtils.isEmpty(videoPath)) {
@@ -50,9 +57,9 @@ class WatermarkManager {
 
             val videoConfigPath = importVideo(context, videoParam)
 
-            val aliyunIEditor = AliyunEditorFactory.creatAliyunEditor(Uri.parse(videoConfigPath), null)
+            mAliyunIEditor = AliyunEditorFactory.creatAliyunEditor(Uri.parse(videoConfigPath), null)
             // 初始化
-            aliyunIEditor.init(null, context)
+            mAliyunIEditor?.init(null, context)
 
 
             val watermarkLogoWidth = DensityUtils.dip2px(context, 15f).toFloat()
@@ -64,18 +71,18 @@ class WatermarkManager {
             val bitmap = textToImage(context, revoId, watermarkLogoWidth, watermarkLogoHeight)
             val screenWidth = ScreenUtils.getWidth(reactContext).toFloat()
             val scale = videoParam.outputWidth/screenWidth
-            videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth * scale
-            videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight * scale
+            videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
+            videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight*scale
 
             val effectPicture: EffectPicture = getBitmapWaterMark(videoParam, bitmap)
-            aliyunIEditor.addImage(effectPicture)
+            mAliyunIEditor?.addImage(effectPicture)
 
-            aliyunIEditor.saveEffectToLocal()
-            aliyunIEditor.applySourceChange()
+            mAliyunIEditor?.saveEffectToLocal()
+            mAliyunIEditor?.applySourceChange()
 
-            aliyunIEditor.compose(videoParam, videoParam.videoOutputPath, object : AliyunIComposeCallBack {
+            mAliyunIEditor?.compose(videoParam, videoParam.videoOutputPath, object : AliyunIComposeCallBack {
                 override fun onComposeError(errorCode: Int) {
-                    aliyunIEditor.cancelCompose()
+                    mAliyunIEditor?.cancelCompose()
                     if (!bitmap.isRecycled) {
                         bitmap.recycle()
                     }
