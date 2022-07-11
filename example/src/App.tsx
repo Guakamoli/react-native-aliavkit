@@ -28,6 +28,10 @@ import HeadPortraitScreen from './headPortrait';
 import CropHeadPortrait from './headPortrait/CropHeadPortrait';
 import CropImagePreview from './headPortrait/CropImagePreview';
 
+import VideoWatermarkScreen from './watermark';
+
+import PlayerVideo from './watermark/PlayerVideo';
+
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = !isIOS;
 export default class App extends React.Component {
@@ -79,12 +83,23 @@ export default class App extends React.Component {
               headerShown: false
             }}
           />
-           <Stack.Screen
+          <Stack.Screen
             name='CropImagePreview'
             component={CropImagePreview}
             options={{
               headerShown: false
             }}
+          />
+          <Stack.Screen
+            name='VideoWatermarkScreen'
+            component={VideoWatermarkScreen}
+            options={{
+              headerShown: false
+            }}
+          />
+           <Stack.Screen
+            name='PlayerVideo'
+            component={PlayerVideo}
           />
         </Stack.Navigator>
       </NavigationContainer>
@@ -99,9 +114,9 @@ const HomeExample = (props) => {
   const { navigation } = props;
 
   useEffect(() => {
-		return () => {
-		};
-	}, []);
+    return () => {
+    };
+  }, []);
 
 
   const onNavigation = async (screenName: string, data: Object = {}) => {
@@ -137,6 +152,11 @@ const HomeExample = (props) => {
             Head Portrait
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoWatermarkScreen")}>
+          <Text style={styles.buttonText}>
+            Video Watermark
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -156,7 +176,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 100,
   },
   headerText: {
     color: 'black',
