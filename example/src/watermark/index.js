@@ -78,12 +78,12 @@ const HeadPortraitScreen = (props) => {
         setExport(true)
         exportAngle?.current?.setValue(0);
         setExportProgress(0)
-        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, revoId: "哈哈哈哈哈哈" }, (progress) => {
+        const videoUrl = "https://video-message-001.paiyaapp.com/QJ2TEznSz97mGi8ip.mp4"
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideoByUrl({ videoUrl: videoUrl, revoId: "REVOID: 1234" }, (progress) => {
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
             setExportProgress(parseInt(progress * 100))
             exportAngle?.current?.setValue(progress * 360);
-
         });
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
         navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });

@@ -1,14 +1,15 @@
 package com.rncamerakit.watermark
 
+import android.Manifest
 import android.content.Context
 import android.graphics.*
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.text.TextPaint
 import android.text.TextUtils
-import com.aliyun.svideo.common.utils.BitmapUtils
-import com.aliyun.svideo.common.utils.DensityUtils
-import com.aliyun.svideo.common.utils.FileUtils
-import com.aliyun.svideo.common.utils.ScreenUtils
+import android.util.Log
+import com.aliyun.svideo.common.utils.*
 import com.aliyun.svideosdk.common.struct.common.AliyunVideoClip
 import com.aliyun.svideosdk.common.struct.common.VideoDisplayMode
 import com.aliyun.svideosdk.common.struct.common.VideoQuality
@@ -23,8 +24,11 @@ import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.google.zxing.common.BitMatrix
+import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNAliavkitEventEmitter
+import com.rncamerakit.utils.DownloadUtils
+import com.rncamerakit.utils.MyFileDownloadCallback
 import java.io.File
 
 
@@ -34,11 +38,40 @@ class WatermarkManager {
 
         var mAliyunIEditor: AliyunIEditor? = null
 
-        fun cancelExportWaterMarkVideo(){
+        fun cancelExportWaterMarkVideo() {
             mAliyunIEditor?.cancelCompose()
         }
 
-        fun exportWaterMarkVideo(reactContext: ReactApplicationContext, videoPath: String?, revoId: String?, promise: Promise) {
+        fun exportWaterMarkVideoByUrl(reactContext: ReactApplicationContext, videoUrl: String, revoId: String?, promise: Promise) {
+            if (TextUtils.isEmpty(videoUrl)) {
+                return
+            }
+            //下载进度占比 20%，合成进度占比 80%
+            val downloadProgressProportion = 0.2F
+
+            DownloadUtils.downloadVideo(reactContext.applicationContext, videoUrl, object : MyFileDownloadCallback() {
+                override fun progress(task: BaseDownloadTask, soFarBytes: Int, totalBytes: Int) {
+                    super.progress(task, soFarBytes, totalBytes)
+                    val progress = (soFarBytes.toDouble()/totalBytes.toDouble()*100*downloadProgressProportion).toInt()
+                    Log.e("AAA", "video download progress：$progress")
+                    RNAliavkitEventEmitter.onExportWaterMarkVideo(reactContext, progress)
+                }
+
+                override fun completed(task: BaseDownloadTask) {
+                    super.completed(task)
+                    val filePath = task.targetFilePath
+                    exportWaterMarkVideo(reactContext, filePath, revoId, 1F - downloadProgressProportion, promise)
+                }
+            })
+        }
+
+        fun exportWaterMarkVideo(
+            reactContext: ReactApplicationContext,
+            videoPath: String?,
+            revoId: String?,
+            progressProportion: Float,
+            promise: Promise
+        ) {
             if (TextUtils.isEmpty(videoPath)) {
                 promise.reject("exportWaterMarkVideo", "Video path is empty")
                 return
@@ -90,6 +123,8 @@ class WatermarkManager {
                 }
 
                 override fun onComposeProgress(progress: Int) {
+                    val progress = (100*(1F - progressProportion) + progress*progressProportion).toInt()
+                    Log.e("AAA", "video compose progress：$progress")
                     RNAliavkitEventEmitter.onExportWaterMarkVideo(reactContext, progress)
                 }
 
@@ -98,9 +133,43 @@ class WatermarkManager {
                     if (!bitmap.isRecycled) {
                         bitmap.recycle()
                     }
+
+                    //合成成功，删除下载的视频，并且将合成后的视频保存到相册中
+
+                    com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
+                    saveToPhotos(context, videoParam.videoOutputPath)
+
                     promise.resolve(videoParam.videoOutputPath)
                 }
             })
+        }
+
+
+        private fun saveToPhotos(mContext: Context, videoPath: String?) {
+            if (PermissionUtils.checkPermissionsGroup(
+                    mContext, arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                )
+            ) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    //适配android Q
+                    ThreadUtils.runOnSubThread {
+                        UriUtils.saveImgToMediaStore(
+                            mContext.applicationContext,
+                            videoPath
+                        )
+                    }
+                } else {
+                    MediaScannerConnection.scanFile(
+                        mContext.applicationContext,
+                        arrayOf(videoPath),
+                        arrayOf("video/mp4"),
+                        null
+                    )
+                }
+            }
         }
 
         private fun addVideoEndWatermark() {

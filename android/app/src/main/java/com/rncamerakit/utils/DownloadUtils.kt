@@ -3,6 +3,7 @@ package com.rncamerakit.utils
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import com.aliyun.svideo.common.utils.FileUtils
 import com.aliyun.svideo.common.utils.MD5Utils
 import com.aliyun.svideo.downloader.DownloaderManager
 import com.aliyun.svideo.downloader.FileDownloaderCallback
@@ -27,6 +28,12 @@ import java.net.URL
 
 class DownloadUtils {
     companion object {
+
+        fun downloadVideo(context: Context, videoUrl: String, callback: MyFileDownloadCallback?) {
+            val fileName = "download_video_" + System.currentTimeMillis() + ".mp4"
+            val savePath = FileUtils.getDiskCachePath(context) + File.separator + "media/download" + File.separator + fileName
+            downloadFile(videoUrl, savePath, callback)
+        }
 
         /**
          * 下载字体
