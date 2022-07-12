@@ -10,9 +10,13 @@ type MusicRequestType = {
 };
 
 interface ExportParam {
-  videoPath: string;
-  revoId?: string;
+  videoUrl?: string;
+  videoPath?: string;
+  watermarkText?: string;
+  isDeleteVideo: boolean;//是否需要删除原视频
 }
+
+
 
 export default class AVService {
 
@@ -24,6 +28,21 @@ export default class AVService {
   static async cancelExportWaterMarkVideo() {
     RNEditorKitModule.cancelExportWaterMarkVideo();
     DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+  }
+
+  
+
+  static async exportWaterMarkVideoByUrl(exportParam: ExportParam, progressListener: (progress: number) => void) {
+    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+    DeviceEventEmitter.addListener('onExportWaterMarkVideo', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(progress);
+      }
+    });
+    const waterMarkVideoPath = await RNEditorKitModule.exportWaterMarkVideoByUrl(exportParam);
+    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+    return waterMarkVideoPath;
   }
 
   /**

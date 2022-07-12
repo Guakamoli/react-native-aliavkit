@@ -147,6 +147,7 @@ dependencies {
     implementation project(':@react-native-community-image-editor')
     implementation project(':react-native-fast-image')
     implementation project(':react-native-localize')
+    implementation project(':rn-fetch-blob')
 
 
     implementation 'com.facebook.fresco:fresco:2.6.0'

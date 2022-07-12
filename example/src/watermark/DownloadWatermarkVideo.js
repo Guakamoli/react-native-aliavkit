@@ -1,21 +1,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-import { AVKitPhotoView, EditorModule, SortModeEnum, AVService } from 'react-native-aliavkit';
+import { AVService } from 'react-native-aliavkit';
 
 import { HeaderBackButton } from '@react-navigation/elements';
 
-import RNGetPermissions, { PermissionsResults } from '../permissions/RNGetPermissions';
 
 import { ReanimatedArcBase } from '@callstack/reanimated-arc';
 
 import Reanimated from 'react-native-reanimated';
 
+import RNFetchBlob from 'rn-fetch-blob'
+
 import {
     StyleSheet,
     View,
     Text,
+    TextInput,
     StatusBar,
-    Pressable,
     TouchableOpacity,
     Dimensions,
     Platform,
@@ -25,53 +26,58 @@ import {
 const { width, height } = Dimensions.get('window');
 
 
-const HeadPortraitScreen = (props) => {
+
+const DownloadWatermarkVideo = (props) => {
 
     const { navigation } = props;
-
-    const [isStoragePermission, setStoragePermission] = useState(false);
-    const [isPhotoLimited, setPhotoLimited] = useState(false);
 
     const [isExport, setExport] = useState(false);
 
     const [exportProgress, setExportProgress] = useState(0);
 
+    const videoUrl = 'https://video-message-001.paiyaapp.com/QJ2TEznSz97mGi8ip.mp4';
+    const [downloadUrl, setDownloadUrl] = useState(videoUrl);
+
+
+    const [watermarkText, setWatermarkText] = useState('REVOID:123456');
+
     const exportAngle = useRef(new Reanimated.Value(0));
 
-    var videoUri = '';
-
-    useEffect(() => {
-        getPhotos();
-        return () => {
-        };
-    }, []);
-
-    const getPhotos = async () => {
-        const storagePermission = await RNGetPermissions.checkStoragePermissions();
-        setPhotoLimited(storagePermission?.permissionStatus === PermissionsResults.LIMITED);
-        if (!storagePermission?.isGranted) {
-            await new Promise((resolved) => {
-                setTimeout(() => {
-                    resolved()
-                }, 300);
-            })
-            if (await RNGetPermissions.getStoragePermissions(true)) {
-                setStoragePermission(true);
-            }
-            return;
-        }
-        setStoragePermission(true);
-    };
-
-    const onSelectedPhotoCallback = ({ data }) => {
-        videoUri = data[0].uri;
-        console.info("videoUri:", videoUri);
-    };
+    //下载进度比例
+    const downloadProgressProportion = 0.2;
 
 
-    const exportWaterMarkVideo = async () => {
+    const downloadVideo = async () => {
         setExport(true)
-        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, watermarkText: "REVOID: 111222333", isDeleteVideo: false }, (progress) => {
+        RNFetchBlob.config({
+            fileCache: true,
+            appendExt: 'mp4'
+        })
+            .fetch('GET', downloadUrl, {
+                //some headers ..
+            })
+            .progress((received, total) => {
+                const progress = received / total * 100 * downloadProgressProportion;
+                console.log('downloadVideo progress', progress)
+                setExportProgress(parseInt(progress))
+            })
+            .then((res) => {
+                console.info('downloadVideo path: ', res.path())
+                exportWaterMarkVideo(res.path())
+            })
+    }
+
+
+    const exportWaterMarkVideo = async (videoPath) => {
+        // const videoUrl = "https://video-message-001.paiyaapp.com/QJ2TEznSz97mGi8ip.mp4"
+        // const waterMarkVideoPath = await AVService.exportWaterMarkVideoByUrl({ videoUrl: videoUrl, revoId: "REVOID: 1234" }, (progress) => {
+        //     //0~1
+        //     console.info("onExportWaterMarkVideo progress:", progress);
+        //     setExportProgress(parseInt(progress * 100))
+        //     exportAngle?.current?.setValue(progress * 360);
+        // });
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoPath, watermarkText: watermarkText }, (progress) => {
+            progress = downloadProgressProportion + progress * (1 - downloadProgressProportion)
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
             setExportProgress(parseInt(progress * 100))
@@ -153,39 +159,72 @@ const HeadPortraitScreen = (props) => {
                     />
                     <Text style={styles.textCenter}>最近项目</Text>
                     <TouchableOpacity onPress={() => {
-                        exportWaterMarkVideo();
+                        downloadVideo();
                     }}>
                         <Text style={styles.textConfirm}>导出</Text>
                     </TouchableOpacity>
                 </View>
 
-                {isPhotoLimited && (
-                    <View style={styles.photoLimitedContainer}>
-                        <Text style={styles.photoLimitedText}>{'点击“'}</Text>
-                        <Pressable onPress={RNGetPermissions.openSettings}>
-                            <Text style={[styles.photoLimitedText, { color: '#8EF902' }]}>{'去设置'}</Text>
-                        </Pressable>
-                        <Text style={styles.photoLimitedText}>{'”切换至允许访问所有照片。'}</Text>
-                    </View>
-                )}
+                <View style={{
+                    marginTop: 20,
+                    marginStart: 20,
+                    marginEnd: 20,
+                    justifyContent: 'center',
 
-                {isStoragePermission && (
-                    <AVKitPhotoView
-                        style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
-                        multiSelect={false}
-                        numColumns={3}
-                        pageSize={90}
-                        sortMode={SortModeEnum.SORT_MODE_VIDEO}
-                        defaultSelectedPosition={-1}
-                        onSelectedPhotoCallback={onSelectedPhotoCallback}
-                        onMaxSelectCountCallback={() => { }}
+                }}>
+                    <Text style={{ color: '#000', fontSize: 15 }}>水印文字：</Text>
+                    <TextInput
+                        style={{
+                            minHeight: 30,
+                            marginTop: 10,
+                            padding: 10,
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            overflow: 'hidden',
+                            borderRadius: 8,
+                        }}
+                        multiline={true}
+                        textAlignVertical={'center'}
+                        placeholder={'请输入文字水印'}
+                        value={watermarkText}
+                        onChange={(e) => {
+                            if (e?.nativeEvent) {
+                                const inputValue = e?.nativeEvent?.text?.trim()
+                                setWatermarkText(inputValue)
+                            }
+                        }}
                     />
-                )}
+                    <Text style={{ color: '#000', fontSize: 15, marginTop: 40 }}>下载地址：</Text>
+                    <TextInput
+                        style={{
+                            minHeight: 50,
+                            marginTop: 10,
+                            padding: 10,
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            overflow: 'hidden',
+                            borderRadius: 8,
+                        }}
+                        multiline={true}
+                        textAlignVertical={'center'}
+                        placeholder={'请输入视频下载地址'}
+                        value={downloadUrl}
+                        onChange={(e) => {
+                            if (e?.nativeEvent) {
+                                const inputValue = e?.nativeEvent?.text?.trim()
+                                setDownloadUrl(inputValue)
+                            }
+                        }}
+                    />
+
+                </View>
+
                 {isExport && LoadingView()}
+
             </View>
         </SafeAreaView>
     )
+
 }
+
 
 const styles = StyleSheet.create({
     continueHeadView: {
@@ -211,7 +250,7 @@ const styles = StyleSheet.create({
     },
     cameraContainer: {
         flex: 1,
-        backgroundColor: 'black',
+        backgroundColor: '#fff',
     },
     photoLimitedContainer: {
         width,
@@ -228,4 +267,5 @@ const styles = StyleSheet.create({
     }
 })
 
-export default HeadPortraitScreen
+
+export default DownloadWatermarkVideo

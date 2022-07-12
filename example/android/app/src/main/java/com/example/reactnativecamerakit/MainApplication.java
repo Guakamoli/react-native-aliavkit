@@ -31,7 +31,6 @@ import com.horcrux.svg.SvgPackage;
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
 import com.rncamerakit.RNCameraKitPackage;
 import com.swmansion.reanimated.ReanimatedPackage;
-import com.zoontek.rnlocalize.RNLocalizePackage;
 import com.zoontek.rnpermissions.RNPermissionsPackage;
 
 import java.lang.reflect.InvocationTargetException;
@@ -87,7 +86,6 @@ public class MainApplication extends MultiDexApplication implements ReactApplica
                     packages.add(new RNGestureHandlerPackage());
                     packages.add(new RNPermissionsPackage());
                     packages.add(new FastImageViewPackage());
-                    packages.add(new RNLocalizePackage());
 
                     return packages;
                 }
