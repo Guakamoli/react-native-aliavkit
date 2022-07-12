@@ -12,7 +12,8 @@ type MusicRequestType = {
 interface ExportParam {
   videoUrl?: string;
   videoPath?: string;
-  revoId?: string;
+  watermarkText?: string;
+  isDeleteVideo: boolean;//是否需要删除原视频
 }
 
 

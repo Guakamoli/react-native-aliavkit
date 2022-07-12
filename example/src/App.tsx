@@ -29,6 +29,8 @@ import CropHeadPortrait from './headPortrait/CropHeadPortrait';
 import CropImagePreview from './headPortrait/CropImagePreview';
 
 import VideoWatermarkScreen from './watermark';
+import DownloadWatermarkVideo from './watermark/DownloadWatermarkVideo';
+
 
 import PlayerVideo from './watermark/PlayerVideo';
 
@@ -97,7 +99,14 @@ export default class App extends React.Component {
               headerShown: false
             }}
           />
-           <Stack.Screen
+          <Stack.Screen
+            name='DownloadWatermarkVideo'
+            component={DownloadWatermarkVideo}
+            options={{
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
             name='PlayerVideo'
             component={PlayerVideo}
           />
@@ -155,6 +164,11 @@ const HomeExample = (props) => {
         <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoWatermarkScreen")}>
           <Text style={styles.buttonText}>
             Video Watermark
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("DownloadWatermarkVideo")}>
+          <Text style={styles.buttonText}>
+            Download Video Watermark
           </Text>
         </TouchableOpacity>
       </View>

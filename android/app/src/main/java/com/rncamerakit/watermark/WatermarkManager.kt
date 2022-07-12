@@ -42,7 +42,13 @@ class WatermarkManager {
             mAliyunIEditor?.cancelCompose()
         }
 
-        fun exportWaterMarkVideoByUrl(reactContext: ReactApplicationContext, videoUrl: String, revoId: String?, promise: Promise) {
+        fun exportWaterMarkVideoByUrl(
+            reactContext: ReactApplicationContext,
+            videoUrl: String,
+            watermarkText: String?,
+            isDeleteVideo: Boolean,
+            promise: Promise
+        ) {
             if (TextUtils.isEmpty(videoUrl)) {
                 return
             }
@@ -60,7 +66,7 @@ class WatermarkManager {
                 override fun completed(task: BaseDownloadTask) {
                     super.completed(task)
                     val filePath = task.targetFilePath
-                    exportWaterMarkVideo(reactContext, filePath, revoId, 1F - downloadProgressProportion, promise)
+                    exportWaterMarkVideo(reactContext, filePath, watermarkText, 1F - downloadProgressProportion, isDeleteVideo, promise)
                 }
             })
         }
@@ -68,8 +74,9 @@ class WatermarkManager {
         fun exportWaterMarkVideo(
             reactContext: ReactApplicationContext,
             videoPath: String?,
-            revoId: String?,
+            watermarkText: String?,
             progressProportion: Float,
+            isDeleteVideo: Boolean,
             promise: Promise
         ) {
             if (TextUtils.isEmpty(videoPath)) {
@@ -101,7 +108,7 @@ class WatermarkManager {
             /**
              * 添加 bitmap 水印
              */
-            val bitmap = textToImage(context, revoId, watermarkLogoWidth, watermarkLogoHeight)
+            val bitmap = textToImage(context, watermarkText, watermarkLogoWidth, watermarkLogoHeight)
             val screenWidth = ScreenUtils.getWidth(reactContext).toFloat()
             val scale = videoParam.outputWidth/screenWidth
             videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
@@ -136,8 +143,10 @@ class WatermarkManager {
 
                     //合成成功，删除下载的视频，并且将合成后的视频保存到相册中
 
-                    com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
-                    saveToPhotos(context, videoParam.videoOutputPath)
+                    if (isDeleteVideo) {
+                        com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
+                    }
+//                    saveToPhotos(context, videoParam.videoOutputPath)
 
                     promise.resolve(videoParam.videoOutputPath)
                 }

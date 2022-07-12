@@ -27,6 +27,8 @@ target 'CameraKitExample' do
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
   pod 'Permission-Microphone', :path => "#{permissions_path}/Microphone"
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+
+  pod 'rn-fetch-blob', :path => '../node_modules/rn-fetch-blob'
   
   # Enables Flipper.
   #

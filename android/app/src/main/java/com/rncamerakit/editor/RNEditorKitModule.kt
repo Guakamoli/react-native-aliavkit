@@ -354,9 +354,10 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun exportWaterMarkVideoByUrl(options: ReadableMap, promise: Promise) {
         mExportWaterMarkVideoPromise = promise
         val videoUrl = if (options.hasKey("videoUrl")) options.getString("videoUrl") else ""
-        val revoId = if (options.hasKey("revoId")) options.getString("revoId") else ""
+        val watermarkText = if (options.hasKey("watermarkText")) options.getString("watermarkText") else ""
+        val isDeleteVideo = if (options.hasKey("isDeleteVideo")) options.getBoolean("isDeleteVideo") else false
         videoUrl?.let {
-            WatermarkManager.exportWaterMarkVideoByUrl(reactContext, videoUrl, revoId, promise)
+            WatermarkManager.exportWaterMarkVideoByUrl(reactContext, videoUrl, watermarkText, isDeleteVideo, promise)
         }
     }
 
@@ -364,8 +365,9 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun exportWaterMarkVideo(options: ReadableMap, promise: Promise) {
         mExportWaterMarkVideoPromise = promise
         val videoPath = if (options.hasKey("videoPath")) options.getString("videoPath") else ""
-        val revoId = if (options.hasKey("revoId")) options.getString("revoId") else ""
-        WatermarkManager.exportWaterMarkVideo(reactContext, videoPath, revoId, 1F, promise)
+        val watermarkText = if (options.hasKey("watermarkText")) options.getString("watermarkText") else ""
+        val isDeleteVideo = if (options.hasKey("isDeleteVideo")) options.getBoolean("isDeleteVideo") else false
+        WatermarkManager.exportWaterMarkVideo(reactContext, videoPath, watermarkText, 1F, isDeleteVideo, promise)
     }
 
     @ReactMethod

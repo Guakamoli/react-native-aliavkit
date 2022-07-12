@@ -16,7 +16,8 @@ type MusicRequestType = {
 
 interface ExportParam {
   videoPath: string;
-  revoId?: string;
+  watermarkText?: string;
+  isDeleteVideo: boolean;//是否需要删除原视频
 }
 
 export default class AVService {
