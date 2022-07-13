@@ -73,7 +73,7 @@ const CropHeadPortrait = (props) => {
 
                     <TouchableOpacity onPress={() => {
                         setImageAngle((imageAngle + 90) % 360);
-                        cropViewRef?.current?.rotateImage(true);
+                        cropViewRef?.current?.rotateImage(false);
                     }}>
                         <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
                     </TouchableOpacity>
@@ -112,7 +112,6 @@ const CropHeadPortrait = (props) => {
                             console.info("哈哈哈", res)
                             onCropped(res)
                         }}
-                        keepAspectRatio
                         aspectRatio={{ width: 1, height: 1 }}
                     />
                 }

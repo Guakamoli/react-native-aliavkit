@@ -88,6 +88,7 @@ const HeadPortraitScreen = (props) => {
                     <AVKitPhotoView
                         style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
                         multiSelect={false}
+                        keepSelected={false}
                         numColumns={3}
                         pageSize={90}
                         sortMode={SortModeEnum.SORT_MODE_PHOTO}
