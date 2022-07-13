@@ -118,7 +118,7 @@ class PhotoAdapter(
             if (mKeepSelected) {
                 holder.flCheckView.visibility = View.VISIBLE
                 holder.tvCheckView.visibility = View.VISIBLE
-            }else{
+            } else {
                 holder.flCheckView.visibility = View.GONE
                 holder.tvCheckView.visibility = View.GONE
             }
@@ -251,7 +251,11 @@ class PhotoAdapter(
             }
 
             if (mCurrentClickPosition == position) {
-                holder.selectedBgView.visibility = View.VISIBLE
+                if (mKeepSelected) {
+                    holder.selectedBgView.visibility = View.VISIBLE
+                } else {
+                    holder.selectedBgView.visibility = View.GONE
+                }
             } else {
                 holder.selectedBgView.visibility = View.GONE
             }
