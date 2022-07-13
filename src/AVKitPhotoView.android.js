@@ -11,6 +11,7 @@ export default class AVkitPhotoView extends React.Component {
 
     constructor(props) {
         super(props)
+        console.info("keepSelected", props.keepSelected);
         this.state = {
             pageSize: !!props?.pageSize ? props.pageSize : 40,
             numColumns: !!props?.numColumns ? props.numColumns : 4,
@@ -24,6 +25,7 @@ export default class AVkitPhotoView extends React.Component {
 
             // sortMode : "all"  "video"  "photo"
             sortMode: !!props?.sortMode ? props.sortMode : SortModeEnum.SORT_MODE_ALL,
+            keepSelected: props.keepSelected == 'undefined' ? true : props.keepSelected,
         }
     };
 
@@ -130,6 +132,7 @@ export default class AVkitPhotoView extends React.Component {
         // onSelectedPhotoCallback: 每次选择图片/视频的回调
         // onMaximumSelectionCallback: 多选超过最大限制回调
         // onErrorCallback: 错误日志回调
+        console.info("keepSelected", this.state.keepSelected);
         return (
             <NativePhotoView
                 style={{ backgroundColor: 'transparent' }}
@@ -144,6 +147,7 @@ export default class AVkitPhotoView extends React.Component {
                 itemHeight={this.state.itemHeight}
 
                 sortMode={this.state.sortMode}
+                keepSelected={this.state.keepSelected}
 
                 onSelectedPhotoCallback={this._onSelectedPhotoCallback}
                 onMaxSelectCountCallback={this._onMaxSelectCountCallback}

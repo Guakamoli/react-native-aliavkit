@@ -30,7 +30,8 @@ class PhotoAdapter(
     private val mSelectedPhotoMap: HashMap<Int, Int>,
     private val mItemWidth: Int,
     private val mItemHeight: Int,
-    private val mDefaultSelectedPosition: Int
+    private val mDefaultSelectedPosition: Int,
+    private val mKeepSelected: Boolean
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -114,8 +115,13 @@ class PhotoAdapter(
             }
         } else {
 
-            holder.flCheckView.visibility = View.VISIBLE
-            holder.tvCheckView.visibility = View.VISIBLE
+            if (mKeepSelected) {
+                holder.flCheckView.visibility = View.VISIBLE
+                holder.tvCheckView.visibility = View.VISIBLE
+            }else{
+                holder.flCheckView.visibility = View.GONE
+                holder.tvCheckView.visibility = View.GONE
+            }
 
             if (mSelectedPhotoMap[position] == null) {
                 holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_unselected)
@@ -147,6 +153,9 @@ class PhotoAdapter(
             }
         }
 
+        if (!mKeepSelected) {
+            holder.flCheckView.visibility = View.GONE
+        }
 
         //取消多选选中
         holder.flCheckView.setOnClickListener {
@@ -249,23 +258,18 @@ class PhotoAdapter(
             setMultiSelectChanged(info, holder as PhotoViewHolder, position)
 
             holder.itemView.setOnClickListener {
-
-
                 if (position == mOldCurrentClickPosition && mSelectedPhotoMap[position] != null) {
                     return@setOnClickListener
                 }
-
                 if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {
                     return@setOnClickListener
                 }
-
                 if (mSelectedPhotoMap.size >= 10) {
                     if (mSelectedPhotoMap[position] == null) {
                         mItemListener?.onMaxSelectCountCallback()
                         return@setOnClickListener
                     }
                 }
-
                 if (mSelectedPhotoMap.isEmpty()) {
                     mMultiFileType = info.type
                     notifyItemRangeChanged(0, mList.size, "MultiSelectChanged")
