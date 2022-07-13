@@ -30,7 +30,6 @@ export default function StoryPickerExample() {
         multiSelect={false}
         numColumns={3}
         pageSize={90}
-        keepSelected={false}
         defaultSelectedPosition={-1}
         onSelectedPhotoCallback={handleSelectedPhotoCallback}
         onMaxSelectCountCallback={() => { }}
