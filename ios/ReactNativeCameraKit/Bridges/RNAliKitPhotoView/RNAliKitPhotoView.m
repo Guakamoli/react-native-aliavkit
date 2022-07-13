@@ -318,7 +318,7 @@
     if(!self.multiSelect){
         //非多选状态下页面只有默认状态和白色模版状态
         cell.cellStatus     = selectStatus ? AYPhotoCellStatusSelect : AYPhotoCellStatusDefault;
-        cell.selectStatus   = selectStatus ? AYPhotoSelectStatusCheck : AYPhotoSelectStatusDefault;
+        cell.selectStatus   = (_keepSelected && selectStatus) ? AYPhotoSelectStatusCheck : AYPhotoSelectStatusDefault;
     }else if(self.selectedIndexs.count == 0){
         //多选情况下允许不选择
         cell.cellStatus     =  AYPhotoCellStatusDefault;
