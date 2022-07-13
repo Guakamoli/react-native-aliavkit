@@ -59,6 +59,10 @@ class RNAliKitPhotoViewManager : SimpleViewManager<RNAliKitPhotoView>() {
         view.setSortMode(sortMode)
     }
 
+    @ReactProp(name = "keepSelected", defaultBoolean = true)
+    fun setKeepSelected(view: RNAliKitPhotoView, keepSelected: Boolean) {
+        view.setKeepSelected(keepSelected)
+    }
 
     override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
         val builder: MapBuilder.Builder<String, Any> = MapBuilder.builder<String, Any>()

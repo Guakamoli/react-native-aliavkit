@@ -43,6 +43,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
     private var queryMediaManager: QueryMediaManager? = null
     private var mSortMode: String? = "all"
+    private var mKeepSelected: Boolean = true
 
     /**
      * key 选中图片在相册的下标，
@@ -79,6 +80,10 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
 
     fun setSortMode(sortMode: String?) {
         sortMode?.let { mSortMode = sortMode }
+    }
+
+    fun setKeepSelected(keepSelected: Boolean) {
+        mKeepSelected = keepSelected
     }
 
     init {
@@ -215,7 +220,7 @@ class RNAliKitPhotoView(val reactContext: ThemedReactContext) : FrameLayout(reac
             } else {
                 this.mItemHeight
             }
-            mPhotoAdapter = PhotoAdapter(context, mPhotoList, mSelectedPhotoMap, itemWidth, itemHeight, mDefaultSelectedPosition)
+            mPhotoAdapter = PhotoAdapter(context, mPhotoList, mSelectedPhotoMap, itemWidth, itemHeight, mDefaultSelectedPosition,mKeepSelected)
             mPhotoAdapter?.setMultiSelect(mMultiSelect)
             mPhotoRecyclerView?.layoutManager = GridLayoutManager(context, mNumColumns)
             mPhotoRecyclerView?.addItemDecoration(GridSpacingItemDecoration(mNumColumns, 2, false))
