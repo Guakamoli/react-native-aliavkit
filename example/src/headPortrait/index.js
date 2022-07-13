@@ -90,6 +90,7 @@ const HeadPortraitScreen = (props) => {
                         multiSelect={false}
                         numColumns={3}
                         pageSize={90}
+                        keepSelected={false}
                         sortMode={SortModeEnum.SORT_MODE_PHOTO}
                         defaultSelectedPosition={-1}
                         onSelectedPhotoCallback={onSelectedPhotoCallback}
