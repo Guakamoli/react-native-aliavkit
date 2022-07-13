@@ -30,7 +30,7 @@ export default function StoryPickerExample() {
         multiSelect={false}
         numColumns={3}
         pageSize={90}
-        defaultSelectedPosition={-1}
+        defaultSelectedPosition={0}
         onSelectedPhotoCallback={handleSelectedPhotoCallback}
         onMaxSelectCountCallback={() => { }}
       ></AVKitPhotoView>
