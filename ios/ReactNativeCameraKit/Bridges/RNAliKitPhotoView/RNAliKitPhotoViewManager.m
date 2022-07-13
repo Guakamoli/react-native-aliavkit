@@ -52,7 +52,7 @@ RCT_EXPORT_VIEW_PROPERTY(itemWidth, CGFloat)
 // itemHeight: 同itemWidth
 RCT_EXPORT_VIEW_PROPERTY(itemHeight, CGFloat)
 
-//相册显示类型 sortMode: "all" "vidoe" "photo"
+//相册显示类型 sortMode: "all" "video" "photo"
 RCT_EXPORT_VIEW_PROPERTY(sortMode, NSString*)
 
 //onRecordingProgress:()=>(selectedIndex,selectedData)

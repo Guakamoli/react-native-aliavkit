@@ -36,6 +36,8 @@ const CropHeadPortrait = (props) => {
 
     const [reset, setReset] = useState(false);
 
+    const cropViewRef = useRef(null);
+
     useEffect(() => {
         return () => {
         };
@@ -49,7 +51,7 @@ const CropHeadPortrait = (props) => {
     const onCropped = (data) => {
         console.info("onCropped", data);
         setStartCrop(!startCrop)
-        navigation.goBack()
+        // navigation.goBack()
         navigation.navigate("CropImagePreview", { imageUri: data.uri });
     }
 
@@ -71,30 +73,49 @@ const CropHeadPortrait = (props) => {
 
                     <TouchableOpacity onPress={() => {
                         setImageAngle((imageAngle + 90) % 360);
+                        cropViewRef?.current?.rotateImage(true);
                     }}>
                         <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {
+                    {/* <TouchableOpacity onPress={() => {
                         onReset();
                     }}>
                         <Text style={styles.textConfirm}>重置</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <TouchableOpacity onPress={() => {
                         setStartCrop(true);
+                        cropViewRef?.current?.saveImage(true, 90);
                     }}>
                         <Text style={styles.textConfirm}>确认</Text>
                     </TouchableOpacity>
                 </View>
 
-                <CropImageView
-                    style={{ width: width, height: height - 50, backgroundColor: 'black' }}
-                    angle={imageAngle}
-                    imageUri={imageUri}
-                    startCrop={startCrop}
-                    reset={reset}
-                    onCropped={onCropped}
-                    onCropError={onCropError}
-                />
+
+                {Platform.OS === 'android' ?
+                    <CropImageView
+                        style={{ width: width, height: height - 200, backgroundColor: 'black' }}
+                        angle={imageAngle}
+                        imageUri={imageUri}
+                        startCrop={startCrop}
+                        reset={reset}
+                        onCropped={onCropped}
+                        onCropError={onCropError}
+                    />
+                    :
+                    <CropImageView
+                        sourceUrl={imageUri}
+                        style={{ width: width, height: height - 200, backgroundColor: 'black' }}
+                        ref={cropViewRef}
+                        onImageCrop={(res) => {
+                            //{"height": 720, "target": 929, 
+                            //"uri": "file:///var/mobile/Containers/Data/Application/C73778B0-B20F-4F62-9156-D7117DD002D4/Library/Caches/C053DD5A-88CE-4A26-A97E-086901000F57.jpg", "width": 720}
+                            console.info("哈哈哈", res)
+                            onCropped(res)
+                        }}
+                        keepAspectRatio
+                        aspectRatio={{ width: 1, height: 1 }}
+                    />
+                }
             </View>
         </SafeAreaView>
     )

@@ -178,9 +178,16 @@
         [self resetPhotoView];
     }
 }
+
+// 这里设置相册展示类型：图片/视频
 - (void)setSortMode:(NSString*)sortMode
 {
-    // 这里设置相册展示类型：图片/视频
+    if(![_sortMode isEqualToString:sortMode]) {
+        _sortMode = sortMode;
+        if(self.collectionView) {
+            [self fetchPhotoData];
+        }
+    }
 }
 
 #pragma mark - setup view
@@ -218,13 +225,16 @@
 - (void)fetchPhotoData
 {
     __weak typeof(self)weakSelf =self;
+    BOOL allowVideo = [_sortMode isEqualToString:@"all"] || [_sortMode isEqualToString:@"video"];
+    BOOL allowImage = [_sortMode isEqualToString:@"all"] || [_sortMode isEqualToString:@"photo"];
+
     [[AliyunPhotoLibraryManager sharedManager] requestAuthorization:^(BOOL authorization) {
         if (!authorization) {
             return;
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             //分页处理
-            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:NO allowPickingImage:NO durationRange:(VideoDurationRange){2,60*60} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
+            [[AliyunPhotoLibraryManager sharedManager] getCameraRollAssetWithallowPickingVideo:allowVideo allowPickingImage:allowImage durationRange:(VideoDurationRange){2,60*60} completion:^(NSArray<AliyunAssetModel *> *models, NSInteger videoCount){
                 weakSelf.libraryDataArray = models;
                 weakSelf.viewDataArray = [weakSelf.libraryDataArray subarrayWithRange:NSMakeRange(0, MIN(models.count,self.pageSize))];
                 [weakSelf.collectionView reloadData];

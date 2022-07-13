@@ -32,5 +32,7 @@ Pod::Spec.new do |s|
   s.dependency 'FMDB'
   s.dependency 'JSONModel'
   s.dependency 'SSZipArchive'
-  
+
+  # 裁剪
+  s.dependency 'TOCropViewController'
 end
