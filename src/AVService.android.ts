@@ -10,10 +10,10 @@ type MusicRequestType = {
 };
 
 interface ExportParam {
-  videoUrl?: string;
-  videoPath?: string;
+  videoPath: string;
+  watermarkImagePath?: string;//传入 watermarkImagePath 后将直接使用作为水印图片，不会使用 watermarkText合成
   watermarkText?: string;
-  isDeleteVideo: boolean;//是否需要删除原视频
+  isDeleteVideo: boolean;//是否需要删除传入的 videoPath
 }
 
 
@@ -32,18 +32,18 @@ export default class AVService {
 
   
 
-  static async exportWaterMarkVideoByUrl(exportParam: ExportParam, progressListener: (progress: number) => void) {
-    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
-    DeviceEventEmitter.addListener('onExportWaterMarkVideo', (progress) => {
-      //0~1
-      if (progressListener) {
-        progressListener(progress);
-      }
-    });
-    const waterMarkVideoPath = await RNEditorKitModule.exportWaterMarkVideoByUrl(exportParam);
-    DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
-    return waterMarkVideoPath;
-  }
+  // static async exportWaterMarkVideoByUrl(exportParam: ExportParam, progressListener: (progress: number) => void) {
+  //   DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+  //   DeviceEventEmitter.addListener('onExportWaterMarkVideo', (progress) => {
+  //     //0~1
+  //     if (progressListener) {
+  //       progressListener(progress);
+  //     }
+  //   });
+  //   const waterMarkVideoPath = await RNEditorKitModule.exportWaterMarkVideoByUrl(exportParam);
+  //   DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+  //   return waterMarkVideoPath;
+  // }
 
   /**
    * 导出视频带水印

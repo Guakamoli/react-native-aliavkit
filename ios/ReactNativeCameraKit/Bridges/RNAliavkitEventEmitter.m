@@ -28,7 +28,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"addFacePasterListener"];
+  return @[@"addFacePasterListener",@"onExportWaterMarkVideo"];
 }
 
 + (id)allocWithZone:(NSZone *)zone {
@@ -45,6 +45,13 @@ RCT_EXPORT_MODULE();
  */
 - (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index{
     [self sendEventWithName:@"addFacePasterListener" body:@{@"progress":@(progress),@"index":index}];
+}
+
+/**
+ * 视频水印合成回调
+ */
+- (void)setExportWaterMarkVideoProgress:(CGFloat)progress{
+    [self sendEventWithName:@"onExportWaterMarkVideo" body:@{@"progress":@(progress)}];
 }
 
 @end

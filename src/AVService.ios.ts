@@ -1,6 +1,6 @@
 import React from 'react';
 import { NativeModules, NativeEventEmitter, } from 'react-native';
-const { AliAVServiceBridge, RNMusicService, RNEditViewManager, CKCameraManager } = NativeModules;
+const { AliAVServiceBridge, RNMusicService, RNEditViewManager, CKCameraManager, RNKitWatermarkManager } = NativeModules;
 
 const managerEmitter = new NativeEventEmitter(AliAVServiceBridge);
 
@@ -16,40 +16,41 @@ type MusicRequestType = {
 
 interface ExportParam {
   videoPath: string;
+  watermarkImagePath?: string;//传入 watermarkImagePath 后将直接使用作为水印图片，不会使用 watermarkText合成
   watermarkText?: string;
-  isDeleteVideo: boolean;//是否需要删除原视频
+  isDeleteVideo: boolean;//是否需要删除传入的videoPath
 }
 
 export default class AVService {
 
 
-    /**
-   * 
-   * @returns story 取消导出水印视频
+  /**
+ * 
+ * @returns story 取消导出水印视频
+ */
+  static async cancelExportWaterMarkVideo() {
+    RNKitWatermarkManager.cancelExportWaterMarkVideo();
+    aliavkitEventEmitter?.removeAllListeners("onExportWaterMarkVideo");
+  }
+
+  /**
+   * 导出视频带水印
+   * @param exportParam 
+   * @param progressListener 
+   * @returns 
    */
-     static async cancelExportWaterMarkVideo() {
-      AliAVServiceBridge.cancelExportWaterMarkVideo();
-      managerEmitter?.removeAllListeners("onExportWaterMarkVideo");
-    }
-  
-    /**
-     * 导出视频带水印
-     * @param exportParam 
-     * @param progressListener 
-     * @returns 
-     */
-    static async exportWaterMarkVideo(exportParam: ExportParam, progressListener: (progress: number) => void) {
-      managerEmitter?.removeAllListeners("onExportWaterMarkVideo");
-      managerEmitter?.addListener('onExportWaterMarkVideo', (progress) => {
-        //0~1
-        if (progressListener) {
-          progressListener(progress);
-        }
-      });
-      const waterMarkVideoPath = await AliAVServiceBridge.exportWaterMarkVideo(exportParam);
-      managerEmitter?.removeAllListeners("onExportWaterMarkVideo");
-      return waterMarkVideoPath;
-    }
+  static async exportWaterMarkVideo(exportParam: ExportParam, progressListener: (progress: number) => void) {
+    aliavkitEventEmitter?.removeAllListeners("onExportWaterMarkVideo");
+    aliavkitEventEmitter?.addListener('onExportWaterMarkVideo', (progress) => {
+      //0~1
+      if (progressListener) {
+        progressListener(progress?.progress);
+      }
+    });
+    const waterMarkVideoPath = await RNKitWatermarkManager.exportWaterMarkVideo(exportParam);
+    aliavkitEventEmitter?.removeAllListeners("onExportWaterMarkVideo");
+    return waterMarkVideoPath;
+  }
 
 
 

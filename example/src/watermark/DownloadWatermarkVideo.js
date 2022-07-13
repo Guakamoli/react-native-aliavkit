@@ -49,6 +49,8 @@ const DownloadWatermarkVideo = (props) => {
 
     const downloadVideo = async () => {
         setExport(true)
+        setExportProgress(0)
+        exportAngle?.current?.setValue(0);
         RNFetchBlob.config({
             fileCache: true,
             appendExt: 'mp4'
@@ -69,28 +71,29 @@ const DownloadWatermarkVideo = (props) => {
 
 
     const exportWaterMarkVideo = async (videoPath) => {
-        // const videoUrl = "https://video-message-001.paiyaapp.com/QJ2TEznSz97mGi8ip.mp4"
-        // const waterMarkVideoPath = await AVService.exportWaterMarkVideoByUrl({ videoUrl: videoUrl, revoId: "REVOID: 1234" }, (progress) => {
-        //     //0~1
-        //     console.info("onExportWaterMarkVideo progress:", progress);
-        //     setExportProgress(parseInt(progress * 100))
-        //     exportAngle?.current?.setValue(progress * 360);
-        // });
-        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoPath, watermarkText: watermarkText }, (progress) => {
+        const path = await AVService.saveToSandBox('ph://0B35D98F-5C8B-4643-9356-06DF17951E7C/L0/001');
+        const exportParam = {
+            videoPath: videoPath,
+            watermarkText: watermarkText,
+            // watermarkImagePath: path
+            // watermarkImagePath:'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/cache/media/save/logo_video_watermark.png'
+            // watermarkImagePath: "/private/var/containers/Bundle/Application/73BB0879-67BD-4409-9E2D-ADCB9B4D9703/CameraKitExample.app/AliKitPhotoView/ic_water_mark_logo.png"
+        }
+
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideo(exportParam, (progress) => {
             progress = downloadProgressProportion + progress * (1 - downloadProgressProportion)
             //0~1
-            console.info("onExportWaterMarkVideo progress:", progress);
+            console.info("onExportWaterMarkVideo progress:", progress * 100);
             setExportProgress(parseInt(progress * 100))
             exportAngle?.current?.setValue(progress * 360);
         });
 
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
         navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });
-        setExportProgress(0)
-        exportAngle?.current?.setValue(0);
         setTimeout(() => {
             setExport(false)
-        }, 100);
+        }, 0);
+
     }
 
 
