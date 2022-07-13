@@ -36,6 +36,8 @@ const CropHeadPortrait = (props) => {
 
     const [reset, setReset] = useState(false);
 
+    const cropViewRef = useRef(null);
+
     useEffect(() => {
         return () => {
         };
@@ -71,6 +73,7 @@ const CropHeadPortrait = (props) => {
 
                     <TouchableOpacity onPress={() => {
                         setImageAngle((imageAngle + 90) % 360);
+                        cropViewRef.current.rotateImage(false);
                     }}>
                         <Image style={styles.imageRotating} source={require('../../images/ic_rotating_image.png')} />
                     </TouchableOpacity>
@@ -81,19 +84,29 @@ const CropHeadPortrait = (props) => {
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
                         setStartCrop(true);
+                        cropViewRef.current.saveImage(true, 90);
                     }}>
                         <Text style={styles.textConfirm}>确认</Text>
                     </TouchableOpacity>
                 </View>
 
-                <CropImageView
-                    style={{ width: width, height: height - 50, backgroundColor: 'black' }}
+                {/* <CropImageView
+                    style={{ width: width, height: height - 200, backgroundColor: 'black' }}
                     angle={imageAngle}
                     imageUri={imageUri}
                     startCrop={startCrop}
                     reset={reset}
                     onCropped={onCropped}
                     onCropError={onCropError}
+                /> */}
+
+                <CropImageView
+                    sourceUrl={imageUri}
+                    style={{ width: width, height: height - 200, backgroundColor: 'black' }}
+                    ref={cropViewRef}
+                    onImageCrop={(res) => console.warn(res)}
+                    keepAspectRatio
+                    aspectRatio={{ width: 1, height: 1 }}
                 />
             </View>
         </SafeAreaView>
