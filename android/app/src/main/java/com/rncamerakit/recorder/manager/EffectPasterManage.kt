@@ -52,22 +52,27 @@ class EffectPasterManage private constructor() {
         }
         mPaterLoader?.loadAllPaster(null) { localInfos, remoteInfos, _ ->
 
-            for (i in 0 until localInfos.size) {
-                val form = localInfos[i]
-                if (form.id == 150) {
-                    form.icon = "file://" + form.icon
+            localInfos?.let {
+                for (i in 0 until localInfos.size) {
+                    val form = localInfos[i]
+                    if (form.id == 150) {
+                        form.icon = "file://" + form.icon
+                    }
+                    form.isLocalRes = FileUtils.fileIsExists(form.path)
+                    form.sort = i + 1
+                    mPasterList.add(form)
                 }
-                form.isLocalRes = FileUtils.fileIsExists(form.path)
-                form.sort = i + 1
-                mPasterList.add(form)
             }
 
-            for (i in 0 until remoteInfos.size) {
-                val form = remoteInfos[i]
-                form.isLocalRes = false
-                form.sort = i + 1 + localInfos.size
-                mPasterList.add(form)
+            remoteInfos?.let {
+                for (i in 0 until remoteInfos.size) {
+                    val form = remoteInfos[i]
+                    form.isLocalRes = false
+                    form.sort = i + 1 + localInfos.size
+                    mPasterList.add(form)
+                }
             }
+
             val jsonList = GsonBuilder().create().toJson(mPasterList)
             promise?.resolve(jsonList)
         }

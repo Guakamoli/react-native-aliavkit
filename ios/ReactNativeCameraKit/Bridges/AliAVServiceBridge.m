@@ -499,7 +499,9 @@ RCT_EXPORT_METHOD(getFacePasterInfos:(NSDictionary*)options
          parameters:param
   completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
         if (error) {
-            reject(@"fetch remote paster fail", error.localizedDescription, nil);
+            NSMutableArray *arr = [[NSMutableArray alloc] init];
+            resolve(arr);
+//            reject(@"fetch remote paster fail", error.localizedDescription, nil);
         } else {
             
             NSArray *pastList = responseObject[@"data"];

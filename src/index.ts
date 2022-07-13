@@ -19,7 +19,7 @@ const EditorModule = isIOS ? NativeModules.RNEditViewManager : NativeModules.RNE
 
 const PhotoModule = isIOS ? NativeModules.RNAliKitPhotoViewManager : NativeModules.RNAliKitPhotoViewModule;
 
-const CropImageViewModule = isIOS ? NativeModules.CropViewManager : NativeModules.RNKitCropImageViewModule;
+const CropImageViewModule = isIOS ? NativeModules.RNKitCropImageViewManager : NativeModules.RNKitCropImageViewModule;
 
 export const Orientation = {
   PORTRAIT: 0, // ⬆️

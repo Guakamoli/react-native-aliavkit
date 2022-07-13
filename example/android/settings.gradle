@@ -59,3 +59,5 @@ project(':react-native-fast-image').projectDir = new File(rootProject.projectDir
 include ':react-native-localize'
 project(':react-native-localize').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-localize/android')
 
+include ':rn-fetch-blob'
+project(':react-native-localize').projectDir = new File(rootProject.projectDir, '../node_modules/rn-fetch-blob/android')

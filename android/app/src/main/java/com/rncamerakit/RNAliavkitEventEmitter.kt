@@ -1,8 +1,6 @@
 package com.rncamerakit
 
-import com.aliyun.svideo.editor.effects.control.UIEditorPage
 import com.duanqu.transcode.NativeParser
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
@@ -140,6 +138,11 @@ class RNAliavkitEventEmitter {
         fun postVideoCrop(reactContext: ReactContext?, progress: Int) {
             reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 ?.emit("postVideoCrop", "" + progress.toDouble()/100)
+        }
+
+        fun onExportWaterMarkVideo(reactContext: ReactContext?, progress: Int) {
+            reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                ?.emit("onExportWaterMarkVideo", "" + progress.toDouble()/100)
         }
 
     }

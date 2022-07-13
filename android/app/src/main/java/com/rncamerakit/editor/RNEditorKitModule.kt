@@ -19,9 +19,9 @@ import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.utils.AliFileUtils
 import com.rncamerakit.utils.DownloadUtils
 import com.rncamerakit.utils.MyFileDownloadCallback
+import com.rncamerakit.watermark.WatermarkManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import java.net.FileNameMap
 import java.net.URLConnection
@@ -41,6 +41,7 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
 
         var mPostCropPromise: Promise? = null
         var mStoryComposePromise: Promise? = null
+        var mExportWaterMarkVideoPromise: Promise? = null
 
     }
 
@@ -289,13 +290,11 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
         promise.resolve(true)
     }
 
-
     private fun isVideo(fileName: String?): Boolean {
         val fileNameMap: FileNameMap = URLConnection.getFileNameMap()
         val contentTypeFor: String = fileNameMap.getContentTypeFor(fileName)
         return contentTypeFor.contains("video")
     }
-
 
     @ReactMethod
     fun removeThumbnaiImages(promise: Promise) {
@@ -349,6 +348,43 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     fun release(promise: Promise) {
         MediaPlayerManage.instance.release()
         mView?.onRelease()
+    }
+
+    @ReactMethod
+    fun exportWaterMarkVideoByUrl(options: ReadableMap, promise: Promise) {
+        mExportWaterMarkVideoPromise = promise
+        val videoUrl = if (options.hasKey("videoUrl")) options.getString("videoUrl") else ""
+        val watermarkImagePath = if (options.hasKey("watermarkImagePath")) options.getString("watermarkImagePath") else ""
+        val watermarkText = if (options.hasKey("watermarkText")) options.getString("watermarkText") else ""
+        val isDeleteVideo = if (options.hasKey("isDeleteVideo")) options.getBoolean("isDeleteVideo") else false
+        videoUrl?.let {
+            WatermarkManager.exportWaterMarkVideoByUrl(reactContext, videoUrl, watermarkText, watermarkImagePath, isDeleteVideo, promise)
+        }
+    }
+
+    @ReactMethod
+    fun exportWaterMarkVideo(options: ReadableMap, promise: Promise) {
+        mExportWaterMarkVideoPromise = promise
+        val videoPath = if (options.hasKey("videoPath")) options.getString("videoPath") else ""
+        val watermarkImagePath = if (options.hasKey("watermarkImagePath")) options.getString("watermarkImagePath") else ""
+        val watermarkText = if (options.hasKey("watermarkText")) options.getString("watermarkText") else ""
+        val isDeleteVideo = if (options.hasKey("isDeleteVideo")) options.getBoolean("isDeleteVideo") else false
+        WatermarkManager.exportWaterMarkVideo(
+            reactContext,
+            videoPath,
+            watermarkText,
+            watermarkImagePath,
+            progressProportion = 1F,
+            isDeleteVideo,
+            promise
+        )
+    }
+
+    @ReactMethod
+    fun cancelExportWaterMarkVideo(promise: Promise) {
+        mExportWaterMarkVideoPromise?.resolve("")
+        WatermarkManager.cancelExportWaterMarkVideo()
+        promise.resolve(true)
     }
 
 }
