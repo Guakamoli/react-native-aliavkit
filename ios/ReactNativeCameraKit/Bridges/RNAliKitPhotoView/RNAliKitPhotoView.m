@@ -31,6 +31,8 @@
 @property (nonatomic) NSUInteger numColumns;
 /**是否多选,默认flase,注意视频即使开启开关也不能多选,相册上限10等待后续增加字段*/
 @property (nonatomic) BOOL multiSelect;
+/**单选时是否保持选择结果，不自动清除。默认: NO*/
+@property (nonatomic) BOOL keepSelected;
 // 最多可选数量
 @property (nonatomic) NSUInteger maxSelectCount;
 // 默认选中下标
@@ -161,6 +163,13 @@
 {
     if(_multiSelect != multiSelect){
         _multiSelect = multiSelect;
+        [self resetPhotoView];
+    }
+}
+- (void)setKeepSelected:(BOOL)keepSelect
+{
+    if(_keepSelected != keepSelect){
+        _keepSelected = keepSelect;
         [self resetPhotoView];
     }
 }
@@ -512,8 +521,8 @@
         {
             //修改白色模版的位置
             self.lastSelectIndex = indexPath.item;
-            [self.collectionView reloadData];
             [self sendSelectPhotoDataToRN];
+            [self.collectionView reloadData];
         }else{
             //已选中视频/照片的第二次点击不做处理
         }
@@ -591,8 +600,8 @@
             self.lastSelectIndex = [lastObj integerValue];
         }
     }
-    [self.collectionView reloadData];
     [self sendSelectPhotoDataToRN];
+    [self.collectionView reloadData];
 }
 
 // 发送本地选择数据给RN
@@ -699,6 +708,10 @@
         }
         self.onSelectedPhotoCallback(@{@"selectedIndex":selectedIndex, @"data":selectData});
 
+        if(!self.multiSelect && !self.keepSelected) {
+            self.selectedIndexs = [NSMutableArray new];
+        }
+
     }else{
         self.onSelectedPhotoCallback(@{@"selectedIndex":@(0), @"data":@[]});
     }
@@ -717,8 +730,8 @@
             self.lastSelectIndex = [lastObj integerValue];
         }
     }
-    [self.collectionView reloadData];
     //[self sendSelectPhotoDataToRN];
+    [self.collectionView reloadData];
 }
 
 @end

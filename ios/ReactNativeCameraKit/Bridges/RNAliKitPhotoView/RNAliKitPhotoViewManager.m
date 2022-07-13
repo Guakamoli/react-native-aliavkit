@@ -41,6 +41,8 @@ RCT_EXPORT_VIEW_PROPERTY(pageSize, NSInteger)
 RCT_EXPORT_VIEW_PROPERTY(numColumns, NSInteger)
 // multiSelect: 是否多选  默认：false
 RCT_EXPORT_VIEW_PROPERTY(multiSelect, BOOL)
+// keepSelected: 单选时是否保持选择结果，不自动清除 默认：false
+RCT_EXPORT_VIEW_PROPERTY(keepSelected, BOOL)
 //照片最多可选择数量
 RCT_EXPORT_VIEW_PROPERTY(maxSelectCount, NSInteger)
 //默认选中下标
