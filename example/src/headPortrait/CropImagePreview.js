@@ -60,11 +60,26 @@ const CropImagePreview = (props) => {
                     </TouchableOpacity>
                 </View>
 
-                <CropImageView
-                    style={{ width: width, height: height - 50, backgroundColor: 'black' }}
-                    imageUri={imageUri}
-                    reset={reset}
-                />
+
+
+                {Platform.OS === 'android' ?
+                    <CropImageView
+                        style={{ width: width, height: height - 50, backgroundColor: 'black' }}
+                        imageUri={imageUri}
+                        reset={reset}
+                    />
+                    :
+                    <CropImageView
+                        sourceUrl={imageUri}
+                        style={{ width: width, height: height - 50, backgroundColor: 'black' }}
+                        onImageCrop={(res) => {
+                            console.info("哈哈哈", res)
+                        }}
+                        keepAspectRatio
+                        aspectRatio={{ width: 1, height: 1 }}
+                    />
+                }
+
             </View>
         </SafeAreaView>
     )
