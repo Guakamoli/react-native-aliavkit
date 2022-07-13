@@ -30,18 +30,18 @@ const PlayerVideo = (props) => {
     const videoUri = props.route.params?.videoUri;
 
     return (
-        <View style={{ flex: 1 }}>
-
-            <Video
-                source={{ uri: videoUri }}
-                resizeMode='cover'
-                repeat={true}
-                muted={false}
-                paused={false}
-                style={{ width: width, height: '100%' }}
-            />
-
-        </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+            <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', borderRadius: 20 }}>
+                <Video
+                    source={{ uri: videoUri }}
+                    resizeMode='cover'
+                    repeat={true}
+                    muted={false}
+                    paused={false}
+                    style={{ width: width, height: '100%' }}
+                />
+            </View>
+        </SafeAreaView>
     )
 }
 

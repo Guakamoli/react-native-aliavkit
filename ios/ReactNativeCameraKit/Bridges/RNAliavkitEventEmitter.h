@@ -13,5 +13,6 @@
 
 + (id)allocWithZone:(NSZone *)zone;
 - (void)setFacePasterDownloadProgress:(CGFloat)progress  index:(NSNumber *)index;
+- (void)setExportWaterMarkVideoProgress:(CGFloat)progress;
 
 @end

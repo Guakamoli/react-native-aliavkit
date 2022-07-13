@@ -64,14 +64,20 @@ const HeadPortraitScreen = (props) => {
     };
 
     const onSelectedPhotoCallback = ({ data }) => {
-        videoUri = data[0].uri;
-        console.info("videoUri:", videoUri);
+        videoUri = data[0].path;
+        if (!!videoUri && videoUri.startsWith("file://")) {
+            videoUri = videoUri.slice(7)
+        }
+        console.info("videoUri:", videoUri); 
     };
 
 
     const exportWaterMarkVideo = async () => {
         setExport(true)
-        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, watermarkText: "REVOID: 111222333", isDeleteVideo: false }, (progress) => {
+        setExportProgress(0)
+        exportAngle?.current?.setValue(0);
+
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, watermarkImagePath: "/var/mobile/Media/DCIM/103APPLE/IMG_3353.HEIC", watermarkText: "REVOID: 111222333", isDeleteVideo: false }, (progress) => {
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
             setExportProgress(parseInt(progress * 100))
@@ -80,11 +86,9 @@ const HeadPortraitScreen = (props) => {
 
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
         navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });
-        setExportProgress(0)
-        exportAngle?.current?.setValue(0);
         setTimeout(() => {
             setExport(false)
-        }, 100);
+        }, 0);
     }
 
 

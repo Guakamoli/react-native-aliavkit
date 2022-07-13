@@ -19,16 +19,6 @@ class VideoParamBean : AliyunVideoParam() {
     var videoDuration: Long = 0
 
     /**
-     * 水印图片的宽度
-     */
-    var watermarkBitmapWidth = 0f
-
-    /**
-     * 水印图片的高度
-     */
-    var watermarkBitmapHeight = 0f
-
-    /**
      * 水印宽 watermarkWidth = 0.1f ，水印显示宽度 = 视频宽度*0.1f
      */
     var watermarkWidth = 0f

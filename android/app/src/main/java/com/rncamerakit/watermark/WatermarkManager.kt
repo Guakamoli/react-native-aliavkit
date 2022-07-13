@@ -23,7 +23,6 @@ import com.aliyun.svideosdk.importer.impl.AliyunImportCreator
 import com.duanqu.transcode.NativeParser
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.google.zxing.common.BitMatrix
 import com.liulishuo.filedownloader.BaseDownloadTask
 import com.rncamerakit.R
 import com.rncamerakit.RNAliavkitEventEmitter
@@ -46,6 +45,7 @@ class WatermarkManager {
             reactContext: ReactApplicationContext,
             videoUrl: String,
             watermarkText: String?,
+            watermarkImagePath: String?,
             isDeleteVideo: Boolean,
             promise: Promise
         ) {
@@ -66,7 +66,15 @@ class WatermarkManager {
                 override fun completed(task: BaseDownloadTask) {
                     super.completed(task)
                     val filePath = task.targetFilePath
-                    exportWaterMarkVideo(reactContext, filePath, watermarkText, 1F - downloadProgressProportion, isDeleteVideo, promise)
+                    exportWaterMarkVideo(
+                        reactContext,
+                        filePath,
+                        watermarkText,
+                        watermarkImagePath,
+                        1F - downloadProgressProportion,
+                        isDeleteVideo,
+                        promise
+                    )
                 }
             })
         }
@@ -75,6 +83,7 @@ class WatermarkManager {
             reactContext: ReactApplicationContext,
             videoPath: String?,
             watermarkText: String?,
+            watermarkImagePath: String?,
             progressProportion: Float,
             isDeleteVideo: Boolean,
             promise: Promise
@@ -101,21 +110,21 @@ class WatermarkManager {
             // 初始化
             mAliyunIEditor?.init(null, context)
 
-
-            val watermarkLogoWidth = DensityUtils.dip2px(context, 15f).toFloat()
-            val watermarkLogoHeight = DensityUtils.dip2px(context, 22f).toFloat()
-
-            /**
-             * 添加 bitmap 水印
-             */
-            val bitmap = textToImage(context, watermarkText, watermarkLogoWidth, watermarkLogoHeight)
-            val screenWidth = ScreenUtils.getWidth(reactContext).toFloat()
-            val scale = videoParam.outputWidth/screenWidth
-            videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
-            videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight*scale
-
-            val effectPicture: EffectPicture = getBitmapWaterMark(videoParam, bitmap)
-            mAliyunIEditor?.addImage(effectPicture)
+            var bitmap: Bitmap? = null
+            if (watermarkImagePath != null && watermarkImagePath != "") {
+                /**
+                 * 添加 path 水印
+                 */
+                val effectPicture: EffectPicture = getPathWaterMark(context, videoParam, watermarkImagePath)
+                mAliyunIEditor?.addImage(effectPicture)
+            } else {
+                /**
+                 * 添加 bitmap 水印
+                 */
+                bitmap = textToImage(context, watermarkText)
+                val effectPicture: EffectPicture = getBitmapWaterMark(videoParam, bitmap)
+                mAliyunIEditor?.addImage(effectPicture)
+            }
 
             mAliyunIEditor?.saveEffectToLocal()
             mAliyunIEditor?.applySourceChange()
@@ -123,8 +132,10 @@ class WatermarkManager {
             mAliyunIEditor?.compose(videoParam, videoParam.videoOutputPath, object : AliyunIComposeCallBack {
                 override fun onComposeError(errorCode: Int) {
                     mAliyunIEditor?.cancelCompose()
-                    if (!bitmap.isRecycled) {
-                        bitmap.recycle()
+                    bitmap?.let {
+                        if (!bitmap.isRecycled) {
+                            bitmap.recycle()
+                        }
                     }
                     promise.reject("onComposeError", "onError:$errorCode")
                 }
@@ -137,17 +148,15 @@ class WatermarkManager {
 
                 override fun onComposeCompleted() {
                     RNAliavkitEventEmitter.onExportWaterMarkVideo(reactContext, 100)
-                    if (!bitmap.isRecycled) {
-                        bitmap.recycle()
+                    bitmap?.let {
+                        if (!bitmap.isRecycled) {
+                            bitmap.recycle()
+                        }
                     }
-
                     //合成成功，删除下载的视频，并且将合成后的视频保存到相册中
-
-                    if (isDeleteVideo) {
-                        com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
-                    }
-//                    saveToPhotos(context, videoParam.videoOutputPath)
-
+//                    if (isDeleteVideo) {
+//                        com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
+//                    }
                     promise.resolve(videoParam.videoOutputPath)
                 }
             })
@@ -185,15 +194,52 @@ class WatermarkManager {
             //片尾水印
         }
 
+
+        /**
+         * 图片水印
+         */
+        private fun getPathWaterMark(context: Context, videoParam: VideoParamBean, imagePath: String): EffectPicture {
+            val scale: Float = videoParam.outputWidth/1080.0F
+            val watermarkLogoWidth = 45F
+            val watermarkLogoHeight = 66F
+
+
+            val opts = BitmapFactory.Options()
+            //只请求图片宽高，不解析图片像素(请求图片属性但不申请内存，解析bitmap对象，该对象不占内存)
+            opts.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(imagePath, opts)
+            //获取图片的宽和高
+            val imageWidth: Int = opts.outWidth    //30
+            val imageHeight: Int = opts.outHeight  //44
+            /**
+             * 水印宽高
+             */
+            val watermarkBitmapWidth = imageWidth*watermarkLogoHeight/imageHeight
+            val watermarkBitmapHeight = watermarkLogoHeight
+            videoParam.watermarkWidth = watermarkBitmapWidth/videoParam.outputWidth*scale
+            videoParam.watermarkHeight = watermarkLogoHeight/videoParam.outputHeight*scale
+            val effectPicture = EffectPicture(imagePath)
+            effectPicture.start = 0
+            effectPicture.end = videoParam.videoDuration*1000
+            effectPicture.x = 0.5f
+            effectPicture.y = 0.95f
+            effectPicture.width = videoParam.watermarkWidth
+            effectPicture.height = videoParam.watermarkHeight
+            return effectPicture
+        }
+
         /**
          * 图片水印
          */
         private fun getBitmapWaterMark(videoParam: VideoParamBean, bitmap: Bitmap): EffectPicture {
+            val scale: Float = videoParam.outputWidth/1080.0F
+            videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
+            videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight*scale
             val effectPicture = EffectPicture(bitmap)
             effectPicture.start = 0
             effectPicture.end = videoParam.videoDuration*1000
             effectPicture.x = 0.5f
-            effectPicture.y = 0.94f
+            effectPicture.y = 0.95f
             effectPicture.width = videoParam.watermarkWidth
             effectPicture.height = videoParam.watermarkHeight
             return effectPicture
@@ -241,7 +287,7 @@ class WatermarkManager {
             val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
             var frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
             var frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
-
+            nativeParser.release()
             if (rotation == 90 || rotation == 270) {
                 val temp = frameWidth
                 frameWidth = frameHeight
@@ -264,18 +310,9 @@ class WatermarkManager {
             val fileName = "download_water_mart_video_" + System.currentTimeMillis() + ".mp4"
             val outputPath = FileUtils.getDiskCachePath(context) + File.separator + "media/download" + File.separator + fileName
 
-            /**
-             * 水印宽高
-             */
-            val watermarkBitmapWidth = DensityUtils.dip2px(context, 30f).toFloat()
-            val watermarkBitmapHeight = DensityUtils.dip2px(context, 30f).toFloat()
             videoParamBean.videoPath = videoPath
             videoParamBean.videoOutputPath = outputPath
             videoParamBean.videoDuration = videoDuration
-            videoParamBean.watermarkBitmapWidth = watermarkBitmapWidth
-            videoParamBean.watermarkBitmapHeight = watermarkBitmapHeight
-            videoParamBean.watermarkWidth = watermarkBitmapWidth/frameWidth
-            videoParamBean.watermarkHeight = watermarkBitmapHeight/frameHeight
             return videoParamBean
         }
 
@@ -283,7 +320,9 @@ class WatermarkManager {
         /**
          * 文字合成图片
          */
-        private fun textToImage(context: Context, text: String?, watermarkLogoWidth: Float, watermarkLogoHeight: Float): Bitmap {
+        private fun textToImage(context: Context, text: String?): Bitmap {
+            val watermarkLogoWidth = 45F
+            val watermarkLogoHeight = 66F
             var text = text
             if (text == null) {
                 text = ""
@@ -316,7 +355,7 @@ class WatermarkManager {
             // 保存绘图为本地图片
             canvas.save()
             canvas.restore()
-//            val fileName = "logo_video_water_mart_" + System.currentTimeMillis() + ".png"
+//            val fileName = "logo_video_watermark_" + System.currentTimeMillis() + ".png"
 //            val outputPath = FileUtils.getDiskCachePath(context) + File.separator + "media/save" + File.separator + fileName
 //            BitmapUtils.saveBitmap(bitmap, outputPath)
             return bitmap
