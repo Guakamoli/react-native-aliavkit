@@ -153,7 +153,7 @@ const HeadPortraitScreen = (props) => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
             <View style={styles.cameraContainer}>
                 <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
                 <View style={styles.continueHeadView} >

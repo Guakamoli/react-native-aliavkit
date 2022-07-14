@@ -26,7 +26,7 @@ import {
 const { width, height } = Dimensions.get('window');
 
 
-const HeadPortraitScreen = (props) => {
+const CoverScreen = (props) => {
 
     const { navigation } = props;
 
@@ -57,7 +57,7 @@ const HeadPortraitScreen = (props) => {
     };
 
     const onSelectedPhotoCallback = ({ data }) => {
-        navigation.navigate("CropHeadPortrait", { imageUri: data[0].uri });
+        navigation.navigate("CoverSelect", { fileData: data });
     };
 
     return (
@@ -91,7 +91,7 @@ const HeadPortraitScreen = (props) => {
                         keepSelected={false}
                         numColumns={3}
                         pageSize={90}
-                        sortMode={SortModeEnum.SORT_MODE_PHOTO}
+                        sortMode={SortModeEnum.SORT_MODE_ALL}
                         defaultSelectedPosition={-1}
                         onSelectedPhotoCallback={onSelectedPhotoCallback}
                         onMaxSelectCountCallback={() => { }}
@@ -136,4 +136,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default HeadPortraitScreen
+export default CoverScreen
