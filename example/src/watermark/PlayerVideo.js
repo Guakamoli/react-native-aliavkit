@@ -34,7 +34,7 @@ const PlayerVideo = (props) => {
             <View style={{ width: width, height: width * 16 / 9, overflow: 'hidden', borderRadius: 20 }}>
                 <Video
                     source={{ uri: videoUri }}
-                    resizeMode='cover'
+                    resizeMode='contain'
                     repeat={true}
                     muted={false}
                     paused={false}
