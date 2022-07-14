@@ -68,7 +68,7 @@ const HeadPortraitScreen = (props) => {
         if (!!videoUri && videoUri.startsWith("file://")) {
             videoUri = videoUri.slice(7)
         }
-        console.info("videoUri:", videoUri); 
+        console.info("videoUri:", videoUri);
     };
 
 
@@ -77,7 +77,15 @@ const HeadPortraitScreen = (props) => {
         setExportProgress(0)
         exportAngle?.current?.setValue(0);
 
-        const waterMarkVideoPath = await AVService.exportWaterMarkVideo({ videoPath: videoUri, watermarkImagePath: "/var/mobile/Media/DCIM/103APPLE/IMG_3353.HEIC", watermarkText: "REVOID: 111222333", isDeleteVideo: false }, (progress) => {
+        const exportParam = {
+            videoPath: videoUri,
+            watermarkText: "REVOID: 111222333",
+            // watermarkImagePath: path
+            // watermarkImagePath:'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/cache/media/save/logo_video_watermark.png'
+            // watermarkImagePath: "/private/var/containers/Bundle/Application/73BB0879-67BD-4409-9E2D-ADCB9B4D9703/CameraKitExample.app/AliKitPhotoView/ic_water_mark_logo.png"
+        }
+
+        const waterMarkVideoPath = await AVService.exportWaterMarkVideo(exportParam, (progress) => {
             //0~1
             console.info("onExportWaterMarkVideo progress:", progress);
             setExportProgress(parseInt(progress * 100))
