@@ -142,7 +142,7 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
         CGFloat watermarkWidth = (watermarkLogoWidth+intervalWidth+textWidth)*scale;
         CGFloat watermarkHeight = watermarkLogoHeight*scale;
         
-        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
+        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight-20-watermarkHeight, watermarkWidth, watermarkHeight);
         //设置输出视频水印
         [mAliyunIExporter setWaterMark:watermark];
     }else{
@@ -157,7 +157,7 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
         
         //水印
         AliyunEffectImage *watermark = [[AliyunEffectImage alloc] initWithFile:watermarkImagePath];
-        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
+        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight-20-watermarkHeight, watermarkWidth, watermarkHeight);
         //设置输出视频水印
         [mAliyunIExporter setWaterMark:watermark];
     }
