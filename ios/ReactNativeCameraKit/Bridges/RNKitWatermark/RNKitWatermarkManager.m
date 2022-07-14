@@ -87,15 +87,15 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
     
     NSString *watermarkImagePath = [options objectForKey:@"watermarkImagePath"];
     
-//    NSString *watermarkText = [options objectForKey:@"watermarkText"];
+    NSString *watermarkText = [options objectForKey:@"watermarkText"];
     
 //    bool isDeleteVideo = [options objectForKey:@"isDeleteVideo"];
     
        
     AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:videoPath]];
     CGSize size = [asset avAssetNaturalSize];
-    CGFloat frameWidth = size.width;
-    CGFloat frameHeight = size.height;
+    CGFloat frameWidth = size.width + 1.0f;
+    CGFloat frameHeight = size.height + 1.0f;
     
     AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoPath];
     NSInteger bitRate = nativeParser.getVideoBitrate;
@@ -108,17 +108,32 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
     
     [exporter setVideoParam:param];
     
-    
-    
     CGFloat scale= frameWidth/1080.0;
     if(watermarkImagePath == nil || watermarkImagePath == NULL || [watermarkImagePath isKindOfClass:[NSNull class]] || watermarkImagePath.length == 0){
-        //TODO 这里默认水印在 1080P 的视频中 宽 45 高 66. 后续水印合成文字，宽度会变化
-        CGFloat watermarkWidth = 45*scale;
-        CGFloat watermarkHeight = 66*scale;
-        NSString *watermarkPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"AliKitPhotoView/ic_water_mark_logo.png"]];
-        //水印
+        //Logo 的宽高
+        CGFloat watermarkLogoWidth = 45;
+        CGFloat watermarkLogoHeight = 66;
+        //获取文本宽度
+        CGSize textSize = [watermarkText sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:45.0f]}];
+        CGFloat textWidth = textSize.width + 1.0;
+        CGFloat textHeight = textSize.height+1.0;
+        // logo 和 文本 的间隔
+        CGFloat intervalWidth = 24.0f;
+    
+        NSString *watermarkPath = [self getWaterMarkImage:watermarkText
+                                    scale:scale
+                                    watermarkLogoWidth:watermarkLogoWidth
+                                    watermarkLogoHeight:watermarkLogoHeight
+                                    textWidth:textWidth
+                                    textHeight:textHeight
+                                    intervalWidth:intervalWidth
+        ];
+        
         AliyunEffectImage *watermark = [[AliyunEffectImage alloc] initWithFile:watermarkPath];
-        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.95-watermarkHeight/2, watermarkWidth, watermarkHeight);
+        CGFloat watermarkWidth = (watermarkLogoWidth+intervalWidth+textWidth)*scale;
+        CGFloat watermarkHeight = watermarkLogoHeight*scale;
+        
+        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
         //设置输出视频水印
         [exporter setWaterMark:watermark];
     }else{
@@ -126,14 +141,14 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
         CGFloat imageWidth = imageSize.width;
         CGFloat imageHeight = imageSize.height;
         
-        CGFloat watermarkLogoHeight = 66.0;
+        CGFloat watermarkLogoHeight = 66;
         
         CGFloat watermarkWidth = imageWidth*watermarkLogoHeight/imageHeight*scale;
         CGFloat watermarkHeight = watermarkLogoHeight*scale;
         
         //水印
         AliyunEffectImage *watermark = [[AliyunEffectImage alloc] initWithFile:watermarkImagePath];
-        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.95-watermarkHeight/2, watermarkWidth, watermarkHeight);
+        watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
         //设置输出视频水印
         [exporter setWaterMark:watermark];
     }
@@ -177,5 +192,40 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
     return param;
 }
 
+
+//图片与文字合成水印：
+-(NSString *)getWaterMarkImage:(NSString *)text
+  scale:(CGFloat)scale
+  watermarkLogoWidth:(CGFloat)watermarkLogoWidth
+  watermarkLogoHeight:(CGFloat)watermarkLogoHeight
+  textWidth:(CGFloat)textWidth
+  textHeight:(CGFloat)textHeight
+  intervalWidth:(CGFloat)intervalWidth
+{
+    //获取 logo 图片
+    NSString *watermarkPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:[NSString stringWithFormat:@"AliKitPhotoView/ic_water_mark_logo.png"]];
+    UIImage *logoImage = [UIImage imageNamed:watermarkPath];
+    
+    //画布创建上下文
+    UIGraphicsBeginImageContext(CGSizeMake(watermarkLogoWidth + intervalWidth + textWidth, watermarkLogoHeight));
+    
+    //先把 logo 画到上下文中
+    [logoImage drawInRect:CGRectMake(0, 0, watermarkLogoWidth, watermarkLogoHeight)];
+    
+    //画文字到上下文中
+    NSDictionary *attributes = @{ NSFontAttributeName:[UIFont systemFontOfSize:45.0], NSForegroundColorAttributeName:[UIColor whiteColor]};
+    [text drawInRect:CGRectMake(watermarkLogoWidth + intervalWidth, (watermarkLogoHeight-textHeight)/2 - 3.0f, watermarkLogoWidth + intervalWidth + textWidth, watermarkLogoHeight) withAttributes:attributes];
+    
+    //从当前上下文中获得最终图片
+    UIImage *outPutImage = UIGraphicsGetImageFromCurrentImageContext();
+    //关闭上下文
+    UIGraphicsEndImageContext();
+    
+    //保存图片到沙盒
+    NSString *path = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *filePath = [path stringByAppendingPathComponent:@"revo_watermark.png"];
+    [UIImagePNGRepresentation(outPutImage) writeToFile:filePath atomically:YES];
+    return  filePath;
+}
 
 @end
