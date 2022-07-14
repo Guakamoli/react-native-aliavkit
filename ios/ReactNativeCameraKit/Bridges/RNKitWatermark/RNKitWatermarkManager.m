@@ -26,9 +26,11 @@
 {
     RCTPromiseResolveBlock exportWaterMarkResolve;
     RNAliavkitEventEmitter *eventEmitter;
+    id<AliyunIExporter> mAliyunIExporter;
 }
  
 @property(nonatomic, strong) AliyunEditor *mAliyunEditor;
+
 @end
 
 @implementation RNKitWatermarkManager
@@ -65,9 +67,16 @@ RCT_EXPORT_METHOD(cancelExportWaterMarkVideo:(NSDictionary *)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
+    if(mAliyunIExporter != nil){
+        [mAliyunIExporter cancelExport];
+        mAliyunIExporter = nil;
+    }
+    if(exportWaterMarkResolve != nil){
+        exportWaterMarkResolve(@{});
+        exportWaterMarkResolve = nil;
+    }
     
-    
-    
+    resolve(@(TRUE));
 }
 
 
@@ -104,9 +113,9 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
    
     
     // 获取导出控制器
-    id<AliyunIExporter> exporter = [self.mAliyunEditor getExporter];
+    mAliyunIExporter = [self.mAliyunEditor getExporter];
     
-    [exporter setVideoParam:param];
+    [mAliyunIExporter setVideoParam:param];
     
     CGFloat scale= frameWidth/1080.0;
     if(watermarkImagePath == nil || watermarkImagePath == NULL || [watermarkImagePath isKindOfClass:[NSNull class]] || watermarkImagePath.length == 0){
@@ -135,7 +144,7 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
         
         watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
         //设置输出视频水印
-        [exporter setWaterMark:watermark];
+        [mAliyunIExporter setWaterMark:watermark];
     }else{
         CGSize imageSize = [UIImage imageNamed:watermarkImagePath].size;
         CGFloat imageWidth = imageSize.width;
@@ -150,7 +159,7 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
         AliyunEffectImage *watermark = [[AliyunEffectImage alloc] initWithFile:watermarkImagePath];
         watermark.frame = CGRectMake((frameWidth-watermarkWidth)/2, frameHeight*0.94, watermarkWidth, watermarkHeight);
         //设置输出视频水印
-        [exporter setWaterMark:watermark];
+        [mAliyunIExporter setWaterMark:watermark];
     }
     
     // 设置导出状态回调
@@ -158,7 +167,7 @@ RCT_EXPORT_METHOD(exportWaterMarkVideo:(NSDictionary *)options
     
      NSString *outputPath = [[[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:[AliyunPathManager randomString]] stringByAppendingPathExtension:@"mp4"];
     //开始导出
-    [exporter startExport:outputPath];
+    [mAliyunIExporter startExport:outputPath];
 }
 
 
