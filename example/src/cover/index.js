@@ -6,7 +6,6 @@ import { HeaderBackButton } from '@react-navigation/elements';
 
 import RNGetPermissions, { PermissionsResults } from '../permissions/RNGetPermissions';
 
-
 import {
     StyleSheet,
     View,
@@ -33,6 +32,8 @@ const CoverScreen = (props) => {
     const [isStoragePermission, setStoragePermission] = useState(false);
     const [isPhotoLimited, setPhotoLimited] = useState(false);
 
+    const [imageList, setImageList] = useState([]);
+
     useEffect(() => {
         getPhotos();
         return () => {
@@ -57,8 +58,17 @@ const CoverScreen = (props) => {
     };
 
     const onSelectedPhotoCallback = ({ data }) => {
-        navigation.navigate("CoverSelect", { fileData: data });
+        setImageList(data);
     };
+
+
+    /**
+     * 获取封面回调
+     * @param {*} parh 
+     */
+    const getCoverImage = async (path) => {
+        console.info('获取封面回调', path)
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
@@ -69,9 +79,16 @@ const CoverScreen = (props) => {
                         label=''
                         tintColor='#FFFFFF'
                         onPress={navigation.goBack}
-                        style={{ position: 'absolute', left: Platform.OS === 'android' ? 0 : 8 }}
+                        style={{ left: Platform.OS === 'android' ? 0 : 8 }}
                     />
                     <Text style={styles.textCenter}>最近项目</Text>
+                    <TouchableOpacity onPress={() => {
+                        if (imageList?.length) {
+                            navigation?.navigate("CoverSelect", { fileData: imageList, getCoverImage });
+                        }
+                    }}>
+                        <Text style={styles.textConfirm}>下一步</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {isPhotoLimited && (
@@ -87,8 +104,7 @@ const CoverScreen = (props) => {
                 {isStoragePermission && (
                     <AVKitPhotoView
                         style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
-                        multiSelect={false}
-                        keepSelected={false}
+                        multiSelect={true}
                         numColumns={3}
                         pageSize={90}
                         sortMode={SortModeEnum.SORT_MODE_ALL}
@@ -106,7 +122,7 @@ const styles = StyleSheet.create({
     continueHeadView: {
         height: 50,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#000',
         position: 'relative',
@@ -115,6 +131,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: '500',
         color: '#fff',
+        marginLeft: 36,
         lineHeight: 24,
     },
     cameraContainer: {
@@ -133,7 +150,14 @@ const styles = StyleSheet.create({
         color: '#929292',
         lineHeight: 52,
         height: 52
-    }
+    },
+    textConfirm: {
+        fontSize: 17,
+        lineHeight: 47,
+        fontWeight: '500',
+        color: '#8EF902',
+        paddingHorizontal: 16,
+    },
 })
 
 export default CoverScreen
