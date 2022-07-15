@@ -47,7 +47,7 @@ class WatermarkManager {
             watermarkText: String?,
             watermarkImagePath: String?,
             isDeleteVideo: Boolean,
-            promise: Promise
+            promise: Promise?
         ) {
             if (TextUtils.isEmpty(videoUrl)) {
                 return
@@ -86,12 +86,18 @@ class WatermarkManager {
             watermarkImagePath: String?,
             progressProportion: Float,
             isDeleteVideo: Boolean,
-            promise: Promise
+            promise: Promise?
         ) {
             if (TextUtils.isEmpty(videoPath)) {
-                promise.reject("exportWaterMarkVideo", "Video path is empty")
+                promise?.reject("exportWaterMarkVideo", "Video path is empty")
                 return
             }
+
+            if(!FileUtils.fileIsExists(videoPath)){
+                promise?.reject("exportWaterMarkVideo", "Video path is empty")
+                return
+            }
+
             var videoPath = videoPath
             val context = reactContext.applicationContext
             videoPath?.let {
@@ -137,7 +143,7 @@ class WatermarkManager {
                             bitmap.recycle()
                         }
                     }
-                    promise.reject("onComposeError", "onError:$errorCode")
+                    promise?.reject("onComposeError", "onError:$errorCode")
                 }
 
                 override fun onComposeProgress(progress: Int) {
@@ -157,7 +163,7 @@ class WatermarkManager {
 //                    if (isDeleteVideo) {
 //                        com.aliyun.common.utils.FileUtils.deleteFile(videoPath)
 //                    }
-                    promise.resolve(videoParam.videoOutputPath)
+                    promise?.resolve(videoParam.videoOutputPath)
                 }
             })
         }

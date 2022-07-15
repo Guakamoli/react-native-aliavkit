@@ -351,7 +351,11 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     }
 
     @ReactMethod
-    fun exportWaterMarkVideoByUrl(options: ReadableMap, promise: Promise) {
+    fun exportWaterMarkVideoByUrl(options: ReadableMap?, promise: Promise?) {
+        if (options == null || options.toHashMap().size == 0) {
+            promise?.reject("exportWaterMarkVideo", "options is null")
+            return
+        }
         mExportWaterMarkVideoPromise = promise
         val videoUrl = if (options.hasKey("videoUrl")) options.getString("videoUrl") else ""
         val watermarkImagePath = if (options.hasKey("watermarkImagePath")) options.getString("watermarkImagePath") else ""
@@ -363,7 +367,11 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
     }
 
     @ReactMethod
-    fun exportWaterMarkVideo(options: ReadableMap, promise: Promise) {
+    fun exportWaterMarkVideo(options: ReadableMap?, promise: Promise?) {
+        if (options == null || options.toHashMap().size == 0) {
+            promise?.reject("exportWaterMarkVideo", "options is null")
+            return
+        }
         mExportWaterMarkVideoPromise = promise
         val videoPath = if (options.hasKey("videoPath")) options.getString("videoPath") else ""
         val watermarkImagePath = if (options.hasKey("watermarkImagePath")) options.getString("watermarkImagePath") else ""
