@@ -72,7 +72,7 @@ RCT_EXPORT_METHOD(cancelExportWaterMarkVideo:(NSDictionary *)options
         mAliyunIExporter = nil;
     }
     if(exportWaterMarkResolve != nil){
-        exportWaterMarkResolve(@{});
+        exportWaterMarkResolve(@"");
         exportWaterMarkResolve = nil;
     }
     
