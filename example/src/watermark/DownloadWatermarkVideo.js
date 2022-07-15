@@ -71,7 +71,6 @@ const DownloadWatermarkVideo = (props) => {
 
 
     const exportWaterMarkVideo = async (videoPath) => {
-        const path = await AVService.saveToSandBox('ph://0B35D98F-5C8B-4643-9356-06DF17951E7C/L0/001');
         const exportParam = {
             videoPath: videoPath,
             watermarkText: watermarkText,
@@ -89,6 +88,14 @@ const DownloadWatermarkVideo = (props) => {
         });
 
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
+
+        if (!waterMarkVideoPath) {
+            setTimeout(() => {
+                setExport(false)
+            }, 0);
+            return;
+        }
+
         navigation.navigate('PlayerVideo', { videoUri: "file://" + waterMarkVideoPath });
         setTimeout(() => {
             setExport(false)
@@ -145,6 +152,12 @@ const DownloadWatermarkVideo = (props) => {
                     />
                 </Reanimated.View>
                 <Text style={{ fontSize: 17, color: "#fff", position: 'absolute' }}>{exportProgress}%</Text>
+                <TouchableOpacity onPress={() => {
+                    AVService.cancelExportWaterMarkVideo();
+                }}>
+                    <Text style={{ fontSize: 18, color: "#fff" }}>取消下载</Text>
+                </TouchableOpacity>
+
             </View>
         )
     }

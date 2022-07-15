@@ -26,8 +26,8 @@ export default class AVService {
    * @returns story 取消导出水印视频
    */
   static async cancelExportWaterMarkVideo() {
-    RNEditorKitModule.cancelExportWaterMarkVideo();
     DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
+    RNEditorKitModule.cancelExportWaterMarkVideo();
   }
 
   
