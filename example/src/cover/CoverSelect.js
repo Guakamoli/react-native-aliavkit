@@ -45,6 +45,8 @@ const CoverSelect = (props) => {
     //上传类型是否是视频
     const isVideoType = firstData?.type?.includes('video') ? true : false;
 
+    const [isLandscape, setLandscape] = useState(false);
+
     //视频播放
     const [vidoePaused, setVideoPaused] = useState(false);
 
@@ -67,13 +69,19 @@ const CoverSelect = (props) => {
     })
 
     useEffect(() => {
-        AVService.removeThumbnaiImages();
         videoCoverPath = [];
         videoCoverList = '';
         translationWidth = 0;
         videoSeekTime = 0;
+        let isLandscape = false;
+        if (firstData.rotation === 90 || firstData.rotation === 270) {
+            isLandscape = firstData.width < firstData.height;
+        } else {
+            isLandscape = firstData.width > firstData.height;
+        }
+        setLandscape(isLandscape)
         if (isVideoType) {
-            getVideoFrames();
+            getVideoFrames(isLandscape);
         }
         return () => {
         };
@@ -88,7 +96,12 @@ const CoverSelect = (props) => {
             return
         }
         const videoDuration = firstData.playableDuration;
-        const seekTime = moveValue / translateXMaxRange * videoDuration;
+        let seekTime = moveValue / translateXMaxRange * videoDuration;
+        if (seekTime >= firstData.playableDuration - 500) {
+            seekTime = firstData.playableDuration - 500;
+        } else if (seekTime < 0) {
+            seekTime = 0;
+        }
         refVideo?.current?.seek(seekTime / 1000.0);
         videoSeekTime = seekTime;
     }
@@ -96,7 +109,7 @@ const CoverSelect = (props) => {
     /**
      * 获取视频帧
      */
-    const getVideoFrames = async () => {
+    const getVideoFrames = async (isLandscape = false) => {
         const framesCount = 9;
         const itemWidth = (width - 30) / framesCount;
         setVideoCoveItemWidth(itemWidth)
@@ -106,20 +119,22 @@ const CoverSelect = (props) => {
             outputRange: [0, translateXMaxRange],
             extrapolate: 'clamp'
         })
-
         const videoDuration = firstData.playableDuration;
         let videoPath = firstData.path;
         if (!!videoPath && videoPath.startsWith("file://")) {
             videoPath = videoPath.slice(7)
         }
         const itemPerTime = parseInt(videoDuration / framesCount);
-        const startTime = parseInt(itemPerTime / 2);
-        const coverWidth = itemWidth * 3;
+        const startTime = parseInt(itemPerTime / 3);
+        let scale = 3.0;
+        if (isLandscape) {
+            scale = 5.0;
+        }
+        const coverWidth = itemWidth * scale;
         const coverHeight = coverWidth * firstData.height / firstData.width;
         const imageSize = { width: coverWidth, height: coverHeight };
         const framesParam = { videoPath, startTime, itemPerTime, needCover: false, imageSize }
         const thumbnails = await AVService.getThumbnails(framesParam);
-
         if (thumbnails?.length) {
             setVideoCover(thumbnails[0]);
             setCoverList(thumbnails);
@@ -132,6 +147,7 @@ const CoverSelect = (props) => {
      * 获取视频封面
      */
     const getVideoCover = async () => {
+        AVService.removeThumbnaiImages();
         let coverParh = '';
         if (isVideoType) {
             let videoPath = firstData.path;
@@ -146,8 +162,9 @@ const CoverSelect = (props) => {
             const framesParam = { videoPath, startTime, itemPerTime, imageSize, needCover }
 
             const thumbnails = await AVService.getThumbnails(framesParam);
+
             if (thumbnails?.length) {
-                coverParh = thumbnails[0];
+                coverParh = 'file://' + thumbnails[0];
             }
         } else {
             coverParh = fileData[imageSelectedPosition].uri
@@ -206,29 +223,33 @@ const CoverSelect = (props) => {
 
     const ContentView = () => {
         return (
-            <View style={styles.contentView}>
+            <View>
                 {isVideoType ?
-                    <Video
-                        ref={refVideo}
-                        source={{ uri: Platform.OS === 'android' ? firstData.uri : firstData.path }}
-                        muted
-                        resizeMode='cover'
-                        paused={Platform.OS === 'android' ? vidoePaused : true}
-                        style={styles.fileContentView}
-                        onLoadStart={(data) => {
-                            if (Platform.OS === 'android') {
-                                setVideoPaused(false);
-                            }
-                        }}
-                        onLoad={(data) => {
-                            if (Platform.OS === 'android') {
-                                setVideoPaused(true);
-                            }
-                        }}
-                    />
+                    <View style={{ width: width, height: (width - 100) * 16 / 9 + 12, justifyContent: 'center' }}>
+                        <View style={isLandscape ? styles.contentViewLandscape : styles.contentViewVertical} >
+                            <Video
+                                ref={refVideo}
+                                style={styles.fileContentView}
+                                source={{ uri: Platform.OS === 'android' ? firstData.uri : firstData.path }}
+                                muted
+                                resizeMode='cover'
+                                paused={Platform.OS === 'android' ? vidoePaused : true}
+                                onLoadStart={(data) => {
+                                    if (Platform.OS === 'android') {
+                                        setVideoPaused(false);
+                                    }
+                                }}
+                                onLoad={(data) => {
+                                    if (Platform.OS === 'android') {
+                                        setVideoPaused(true);
+                                    }
+                                }}
+                            />
+                        </View>
+                    </View>
                     :
                     <Image
-                        style={styles.fileContentView}
+                        style={styles.contentViewVertical}
                         source={{ uri: fileData[imageSelectedPosition].uri }}
                         resizeMode='cover'
                     />
@@ -291,7 +312,6 @@ const CoverSelect = (props) => {
                         left: 0,
                         right: 0,
                         alignItems: 'center',
-
                     }}>
                         <Animated.View style={{ marginTop: 48, width: width - 26, height: 64 }}>
                             <Animated.View style={
@@ -361,11 +381,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
     },
-    contentView: {
-        marginTop: 14,
+    contentViewVertical: {
+        marginTop: 12,
         marginHorizontal: 50,
         width: width - 100,
         height: (width - 100) * 16 / 9,
+        borderRadius: 4,
+        overflow: 'hidden',
+        position: 'relative'
+    },
+    contentViewLandscape: {
+        width: width,
+        height: width * 9 / 16,
         borderRadius: 4,
         overflow: 'hidden',
         position: 'relative'
@@ -377,7 +404,6 @@ const styles = StyleSheet.create({
     continueHeadView: {
         width: width,
         height: 47,
-        backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
