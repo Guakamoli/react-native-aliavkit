@@ -27,7 +27,7 @@ const { width, height } = Dimensions.get('window');
 
 const CoverScreen = (props) => {
 
-    const { navigation } = props;
+    const { navigation, route } = props;
 
     const [isStoragePermission, setStoragePermission] = useState(false);
     const [isPhotoLimited, setPhotoLimited] = useState(false);
@@ -39,6 +39,17 @@ const CoverScreen = (props) => {
         return () => {
         };
     }, []);
+
+
+    /**
+     * 获取封面回调
+     */
+    React.useEffect(() => {
+        if (route?.params?.coverImagePath) {
+            console.info('获取封面回调', route?.params?.coverImagePath)
+        }
+    }, [route?.params?.coverImagePath]);
+
 
     const getPhotos = async () => {
         const storagePermission = await RNGetPermissions.checkStoragePermissions();
@@ -62,13 +73,8 @@ const CoverScreen = (props) => {
     };
 
 
-    /**
-     * 获取封面回调
-     * @param {*} parh 
-     */
-    const getCoverImage = async (path) => {
-        console.info('获取封面回调', path)
-    }
+
+
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
@@ -84,7 +90,7 @@ const CoverScreen = (props) => {
                     <Text style={styles.textCenter}>最近项目</Text>
                     <TouchableOpacity onPress={() => {
                         if (imageList?.length) {
-                            navigation?.navigate("CoverSelect", { fileData: imageList, getCoverImage });
+                            navigation?.navigate("CoverSelect", { fileData: imageList });
                         }
                     }}>
                         <Text style={styles.textConfirm}>下一步</Text>
