@@ -27,6 +27,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.google.gson.GsonBuilder
 import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.VideoConst
+import com.rncamerakit.editor.manager.VideoCoverManager
 import kotlinx.coroutines.*
 import java.io.File
 import kotlin.coroutines.resume
@@ -34,7 +35,6 @@ import kotlin.coroutines.resume
 
 class CropManager {
     companion object {
-
 
         fun getMediaCacheDirs(context: Context): String {
             return FileUtils.getDiskCachePath(context) + File.separator + "media" + File.separator
@@ -56,6 +56,10 @@ class CropManager {
          */
         fun getVideoFrameDirs(context: Context): String {
             return FileUtils.getDiskCachePath(context) + File.separator + "media/videoFrame" + File.separator
+        }
+
+        fun getVideoCoverDirs(context: Context): String {
+            return FileUtils.getDiskCachePath(context) + File.separator + "media/videoCover" + File.separator
         }
 
         private const val TAG = "CropManager"
@@ -527,35 +531,37 @@ class CropManager {
         fun corpVideoFrame(context: Context, options: ReadableMap, promise: Promise?) {
             var videoPath =
                 if (options.hasKey("videoPath")) options.getString("videoPath")
-                else null
-            if (TextUtils.isEmpty(videoPath)) {
+                else ""
+            if (videoPath == null || videoPath == "") {
                 promise?.reject("corpVideoFrame", "error: videoPath is empty")
                 return
             }
-
-
             if (videoPath != null) {
                 if (videoPath.startsWith("content://") || videoPath.startsWith("file://")) {
                     videoPath = com.blankj.utilcode.util.UriUtils.uri2File(Uri.parse(videoPath)).absolutePath
                 }
             }
-
             //开始时间：ms
-            val startTime = if (options.hasKey("startTime")) options.getInt("startTime") else 0
+            val startTime = if (options.hasKey("startTime")) options.getInt("startTime").toLong() else 500L
             //间隔时间 ms
             val intervalTime = if (options.hasKey("itemPerTime")) options.getInt("itemPerTime") else 1000
 
-
-            var videoWidth = 1080
-            var videoHeight = 1920
-            var cacheSize = 10
-
+            var videoWidth = 720
+            var videoHeight = 1280
             var duration = 0L
             try {
                 val nativeParser = NativeParser()
                 nativeParser.init(videoPath)
                 try {
                     duration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()/1000
+                    val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
+                    videoWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
+                    videoHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
+                    if (rotation == 90 || rotation == 270) {
+                        val temp = videoWidth
+                        videoWidth = videoHeight
+                        videoHeight = temp
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -565,59 +571,47 @@ class CropManager {
                 e.printStackTrace()
             }
 
-            if (cacheSize > 0) {
-                cacheSize = (duration/intervalTime).toInt()
-            }
+            val cropWidth =
+                if (options.hasKey("imageSize")) options.getMap("imageSize")?.getInt("width") else videoWidth
+            val cropHeight =
+                if (options.hasKey("imageSize")) options.getMap("imageSize")?.getInt("height") else videoWidth
 
-            val coverTimes: MutableList<Long> = ArrayList()
-            for (i in 0 until cacheSize) {
-                var coverTime: Int = intervalTime*i + startTime
-                if (coverTime > duration) {
-                    coverTime = duration.toInt()
+            val needCover = if (options.hasKey("needCover")) options.getBoolean("needCover") else false
+
+            if (needCover) {
+                if (videoPath != null && cropWidth != null && cropHeight != null) {
+                    VideoCoverManager.getVideoCover(context, videoPath, cropWidth, cropHeight, startTime, promise)
+                    return
                 }
+            }
+            val coverTimes: MutableList<Long> = ArrayList()
+            var coverTime = startTime
+            while (coverTime < duration) {
                 coverTimes.add(coverTime.toLong())
+                coverTime += intervalTime
             }
-
-
-            var cropWidth =
-                if (options.hasKey("cropWidth")) options.getInt("cropWidth") else videoWidth
-            var cropHeight =
-                if (options.hasKey("cropHeight")) options.getInt("cropHeight") else videoHeight
-
-            val startX =
-                if (options.hasKey("cropOffsetX")) options.getInt("cropOffsetX") else 0
-            val startY =
-                if (options.hasKey("cropOffsetY")) options.getInt("cropOffsetY") else 0
-
-
-            if (cropWidth > videoWidth - startX) {
-                cropWidth = videoWidth - startX
+            if (cropWidth != null && cropHeight != null) {
+                getVideoFrame(context, videoPath, cropWidth, cropHeight, coverTimes, promise)
+            } else {
+                getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise)
             }
-
-            if (cropHeight > videoHeight - startY) {
-                cropHeight = videoHeight - startY
-            }
-
-            val rect = Rect(startX, startY, cropWidth, cropHeight)
-
-            getVideoFrame(context, videoPath, videoWidth, videoHeight, coverTimes, promise, rect)
         }
 
 
         private fun getVideoFrame(
             context: Context,
             videoPath: String?,
-            videoWidth: Int,
-            videoHeight: Int,
+            coverWidth: Int,
+            coverHeight: Int,
             coverTimes: List<Long>,
             promise: Promise?,
-            rect: Rect
         ) {
             val videoFrameList: MutableList<String?> = ArrayList()
+            val timeName = System.currentTimeMillis().toString()
             GlobalScope.launch(Dispatchers.IO) {
                 val jobList: MutableList<Deferred<String?>> = ArrayList()
                 coverTimes.forEach {
-                    jobList.add(async { getJoinedGroupList(context, videoPath, videoWidth, videoHeight, it, rect) })
+                    jobList.add(async { getJoinedGroupList(context, videoPath, coverWidth, coverHeight, it, timeName) })
                 }
                 jobList.forEach {
                     videoFrameList.add("file://" + it.await())
@@ -631,41 +625,25 @@ class CropManager {
         private suspend fun getJoinedGroupList(
             context: Context,
             videoPath: String?,
-            videoWidth: Int,
-            videoHeight: Int,
+            coverWidth: Int,
+            coverHeight: Int,
             time: Long,
-            rect: Rect
+            timeName: String
         ): String? =
             suspendCancellableCoroutine { continuation ->
-
-                val scale = 180.0/1080.0
-
                 val thumbnailFetcher = AliyunThumbnailFetcherFactory.createThumbnailFetcher()
                 thumbnailFetcher.addVideoSource(videoPath, 0, Int.MAX_VALUE.toLong(), 0)
                 thumbnailFetcher.setParameters(
-                    (videoWidth*scale).toInt(),
-                    (videoHeight*scale).toInt(), AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1
+                    coverWidth, coverHeight, AliyunIThumbnailFetcher.CropMode.Mediate, VideoDisplayMode.SCALE, 1
                 )
-
                 thumbnailFetcher.requestThumbnailImage(longArrayOf(time), object : AliyunIThumbnailFetcher.OnThumbnailCompletion {
                     override fun onThumbnailReady(bitmap: Bitmap, longTime: Long, index: Int) {
                         if (!bitmap.isRecycled) {
-
-//                            val name = File(videoPath).nameWithoutExtension
-                            val name = System.currentTimeMillis()
-                            var videoFramePath = FileUtils.createFile(
+                            val videoFramePath = FileUtils.createFile(
                                 getVideoFrameDirs(context),
-                                "VideoFrame-$name-$longTime.jpg"
+                                "VideoFrame-$timeName-$longTime.jpg"
                             ).absolutePath
-
-                            val cropBitmap = Bitmap.createBitmap(
-                                bitmap,
-                                (rect.left*scale).toInt(),
-                                (rect.top*scale).toInt(),
-                                (rect.right*scale).toInt(),
-                                (rect.bottom*scale).toInt()
-                            )
-                            BitmapUtils.saveBitmap(cropBitmap, videoFramePath)
+                            BitmapUtils.saveBitmap(bitmap, videoFramePath)
                             bitmap.recycle()
                             if (!TextUtils.isEmpty(videoFramePath)) {
                                 continuation.resume(videoFramePath)

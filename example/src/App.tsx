@@ -34,6 +34,11 @@ import DownloadWatermarkVideo from './watermark/DownloadWatermarkVideo';
 
 import PlayerVideo from './watermark/PlayerVideo';
 
+
+import CoverScreen from './cover';
+import CoverSelect from './cover/CoverSelect';
+
+
 export const isIOS = Platform.OS === 'ios';
 export const isAndroid = !isIOS;
 export default class App extends React.Component {
@@ -110,6 +115,20 @@ export default class App extends React.Component {
             name='PlayerVideo'
             component={PlayerVideo}
           />
+          <Stack.Screen
+            name='CoverScreen'
+            component={CoverScreen}
+            options={{
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name='CoverSelect'
+            component={CoverSelect}
+            options={{
+              headerShown: false
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
 
@@ -169,6 +188,11 @@ const HomeExample = (props) => {
         <TouchableOpacity style={styles.button} onPress={() => onNavigation("DownloadWatermarkVideo")}>
           <Text style={styles.buttonText}>
             Download Video Watermark
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onNavigation("CoverScreen")}>
+          <Text style={styles.buttonText}>
+            Cover Screen
           </Text>
         </TouchableOpacity>
       </View>

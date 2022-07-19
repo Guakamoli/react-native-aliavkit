@@ -73,10 +73,7 @@ const DownloadWatermarkVideo = (props) => {
     const exportWaterMarkVideo = async (videoPath) => {
         const exportParam = {
             videoPath: videoPath,
-            watermarkText: watermarkText,
-            // watermarkImagePath: path
-            // watermarkImagePath:'/storage/emulated/0/Android/data/com.guakamoli.paiya.android.test/cache/media/save/logo_video_watermark.png'
-            // watermarkImagePath: "/private/var/containers/Bundle/Application/73BB0879-67BD-4409-9E2D-ADCB9B4D9703/CameraKitExample.app/AliKitPhotoView/ic_water_mark_logo.png"
+            watermarkText: watermarkText
         }
 
         const waterMarkVideoPath = await AVService.exportWaterMarkVideo(exportParam, (progress) => {
@@ -163,7 +160,7 @@ const DownloadWatermarkVideo = (props) => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
             <View style={styles.cameraContainer}>
                 <StatusBar backgroundColor={"#000"} barStyle={'light-content'} animated />
                 <View style={styles.continueHeadView} >

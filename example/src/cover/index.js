@@ -6,7 +6,6 @@ import { HeaderBackButton } from '@react-navigation/elements';
 
 import RNGetPermissions, { PermissionsResults } from '../permissions/RNGetPermissions';
 
-
 import {
     StyleSheet,
     View,
@@ -26,18 +25,31 @@ import {
 const { width, height } = Dimensions.get('window');
 
 
-const HeadPortraitScreen = (props) => {
+const CoverScreen = (props) => {
 
-    const { navigation } = props;
+    const { navigation, route } = props;
 
     const [isStoragePermission, setStoragePermission] = useState(false);
     const [isPhotoLimited, setPhotoLimited] = useState(false);
+
+    const [imageList, setImageList] = useState([]);
 
     useEffect(() => {
         getPhotos();
         return () => {
         };
     }, []);
+
+
+    /**
+     * 获取封面回调
+     */
+    React.useEffect(() => {
+        if (route?.params?.coverImagePath) {
+            console.info('获取封面回调', route?.params?.coverImagePath)
+        }
+    }, [route?.params?.coverImagePath]);
+
 
     const getPhotos = async () => {
         const storagePermission = await RNGetPermissions.checkStoragePermissions();
@@ -57,8 +69,12 @@ const HeadPortraitScreen = (props) => {
     };
 
     const onSelectedPhotoCallback = ({ data }) => {
-        navigation.navigate("CropHeadPortrait", { imageUri: data[0].uri });
+        setImageList(data);
     };
+
+
+
+
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
@@ -69,9 +85,16 @@ const HeadPortraitScreen = (props) => {
                         label=''
                         tintColor='#FFFFFF'
                         onPress={navigation.goBack}
-                        style={{ position: 'absolute', left: Platform.OS === 'android' ? 0 : 8 }}
+                        style={{ left: Platform.OS === 'android' ? 0 : 8 }}
                     />
                     <Text style={styles.textCenter}>最近项目</Text>
+                    <TouchableOpacity onPress={() => {
+                        if (imageList?.length) {
+                            navigation?.navigate("CoverSelect", { fileData: imageList });
+                        }
+                    }}>
+                        <Text style={styles.textConfirm}>下一步</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {isPhotoLimited && (
@@ -87,11 +110,10 @@ const HeadPortraitScreen = (props) => {
                 {isStoragePermission && (
                     <AVKitPhotoView
                         style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
-                        multiSelect={false}
-                        keepSelected={false}
+                        multiSelect={true}
                         numColumns={3}
                         pageSize={90}
-                        sortMode={SortModeEnum.SORT_MODE_PHOTO}
+                        sortMode={SortModeEnum.SORT_MODE_ALL}
                         defaultSelectedPosition={-1}
                         onSelectedPhotoCallback={onSelectedPhotoCallback}
                         onMaxSelectCountCallback={() => { }}
@@ -106,7 +128,7 @@ const styles = StyleSheet.create({
     continueHeadView: {
         height: 50,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#000',
         position: 'relative',
@@ -115,6 +137,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: '500',
         color: '#fff',
+        marginLeft: 36,
         lineHeight: 24,
     },
     cameraContainer: {
@@ -133,7 +156,14 @@ const styles = StyleSheet.create({
         color: '#929292',
         lineHeight: 52,
         height: 52
-    }
+    },
+    textConfirm: {
+        fontSize: 17,
+        lineHeight: 47,
+        fontWeight: '500',
+        color: '#8EF902',
+        paddingHorizontal: 16,
+    },
 })
 
-export default HeadPortraitScreen
+export default CoverScreen

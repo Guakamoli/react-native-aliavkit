@@ -11,7 +11,6 @@ export default class AVkitPhotoView extends React.Component {
 
     constructor(props) {
         super(props)
-        console.info("keepSelected", props.keepSelected);
         this.state = {
             pageSize: !!props?.pageSize ? props.pageSize : 40,
             numColumns: !!props?.numColumns ? props.numColumns : 4,
@@ -132,7 +131,6 @@ export default class AVkitPhotoView extends React.Component {
         // onSelectedPhotoCallback: 每次选择图片/视频的回调
         // onMaximumSelectionCallback: 多选超过最大限制回调
         // onErrorCallback: 错误日志回调
-        console.info("keepSelected", this.state.keepSelected);
         return (
             <NativePhotoView
                 style={{ backgroundColor: 'transparent' }}

@@ -1170,7 +1170,7 @@ static NSString * ThumnailDirectory() {
     }
     AliyunNativeParser *parser = [[AliyunNativeParser alloc] initWithPath:videoPath];
     CGFloat duration = [parser getVideoDuration];
-    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue];
+    CGFloat startTime = [[options objectForKey:@"startTime"] floatValue]/1000;
     if (startTime >= duration) {
         return;
     }
