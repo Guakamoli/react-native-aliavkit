@@ -34,6 +34,9 @@ const CoverScreen = (props) => {
 
     const [imageList, setImageList] = useState([]);
 
+
+    const [coverImagePath, setCoverImagePath] = useState(null);
+
     useEffect(() => {
         getPhotos();
         return () => {
@@ -47,6 +50,7 @@ const CoverScreen = (props) => {
     React.useEffect(() => {
         if (route?.params?.coverImagePath) {
             console.info('获取封面回调', route?.params?.coverImagePath)
+            setCoverImagePath(route?.params?.coverImagePath)
         }
     }, [route?.params?.coverImagePath]);
 
@@ -107,18 +111,32 @@ const CoverScreen = (props) => {
                     </View>
                 )}
 
-                {isStoragePermission && (
-                    <AVKitPhotoView
-                        style={{ width: width, height: height - (isPhotoLimited ? 52 : 0), backgroundColor: 'black' }}
-                        multiSelect={true}
-                        numColumns={3}
-                        pageSize={90}
-                        sortMode={SortModeEnum.SORT_MODE_ALL}
-                        defaultSelectedPosition={-1}
-                        onSelectedPhotoCallback={onSelectedPhotoCallback}
-                        onMaxSelectCountCallback={() => { }}
-                    />
-                )}
+                <View style={{
+                    width: width,
+                    height: Platform.OS === 'ios' ? height - (isPhotoLimited ? 52 : 0) - 100 : height - (isPhotoLimited ? 52 : 0) - 50,
+                    position: 'relative'
+                }}>
+                    {!!coverImagePath ?
+                        <Image
+                            style={{ width: '100%', height: '100%' }}
+                            source={{ uri: coverImagePath }}
+                            resizeMode='contain'
+                        />
+                        :
+                        (isStoragePermission) && (
+                            <AVKitPhotoView
+                                style={{ width: '100%', height: '100%' }}
+                                multiSelect={true}
+                                numColumns={3}
+                                pageSize={90}
+                                sortMode={SortModeEnum.SORT_MODE_ALL}
+                                defaultSelectedPosition={-1}
+                                onSelectedPhotoCallback={onSelectedPhotoCallback}
+                                onMaxSelectCountCallback={() => { }}
+                            />
+                        )
+                    }
+                </View>
             </View>
         </SafeAreaView>
     )

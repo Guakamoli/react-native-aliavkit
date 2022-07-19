@@ -39,7 +39,7 @@ class VideoCoverManager {
                 override fun onThumbnailReady(bitmap: Bitmap?, longTime: Long, index: Int) {
                     if (bitmap != null && !bitmap.isRecycled) {
                         val videoFramePath = FileUtils.createFile(
-                            CropManager.getVideoCoverDirs(context),
+                            CropManager.getVideoFrameDirs(context),
                             "VideoCover-$timeName-$longTime.jpg"
                         ).absolutePath
                         BitmapUtils.saveBitmap(bitmap, videoFramePath)
