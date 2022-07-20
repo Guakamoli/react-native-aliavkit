@@ -1277,7 +1277,7 @@ static NSString * ThumnailDirectory() {
         
         if (result == AVAssetImageGeneratorSucceeded) {
             UIImage *img = [[UIImage alloc] initWithCGImage:image];
-            NSString *uiud = [[[NSUUID UUID] UUIDString] stringByAppendingPathExtension:@".png"];
+            NSString *uiud = [[[NSUUID UUID] UUIDString] stringByAppendingPathExtension:@"png"];
             NSString *path = [self saveImgToSandBox:img withName:uiud];
             dispatch_async(dispatch_get_main_queue(), ^{
                 success(@[path]);
