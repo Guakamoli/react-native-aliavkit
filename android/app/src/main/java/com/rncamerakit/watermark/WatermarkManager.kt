@@ -93,7 +93,7 @@ class WatermarkManager {
                 return
             }
 
-            if(!FileUtils.fileIsExists(videoPath)){
+            if (!FileUtils.fileIsExists(videoPath)) {
                 promise?.reject("exportWaterMarkVideo", "Video path is empty")
                 return
             }
@@ -128,7 +128,7 @@ class WatermarkManager {
                  * 添加 bitmap 水印
                  */
                 bitmap = textToImage(context, watermarkText)
-                val effectPicture: EffectPicture = getBitmapWaterMark(videoParam, bitmap)
+                val effectPicture: EffectPicture = getBitmapWaterMark(context, videoParam, bitmap)
                 mAliyunIEditor?.addImage(effectPicture)
             }
 
@@ -205,10 +205,9 @@ class WatermarkManager {
          * 图片水印
          */
         private fun getPathWaterMark(context: Context, videoParam: VideoParamBean, imagePath: String): EffectPicture {
-            val scale: Float = videoParam.outputWidth/1080.0F
+            val scale: Float = videoParam.outputWidth/1080.0F*0.8F
             val watermarkLogoWidth = 45F
             val watermarkLogoHeight = 66F
-
 
             val opts = BitmapFactory.Options()
             //只请求图片宽高，不解析图片像素(请求图片属性但不申请内存，解析bitmap对象，该对象不占内存)
@@ -217,6 +216,7 @@ class WatermarkManager {
             //获取图片的宽和高
             val imageWidth: Int = opts.outWidth    //30
             val imageHeight: Int = opts.outHeight  //44
+
             /**
              * 水印宽高
              */
@@ -224,11 +224,15 @@ class WatermarkManager {
             val watermarkBitmapHeight = watermarkLogoHeight
             videoParam.watermarkWidth = watermarkBitmapWidth/videoParam.outputWidth*scale
             videoParam.watermarkHeight = watermarkLogoHeight/videoParam.outputHeight*scale
+
+            val constY: Float =
+                (videoParam.outputHeight - DensityUtils.dip2px(context, 20f) - videoParam.watermarkHeight)/videoParam.outputHeight.toFloat()
+
             val effectPicture = EffectPicture(imagePath)
             effectPicture.start = 0
             effectPicture.end = videoParam.videoDuration*1000
             effectPicture.x = 0.5f
-            effectPicture.y = 0.95f
+            effectPicture.y = constY
             effectPicture.width = videoParam.watermarkWidth
             effectPicture.height = videoParam.watermarkHeight
             return effectPicture
@@ -237,15 +241,19 @@ class WatermarkManager {
         /**
          * 图片水印
          */
-        private fun getBitmapWaterMark(videoParam: VideoParamBean, bitmap: Bitmap): EffectPicture {
-            val scale: Float = videoParam.outputWidth/1080.0F
+        private fun getBitmapWaterMark(context: Context, videoParam: VideoParamBean, bitmap: Bitmap): EffectPicture {
+            val scale: Float = videoParam.outputWidth/1080.0F*0.8F
             videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
             videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight*scale
+
+            val constY: Float =
+                (videoParam.outputHeight - DensityUtils.dip2px(context, 20f) - videoParam.watermarkHeight)/videoParam.outputHeight.toFloat()
+
             val effectPicture = EffectPicture(bitmap)
             effectPicture.start = 0
             effectPicture.end = videoParam.videoDuration*1000
             effectPicture.x = 0.5f
-            effectPicture.y = 0.95f
+            effectPicture.y = constY
             effectPicture.width = videoParam.watermarkWidth
             effectPicture.height = videoParam.watermarkHeight
             return effectPicture

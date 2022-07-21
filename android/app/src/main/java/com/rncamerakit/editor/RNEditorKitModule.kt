@@ -280,12 +280,14 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
      * 将沙盒的图片\视频 保存到相册
      */
     @ReactMethod
-    fun saveMediaStore(filePath: String, sourceType: String, promise: Promise) {
+    fun saveMediaStore(filePath: String?, sourceType: String?, promise: Promise) {
         val context = reactContext
-        if (isVideo(filePath)) {
-            AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
-        } else {
-            AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+        if (filePath != null) {
+            if (sourceType == "video") {
+                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+            } else {
+                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+            }
         }
         promise.resolve(true)
     }
