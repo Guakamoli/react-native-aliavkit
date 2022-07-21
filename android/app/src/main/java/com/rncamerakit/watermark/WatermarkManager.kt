@@ -205,7 +205,7 @@ class WatermarkManager {
          * 图片水印
          */
         private fun getPathWaterMark(context: Context, videoParam: VideoParamBean, imagePath: String): EffectPicture {
-            val scale: Float = videoParam.outputWidth/1080.0F*0.8F
+            val scale: Float = videoParam.outputWidth/1080.0F*0.9F
             val watermarkLogoWidth = 45F
             val watermarkLogoHeight = 66F
 
@@ -242,7 +242,7 @@ class WatermarkManager {
          * 图片水印
          */
         private fun getBitmapWaterMark(context: Context, videoParam: VideoParamBean, bitmap: Bitmap): EffectPicture {
-            val scale: Float = videoParam.outputWidth/1080.0F*0.8F
+            val scale: Float = videoParam.outputWidth/1080.0F*0.9F
             videoParam.watermarkWidth = (bitmap.width).toFloat()/videoParam.outputWidth*scale
             videoParam.watermarkHeight = (bitmap.height).toFloat()/videoParam.outputHeight*scale
 
