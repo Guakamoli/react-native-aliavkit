@@ -298,6 +298,7 @@ class WatermarkManager {
             val nativeParser = NativeParser()
             nativeParser.init(videoPath)
             val bitRate = nativeParser.getValue(NativeParser.VIDEO_BIT_RATE).toInt()/1000
+            val gop = nativeParser.getValue(NativeParser.VIDEO_GOP).toInt()
             val rotation = nativeParser.getValue(NativeParser.VIDEO_ROTATION).toInt()
             var frameWidth = nativeParser.getValue(NativeParser.VIDEO_WIDTH).toInt()
             var frameHeight = nativeParser.getValue(NativeParser.VIDEO_HEIGHT).toInt()
@@ -311,7 +312,7 @@ class WatermarkManager {
             val videoParamBean = VideoParamBean()
             videoParamBean.bitrate = bitRate
             videoParamBean.frameRate = 30
-            videoParamBean.gop = 30
+            videoParamBean.gop = gop
             videoParamBean.crf = 23
             videoParamBean.scaleRate = 1.0f
             videoParamBean.outputWidth = frameWidth
