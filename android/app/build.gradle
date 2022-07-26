@@ -74,8 +74,6 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:1.0.0-rc01"
     implementation "androidx.camera:camera-view:1.0.0-alpha20"
 
-    implementation 'com.google.mlkit:barcode-scanning:16.0.3'
-
     implementation project(':lib:lib-base')
     implementation project(':common:AlivcMedia')
     implementation project(':common:AliyunEditor')
