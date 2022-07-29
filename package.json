@@ -6,7 +6,7 @@
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
-    "version": "1.5.17",
+    "version": "1.5.18",
     "description": "A high performance, fully featured, rock solid camera library for React Native applications",
     "nativePackage": true,
     "react-native": "src/index",
@@ -27,7 +27,6 @@
         "@react-navigation/native-stack": "^6.2.5",
         "eslint-config-airbnb-typescript": "^16.1.2",
         "react-native-image-filter-kit": "^0.8.0",
-        "react-native-permissions": "^3.2.0",
         "reanimated-bottom-sheet": "^1.0.0-alpha.22",
         "react-native-simple-image-cropper": "^3.2.1",
         "react-native-super-grid": "^4.1.3",
