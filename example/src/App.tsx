@@ -16,6 +16,8 @@ import {
   Animated
 } from 'react-native';
 
+import { AVService } from 'react-native-aliavkit';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -160,6 +162,19 @@ const HomeExample = (props) => {
         </Text>
       </View>
       <View style={styles.container}>
+        <TouchableOpacity style={styles.button} onPress={async () => {
+          const isStorage = await AVService.checkStorage();
+          console.info('checkStorage', isStorage);
+          if(isStorage === 'denied'){
+            const statuse = await AVService.getStorage();
+            console.info('getStorage', statuse);
+          }
+        
+        }}>
+          <Text style={styles.buttonText}>
+            Android 11 Permissions
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => onNavigation("PostPickerExample")}>
           <Text style={styles.buttonText}>
             Post Picker

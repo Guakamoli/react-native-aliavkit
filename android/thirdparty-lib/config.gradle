@@ -44,10 +44,10 @@ ext {
 //    externalAliyunQueen = "com.aliyun.maliang.android:queen:1.3.0-official-pro"
     externalAliyunQueen = 'com.aliyun.maliang.android:queen:1.9.0-official-pro'
 
-    externalCompileSdkVersion = 29
-    externalBuildToolsVersion = '29.0.3'
+    externalCompileSdkVersion = 30
+    externalBuildToolsVersion = '30.0.3'
     //The MinSdkVersion of the product you can add like this: externalSVideoMinSdkVersion 15
     externalMinSdkVersion = 21
-    externalTargetSdkVersion = 29
+    externalTargetSdkVersion = 30
 
 }

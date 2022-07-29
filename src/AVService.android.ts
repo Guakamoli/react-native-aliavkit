@@ -1,6 +1,6 @@
 import React from 'react';
 import { NativeModules, DeviceEventEmitter } from 'react-native';
-const { RNEditorKitModule, RNCameraKitModule } = NativeModules;
+const { RNEditorKitModule, RNCameraKitModule, RNAliKitPhotoViewModule } = NativeModules;
 
 type MusicRequestType = {
   name: string;
@@ -20,6 +20,13 @@ interface ExportParam {
 
 export default class AVService {
 
+  static async checkStorage(){
+    return await RNAliKitPhotoViewModule.checkStorage();
+  }
+
+  static async getStorage(){
+    return await RNAliKitPhotoViewModule.getStorage();
+  }
 
   /**
    * 
@@ -30,7 +37,7 @@ export default class AVService {
     RNEditorKitModule.cancelExportWaterMarkVideo();
   }
 
-  
+
 
   // static async exportWaterMarkVideoByUrl(exportParam: ExportParam, progressListener: (progress: number) => void) {
   //   DeviceEventEmitter.removeAllListeners("onExportWaterMarkVideo");
