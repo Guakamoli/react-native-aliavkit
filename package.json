@@ -6,7 +6,7 @@
     "publishConfig": {
         "registry": "https://registry.npmjs.org/"
     },
-    "version": "1.5.18",
+    "version": "1.5.19",
     "description": "A high performance, fully featured, rock solid camera library for React Native applications",
     "nativePackage": true,
     "react-native": "src/index",
@@ -71,6 +71,7 @@
         "react-native-gesture-handler": "^1.10.3",
         "react-native-localize": "2.1.1",
         "react-native-progress": "^5.0.0",
+        "react-native-permissions": "^3.6.0",
         "react-native-reanimated": "^2.3.0",
         "react-native-reanimated-carousel": "^2.3.2",
         "reanimated-bottom-sheet": "^1.0.0-alpha.22",
@@ -101,6 +102,7 @@
         "react-native-gesture-handler": "^1.10.3",
         "react-native-localize": "2.1.1",
         "react-native-progress": "^5.0.0",
+        "react-native-permissions": "^3.6.0",
         "react-native-reanimated": "^2.3.0",
         "react-native-reanimated-carousel": "^2.3.2",
         "reanimated-bottom-sheet": "^1.0.0-alpha.22",
