@@ -284,12 +284,14 @@ class RNEditorKitModule(private val reactContext: ReactApplicationContext) : Rea
         val context = reactContext
         if (filePath != null) {
             if (sourceType == "video") {
-                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath)
+                AliFileUtils.saveVideoToMediaStore(context.applicationContext, filePath, promise)
             } else {
-                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath)
+                AliFileUtils.saveImageToMediaStore(context.applicationContext, filePath, promise)
             }
+        }else{
+            promise.resolve("")
         }
-        promise.resolve(true)
+
     }
 
     private fun isVideo(fileName: String?): Boolean {

@@ -4,6 +4,7 @@ import { AVService } from 'react-native-aliavkit';
 
 import { HeaderBackButton } from '@react-navigation/elements';
 
+import CameraRoll from '@react-native-community/cameraroll';
 
 import { ReanimatedArcBase } from '@callstack/reanimated-arc';
 
@@ -86,10 +87,13 @@ const DownloadWatermarkVideo = (props) => {
 
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
 
+       const savePath =  await AVService.saveResourceToPhotoLibrary({ sourcePath: waterMarkVideoPath, resourceType: 'video' });
+        // CameraRoll.save(waterMarkVideoPath,  { type: 'video' });
+        console.info('savePath', savePath);
         if (!waterMarkVideoPath) {
             setTimeout(() => {
                 setExport(false)
-            }, 0);
+            }, 2000);
             return;
         }
 
@@ -171,8 +175,18 @@ const DownloadWatermarkVideo = (props) => {
                         style={{ left: Platform.OS === 'android' ? 0 : 8 }}
                     />
                     <Text style={styles.textCenter}>最近项目</Text>
-                    <TouchableOpacity onPress={() => {
-                        downloadVideo();
+                    <TouchableOpacity onPress={async() => {
+                        const isStorage = await AVService.checkStorage();
+                        console.info('checkStorage', isStorage);
+                        if(isStorage === 'granted'){
+                            downloadVideo();
+                        }else if(isStorage === 'denied'){
+                          const statuse = await AVService.getStorage();
+                          console.info('getStorage', statuse);
+                          if(statuse === 'granted'){
+                            downloadVideo();
+                          }
+                        }
                     }}>
                         <Text style={styles.textConfirm}>导出</Text>
                     </TouchableOpacity>

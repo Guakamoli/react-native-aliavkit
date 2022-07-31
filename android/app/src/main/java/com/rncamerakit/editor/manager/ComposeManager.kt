@@ -88,7 +88,7 @@ class ComposeManager(private val mContext: ReactContext) {
                     }
                 }
                 if (isSaveToPhotoLibrary) {
-                    AliFileUtils.saveImageToMediaStore(mContext, thumbnailPath)
+                    AliFileUtils.saveImageToMediaStore(mContext, thumbnailPath, null)
                 }
 //                RNEventEmitter.startVideoCompose(mContext, 100, thumbnailPath)
                 promise?.resolve(thumbnailPath)
@@ -146,7 +146,7 @@ class ComposeManager(private val mContext: ReactContext) {
 
 //                    if (isVideo) {
                     if (isSaveToPhotoLibrary) {
-                        AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath)
+                        AliFileUtils.saveVideoToMediaStore(mContext, mOutputPath, null)
                     }
                     val videoParam = RNAliavkitEventEmitter.startVideoCompose(mContext, 100, mOutputPath, isStoryCompose)
                     val videoParamJson = GsonBuilder().create().toJson(videoParam)
