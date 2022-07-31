@@ -162,7 +162,7 @@ const HomeExample = (props) => {
         </Text>
       </View>
       <View style={styles.container}>
-        <TouchableOpacity style={styles.button} onPress={async () => {
+        {/* <TouchableOpacity style={styles.button} onPress={async () => {
           const isStorage = await AVService.checkStorage();
           console.info('checkStorage', isStorage);
           if(isStorage === 'denied'){
@@ -174,7 +174,7 @@ const HomeExample = (props) => {
           <Text style={styles.buttonText}>
             Android 11 Permissions
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity style={styles.button} onPress={() => onNavigation("PostPickerExample")}>
           <Text style={styles.buttonText}>
             Post Picker

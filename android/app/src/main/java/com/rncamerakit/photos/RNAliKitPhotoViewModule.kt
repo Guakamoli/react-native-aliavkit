@@ -48,6 +48,15 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
             promise.resolve("granted")
             return
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                promise.resolve("denied")
+                return
+            } else {
+                promise.resolve("granted")
+                return
+            }
+        }
         val activity = reactContext.currentActivity as FragmentActivity
         val isPermissions = RxPermissionUtils.getInstance().isPermissions(
             activity,
@@ -75,6 +84,9 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
                 intent.data = Uri.parse("package:" + reactContext.applicationContext.packageName)
                 reactActivity.startActivityForResult(intent, 1024)
                 promise.resolve("denied")
+                return
+            } else {
+                promise.resolve("granted")
                 return
             }
         }
