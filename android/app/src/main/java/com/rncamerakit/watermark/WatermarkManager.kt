@@ -322,7 +322,7 @@ class WatermarkManager {
             videoParamBean.videoCodec = VideoCodecs.H264_HARDWARE
 
             val videoDuration = nativeParser.getValue(NativeParser.VIDEO_DURATION).toLong()/1000
-            val fileName = "download_water_mart_video_" + System.currentTimeMillis() + ".mp4"
+            val fileName = "Revo_download_video_" + System.currentTimeMillis() + ".mp4"
             val outputPath = FileUtils.getDiskCachePath(context) + File.separator + "media/download" + File.separator + fileName
 
             videoParamBean.videoPath = videoPath
