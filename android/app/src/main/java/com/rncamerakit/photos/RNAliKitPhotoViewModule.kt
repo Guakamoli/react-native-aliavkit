@@ -48,20 +48,20 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
             promise.resolve("granted")
             return
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                promise.resolve("denied")
-                return
-            } else {
-                promise.resolve("granted")
-                return
-            }
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            if (!Environment.isExternalStorageManager()) {
+//                promise.resolve("denied")
+//                return
+//            } else {
+//                promise.resolve("granted")
+//                return
+//            }
+//        }
         val activity = reactContext.currentActivity as FragmentActivity
         val isPermissions = RxPermissionUtils.getInstance().isPermissions(
             activity,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         if (isPermissions) {
             promise.resolve("granted")
@@ -78,19 +78,22 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
             return
         }
         val reactActivity: FragmentActivity = reactContext.currentActivity as ReactActivity
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.parse("package:" + reactContext.applicationContext.packageName)
-                reactActivity.startActivityForResult(intent, 1024)
-                promise.resolve("denied")
-                return
-            } else {
-                promise.resolve("granted")
-                return
-            }
-        }
-        val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            if (!Environment.isExternalStorageManager()) {
+//                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+//                intent.data = Uri.parse("package:" + reactContext.applicationContext.packageName)
+//                reactActivity.startActivityForResult(intent, 1024)
+//                promise.resolve("denied")
+//                return
+//            } else {
+//                promise.resolve("granted")
+//                return
+//            }
+//        }
+        val permissions = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
         if (reactActivity is ReactActivity) {
             reactActivity.requestPermissions(permissions, 200, object : PermissionListener {
                 override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
