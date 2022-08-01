@@ -193,12 +193,21 @@ class AliFileUtils {
 //                    )
 //                )
 //            }
-            return PermissionUtils.checkPermissionsGroup(
-                context, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                PermissionUtils.checkPermissionsGroup(
+                    context, arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
                 )
-            )
+            } else {
+                PermissionUtils.checkPermissionsGroup(
+                    context, arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
+                )
+            }
+
         }
 
 
