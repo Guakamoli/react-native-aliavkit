@@ -60,8 +60,8 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
         val activity = reactContext.currentActivity as FragmentActivity
         val isPermissions = RxPermissionUtils.getInstance().isPermissions(
             activity,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         if (isPermissions) {
             promise.resolve("granted")
@@ -99,20 +99,35 @@ class RNAliKitPhotoViewModule(private val reactContext: ReactApplicationContext)
                 override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
                     // 0 全部同意，1 有拒绝，2 有拒绝并且不再同意
                     var isAllGranted: Int = 0
-                    if (grantResults != null) {
-                        permissions?.let {
-                            for (i in it.indices) {
-                                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                                    Log.e("AAA", "同意:" + permissions[i])
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        if (grantResults != null && permissions != null) {
+                            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                                isAllGranted = 0
+                            } else {
+                                if (PermissionUtils.isNeverAgainPermission(reactActivity, permissions[0])) {
+                                    isAllGranted = 2
                                 } else {
-                                    if (PermissionUtils.isNeverAgainPermission(reactActivity, permissions[i])) {
-                                        Log.e("AAA", "拒绝且不再提示:" + permissions[i])
-                                        isAllGranted = 2
-                                        return@let
+                                    isAllGranted = 1
+                                }
+                            }
+                        }
+
+                    } else {
+                        if (grantResults != null) {
+                            permissions?.let {
+                                for (i in it.indices) {
+                                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                                        Log.e("AAA", "同意:" + permissions[i])
                                     } else {
-                                        Log.e("AAA", "拒绝:" + permissions[i])
-                                        isAllGranted = 1
-                                        return@let
+                                        if (PermissionUtils.isNeverAgainPermission(reactActivity, permissions[i])) {
+                                            Log.e("AAA", "拒绝且不再提示:" + permissions[i])
+                                            isAllGranted = 2
+                                            return@let
+                                        } else {
+                                            Log.e("AAA", "拒绝:" + permissions[i])
+                                            isAllGranted = 1
+                                            return@let
+                                        }
                                     }
                                 }
                             }
