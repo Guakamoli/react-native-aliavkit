@@ -182,17 +182,23 @@ class AliFileUtils {
         /**
          * 检测是否有存储权限
          */
-        private fun checkStoragePermissions(context: Context): Boolean {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Environment.isExternalStorageManager()
-            } else {
-                PermissionUtils.checkPermissionsGroup(
-                    context, arrayOf(
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
+        public fun checkStoragePermissions(context: Context): Boolean {
+//            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                Environment.isExternalStorageManager()
+//            } else {
+//                PermissionUtils.checkPermissionsGroup(
+//                    context, arrayOf(
+//                        Manifest.permission.READ_EXTERNAL_STORAGE,
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+//                    )
+//                )
+//            }
+            return PermissionUtils.checkPermissionsGroup(
+                context, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
                 )
-            }
+            )
         }
 
 
