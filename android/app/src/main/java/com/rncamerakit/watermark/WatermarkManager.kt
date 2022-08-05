@@ -293,7 +293,7 @@ class WatermarkManager {
             if (text == null) {
                 text = ""
             }
-            val textStartX = DensityUtils.dip2px(context, 8F).toFloat()
+            val textStartX = DensityUtils.dip2px(context, 7F).toFloat()
             val textSize = DensityUtils.sp2px(context, 12).toFloat()
             //文字：12sp
             val textPaint = TextPaint()
