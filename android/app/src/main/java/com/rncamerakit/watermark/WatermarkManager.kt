@@ -302,7 +302,7 @@ class WatermarkManager {
             val textWidth = textPaint.measureText(text).toInt() + textStartX
             val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_water_mark_logo)
             //间隔，Logo 和文字之间的间隔
-            val intervalWidth = DensityUtils.dip2px(context, 2F)
+            val intervalWidth = DensityUtils.dip2px(context, 1F)
             // 创建一个你需要尺寸的Bitmap.
             val bitmapWidth = if (watermarkLogoWidth > textWidth) {
                 watermarkLogoWidth

@@ -6,6 +6,8 @@ import { HeaderBackButton } from '@react-navigation/elements';
 
 import CameraRoll from '@react-native-community/cameraroll';
 
+import RNGetPermissions from '../permissions/RNGetPermissions';
+
 import { ReanimatedArcBase } from '@callstack/reanimated-arc';
 
 import Reanimated from 'react-native-reanimated';
@@ -87,7 +89,7 @@ const DownloadWatermarkVideo = (props) => {
 
         console.info("exportWaterMarkVideo path:", waterMarkVideoPath);
 
-       const savePath =  await AVService.saveResourceToPhotoLibrary({ sourcePath: waterMarkVideoPath, resourceType: 'video' });
+        const savePath = await AVService.saveResourceToPhotoLibrary({ sourcePath: waterMarkVideoPath, resourceType: 'video' });
         // CameraRoll.save(waterMarkVideoPath,  { type: 'video' });
         console.info('savePath', savePath);
         if (!waterMarkVideoPath) {
@@ -175,17 +177,17 @@ const DownloadWatermarkVideo = (props) => {
                         style={{ left: Platform.OS === 'android' ? 0 : 8 }}
                     />
                     <Text style={styles.textCenter}>最近项目</Text>
-                    <TouchableOpacity onPress={async() => {
-                        const isStorage = await AVService.checkStorage();
+                    <TouchableOpacity onPress={async () => {
+                        const isStorage = await RNGetPermissions.checkSavePhotosPermissions();
                         console.info('checkStorage', isStorage);
-                        if(isStorage === 'granted'){
+                        if (isStorage) {
                             downloadVideo();
-                        }else if(isStorage === 'denied'){
-                          const statuse = await AVService.getStorage();
-                          console.info('getStorage', statuse);
-                          if(statuse === 'granted'){
-                            downloadVideo();
-                          }
+                        } else {
+                            const statuse = await RNGetPermissions.getSavePhotosPermissions();
+                            console.info('getStorage', statuse);
+                            if (statuse === 'granted') {
+                                downloadVideo();
+                            }
                         }
                     }}>
                         <Text style={styles.textConfirm}>导出</Text>

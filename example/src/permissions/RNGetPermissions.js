@@ -3,6 +3,8 @@ import { Platform, Alert, } from 'react-native';
 import { request, requestMultiple, check, checkMultiple, openSettings, PERMISSIONS, RESULTS } from 'react-native-permissions';
 // import I18n from '../i18n';
 
+import { AVService } from 'react-native-aliavkit';
+
 export const PermissionsResults = {
     UNAVAILABLE: RESULTS.UNAVAILABLE,
     BLOCKED: RESULTS.BLOCKED,
@@ -16,6 +18,56 @@ export default class RNGetPermissions {
     static openSettings = async () => {
         openSettings();
     }
+
+
+    /**
+         * 校验是否有保存到相册权限
+         */
+    static checkSavePhotosPermissions = async () => {
+        let isGranted = false;
+        if (Platform.OS === 'android') {
+            // const statuse = await check(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
+            const statuse = await AVService.checkStorage();
+            if (statuse === RESULTS.GRANTED) {
+                return true;
+            }
+        } else {
+            const statuse = await check(PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY);
+            if (statuse === RESULTS.GRANTED) {
+                isGranted = true;
+            }
+        }
+        return isGranted;
+    }
+
+    	/**
+	 *
+	 * @param {*} isToSetting  是否弹框提示打开设置
+	 */
+	static getSavePhotosPermissions = async(isToSetting = false) => {
+		if (Platform.OS === 'android') {
+			// const statuse = await request(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
+			const statuse = await AVService.getStorage();
+			if (statuse === RESULTS.GRANTED) {
+				return true;
+			} else if (statuse === RESULTS.BLOCKED) {
+				if (isToSetting) {
+					this.showToSettingAlert();
+				}
+			}
+		} else if (Platform.OS === 'ios') {
+			const statuses = await request(PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY);
+			if (statuses === RESULTS.GRANTED || statuses === RESULTS.LIMITED) {
+				return true;
+			} else if (statuses === RESULTS.BLOCKED) {
+				if (isToSetting) {
+					this.showToSettingAlert();
+				}
+			}
+		}
+		return false;
+	}
+
 
     /**
      * 检测是否有存储权限（Android）/ 相册权限（iOS）
@@ -106,7 +158,7 @@ export default class RNGetPermissions {
 
 
 
-    static showToSettingAlert = () =>{
+    static showToSettingAlert = () => {
         // Alert.alert(
         //     Platform.OS === 'ios' ? I18n.t('Need_album_permission') : "",
         //     Platform.OS === 'ios' ? "" : I18n.t('Need_album_permission'),
@@ -126,6 +178,6 @@ export default class RNGetPermissions {
         //     }
         // );
     }
-       
+
 
 }
