@@ -247,7 +247,7 @@ class WatermarkManager {
             val constX: Float =
                 (videoParam.outputWidth - imageWidth/2*scale - DensityUtils.dip2px(context, 20F)*scale)/videoParam.outputWidth.toFloat()
             val constY: Float =
-                (videoParam.outputHeight - imageHeight/2*scale - DensityUtils.dip2px(context, 15F)*scale)/videoParam.outputHeight.toFloat()
+                (videoParam.outputHeight - imageHeight/2*scale - DensityUtils.dip2px(context, 12F)*scale)/videoParam.outputHeight.toFloat()
 
             val effectPicture = EffectPicture(imagePath)
             effectPicture.start = 0
@@ -271,7 +271,7 @@ class WatermarkManager {
             val constX: Float =
                 (videoParam.outputWidth - bitmap.width/2*scale - DensityUtils.dip2px(context, 20F)*scale)/videoParam.outputWidth.toFloat()
             val constY: Float =
-                (videoParam.outputHeight - bitmap.height/2*scale - DensityUtils.dip2px(context, 15F)*scale)/videoParam.outputHeight.toFloat()
+                (videoParam.outputHeight - bitmap.height/2*scale - DensityUtils.dip2px(context, 12F)*scale)/videoParam.outputHeight.toFloat()
 
             val effectPicture = EffectPicture(bitmap)
             effectPicture.start = 0
