@@ -13,7 +13,8 @@ import {
   Platform,
   Keyboard,
   Easing,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native';
 
 import { AVService } from 'react-native-aliavkit';
@@ -161,8 +162,11 @@ const HomeExample = (props) => {
           React Native Camera Kit
         </Text>
       </View>
-      <View style={styles.container}>
-        {/* <TouchableOpacity style={styles.button} onPress={async () => {
+      <ScrollView>
+
+
+        <View style={styles.container}>
+          {/* <TouchableOpacity style={styles.button} onPress={async () => {
           const isStorage = await AVService.checkStorage();
           console.info('checkStorage', isStorage);
           if(isStorage === 'denied'){
@@ -175,42 +179,43 @@ const HomeExample = (props) => {
             Android 11 Permissions
           </Text>
         </TouchableOpacity> */}
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("PostPickerExample")}>
-          <Text style={styles.buttonText}>
-            Post Picker
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("StoryPickerExample")}>
-          <Text style={styles.buttonText}>
-            Story Picker
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoEditorExample")}>
-          <Text style={styles.buttonText}>
-            Video Editor
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("HeadPortraitScreen")}>
-          <Text style={styles.buttonText}>
-            Head Portrait
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoWatermarkScreen")}>
-          <Text style={styles.buttonText}>
-            Video Watermark
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("DownloadWatermarkVideo")}>
-          <Text style={styles.buttonText}>
-            Download Video Watermark
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => onNavigation("CoverScreen")}>
-          <Text style={styles.buttonText}>
-            Cover Screen
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("PostPickerExample")}>
+            <Text style={styles.buttonText}>
+              Post Picker
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("StoryPickerExample")}>
+            <Text style={styles.buttonText}>
+              Story Picker
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoEditorExample")}>
+            <Text style={styles.buttonText}>
+              Video Editor
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("HeadPortraitScreen")}>
+            <Text style={styles.buttonText}>
+              Head Portrait
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("VideoWatermarkScreen")}>
+            <Text style={styles.buttonText}>
+              Video Watermark
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("DownloadWatermarkVideo")}>
+            <Text style={styles.buttonText}>
+              Download Video Watermark
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => onNavigation("CoverScreen")}>
+            <Text style={styles.buttonText}>
+              Cover Screen
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   )
 }
