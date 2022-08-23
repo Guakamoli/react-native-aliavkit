@@ -18,8 +18,8 @@ import com.rncamerakit.utils.DownloadUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.jetbrains.anko.dip
 
+@DelicateCoroutinesApi
 class CKEditorManager : SimpleViewManager<CKEditor>() {
-
 
     private var mWidth = 0
     private var mHeight = 0
@@ -30,7 +30,6 @@ class CKEditorManager : SimpleViewManager<CKEditor>() {
         return "CKEditorManager"
     }
 
-    @DelicateCoroutinesApi
     override fun createViewInstance(reactContext: ThemedReactContext): CKEditor {
         this.mWidth = 0
         this.mHeight = 0
