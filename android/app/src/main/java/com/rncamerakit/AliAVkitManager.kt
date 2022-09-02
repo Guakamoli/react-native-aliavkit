@@ -72,20 +72,20 @@ class AliAVkitManager {
 //            DownloaderManager.getInstance().dbController
 
             AlivcSdkCore.register(application.applicationContext)
-            if (BuildConfig.DEBUG) {
-                AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogWarn)
-                AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLClose)
-            } else {
-                AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogDebug)
-                AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLAll)
-            }
+//            if (BuildConfig.DEBUG) {
+//                AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogWarn)
+//                AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLClose)
+//            } else {
+//                AlivcSdkCore.setLogLevel(AlivcSdkCore.AlivcLogLevel.AlivcLogDebug)
+//                AlivcSdkCore.setDebugLoggerLevel(AlivcSdkCore.AlivcDebugLoggerLevel.AlivcDLAll)
+//            }
             setSdkDebugParams(application)
             if (TextUtils.isEmpty(mLogPath)) {
                 //保证每次运行app生成一个新的日志文件
                 val time = System.currentTimeMillis()
                 mLogPath = application.getExternalFilesDir("Log")!!.absolutePath.toString() + "/log_" + time + ".log"
                 //                mLogPath = application.getExternalFilesDir("Log").getAbsolutePath() + "/log_" + time + ".log"
-                AlivcSdkCore.setLogPath(mLogPath)
+//                AlivcSdkCore.setLogPath(mLogPath)
             }
 
             EffectService.setAppInfo(
