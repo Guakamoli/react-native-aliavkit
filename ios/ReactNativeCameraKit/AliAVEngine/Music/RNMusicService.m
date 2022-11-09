@@ -23,10 +23,12 @@ static NSString * const kJsonURL = @"https://static.paiyaapp.com/music/songs.jso
     RCTPromiseResolveBlock _resolve;
 }
 
+
 @property (nonatomic, strong) AVPlayer *player;
 @property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *musics;
 @property (nonatomic, strong) NSMutableArray<RNMusicInfo *> *downloadingMusics;
 
+@property (nonatomic,strong)NSString *musicPath;
 @end
 
 @implementation RNMusicService
@@ -57,10 +59,11 @@ RCT_EXPORT_METHOD(getMusics:(NSDictionary *)musicRequest
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *songName = [musicRequest valueForKey:@"name"];
-    NSUInteger page = [[musicRequest valueForKey:@"page"] integerValue];
-    NSUInteger pageSize = [[musicRequest valueForKey:@"pageSize"] integerValue] ? : 10;
-    if ([songName isEqualToString:@"all-music"]) {
+    NSString *songName = [musicRequest objectForKey:@"name"];
+    NSUInteger page = [[musicRequest objectForKey:@"page"] integerValue];
+    NSUInteger pageSize = [[musicRequest objectForKey:@"pageSize"] integerValue] ? : 10;
+//    if ([songName isEqualToString:@"all-music"]) {
+    if(songName == nil || songName == NULL || [songName isKindOfClass:[NSNull class]] || songName.length == 0){
         if (self.musics.count == 0) {
             [self _requestJson:^(NSArray<RNMusicInfo *> *infos, NSError *error) {
                 if (error) {
@@ -118,6 +121,39 @@ RCT_EXPORT_METHOD(playMusic:(NSString *)songID
     }
 }
 
+RCT_EXPORT_METHOD(stopMusic:(NSString *)songID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
+    if (self.player)
+    {
+        [self.player pause];
+         self.player = nil;
+        [self removeObserverForMusicLoop];
+        resolve(@(YES));
+    }
+}
+
+RCT_EXPORT_METHOD(resumeMusic:(NSString *)songID
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+{
+    RNMusicInfo *music = [[RNStorageManager shared] findMusicByID:songID inArray:self.musics];
+    if (!music) {
+        reject(@"",@"Can't find this music",nil);
+    }
+
+    if (self.player.timeControlStatus == AVPlayerTimeControlStatusPaused) {
+        [self.player play];
+        BOOL isPaused = (self.player.timeControlStatus == AVPlayerTimeControlStatusPlaying);
+        resolve(@(isPaused));
+    }
+}
+
 RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
@@ -145,6 +181,11 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
                                                             completionHandler:^(NSURL * _Nullable location,
                                                                                 NSURLResponse * _Nullable response,
                                                                                 NSError * _Nullable error) {
+        //空值会导致崩溃
+        if(!response)
+        {
+            return;
+        }
         NSString *fileName = [NSString stringWithFormat:@"%@-%@", songID, response.suggestedFilename];
         NSString *musicDirPath = [[AliyunPathManager compositionRootDir] stringByAppendingPathComponent:@"music"];
         [AliyunPathManager makeDirExist:musicDirPath];
@@ -164,6 +205,7 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
     if (!path || [path isEqualToString:@""]) {
         return;
     }
+    self.musicPath = path;
     CGFloat start = 0.0;
     AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:path]];
     float duration = [asset aliyunDuration];
@@ -183,7 +225,9 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
     
     [self.player replaceCurrentItemWithPlayerItem:[AVPlayerItem playerItemWithAsset:mutableComposition]];
     [self.player play];
+    [self addObserverForMusicLoop];
 }
+
 
 - (void)_requestJson:(void(^)(NSArray<RNMusicInfo *> *, NSError *error))complete
 {
@@ -208,4 +252,26 @@ RCT_EXPORT_METHOD(pauseMusic:(NSString *)songID
 }
 
 
+#pragma mark - loop
+//增加循环播放的监控
+-(void)addObserverForMusicLoop
+{
+    //多监控是最需要避免的隐性泄露
+    [self removeObserverForMusicLoop];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playbackFinished:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
+}
+
+//移除循环播放的监控
+-(void)removeObserverForMusicLoop
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
+}
+//音频或视频播放完成的时候重新开始
+-(void)playbackFinished:(NSNotification*)noti
+{
+    if(self.player && self.musicPath)
+    {
+        [self _playItemAtPath:self.musicPath];
+    }
+}
 @end

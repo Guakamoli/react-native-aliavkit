@@ -1,5 +1,6 @@
 .gradle
 .idea
 /build
+/video
 /gradle-build
 /thirdparty-lib/base.gradle

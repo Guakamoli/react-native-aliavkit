@@ -1,4 +1,4 @@
-include ':react-native-camera-kit'
+include ':app'
 
 include ':common:AliyunVideoCommon'
 include ':common:AlivcMedia'

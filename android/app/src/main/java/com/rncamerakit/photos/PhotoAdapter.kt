@@ -1,0 +1,340 @@
+package com.rncamerakit.photos
+
+import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.aliyun.svideo.media.MediaInfo
+import com.aliyun.svideo.media.MediaStorage
+import com.aliyun.svideo.media.ThumbnailGenerator
+import com.aliyun.svideo.media.ThumbnailGenerator.OnThumbnailGenerateListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.rncamerakit.R
+import java.io.File
+import java.lang.reflect.Field
+import kotlin.math.roundToInt
+
+class PhotoAdapter(
+    private val mContext: Context,
+    private val mList: List<MediaInfo>,
+    private val mSelectedPhotoMap: HashMap<Int, Int>,
+    private val mItemWidth: Int,
+    private val mItemHeight: Int,
+    private val mDefaultSelectedPosition: Int,
+    private val mKeepSelected: Boolean
+) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+
+    private var mItemListener: OnPhotoItemListener? = null
+
+    fun setOnPhotoItemListener(listener: OnPhotoItemListener) {
+        mItemListener = listener
+    }
+
+    abstract class OnPhotoItemListener {
+        open fun onAddPhotoClick(position: Int, info: MediaInfo) {}
+        open fun onRemovePhotoClick(position: Int, info: MediaInfo) {}
+        open fun onMaxSelectCountCallback() {}
+    }
+
+    private var mMultiSelect: Boolean = false
+    private var mMultiFileType: Int = MediaStorage.TYPE_PHOTO
+
+    fun setMultiSelect(multiSelect: Boolean) {
+        this.mMultiSelect = multiSelect
+        if (mCurrentClickPosition >= 0 && mList.size > mCurrentClickPosition) {
+            mMultiFileType = mList[mCurrentClickPosition].type
+        }
+    }
+
+    private var mThumbnailGenerator: ThumbnailGenerator? = null
+
+    private var mCurrentClickPosition = 0
+    private var mOldCurrentClickPosition = 0
+
+    fun setCurrentClickPosition(position: Int) {
+        mCurrentClickPosition = position
+        if (position >= 0) {
+            notifyItemChanged(mOldCurrentClickPosition)
+            notifyItemChanged(mCurrentClickPosition)
+            mOldCurrentClickPosition = mCurrentClickPosition
+        }
+    }
+
+    init {
+        mThumbnailGenerator = ThumbnailGenerator(mContext)
+        mCurrentClickPosition = mDefaultSelectedPosition
+        mOldCurrentClickPosition = mDefaultSelectedPosition
+        if (mCurrentClickPosition >= 0 && mList.size > mCurrentClickPosition) {
+            mMultiFileType = mList[mCurrentClickPosition].type
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val view: View = LayoutInflater.from(parent.context).inflate(R.layout.view_ali_kit_photos_item, parent, false)
+        return PhotoViewHolder(view, viewType)
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: List<Any?>) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            //这里只刷新
+            setMultiSelectChanged(mList[position], holder as PhotoViewHolder, position)
+        }
+    }
+
+
+    fun setMultiSelectChanged(info: MediaInfo, holder: PhotoViewHolder, position: Int) {
+        val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
+
+        if (!mMultiSelect) {
+//            holder.tvCheckView.visibility = View.GONE
+//            holder.flCheckView.visibility = View.GONE
+            holder.unSelectedBgView.visibility = View.GONE
+            holder.tvCheckView.text = ""
+            if (mCurrentClickPosition != position) {
+                holder.tvCheckView.setBackgroundColor(Color.TRANSPARENT)
+            } else {
+                if (isOfficial == null || isOfficial == true) {
+                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video_dark)
+                } else {
+                    holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video)
+                }
+            }
+        } else {
+
+            if (mKeepSelected) {
+                holder.flCheckView.visibility = View.VISIBLE
+                holder.tvCheckView.visibility = View.VISIBLE
+            } else {
+                holder.flCheckView.visibility = View.GONE
+                holder.tvCheckView.visibility = View.GONE
+            }
+
+            if (mSelectedPhotoMap[position] == null) {
+                holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_unselected)
+                holder.tvCheckView.text = ""
+            } else {
+                if (info.type == MediaStorage.TYPE_PHOTO) {
+                    if (isOfficial == null || isOfficial == true) {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_dark)
+                        holder.tvCheckView.setTextColor(Color.parseColor("#000000"))
+                    } else {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected)
+                        holder.tvCheckView.setTextColor(Color.parseColor("#ffffff"))
+                    }
+                    holder.tvCheckView.text = (mSelectedPhotoMap[position]).toString()
+                } else {
+                    holder.tvCheckView.text = ""
+                    if (isOfficial == null || isOfficial == true) {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video_dark)
+                    } else {
+                        holder.tvCheckView.setBackgroundResource(R.drawable.bg_post_photo_selected_video)
+                    }
+                }
+            }
+
+            if (mMultiFileType == info.type || mSelectedPhotoMap.isEmpty()) {
+                holder.unSelectedBgView.visibility = View.GONE
+            } else {
+                holder.unSelectedBgView.visibility = View.VISIBLE
+            }
+        }
+
+        if (!mKeepSelected) {
+            holder.flCheckView.visibility = View.GONE
+        }
+
+        //取消多选选中
+        holder.flCheckView.setOnClickListener {
+            if (!mMultiSelect) {
+                mItemListener?.onRemovePhotoClick(position, info)
+                return@setOnClickListener
+            }
+            if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {
+                return@setOnClickListener
+            }
+            if (mSelectedPhotoMap[position] != null) {
+                mItemListener?.onRemovePhotoClick(position, info)
+            } else {
+                if (mSelectedPhotoMap.size >= 10) {
+                    mItemListener?.onMaxSelectCountCallback()
+                    return@setOnClickListener
+                }
+                setCurrentClickPosition(position)
+                if (mSelectedPhotoMap.isEmpty()) {
+                    mMultiFileType = info.type
+                    notifyItemRangeChanged(0, mList.size, "MultiSelectChanged")
+                } else {
+                    notifyItemChanged(position)
+                }
+                mItemListener?.onAddPhotoClick(position, info)
+            }
+        }
+    }
+
+    private fun getBuildConfigValue(context: Context, fieldName: String): Any? {
+        try {
+            val clazz = Class.forName(context.packageName + ".BuildConfig")
+            val field: Field = clazz.getField(fieldName)
+            return field.get(null)
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is PhotoViewHolder) {
+
+            var params = holder.thumbnailImage.layoutParams
+            params.width = this.mItemWidth
+            params.height = this.mItemHeight
+            holder.thumbnailImage.layoutParams = params
+
+            val info: MediaInfo = mList[position]
+            //每一个imageView都需要设置tag，video异步生成缩略图，需要对应最后设置给imageView的info key
+            holder.thumbnailImage.setTag(R.id.tag_first, ThumbnailGenerator.generateKey(info.type, info.id))
+            val viewDrawable: Drawable = ColorDrawable(Color.GRAY)
+
+
+            val uri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Uri.parse(info.fileUri)
+            } else if (info.thumbnailPath != null && onCheckFileExists(info.thumbnailPath)) {
+                Uri.fromFile(File(info.thumbnailPath))
+            } else {
+                Uri.fromFile(File(info.filePath))
+            }
+
+
+            if (info.type == MediaStorage.TYPE_PHOTO) {
+                holder.durationText.text = ""
+                Glide.with(mContext).load(uri)
+                    .dontAnimate()
+                    .thumbnail()
+//                .placeholder(viewDrawable)
+                    .into(holder.thumbnailImage)
+            } else {
+                Glide.with(mContext)
+                    .setDefaultRequestOptions(RequestOptions.frameOf(100*1000))
+                    .load(uri)
+                    .into(holder.thumbnailImage)
+                holder.durationText.text = convertDuration2Text(info.duration.toLong())
+//                mThumbnailGenerator?.generateThumbnail(info.type, info.id, 0,
+//                    OnThumbnailGenerateListener { key, thumbnail ->
+//                        if (key == holder.thumbnailImage.getTag(R.id.tag_first) as Int) {
+//                            holder.thumbnailImage.setImageBitmap(thumbnail)
+//                        }
+//                    })
+            }
+            val isOfficial: Boolean? = getBuildConfigValue(mContext.applicationContext, "IS_OFFICIAL") as Boolean?
+            if (isOfficial == null || isOfficial == true) {
+                holder.selectedBgView.setBackgroundColor(Color.parseColor("#66000000"))
+            } else {
+                holder.selectedBgView.setBackgroundColor(Color.parseColor("#80FFFFFF"))
+            }
+
+            if (mCurrentClickPosition == position) {
+                if (mKeepSelected) {
+                    holder.selectedBgView.visibility = View.VISIBLE
+                } else {
+                    holder.selectedBgView.visibility = View.GONE
+                }
+            } else {
+                holder.selectedBgView.visibility = View.GONE
+            }
+            setMultiSelectChanged(info, holder as PhotoViewHolder, position)
+
+            holder.itemView.setOnClickListener {
+                if (position == mOldCurrentClickPosition && mSelectedPhotoMap[position] != null) {
+                    return@setOnClickListener
+                }
+                if (mMultiSelect && (mMultiFileType != info.type && mSelectedPhotoMap.isNotEmpty())) {
+                    return@setOnClickListener
+                }
+                if (mSelectedPhotoMap.size >= 10) {
+                    if (mSelectedPhotoMap[position] == null) {
+                        mItemListener?.onMaxSelectCountCallback()
+                        return@setOnClickListener
+                    }
+                }
+                if (mSelectedPhotoMap.isEmpty()) {
+                    mMultiFileType = info.type
+                    notifyItemRangeChanged(0, mList.size, "MultiSelectChanged")
+                }
+
+                setCurrentClickPosition(position)
+                if (mMultiSelect) {
+                    notifyItemChanged(position)
+                }
+                mItemListener?.onAddPhotoClick(position, info)
+            }
+        }
+    }
+
+
+    class PhotoViewHolder internal constructor(itemView: View, var viewType: Int) : RecyclerView.ViewHolder(itemView) {
+        var thumbnailImage: ImageView = itemView.findViewById(R.id.thumbnailImage)
+        var durationText: TextView = itemView.findViewById(R.id.durationText)
+        var selectedBgView: View = itemView.findViewById(R.id.selectedBgView)
+        var unSelectedBgView: View = itemView.findViewById(R.id.unSelectedBgView)
+        var flCheckView: ViewGroup = itemView.findViewById(R.id.flCheckView)
+        var tvCheckView: TextView = itemView.findViewById(R.id.checkView)
+    }
+
+    override fun getItemCount(): Int {
+        return mList.size
+    }
+
+
+    override fun getItemId(position: Int): Long {
+//        return super.getItemId(position)
+        return position.toLong()
+    }
+
+    private fun onCheckFileExists(path: String?): Boolean {
+        var res = false
+        if (path == null) {
+            return false
+        }
+        val file = File(path)
+        if (file.exists()) {
+            res = true
+        }
+        return res
+    }
+
+    private fun convertDuration2Text(duration: Long): String? {
+        var sec = (duration.toFloat()/1000).roundToInt()
+        val hour = sec/3600
+        val min = sec%3600/60
+        sec %= 60
+        return String.format(
+            mContext.getString(R.string.alivc_media_video_duration_mmmss),
+            hour,
+            min,
+            sec
+        )
+    }
+
+    fun onDestroy() {
+        mThumbnailGenerator?.cancelAllTask()
+    }
+
+}

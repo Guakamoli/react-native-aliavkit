@@ -4,7 +4,8 @@
 //
 //  Created by jimmy on 2021/9/18.
 //
-
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
+#import "AVAsset+VideoInfo.h"
 #import "AliCameraAction.h"
 #import <AliyunVideoSDKPro/AliyunIRecorder.h>
 #import <AliyunVideoSDKPro/AliyunErrorCode.h>
@@ -25,11 +26,19 @@
 #import "AliyunDownloadManager.h"
 #import "ShortCut.h"
 #import "RNAVDeviceHelper.h"
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+#import "AliAVServiceBridge.h"
+#import "RNAliavkitEventEmitter.h"
 
 @interface AliCameraAction ()<AliyunIRecorderDelegate>
 {
     NSString *_videoSavePath;
     VideoRecordEndBlk_t _complete;
+    AliyunIRecorderCameraPosition mRecorderCamerPosition;
+    
+    RCTPromiseResolveBlock _finishMultiRecordingResolve;
+    RCTPromiseRejectBlock _finishMultiRecordingReject;
 }
 
 @property (nonatomic, strong) AliyunIRecorder *recorder;
@@ -39,13 +48,28 @@
 @property (nonatomic, copy) VideoRecordStartBlk_t recordStartHandler;
 @property (nonatomic, copy) VideoRecordEndBlk_t recordEndHandler;
 @property (nonatomic, readwrite) BOOL isRecording;
+@property (nonatomic) BOOL isMultiRecording;
+@property (nonatomic) BOOL isPauseCamera;
 @property (nonatomic, strong) AliyunDownloadManager *downloadManager;
 @property (nonatomic, strong) AliyunEffectPaster *previousEffectPaster;  //current face paster
 @property (nonatomic) CGRect previewRect;
+@property (nonatomic) AliyunIRecorderTorchMode mRecorderTorchMode;
+
 
 @end
 
 @implementation AliCameraAction
+
+//// 标记宏（必要）
+//RCT_EXPORT_MODULE();
+//
+//- (NSArray<NSString *> *)supportedEvents
+//{
+//    return @[
+//        @"addFacePasterListener"
+//    ];
+//}
+
 
 - (instancetype)initWithPreviewFrame:(CGRect)previewFrame
 {
@@ -67,6 +91,7 @@
     return self.recorder.preview;
 }
 
+
 #pragma mark - GET
 - (AliyunIRecorder *)recorder
 {
@@ -80,8 +105,8 @@
         _recorder.encodeMode = 1;
         _recorder.GOP = self.mediaConfig.gop;
         if ([RNAVDeviceHelper isBelowIphone_11]) {
-            _recorder.videoQuality = AliyunVideoQualityMedium;
-            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1280x720;
+            _recorder.videoQuality = AliyunVideoQualityHight;
+            _recorder.frontCaptureSessionPreset = AVCaptureSessionPreset1920x1080;
         } else {
             //iphone 11
             _recorder.bitrate = 15*1000*1000; // 15Mbps
@@ -102,8 +127,8 @@
 {
     if (!_mediaConfig) {
         _mediaConfig = [AliyunMediaConfig defaultConfig];
-        _mediaConfig.minDuration = 0.5f;
-        _mediaConfig.maxDuration = 30.f;
+        _mediaConfig.minDuration = 0.0f;
+        _mediaConfig.maxDuration = 180.f; //3min
         _mediaConfig.gop = 30;
         _mediaConfig.cutMode = AliyunMediaCutModeScaleAspectFill;
         _mediaConfig.videoOnly = YES;
@@ -140,18 +165,25 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
+- (void)removeNotification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)appWillResignActive:(id)sender
 {
-    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
-    if (self.recorder.isRecording) {
-        [self.recorder stopRecording];
-        [self.recorder stopPreview];
-    }
+//    [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+//    if (self.recorder.isRecording) {
+//        [self.recorder stopRecording];
+//        [self.recorder stopPreview];
+//    }
+    [self pauseCamera];
 }
 
 - (void)appDidBecomeActive:(id)sender
 {
-    [self.recorder startPreview];
+//    [self.recorder startPreview];
+    [self resumeCamera];
 }
 
 - (void)addFocusGesture
@@ -264,14 +296,21 @@
 
 - (void)stopPreview
 {
-    [self clearBeautyEngine];
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront) {
+//        [self clearBeautyEngine];
+//    }
     [_recorder stopPreview];
 }
 
-- (void)dealloc
+- (void)destroyRecorder
 {
+    //录制释放
+    [_recorder stopPreview];
     [_recorder destroyRecorder];
     _recorder = nil;
+    //美颜引擎释放
+    [[BeautyEngineManager shareManager] cleanQueenEngine];
+  
 }
 
 - (void)switchCaptureDevicePosition:(AVCaptureDevicePosition)position
@@ -280,9 +319,10 @@
     (position == AVCaptureDevicePositionFront) ? AliyunIRecorderCameraPositionFront : AliyunIRecorderCameraPositionBack;
     if (cameraPosition != self.recorder.cameraPosition) {
         //previous front，now back then clear
-        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
-            [[BeautyEngineManager shareManager] clear];
-        }
+//        if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionFront && cameraPosition == AliyunIRecorderCameraPositionBack) {
+//            [self clearBeautyEngine];
+//        }
+        mRecorderCamerPosition =cameraPosition;
         [self.recorder switchCameraPosition];
     }
 }
@@ -304,6 +344,7 @@
     if (self.recorder.hasTorch) {
         return NO;
     }
+    _mRecorderTorchMode = tMode;
     if (self.recorder.torchMode != tMode) {
         return [self.recorder switchTorchWithMode:tMode];
     }
@@ -312,6 +353,8 @@
 
 - (BOOL)startRecordVideo:(VideoRecordStartBlk_t)handler;
 {
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
     self.recordStartHandler = handler;
     return ([self.recorder startRecording]) == 0; // ==0 YES
 }
@@ -323,11 +366,11 @@
 }
 
 #pragma mark - face paster
-- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo
+- (void)prepearForAddPasterInfo:(AliyunPasterInfo *)pasterInfo  index:(NSNumber *)index
 {
-    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
-        return;
-    }
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) { //必须是前置摄像头才能添加
+//        return;
+//    }
     if (pasterInfo.eid <= 0 || [pasterInfo.bundlePath isEqualToString:@"icon"]) {//remove
         [self deletePreviousEffectPaster];
         return;
@@ -342,10 +385,13 @@
     [self deletePreviousEffectPaster];
     
     if (![pasterInfo fileExist]) {
+        RNAliavkitEventEmitter *eventEmitter = [RNAliavkitEventEmitter allocWithZone: nil];
+
         AliyunDownloadTask *task = [[AliyunDownloadTask alloc] initWithInfo:pasterInfo];
         [self.downloadManager addTask:task];
         task.progressBlock = ^(NSProgress *progress) {
             CGFloat pgs = progress.completedUnitCount * 1.0 / progress.totalUnitCount;
+            [eventEmitter setFacePasterDownloadProgress:pgs index:index];
 //            AVDLog(@"------download progress: %lf",pgs);
         };
         __weak typeof(self) weakSelf = self;
@@ -407,13 +453,20 @@
     });
 }
 
-/// record progress
+/**
+ * 录制回调
+ */
+/// record progress TODO
 - (void)recorderVideoDuration:(CGFloat)duration
 {
     //    AVDLog(@"----- recording：%f",duration);
     self.isRecording = YES;
     if (self.recordStartHandler) {
         self.recordStartHandler(duration);
+    }
+    if(self.isMultiRecording){
+//        [[AliAVServiceBridge alloc] sendEventWithName:@"startMultiRecording" body:@{@"duration":@(duration)}];
+//        [self sendEventWithName:@"startMultiRecording" body:@{@"duration":@(duration)}];
     }
 }
 /// recording stopped
@@ -427,11 +480,23 @@
 - (void)recorderDidFinishRecording
 {
     AVDLog(@"✅ finish all record ✅");
-    [self.recorder stopPreview];
-    if (_complete && _videoSavePath && ![_videoSavePath isEqualToString:@""]) {
-        _complete(_videoSavePath);        
+    if (_complete) {
+        _complete(_videoSavePath);
     }
-    [self clearBeautyEngine];
+    
+    if (_finishMultiRecordingResolve) {
+//        //TODO
+//        AVURLAsset *asset = [AVURLAsset assetWithURL:[NSURL fileURLWithPath:_videoSavePath]];
+//        CGSize size = [asset avAssetNaturalSize];
+//        CGFloat frameWidth = size.width;
+//        CGFloat frameHeight = size.height;
+//
+//        AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:_videoSavePath];
+//        NSInteger bitRate = nativeParser.getVideoBitrate;
+        
+        _finishMultiRecordingResolve(_videoSavePath);
+        _finishMultiRecordingResolve = nil;
+    }
 }
 
 - (void)_recorderFinishRecording
@@ -470,9 +535,57 @@
     [[BeautyEngineManager shareManager] clear];
 }
 
+
+- (void)resumeCamera
+{
+    _isPauseCamera = NO;
+//    if(_mRecorderTorchMode){
+//        [self.recorder switchTorchWithMode:_mRecorderTorchMode];
+//    }
+//    if(mRecorderCamerPosition == AliyunIRecorderCameraPositionFront){
+//       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionFront];
+//    }else if(mRecorderCamerPosition == AliyunIRecorderCameraPositionBack){
+//       [self.recorder startPreviewWithPositon:AliyunIRecorderCameraPositionBack];
+//    }else{
+//        [self.recorder startPreview];
+//    }
+    if(self.recorder!=nil){
+        [self.recorder startPreview];
+    }
+}
+
+- (void)pauseCamera
+{
+    if(self.recorder!=nil){
+        [self.recorder switchTorchWithMode:AliyunIRecorderTorchModeOff];
+        if(self.isRecording){
+            [self.recorder stopRecording];
+        }
+        [self.recorder stopPreview];
+    }
+    _isPauseCamera = YES;
+}
+
+- (void)setFilterPath:(NSString*)filterPath
+{
+    if(filterPath == nil || filterPath == NULL || [filterPath isKindOfClass:[NSNull class]] || filterPath.length == 0){
+        //移除滤镜
+        [self.recorder deleteFilter];
+    }else{
+        AliyunEffectFilter *filter = [[AliyunEffectFilter alloc] initWithFile:filterPath];
+        [self.recorder applyFilter:filter];
+    }
+}
+
 ///beautify  CVPixelBufferRef -> CVPixelBufferRef
 - (CVPixelBufferRef)customRenderedPixelBufferWithRawSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
+    if(_isPauseCamera){
+        return nil;
+    }
+//    if (self.recorder.cameraPosition == AliyunIRecorderCameraPositionBack) {
+//        return CMSampleBufferGetImageBuffer(sampleBuffer);
+//    }
     //beauty face
     CGFloat beautyBuffing = self.normalBeautyLevel * 0.01 * 2.0f;
     CGFloat beautyWhite = self.normalBeautyLevel * 0.01 * 2.0f;
@@ -502,6 +615,53 @@
                                                              thinNose:thinNose
                                                          thinMandible:thinMandible
                                                              cutCheek:cutCheek];
+}
+
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    self.isMultiRecording = YES;
+    int recordInt = [self.recorder startRecording];
+    BOOL isRecord = recordInt == 0; // ==0 YES
+    resolve(@(isRecord));
+}
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    self.isMultiRecording = NO;
+    [self.recorder stopRecording];
+    
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    NSInteger partCount = clipManager.partCount;
+    NSArray *videoAbsolutePaths = clipManager.videoAbsolutePaths;
+    if(videoAbsolutePaths && partCount>0){
+        NSString *video=  [videoAbsolutePaths objectAtIndex:partCount-1];
+        resolve(video);
+    }else{
+        resolve(@"");
+    }
+}
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    _finishMultiRecordingResolve = resolve;
+    _finishMultiRecordingReject = reject;
+    self.isMultiRecording = NO;
+    [self.recorder finishRecording];
+}
+
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deletePart];
+}
+
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    AliyunClipManager *clipManager = [self.recorder clipManager];
+    [clipManager deleteAllPart];
 }
 
 @end

@@ -17,17 +17,22 @@ Pod::Spec.new do |s|
   
   s.resource = 'ios/ReactNativeCameraKit/Resources/ShortVideoResource/*'
   
+  #不允许多个resource
+  #s.resource = 'ios/ReactNativeCameraKit/Resources/AliKitPhotoViewResource/*'
+  
   s.dependency 'React-Core'
   
   # 柯南SDK-短视频SDK依赖的数据埋点
   s.dependency 'AlivcConan', '1.0.5'
-  s.dependency 'AliyunVideoSDKPro', '3.26.0'
+  s.dependency 'AliyunVideoSDKPro', '3.30.0'
   s.dependency 'VODUpload', '1.6.1'
   # 美颜
-  s.dependency 'Queen', '1.4.0-official-pro'
+  s.dependency 'Queen', '1.9.0-official-pro'
   s.dependency 'AFNetworking'
   s.dependency 'FMDB'
   s.dependency 'JSONModel'
   s.dependency 'SSZipArchive'
-  
+
+  # 裁剪
+  s.dependency 'TOCropViewController'
 end

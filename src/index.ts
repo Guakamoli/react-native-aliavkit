@@ -1,15 +1,26 @@
-import { NativeModules } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+
+const isIOS = Platform.OS === 'ios';
 
 import Camera from './Camera';
-import CameraScreen, { CameraType } from './CameraScreen';
-import PostUpload from './PostScreen';
+import VideoEditor from './VideoEditor';
 
-import PostEditor from './PostEditor';
-import Entry from './Entry';
+import AVService from './AVService';
+
+import AVKitPhotoView from './AVKitPhotoView';
+
+import CropImageView from './CropImageView';
 
 const { CameraKit } = NativeModules;
 
-// Start with portrait/pointing up, increment while moving counter-clockwise
+const CameraModule = isIOS ? NativeModules.CKCameraManager : NativeModules.RNCameraKitModule;
+
+const EditorModule = isIOS ? NativeModules.RNEditViewManager : NativeModules.RNEditorKitModule;
+
+const PhotoModule = isIOS ? NativeModules.RNAliKitPhotoViewManager : NativeModules.RNAliKitPhotoViewModule;
+
+const CropImageViewModule = isIOS ? NativeModules.RNKitCropImageViewManager : NativeModules.RNKitCropImageViewModule;
+
 export const Orientation = {
   PORTRAIT: 0, // ⬆️
   LANDSCAPE_LEFT: 1, // ⬅️
@@ -17,7 +28,16 @@ export const Orientation = {
   LANDSCAPE_RIGHT: 3, // ➡️
 };
 
+export const SortModeEnum = {
+  SORT_MODE_ALL: 'all',
+  SORT_MODE_PHOTO: 'photo',
+  SORT_MODE_VIDEO: 'video',
+}
+
 export default CameraKit;
 
-
-export { Camera, CameraScreen, CameraType, PostUpload, PostEditor, Entry };
+export {
+  Camera, VideoEditor, AVKitPhotoView, CropImageView,
+  AVService,
+  CameraModule, EditorModule, PhotoModule, CropImageViewModule
+};
