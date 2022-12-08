@@ -6,7 +6,7 @@
 
     <!--  8.0 安装 APP  -->
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" /> -->
     <!--  9.0 前台服务  -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!--  10.0 后台定位  -->
