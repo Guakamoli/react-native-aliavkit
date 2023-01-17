@@ -53,7 +53,7 @@ const MovingTimeLine = (props) => {
     return leftRef.setValue(0);
   };
   const stopAnimationEvent = (e) => {
-    console.info(e, 'hahahah');
+   
     if (e.draging) {
       resetAnimation();
       stopAnimation();
@@ -196,7 +196,7 @@ const ImagesBackList = (props) => {
     // { url: 'https://video-message-001.paiyaapp.com/dhAgCqD36QCAhEqXj.jpg' },
   ]);
   const onLayout = (e) => {
-    // console.info(e, 'layout');
+    //
   };
   const onScroll = Animated.event(
     [

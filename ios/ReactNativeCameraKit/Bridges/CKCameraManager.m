@@ -30,11 +30,15 @@ RCT_EXPORT_VIEW_PROPERTY(saveToCameraRoll, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(saveToCameraRollWithPhUrl, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onRecordingProgress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(facePasterInfo, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(filterPath, NSString*)
 RCT_EXPORT_VIEW_PROPERTY(mediaConfig, AliyunMediaConfig)
 
 /// 0 10 20 30 40 50, default 30
 RCT_EXPORT_VIEW_PROPERTY(normalBeautyLevel, NSUInteger)
 RCT_EXPORT_VIEW_PROPERTY(cameraStyle, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(mediaInfo, NSDictionary)
+RCT_EXPORT_VIEW_PROPERTY(isStartPreview, BOOL)
+
 
 RCT_EXPORT_METHOD(capture:(NSDictionary*)options
                   resolve:(RCTPromiseResolveBlock)resolve
@@ -109,6 +113,70 @@ RCT_EXPORT_METHOD(cameraStopPreview)
 {
 //    [self.camera recorderStopPreview];
 }
+
+
+RCT_EXPORT_METHOD(destroyRecorder)
+{
+    [self.camera destroyRecorder];
+}
+
+RCT_EXPORT_METHOD(resumeCamera)
+{
+    [self.camera resumeCamera];
+}
+
+RCT_EXPORT_METHOD(pauseCamera)
+{
+    [self.camera pauseCamera];
+}
+
+RCT_EXPORT_METHOD(startMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera startMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(stopMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera stopMultiRecording:resolve  reject:reject];
+}
+RCT_EXPORT_METHOD(finishMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera finishMultiRecording:resolve  reject:reject];
+}
+
+RCT_EXPORT_METHOD(deleteLastMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera deleteLastMultiRecording:resolve  reject:reject];
+}
+
+RCT_EXPORT_METHOD(deleteAllMultiRecording:(NSDictionary*)options
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    [self.camera deleteAllMultiRecording:resolve  reject:reject];
+}
+
+RCT_EXPORT_METHOD(setFacePasterInfo:(NSDictionary*)options
+                  position:(int)position
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:  (RCTPromiseRejectBlock)reject)
+{
+    NSMutableDictionary *pasterOptions = [options mutableCopy];
+
+    NSNumber *index = [NSNumber numberWithInt:position];
+    [pasterOptions setObject:index forKey:@"index"];
+    [self.camera setFacePasterInfo:pasterOptions];
+    resolve(@YES);
+}
+
+
 
 - (dispatch_queue_t)methodQueue
 {

@@ -12,7 +12,12 @@ import {
   Animated,
   FlatList,
   NativeModules,
+  StatusBar,
 } from 'react-native';
+
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
 import _ from 'lodash';
 import Camera from './Camera';
 import VideoEditor from './VideoEditor';
@@ -23,6 +28,8 @@ import StoryMusic from './StoryMusic';
 import ImageMap from '../images';
 const { musicSelect } = ImageMap;
 import AVService from './AVService';
+import CameraRoll from '@react-native-community/cameraroll';
+import I18n from './i18n';
 
 const { width, height } = Dimensions.get('window');
 const CameraHeight = height;
@@ -83,8 +90,6 @@ export default class StoryEditor extends Component<Props, State> {
   // 设置音乐
   musicExport: any;
   constructor(props) {
-    console.info('story 编辑页面props', props);
-
     super(props);
     this.myRef = React.createRef();
     this.state = {
@@ -109,52 +114,95 @@ export default class StoryEditor extends Component<Props, State> {
     };
     this.musicInfo = {};
   }
-  startExportVideo() {
-    if (this.state.startExportVideo) {
-      return;
-    }
-    this.props.myRef.current.show('快拍作品将在24小时后消失', 2000);
-    this.setState({ musicExport: true }, () => {
-      this.setState({ startExportVideo: true });
-    });
-    this.pauseMusic(this.musicOn);
-  }
-  async pauseMusic(song) {
-    console.info('暂停音乐', song);
-    await AVService.pauseMusic(song.songID);
-  }
-  //  发布快拍   导出视频  丢出数据
-  onExportVideo = async (event) => {
-    console.log('1231', event);
-    const { fileType } = this.props;
-    if (event.exportProgress === 1) {
-      let outputPath = event.outputPath;
-      this.setState({ startExportVideo: false });
-      let uploadFile = [];
-      //
-      let type = outputPath.split('.');
-      uploadFile.push({
-        Type: `video/${type[type.length - 1]}`,
-        path: fileType == 'video' ? `file://${encodeURI(outputPath)}` : outputPath,
-        size: 0,
-        Name: outputPath,
-      });
+  async startExportVideo() {
 
-      this.props.getUploadFile(uploadFile);
+    // if (this.state.startExportVideo) {
+    //   return;
+    // }
+    // this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
+    // this.setState({ musicExport: true }, () => {
+    //   this.setState({ startExportVideo: true });
+    // });
+    // this.pauseMusic(this.musicOn);
+    // // //发布快拍，关闭页面
+    // // setTimeout(() => {
+    // //   this.props.goback();
+    // // }, 1000);
+
+    AVService.stopEdit();
+
+    this.pauseMusic(this.musicOn);
+
+    const jsonPath = await AVService.getVideoEditorJsonPath();
+    console.info("startExportVideo jsonPath", jsonPath);
+
+    //story 去做导出
+    // let videoParams = await AVService.storyComposeVideo(jsonPath, (progress: number) => {
+    //   console.info("storyComposeVideo progress", progress);
+    // });
+    // console.info("storyComposeVideo videoParams", videoParams);
+    //需求：story 发布时要同时保存到相册
+    // CameraRoll.save(videoParams.path, { type: 'video' })
+
+    const { AsyncStorage } = this.props;
+
+    if(!!AsyncStorage){
+      const isExport = await AsyncStorage.getItem("StoryExportVideo");
+      if (isExport === null) {
+        AsyncStorage.setItem('StoryExportVideo', "StoryExportVideo");
+        this.props.myRef.current.show(`${I18n.t('Story_works_will_disappear_after_24_hours')}`, 2000);
+      }
     }
-  };
+
+
+    let uploadData = [{ path: jsonPath }];
+    this.props.getUploadFile(uploadData);
+    //story 去做导出
+
+
+    //外部去做导出，这里返回 json 文件，外部去调用 await AVService.storyComposeVideo
+    // const storyParam = {
+    //   uploadType:'story',
+    //   jsonPath:jsonPath
+    // }
+    // this.props.getUploadFile(storyParam);
+    //外部去做导出，这里返回 json 文件，外部去调用 await AVService.storyComposeVideo
+
+    // setTimeout(() => {
+    //   this.props.goback();
+    // }, 500);
+  }
+
+  // //  发布快拍   导出视频 
+  // onExportVideo = async (event) => {
+  //   const { fileType } = this.props;
+  //   if (event.exportProgress === 1) {
+  //     // if(!event?.videoParams?.path.startsWith("file://") ){
+  //     //   event.videoParams.path = `file://${encodeURI(event.videoParams.path)}`
+  //     // }
+  //     let uploadData = [event.videoParams];
+  //     this.pauseMusic(this.musicOn);
+  //     console.info('发布快拍 onExportVideo', uploadData);
+  //     this.setState({ startExportVideo: false });
+  //     // // 测试代码：保存到相册
+  //     // CameraRoll.save(event.outputPath, { type: 'video' })
+  //     this.props.getUploadFile(uploadData);
+  //   }
+  // }
+
+  pauseMusic(song) {
+
+    if (song) {
+      AVService.pauseMusic(song?.songID);
+    }
+  }
+
   getFilters = async () => {
     //{iconPath: '.../柔柔/icon.png', filterName: '柔柔'}
     if (this.state.filterList.length < 1) {
-      if (Platform.OS === 'android') {
-        const filterList = await this.editor.getColorFilterList();
-        // console.log('filterList111', filterList);
-        this.setState({ filterList: filterList });
-      } else {
-        const infos = await AVService.getFilterIcons({});
-        infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
-        this.setState({ filterList: infos });
-      }
+      const infos = await AVService.getFilterIcons({});
+      infos.unshift({ filterName: null, iconPath: '', title: '无效果' });
+      this.setState({ filterList: infos });
     }
   };
   componentDidMount() {
@@ -162,20 +210,18 @@ export default class StoryEditor extends Component<Props, State> {
   }
   componentWillUnmount() {
     if (Platform.OS === 'android') {
-      // console.log(Platform.OS === 'android');
       //  this.camera.release();
     } else {
       RNEditViewManager.stop();
     }
     // 结束编辑页面
-    console.log('拍摄编辑销毁');
+    this.pauseMusic(this.musicOn);
     this.setState = () => false;
   }
 
   // 底部 切换模块
   renderUploadStory() {
     const { captureImages } = this.state;
-
     return (
       <View style={styles.BottomBox}>
         <>
@@ -189,7 +235,7 @@ export default class StoryEditor extends Component<Props, State> {
             }}
           >
             <View style={styles.uploadBox}>
-              <Text style={styles.uploadTitle}>发布快拍</Text>
+              <Text style={styles.uploadTitle}>{`${I18n.t('Post_story')}`}</Text>
             </View>
           </TouchableOpacity>
         </>
@@ -199,7 +245,7 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 编辑头部按钮
   renderUpdateTop() {
-    // console.log(this.props.fileType, 'this.props.fileType', this.props.fileType == 'video');
+    //
     const { showFilterLens, musicOpen } = this.state;
     const imglist = [
       // 'filter':
@@ -230,8 +276,8 @@ export default class StoryEditor extends Component<Props, State> {
           }
         },
       },
-      // 'Aa':
-      { img: this.props.AaImage, onPress: () => {} },
+      // // 'Aa':
+      // { img: this.props.AaImage, onPress: () => {} },
     ];
     if (musicOpen || showFilterLens) {
       return null;
@@ -246,7 +292,7 @@ export default class StoryEditor extends Component<Props, State> {
           }}
           style={[styles.UpdateBox, { left: 20 }]}
         >
-          <Image style={styles.updateTopIcon} source={this.props.giveUpImage} resizeMode='contain' />
+          <FastImage style={styles.updateTopIcon} source={this.props.giveUpImage} resizeMode='contain' />
         </TouchableOpacity>
         {/* 编辑按钮组 */}
         <View style={[styles.UpdateBox, { right: 10, flexDirection: 'row' }]}>
@@ -257,7 +303,7 @@ export default class StoryEditor extends Component<Props, State> {
             }
             return (
               <TouchableOpacity onPress={item.onPress} key={index}>
-                <Image style={styles.updateTopIcon} source={item.img} resizeMode='contain' />
+                <FastImage style={styles.updateTopIcon} source={item.img} resizeMode='contain' />
               </TouchableOpacity>
             );
           })}
@@ -268,15 +314,25 @@ export default class StoryEditor extends Component<Props, State> {
 
   // 拍摄进度
   _onRecordingDuration(event) {
-    // console.log('duration: ', event.duration);
+    //
   }
 
   // 拍摄内容渲染
   renderCamera() {
     const VideoEditors = () => {
-      // return null
-      console.info('rendering', this.musicInfo, this.state.musicExport);
-      const CameraFixHeight = height - (this.props.insets.bottom + this.props.insets.top + 30 + 28);
+      //
+      // const topheight = Platform.OS === 'ios' ? this.props.insets.top : StatusBar.currentHeight;
+      // const CameraFixHeight = height - (this.props.insets.bottom + topheight + 30 + 28);
+      let CameraFixHeight = width * 16 / 9;
+      const fixHeight = height - this.props.insets.top - this.props.insets.bottom
+      if (CameraFixHeight > fixHeight) {
+        CameraFixHeight = fixHeight;
+      }
+
+
+      // 测试代码：保存到相册
+      // CameraRoll.save(this.props.imagePath, { type: 'photo' })
+      //
       return (
         <View
           style={{
@@ -288,7 +344,14 @@ export default class StoryEditor extends Component<Props, State> {
           }}
         >
           <VideoEditor
+            style={{
+              height: CameraFixHeight,
+              width: '100%',
+            }}
             ref={(edit) => (this.editor = edit)}
+            editWidth={width}
+            editHeight={CameraFixHeight}
+            //
             editStyle={{
               width: width,
               height: CameraFixHeight,
@@ -301,6 +364,9 @@ export default class StoryEditor extends Component<Props, State> {
             onExportVideo={this.onExportVideo}
             videoMute={this.state.mute}
             musicInfo={this.state.musicExport ? this.musicInfo : {}}
+            // 安卓兼容
+            onPlayProgress={() => { }}
+          // source={"story"}
           />
         </View>
       );
@@ -309,9 +375,12 @@ export default class StoryEditor extends Component<Props, State> {
       <View style={[styles.cameraContainer]}>
         <TouchableOpacity
           onPress={() => {
-            // 关闭音乐 暂停音乐
+            //关闭音乐列表，有设置过音乐，将音乐同步到视频中，并且暂停播放的音乐
+            // if(this.musicInfo?.songID){
+            //   this.pauseMusic(this.musicInfo)
+            //   this.setState({ musicExport: true })
+            // }
             this.setState({ showFilterLens: false, musicOpen: false });
-            // !this.state.showFilterLens
           }}
           activeOpacity={1}
           disabled={this.state.showBeautify}
@@ -333,13 +402,14 @@ export default class StoryEditor extends Component<Props, State> {
     return (
       <View style={{ height: 189, backgroundColor: '#000' }}>
         <View style={styles.beautifyBoxHead}>
-          <Text style={styles.beautifyTitle}>{`滤镜`}</Text>
+          <Text style={styles.beautifyTitle}>{`${I18n.t('filter')}`}</Text>
         </View>
         {this.state.showFilterLens && (
           <View style={{ paddingHorizontal: 20 }}>
             <FlatList
               data={this.state.filterList}
               horizontal={true}
+              keyExtractor={item => item.iconPath}
               style={{ margin: 0, padding: 0, height: 80 }}
               renderItem={({ index, item }) => {
                 return (
@@ -357,7 +427,7 @@ export default class StoryEditor extends Component<Props, State> {
                           marginRight: 20,
                         }}
                       >
-                        <Image
+                        <FastImage
                           style={[
                             styles.beautifySelect,
                             this.state.filterName == item.filterName && styles.beautifySelecin,
@@ -391,7 +461,7 @@ export default class StoryEditor extends Component<Props, State> {
     }
     return (
       <>
-        <View style={{ justifyContent: 'center', alignContent: 'center' }}>{this.renderUploadStory()}</View>
+        <View style={{ justifyContent: 'center', alignContent: 'center', marginBottom: this.props.toolsInsetBottom }}>{this.renderUploadStory()}</View>
       </>
     );
   }
@@ -401,17 +471,19 @@ export default class StoryEditor extends Component<Props, State> {
       <>
         <Toast
           ref={this.myRef}
-          position='center'
-          positionValue={70}
+          position='top'
+          positionValue={height * 0.4}
           fadeInDuration={750}
           fadeOutDuration={1000}
           opacity={0.8}
         />
         {this.renderCamera()}
-        {Platform.OS === 'android' && <View style={styles.gap} />}
+        {/*  */}
+        {/* {Platform.OS === 'android' && <View style={styles.gap} />} */}
         <View style={{ position: 'absolute', bottom: 0, width: width }}>
           {this.state.musicOpen ? (
             <StoryMusic
+              {...this.props}
               musicDynamicGif={this.props.musicDynamicGif}
               musicIconPng={this.props.musicIconPng}
               musicSearch={this.props.musicSearch}

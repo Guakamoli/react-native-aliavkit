@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0D1336C0461A88D01186E375 /* libPods-CameraKitExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BCEA90A70F4BEAD7E9FA28B2 /* libPods-CameraKitExample.a */; };
+		04A61F7827FEA9E9005BE027 /* paiya.crt in Resources */ = {isa = PBXBuildFile; fileRef = 04A61F7727FEA9E8005BE027 /* paiya.crt */; };
+		04A61F7A27FEB213005BE027 /* goduck.crt in Resources */ = {isa = PBXBuildFile; fileRef = 04A61F7927FEB213005BE027 /* goduck.crt */; };
+		087E5FA61FB3FF431966E012 /* libPods-CameraKitExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F951CA68AC258476C822A53 /* libPods-CameraKitExample.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -18,6 +20,8 @@
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
+		04A61F7727FEA9E8005BE027 /* paiya.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = paiya.crt; path = CameraKitExample/paiya.crt; sourceTree = "<group>"; };
+		04A61F7927FEB213005BE027 /* goduck.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = goduck.crt; path = CameraKitExample/goduck.crt; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* CameraKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = CameraKitExample/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = CameraKitExample/AppDelegate.m; sourceTree = "<group>"; };
@@ -28,10 +32,10 @@
 		20F357AD24636CDE00C146DC /* CameraKitExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CameraKitExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		20F357AE24636CDF00C146DC /* CameraKitExample-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CameraKitExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		20F357AF24636CDF00C146DC /* File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
-		4D7192F03A36A017E887435B /* Pods-CameraKitExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraKitExample.release.xcconfig"; path = "Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample.release.xcconfig"; sourceTree = "<group>"; };
-		871719007ECC5EAD276C345C /* Pods-CameraKitExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraKitExample.debug.xcconfig"; path = "Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample.debug.xcconfig"; sourceTree = "<group>"; };
-		BCEA90A70F4BEAD7E9FA28B2 /* libPods-CameraKitExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CameraKitExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		78539EA2C35369E8381E7808 /* Pods-CameraKitExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraKitExample.debug.xcconfig"; path = "Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample.debug.xcconfig"; sourceTree = "<group>"; };
+		8F951CA68AC258476C822A53 /* libPods-CameraKitExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CameraKitExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF0CFC6C26F5B87F00216AA7 /* libReactNativeAliAVKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReactNativeAliAVKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC226CA7ADC472A48C5F8B9C /* Pods-CameraKitExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CameraKitExample.release.xcconfig"; path = "Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -40,8 +44,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0D1336C0461A88D01186E375 /* libPods-CameraKitExample.a in Frameworks */,
 				BF0CFC6D26F5B87F00216AA7 /* libReactNativeAliAVKit.a in Frameworks */,
+				087E5FA61FB3FF431966E012 /* libPods-CameraKitExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +62,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				04A61F7927FEB213005BE027 /* goduck.crt */,
+				04A61F7727FEA9E8005BE027 /* paiya.crt */,
 			);
 			name = CameraKitExample;
 			sourceTree = "<group>";
@@ -65,8 +71,8 @@
 		1CFFDEF7170271C97B8B7E5A /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				871719007ECC5EAD276C345C /* Pods-CameraKitExample.debug.xcconfig */,
-				4D7192F03A36A017E887435B /* Pods-CameraKitExample.release.xcconfig */,
+				78539EA2C35369E8381E7808 /* Pods-CameraKitExample.debug.xcconfig */,
+				DC226CA7ADC472A48C5F8B9C /* Pods-CameraKitExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -76,7 +82,7 @@
 			children = (
 				BF0CFC6C26F5B87F00216AA7 /* libReactNativeAliAVKit.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				BCEA90A70F4BEAD7E9FA28B2 /* libPods-CameraKitExample.a */,
+				8F951CA68AC258476C822A53 /* libPods-CameraKitExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -120,14 +126,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CameraKitExample" */;
 			buildPhases = (
-				CCCC07BCAFDEF1FCADC0D0C9 /* [CP] Check Pods Manifest.lock */,
+				2901BA7FCA10477B05F0870E /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				DF00298035ADB721B68E0DCD /* [CP] Copy Pods Resources */,
-				EDDAB7995E5398509C3BFFB1 /* [CP] Embed Pods Frameworks */,
+				8F50E06CCD43E901715B0049 /* [CP] Embed Pods Frameworks */,
+				59814120F5BE49FFF9B1D53F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -179,6 +185,8 @@
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				04A61F7A27FEB213005BE027 /* goduck.crt in Resources */,
+				04A61F7827FEA9E9005BE027 /* paiya.crt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,7 +207,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		CCCC07BCAFDEF1FCADC0D0C9 /* [CP] Check Pods Manifest.lock */ = {
+		2901BA7FCA10477B05F0870E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -221,7 +229,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DF00298035ADB721B68E0DCD /* [CP] Copy Pods Resources */ = {
+		59814120F5BE49FFF9B1D53F /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -229,7 +237,6 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-resources.sh",
 				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoSDKPro.bundle",
-				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework/queen-ios.Bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Face_Sticker",
 				"${PODS_ROOT}/../../../ios/ReactNativeCameraKit/Resources/ShortVideoResource/Filter",
@@ -239,7 +246,6 @@
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AliyunVideoSDKPro.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/queen-ios.Bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Face_Sticker",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Filter",
@@ -251,7 +257,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EDDAB7995E5398509C3BFFB1 /* [CP] Embed Pods Frameworks */ = {
+		8F50E06CCD43E901715B0049 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,15 +265,17 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CameraKitExample/Pods-CameraKitExample-frameworks.sh",
 				"${PODS_ROOT}/AlivcConan/AlivcConan.framework",
-				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoCore.framework",
+				"${PODS_ROOT}/AliyunVideoSDKPro/AliyunVideoSDKPro/AliyunVideoAIO.framework",
 				"${PODS_ROOT}/QuCore-ThirdParty/frameworks/alivcffmpeg.framework",
+				"${PODS_ROOT}/Queen/Queen/Libs/queen.framework",
 				"${PODS_ROOT}/Queen/Queen/Libs/opencv2.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AlivcConan.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AliyunVideoCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AliyunVideoAIO.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/alivcffmpeg.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/queen.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/opencv2.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -324,7 +332,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 871719007ECC5EAD276C345C /* Pods-CameraKitExample.debug.xcconfig */;
+			baseConfigurationReference = 78539EA2C35369E8381E7808 /* Pods-CameraKitExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -342,7 +350,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.avengine;
+				PRODUCT_BUNDLE_IDENTIFIER = co.goduck.goduckapp.ios;
 				PRODUCT_NAME = CameraKitExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CameraKitExample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -353,7 +361,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4D7192F03A36A017E887435B /* Pods-CameraKitExample.release.xcconfig */;
+			baseConfigurationReference = DC226CA7ADC472A48C5F8B9C /* Pods-CameraKitExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -370,7 +378,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.guakamoli.avengine;
+				PRODUCT_BUNDLE_IDENTIFIER = co.goduck.goduckapp.ios;
 				PRODUCT_NAME = CameraKitExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "CameraKitExample-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

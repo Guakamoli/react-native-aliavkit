@@ -2,8 +2,8 @@ rootProject.name = 'CameraKitExample'
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
 
-include ':react-native-camera-kit'
-project(':react-native-camera-kit').projectDir = new File(rootProject.projectDir, '../../android/react-native-camera-kit')
+include ':react-native-aliavkit'
+project(':react-native-aliavkit').projectDir = new File(rootProject.projectDir, '../../android/app')
 
 include ':common:AliyunVideoCommon'
 project(':common:AliyunVideoCommon').projectDir = new File(rootProject.projectDir, '../../android/common/AliyunVideoCommon')
@@ -50,3 +50,12 @@ project(':react-native-gesture-handler').projectDir = new File(rootProject.proje
 
 include ':react-native-reanimated'
 project(':react-native-reanimated').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-reanimated/android')
+include ':react-native-permissions'
+project(':react-native-permissions').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-permissions/android')
+
+include ':react-native-fast-image'
+project(':react-native-fast-image').projectDir = new File(rootProject.projectDir, '../../node_modules/@rocket.chat/react-native-fast-image/android')
+
+include ':react-native-localize'
+project(':react-native-localize').projectDir = new File(rootProject.projectDir, '../../node_modules/react-native-localize/android')
+

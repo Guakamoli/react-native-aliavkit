@@ -52,12 +52,16 @@ android {
     }
     buildTypes {
         debug {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -116,11 +120,12 @@ dependencies {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
         releaseImplementation files(hermesPath + "hermes-release.aar")
+//        implementation "org.webkit:android-jsc-intl:+"
     } else {
         implementation jscFlavor
     }
 
-    implementation project(':react-native-camera-kit')
+    implementation project(':react-native-aliavkit')
     implementation project (':lib:lib-base')
     implementation project (':common:AlivcMedia')
     implementation project (':common:AliyunEditor')
@@ -132,6 +137,7 @@ dependencies {
     implementation project (':common:AliyunSVideoBase')
     implementation project (':common:AliyunSvideoMusic')
 
+    implementation project(':react-native-permissions')
     implementation project(':react-native-svg')
     implementation project(':react-native-video')
     implementation project(':react-native-gesture-handler')
@@ -139,6 +145,8 @@ dependencies {
     implementation project(':react-native-image-filter-kit')
     implementation project(':@react-native-community-cameraroll')
     implementation project(':@react-native-community-image-editor')
+    implementation project(':react-native-fast-image')
+    implementation project(':react-native-localize')
 }
 
 task copyDownloadableDepsToLibs(type: Copy) {

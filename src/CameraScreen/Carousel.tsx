@@ -1,32 +1,37 @@
 import PropTypes from 'prop-types';
 import React, { Component, useRef, useEffect, useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    View,
-    // Pressable,
-    Image,
-    Dimensions,
-    Platform,
-    Animated,
-    FlatList,
-    Pressable,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Dimensions,
+  Platform,
+  Animated,
+  FlatList,
+  AppState,
+  Pressable,
 } from 'react-native';
-import { useInterval, useThrottleFn } from 'ahooks';
-import { PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
-import {
-    setFacePasterInfo,
 
-} from '../actions/story';
-import Reanimated, { Easing } from 'react-native-reanimated';
+import * as Progress from 'react-native-progress';
+
+import { ReanimatedArcBase } from '@callstack/reanimated-arc';
+
+import FastImage from '@rocket.chat/react-native-fast-image';
+
+import { useInterval, useThrottleFn } from 'ahooks';
+import { PanGestureHandler, State, TapGestureHandler, LongPressGestureHandler, NativeViewGestureHandler } from 'react-native-gesture-handler';
+import { setFacePasterInfo } from '../actions/story';
+import Reanimated, { EasingNode, interpolateNode } from 'react-native-reanimated';
 
 import _ from 'lodash';
 import Carousel, { getInputRangeFromIndexes } from '../react-native-snap-carousel/src';
+import I18n from '../i18n';
 
 import AVService from '../AVService';
 import { connect } from 'react-redux';
 import { transform } from '@babel/core';
-import CircleProgress from "./CircleProgress"
+import CircleProgress from './CircleProgress';
 const { width, height } = Dimensions.get('window');
 const itemWidth = Math.ceil(width / 5);
 const circleSize = 78;
@@ -34,742 +39,1023 @@ const smallImageSize = 52;
 const bigImageSize = 64;
 const captureIcon2 = (width - 20) / 2;
 
-const stateAttrsUpdate = [
-    'pasterList', 'facePasterInfo']
-
+const stateAttrsUpdate = ['pasterList', 'facePasterInfo'];
 
 export type Props = {
-    facePasterInfo: object
+  facePasterInfo: object;
 };
 
 type State = {
-    pasterList: any[];
-
+  pasterList: any[];
+  pasterSelectedIndex: number,
+  recordType: number,
+  multiRecordAngle: any[],
 };
 
 type PropsType = {
-    facePasterInfo: {
-        eid: any
-    }
-    giveUpImage: any,
-    snapToItem: Function,
-    scrollPos: Animated.Value,
-    scaleAnimated: Reanimated.Value
+  facePasterInfo: {
+    eid: any;
+  };
+  giveUpImage: any;
+  snapToItem: Function;
+  scrollPos: Animated.Value;
+  scaleAnimated: Reanimated.Value;
+};
 
-}
-
-class TopReset extends Component<PropsType>{
-    constructor(props) {
-        super(props)
-    }
-    render() {
-        const { scrollPos, scaleAnimated } = this.props
-        return (
-            <Reanimated.View style={[
-                styles.clearBox,
+class TopReset extends Component<PropsType> {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    const { scrollPos, scaleAnimated } = this.props;
+    return (
+      <Reanimated.View
+        style={[
+          styles.clearBox,
+          {
+            transform: [
+              {
+                scale: interpolateNode(scaleAnimated, {
+                  inputRange: [0, 0.00001, 1],
+                  outputRange: [1, 0, 0],
+                  extrapolate: 'clamp',
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            {
+              transform: [
                 {
-                    transform: [
-                        {
-                            scale: scaleAnimated.interpolate({
-                                inputRange: [0, 0.00001, 1],
-                                outputRange: [1, 0, 0],
-                                extrapolate: "clamp"
-                            })
-                        }
-                    ]
+                  scale: scrollPos.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                    extrapolate: 'clamp',
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {Platform.OS === 'android' ?
+            <NativeViewGestureHandler
+              disallowInterruption={true}
+              shouldActivateOnStart={true}
+              onHandlerStateChange={(event) => {
+                if (event.nativeEvent.state === State.END) {
+                  this.props.snapToItem?.(0);
+                  AVService.setFacePasterInfo(this.props.pasterList[0]);
+                  this.setState({ pasterSelectedIndex: 0 });
+                  // this.props.setFacePasterInfo(this.props.pasterList[0]);
                 }
-
-            ]}>
-                <Animated.View style={[
-                    {
-                        transform: [
-                            {
-                                scale: scrollPos.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, 1],
-                                    extrapolate: "clamp"
-                                })
-                            }
-                        ]
-                    }
-
-                ]}>
-                    <Pressable
-                        style={styles.clearIcon}
-                        onPress={() => {
-                            this.props.snapToItem?.(0);
-                        }}
-                    >
-                        <Image source={this.props.giveUpImage} style={styles.clearIcon} />
-                    </Pressable>
-                </Animated.View>
-            </Reanimated.View>
-        )
-    }
+              }}
+            >
+              <View style={styles.clearIcon}>
+                <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+              </View>
+            </NativeViewGestureHandler>
+            :
+            <Pressable
+              style={styles.clearIcon}
+              onPress={() => {
+                this.props.snapToItem?.(0);
+                AVService.setFacePasterInfo(this.props.pasterList[0]);
+                this.setState({ pasterSelectedIndex: 0 });
+                // this.props.setFacePasterInfo(this.props.pasterList[0]);
+              }}
+            >
+              <FastImage source={this.props.giveUpImage} style={styles.clearIcon} />
+            </Pressable>}
+        </Animated.View>
+      </Reanimated.View>
+    );
+  }
 }
-
 
 class RenderBigCircle extends Component {
-    constructor(props) {
-        super(props)
-    }
-    shouldComponentUpdate(nextProps) {
-        if (nextProps.pasterList && nextProps.pasterList !== this.props.pasterList) {
-            return true
-        }
-        return false
-    }
-    render() {
+  constructor(props) {
+    super(props);
+    this.state = {
 
-        const { pasterList, scrollPos } = this.props
-        return (
-            <Animated.View
-                style={{
-                    position: 'absolute',
-                    flexDirection: 'row',
-                    left: -(itemWidth - circleSize) / 2,
-                    top: (circleSize - bigImageSize) / 2,
-                    transform: [{ translateX: Animated.multiply(scrollPos, -1) }],
-                }}
+    };
+
+    this.downloadAngle = new Reanimated.Value(0);
+  }
+
+  componentDidMount() {
+    AVService.setFacePasterInfo(this.props.pasterList[0]);
+    AVService.addFacePasterListener((downloadInfo: any) => {
+      const position = downloadInfo?.index;
+      let progress = downloadInfo?.progress;
+      const downloadAngle = progress * 360;
+      console.info("downloadAngle", downloadAngle);
+      this.downloadAngle?.setValue(downloadAngle)
+      if (progress === 1) {
+        this.downloadAngle?.setValue(0)
+        this.props.setLocalType(downloadInfo)
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    AVService.removeFacePasterListener();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.pasterList && nextProps.pasterList !== this.props.pasterList) {
+      return true;
+    }
+    if (nextProps.pasterSelectedIndex !== this.props.pasterSelectedIndex) {
+      return true;
+    }
+    return false;
+  }
+  render() {
+    const { pasterList, scrollPos, pasterSelectedIndex } = this.props;
+    return (
+      <Animated.View
+        style={{
+          position: 'absolute',
+          flexDirection: 'row',
+          left: -(itemWidth - circleSize) / 2,
+          top: (circleSize - bigImageSize) / 2,
+          transform: [{ translateX: Animated.multiply(scrollPos, -1) }],
+        }}
+      >
+
+        {/* TODOWUYQ */}
+        {pasterList.map((i, index) => {
+          return (
+            <View
+              key={index}
+              style={{
+                alignItems: 'center',
+                width: itemWidth,
+              }}
             >
-                {pasterList.map((i, index) => {
-                    return (
-                        <View
-                            key={index}
-                            style={{
-                                alignItems: 'center',
-                                width: itemWidth,
-                            }}
-                        >
-                            <Animated.View
-                                style={[
-                                    styles.propStyle,
-                                    {
-                                        width: bigImageSize,
-                                        height: bigImageSize,
-                                        opacity: 1,
-                                        borderRadius: bigImageSize,
-                                        transform: [
-                                            {
-                                                translateX: scrollPos.interpolate({
-                                                    inputRange: [(index - 1) * itemWidth, index * itemWidth, (index + 1) * itemWidth],
-                                                    outputRange: [
-                                                        (bigImageSize - smallImageSize) / 2,
-                                                        0,
-                                                        -(bigImageSize - smallImageSize) / 2,
-                                                    ],
+              <Animated.View
+                style={[
+                  styles.propStyle,
+                  {
+                    width: bigImageSize,
+                    height: bigImageSize,
+                    opacity: 1,
+                    borderRadius: bigImageSize,
+                    transform: [
+                      {
+                        translateX: scrollPos.interpolate({
+                          inputRange: [(index - 1) * itemWidth, index * itemWidth, (index + 1) * itemWidth],
+                          outputRange: [(bigImageSize - smallImageSize) / 2, 0, -(bigImageSize - smallImageSize) / 2],
 
-                                                    extrapolate: 'clamp',
-                                                }),
-                                            },
-                                        ],
-                                    },
-                                    i.eid == 0 && { backgroundColor: '#fff' },
-                                ]}
-                            >
-                                <Image
-                                    style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
-                                    source={{ uri: i.icon }}
-                                />
-                            </Animated.View>
-                        </View>
-                    );
-                })}
-            </Animated.View>
-        )
-    }
+                          extrapolate: 'clamp',
+                        }),
+                      },
+                    ],
+                  },
+                  i.eid == 0 && { backgroundColor: '#fff' },
+                ]}
+              >
+                <Image
+                  style={{ width: bigImageSize, height: bigImageSize, borderRadius: bigImageSize }}
+                  source={{ uri: i.icon }}
+                />
+
+                {
+                  (this.props.pasterSelectedIndex === index && !i?.isLocalRes) &&
+                  < Reanimated.View
+                    style={{
+                      position: 'absolute',
+                      width: 14,
+                      height: 14,
+                      right: 6,
+                      bottom: 6,
+                    }}>
+                    <ReanimatedArcBase
+                      color='rgba(216,216,216,0.54)'
+                      diameter={14}
+                      width={2.5}
+                      arcSweepAngle={360}
+                      lineCap='round'
+                      rotation={360}
+                      hideSmallAngle={false}
+                      style={styles.absolute}
+                    />
+                    <ReanimatedArcBase
+                      color='#FFF'
+                      diameter={14}
+                      width={2.5}
+                      arcSweepAngle={this.downloadAngle}
+                      lineCap='round'
+                      rotation={360}
+                      hideSmallAngle={false}
+                      style={styles.absolute}
+                    />
+                  </Reanimated.View>
+
+                }
+
+              </Animated.View>
+            </View>
+          );
+        })
+        }
+      </Animated.View >
+    );
+  }
 }
 class RenderChildren extends Component {
-    constructor(props) {
-        super(props)
+  constructor(props) {
+    super(props);
+    this.longPressRef = React.createRef();
 
+    this.isLongPress = false;
+  }
+  shouldComponentUpdate(nextProps) {
+    if (nextProps.pasterList !== this.props.pasterList) {
+      return true;
     }
-    shouldComponentUpdate(nextProps) {
-        if (nextProps.pasterList !== this.props.pasterList) {
-            return true
-        }
-        return false
+    if (nextProps.pasterSelectedIndex !== this.props.pasterSelectedIndex) {
+      return true;
     }
 
-    render() {
-        const { pasterList, scrollPos, captureButtonImage } = this.props
-        return (
+    return false;
+  }
 
-            <Animated.View
-                style={[
-                    styles.captureButtonImage,
-                    { width: circleSize, height: circleSize, borderRadius: circleSize, zIndex: 11 },
-                    {
-                        transform: [{ translateX: Animated.multiply(scrollPos, 1) }],
-                    },
-                ]}
+  render() {
+    const { pasterList, scrollPos, captureButtonImage } = this.props;
+    return (
+      <Animated.View
+        style={[
+          styles.captureButtonImage,
+          { width: circleSize, height: circleSize, borderRadius: circleSize, zIndex: 11 },
+          {
+            transform: [{ translateX: Animated.multiply(scrollPos, 1) }],
+          },
+        ]}
+      >
+        {/* 安卓必须设置 shouldCancelWhenOutside={false}，否则松开后不会返回 State.END */}
+        <LongPressGestureHandler
+          ref={this.longPressRef}
+          shouldCancelWhenOutside={false}
+          onHandlerStateChange={({ nativeEvent }) => {
+            if (nativeEvent.state === State.ACTIVE) {
+              this.isLongPress = true;
+              this.props.longPress();
+            } else if (nativeEvent.state === State.END) {
+              this.isLongPress = false;
+
+              setTimeout(() => {
+                this.props.stopAnimate();
+              }, 0);
+
+            } else {
+              if (this.isLongPress) {
+                this.isLongPress = false;
+                setTimeout(() => {
+                  this.props.stopAnimate();
+                }, 0);
+              }
+            }
+          }}
+          minDurationMs={300}
+          maxDist={30}
+        >
+          <Animated.View
+            style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
+          >
+            <TapGestureHandler
+              shouldCancelWhenOutside={true}
+              onHandlerStateChange={({ nativeEvent }) => {
+                if (nativeEvent.state === State.END) {
+                  this.props.singlePress();
+                }
+              }}
             >
-                <Pressable
-                    style={[{ width: circleSize, height: circleSize, borderRadius: circleSize, overflow: 'hidden' }]}
-                    delayLongPress={500}
-                    // 长按
-                    pressRetentionOffset={{ bottom: 1000, left: 1000, right: 1000, top: 1000 }}
-                    onLongPress={async () => {
-                        // 按钮动画
-                        this.props.longPress()
-                    }}
-                    // 长按结束
-
-                    onPressOut={async () => {
-                        this.props.stopAnimate()
-                    }}
-                    // 单击
-                    onPress={() => {
-
-                        this.props.singlePress()
-
-                    }}
-                >
-
-                    <View style={styles.bigCircleBox}></View>
-                    <RenderBigCircle {...this.props} />
-                </Pressable>
-            </Animated.View>
-
-
-        )
-    }
+              <Animated.View>
+                <View style={styles.bigCircleBox}></View>
+                <RenderBigCircle {...this.props} />
+              </Animated.View>
+            </TapGestureHandler>
+          </Animated.View>
+        </LongPressGestureHandler>
+      </Animated.View>
+    );
+  }
 }
 const RenderItem = React.memo((props) => {
-    const { index, item, snapToItem } = props
-    const toItem = () => {
-        snapToItem?.(index);
-    };
+  const { index, item, snapToItem } = props;
+  const toItem = () => {
+    snapToItem?.(index);
+  };
 
-    return (
-        <Pressable delayLongPress={500} onPress={toItem} >
-            <View >
-                <View style={[styles.propStyle, styles.img]}>
-                    <Image style={styles.img} source={{ uri: item.icon }} />
-                </View>
-            </View>
-        </Pressable>
-    );
-})
+  return (
+    <Pressable delayLongPress={300} onPress={toItem}>
+      <View>
+        <View style={[styles.propStyle, styles.img]}>
+          <Image style={styles.img} source={{ uri: item.icon }} />
+          {!item.isLocalRes && <Image style={{ position: 'absolute', width: 14, height: 14, right: 0, bottom: 0 }} source={require('../../images/ic_story_paster_download.png')} />}
+        </View>
+      </View>
+    </Pressable>
+  );
+});
 class CarouselWrapper extends Component<Props, State> {
-    FlatListRef: any;
-    scrollPos: Animated.Value;
-    constructor(props) {
-        super(props);
-        this.pressLock = false
-        this.FlatListRef = React.createRef();
-        this.scrollPos = new Animated.Value(0);
-        this.state = {
-            pasterList: [],
-        };
-        this.arcAngle = new Reanimated.Value(0)
-        this.ani = null
-        this.startTime = null
-        this.endTime = null
-        this.scaleAnimated = new Reanimated.Value(0)
-    }
-
-    longPress = () => {
-        if (this.pressLock) {
-            return
-        }
-        this.pressLock = true
-        this.startAnimate()
-
-    }
-    singlePress = async () => {
-
-        this.startTime = null
-        if (this.pressLock) {
-            return
-        }
-        this.pressLock = true
-        await this.props.onCaptureImagePressed()
-        setTimeout(() => {
-            this.pressLock = false
-
-        }, 2500);
-    }
-    startAnimate = async () => {
-        try {
-
-            const success = await this.props.camera.current?.startRecording?.();
-
-            if (!success) {
-                this.props.myRef?.current?.show?.('摄像失败,请重试', 2000);
-                this.pressLock = false
-
-                return
-            }
-            this.startTime = Date.now()
-
-            Reanimated.timing(this.scaleAnimated, {
-                toValue: 1,
-                easing: Easing.inOut(Easing.quad),
-                duration: 200,
-            }).start(({ finished }) => {
-                if (finished) {
-                    this.ani = Reanimated.timing(this.arcAngle, {
-                        toValue: 360,
-                        easing: Easing.linear,
-                        duration: 1000 * 15,
-                    })
-                    this.ani.start(({ finished }) => {
-                        if (finished) {
-                            this.endTime = Date.now()
-                            this.shotCamera()
-                        }
-                    })
-                }
-            })
-        } catch (e) {
-            console.info(e, 'eeee')
-        }
-
-    }
-    shotCamera = async () => {
-
-        const videoPath = await this.props.camera.current?.stopRecording?.();
-        this.ani.stop()
-        setTimeout(() => {
-            this.reset()
-        }, 0);
-        setTimeout(() => {
-            this.props.setShootData({
-                fileType: 'video',
-                videoPath,
-                ShootSuccess: true
-            });
-        }, 100);
-        setTimeout(() => {
-            this.pressLock = false
-        }, 2500);
-
-    }
-    reset = () => {
-        this.ani.stop()
-        this.arcAngle.setValue(0)
-        this.startTime = null
-        this.endTime = null
-        Reanimated.timing(this.scaleAnimated, {
-            toValue: 0,
-            easing: Easing.inOut(Easing.quad),
-            duration: 200,
-        }).start()
-    }
-    stopAnimate = async () => {
-        if (!this.startTime) {
-            this.pressLock = false
-        }
-        this.endTime = Date.now()
-
-        // if (this.endTime - this.startTime < 2 * 1000) {
-        //     this.reset()
-        //     console.info(this.props.myRef, 'hahah')
-        //     await this.props.camera.current?.stopRecording?.();
-
-        //     this.props.myRef.current?.show?.('时间小于2秒，请重新拍摄', 2000);
-        //     this.pressLock = false
-        //     return
-        // }
-        this.shotCamera()
-
-        // 在这里做结算
-    }
-    componentDidMount() {
-        this.getPasterInfos()
-        setTimeout(() => {
-            AVService.enableHapticIfExist()
-        }, 2000);
-
-    }
-    shouldComponentUpdate(nextProps, nextState) {
-        const stateUpdated = stateAttrsUpdate.some(key => nextState[key] !== this.state[key]);
-        if (stateUpdated) {
-            setTimeout(() => {
-                AVService.enableHapticIfExist()
-            }, 3000);
-            return true;
-        }
-        return false
-    }
-
-    getPasterInfos = async () => {
-        const pasters = await AVService.getFacePasterInfos({});
-        pasters.forEach((item, index) => {
-            if (index == 0) {
-                return
-            }
-            item.icon = item.icon.replace('http://', 'https://');
-            item.url = item.url.replace('http://', 'https://');
-        })
-        pasters.unshift({ eid: 0 });
-        this.setState({
-            pasterList: pasters,
-        });
-    }
-
-
-    _scrollInterpolator = (index, carouselProps) => {
-        const range = [3, 2, 1, 0, -1, -2, -3]; // <- Remember that this has to be declared in a reverse order
-        const inputRange = getInputRangeFromIndexes(range, index, carouselProps);
-        const outputRange = range;
-        return { inputRange, outputRange };
+  FlatListRef: any;
+  scrollPos: Animated.Value;
+  constructor(props) {
+    super(props);
+    this.pressLock = false;
+    this.FlatListRef = React.createRef();
+    this.scrollPos = new Animated.Value(0);
+    this.state = {
+      pasterList: [],
+      pasterSelectedIndex: 0,
+      // 录制状态  0：未录制 \完成录制  1：录制中  2：暂停录制
+      recordType: 0,
+      multiRecordAngle: [],
     };
-    _animatedStyles(index, animatedValue, carouselProps) {
-        return {
-            opacity: animatedValue.interpolate({
-                inputRange: [2, 3],
-                outputRange: [1, 2],
+    this.arcAngle = new Reanimated.Value(0);
+    this.ani = null;
+    this.startTime = null;
+    this.endTime = null;
+    this.recordTime = 0;
+    this.multiRecordTimeArray = [];
+    this.isStopAnimated = false;
+    this.scaleAnimated = new Reanimated.Value(0);
+  }
 
-                extrapolate: 'clamp',
-            }),
-            transform: [
-                {
-                    translateX: animatedValue.interpolate({
-                        inputRange: [-3, -2, -1, 0, 1, 2, 3],
-                        outputRange: [1.5 * smallImageSize, 0, 0, 0, 0, 0, -1.5 * smallImageSize],
-                        extrapolate: 'clamp',
-                    }),
-                },
-                {
-                    scale: animatedValue.interpolate({
-                        inputRange: [-3, -2, -1, 0, 1, 2, 3],
-                        outputRange: [0, 0.5, 0.8, 1, 0.8, 0.5, 0],
-                        extrapolate: 'clamp',
-                    }),
-                },
-                {},
-            ],
-        };
+  longPress = () => {
+
+    this.setState({ recordType: 1 });
+
+    if (this.pressLock) {
+      return;
     }
-    snapToItem = (data) => {
-        this.FlatListRef?.snapToItem?.(data)
+    this.pressLock = true;
+    this.startAnimate();
+  };
+  singlePress = async () => {
+    this.startTime = null;
+    if (this.pressLock) {
+      return;
     }
-    selectionAsync = () => {
-        if (this.props.enableCount.count < 5) {
-            AVService.enableHapticIfExist()
-            this.props.enableCount.count += 1
+    this.pressLock = true;
+    await this.props.onCaptureImagePressed();
+    setTimeout(() => {
+      this.pressLock = false;
+    }, 2500);
+  };
+  startAnimate = async () => {
+    this.isStopAnimated = false;
+    try {
+
+      if (!this.multiRecordTimeArray || !this.multiRecordTimeArray?.length) {
+        this.props.camera.current?.deleteAllMultiRecording?.();
+      }
+
+      const success = await this.props.camera.current?.startMultiRecording?.();
+      this.props.hideBottomTools();
+      if (!success) {
+        this.props.myRef?.current?.show?.(`${I18n.t('Camera_failed_please_try_again')}`, 2000);
+        this.pressLock = false;
+
+        return;
+      }
+      this.startTime = Date.now();
+      let recordAngle = this.recordTime / 15000.0 * 360;
+      if (recordAngle === 90 || recordAngle === 180 || recordAngle === 270) {
+        recordAngle += 0.1;
+      }
+      this.arcAngle?.setValue(recordAngle);
+      this.ani = Reanimated.timing(this.arcAngle, {
+        toValue: 360,
+        easing: EasingNode.linear,
+        duration: 1000 * (15 - this.recordTime / 1000.0),
+      });
+      this.ani.start(({ finished }) => {
+        if (finished) {
+          this.stopAnimate();
         }
-        this.props.haptics?.selectionAsync()
+      });
+
+      Reanimated.timing(this.scaleAnimated, {
+        toValue: 1,
+        easing: EasingNode.inOut(EasingNode.quad),
+        duration: 200,
+      }).start(({ finished }) => {
+      });
+    } catch (e) {
 
     }
-    render() {
-        const { pasterList } = this.state;
-        return (
-            <View style={{ justifyContent: "center" }}>
-                <TopReset {...this.props} snapToItem={this.snapToItem} scrollPos={this.scrollPos} scaleAnimated={this.scaleAnimated} />
-                <Reanimated.View style={{
-                    transform: [
-                        {
-                            scale: this.scaleAnimated.interpolate({
-                                inputRange: [0, 0.00001, 1],
-                                outputRange: [1, 0, 0],
-                                extrapolate: "clamp"
-                            })
-                        }
-                    ]
-                }}>
-                    <Carousel
-                        ref={(flatList) => {
-                            this.FlatListRef = flatList;
-                        }}
-                        lockScrollWhileSnapping={true}
-                        snapToInterval={itemWidth}
-                        impactAsync={this.selectionAsync}
-                        enableMomentum={true}
-                        scrollInterpolator={this._scrollInterpolator}
-                        slideInterpolatedStyle={this._animatedStyles}
-                        enableSnap={true}
-                        data={pasterList}
-                        decelerationRate={'normal'}
-                        swipeThreshold={1}
-                        itemWidth={itemWidth}
-                        inactiveSlideOpacity={1}
-                        scrollPos={this.scrollPos}
-                        sliderWidth={width}
+  };
+  shotCamera = async (recordingTime) => {
 
-                        slideStyle={{ justifyContent: 'center', alignItems: 'center' }}
-                        contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
-                        useScrollView={true}
-                        onSnapToItem={(slideIndex = 0) => {
-                            this.props.setFacePasterInfo(pasterList[slideIndex])
+    this.recordTime += recordingTime;
 
-                        }}
-                        renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
-                    >
-                        <RenderChildren {...this.props} pasterList={pasterList} scrollPos={this.scrollPos}
-                            longPress={this.longPress}
-                            singlePress={this.singlePress}
-                            startAnimate={this.startAnimate}
-                            stopAnimate={this.stopAnimate} />
+    this.multiRecordTimeArray.push(this.recordTime);
 
-                    </Carousel>
-                </Reanimated.View>
+    this.props.showBottomTools(2);
 
-                <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} />
+    this.pressLock = false;
 
-                {/* 临时方案  安卓 拍摄不会触发 */}
-            </View>
-        );
+    const videoPath = await this.props.camera.current?.stopMultiRecording?.();
+  };
+  reset = () => {
+    // this.ani?.stop();
+    this.arcAngle?.setValue(0);
+    this.startTime = null;
+    this.endTime = null;
+    Reanimated.timing(this.scaleAnimated, {
+      toValue: 0,
+      easing: EasingNode.inOut(EasingNode.quad),
+      duration: 200,
+    }).start();
+  };
+  stopAnimate = async () => {
+    if (this.isStopAnimated) {
+      return
+    }
+    this.endTime = Date.now();
+    const recordingTime = this.endTime - this.startTime;
+
+    if (recordingTime < 100) {
+      setTimeout(() => {
+        try {
+          this.ani?.stop();
+        } catch {
+        }
+      }, 100);
+    } else {
+      try {
+        this.ani?.stop();
+      } catch {
+      }
     }
 
+    this.isStopAnimated = true;
+
+    if (!this.startTime) {
+      this.pressLock = false;
+    }
+
+    setTimeout(() => {
+      this.shotCamera(recordingTime);
+
+      let recordAngle = this.recordTime / 15000.0 * 360;
+      let angleArray = this.state.multiRecordAngle.concat();
+      angleArray.push(recordAngle);
+
+      this.arcAngle?.setValue(angleArray);
+
+      this.setState({ recordType: 2, multiRecordAngle: angleArray });
+    }, 0);
+
+  };
+
+
+  /**
+   * 获取录制状态
+   */
+  getMultiType = () => {
+    return this.state.recordType;
+  }
+
+  /**
+   * 删除最近录制片段，如果只有一段，那么删除后退出录制状态
+   */
+  deleteLastMultiRecording = async () => {
+    this.props.camera.current?.deleteLastMultiRecording?.();
+    if (!!this.multiRecordTimeArray) {
+      if (this.multiRecordTimeArray.length > 1) {
+        this.multiRecordTimeArray.pop();
+        this.recordTime = this.multiRecordTimeArray[this.multiRecordTimeArray.length - 1];
+        const recordAngle = this.recordTime / 15000.0 * 360;
+        this.arcAngle?.setValue(recordAngle);
+
+        let angleArray = this.state.multiRecordAngle.concat();
+        angleArray.pop();
+        this.setState({ multiRecordAngle: angleArray });
+      } else {
+        this.stopMulti();
+      }
+    }
+  }
+
+  stopMulti = async () => {
+    this.multiRecordTimeArray = [];
+    this.recordTime = 0;
+    this.arcAngle?.setValue(0);
+
+    this.props.showBottomTools();
+    this.setState({ recordType: 0, multiRecordAngle: [] });
+    this.reset();
+    this.pressLock = false;
+    this.props.camera.current?.deleteAllMultiRecording?.();
+  }
+
+  /**
+   * 合成所有片段，并且进入编辑
+   */
+  finishMultiRecording = async () => {
+    const videoPath = await this.props.camera.current?.finishMultiRecording?.();
+
+    this.props.setShootData({
+      fileType: 'video',
+      videoPath,
+      ShootSuccess: true,
+    });
+    this.stopMulti();
+  }
+
+
+  handleAppStateChange = (e) => {
+    if (this.props.isDrawerOpen && this.props.type === 'story') {
+      if (e.match(/inactive|background/)) {
+        if (this.pressLock) {
+          this.ani.stop();
+          this.reset();
+          this.pressLock = false;
+        }
+      } else {
+        this.startAnimate;
+      }
+    }
+  };
+  componentDidMount() {
+    AppState.addEventListener('change', this.handleAppStateChange);
+    this.getPasterInfos();
+    setTimeout(() => {
+      AVService.enableHapticIfExist();
+    }, 2000);
+  }
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this.handleAppStateChange);
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.pasterSelectedIndex !== nextState.pasterSelectedIndex) {
+      return true;
+    }
+    if (this.state.pasterList !== nextState.pasterList) {
+      return true;
+    }
+
+    if (nextState.multiRecordAngle?.length && this.state.multiRecordAngle !== nextState.multiRecordAngle) {
+      return true;
+    }
+
+    if (this.props.stopMulti !== nextProps.stopMulti) {
+      this.stopMulti();
+    }
+
+    if (this.state.recordType !== nextState.recordType) {
+      this.props.setMultiType(nextState.recordType);
+      return true;
+    }
+
+    const stateUpdated = stateAttrsUpdate.some((key) => nextState[key] !== this.state[key]);
+    if (stateUpdated) {
+      setTimeout(() => {
+        AVService.enableHapticIfExist();
+      }, 3000);
+      return true;
+    }
+    return false;
+  }
+
+  getPasterInfos = async () => {
+    const pasters = await AVService.getFacePasterInfos({});
+    pasters.forEach((item, index) => {
+      if (item.icon) {
+        item.icon = item.icon.replace('http://', 'https://');
+      }
+      if (item.url) {
+        item.url = item.url.replace('http://', 'https://');
+      }
+    });
+    pasters.unshift({ index: 0, eid: 0, isLocalRes: true });
+    this.setState({
+      pasterList: pasters,
+    });
+  };
+
+  _scrollInterpolator = (index, carouselProps) => {
+    const range = [3, 2, 1, 0, -1, -2, -3]; // <- Remember that this has to be declared in a reverse order
+    const inputRange = getInputRangeFromIndexes(range, index, carouselProps);
+    const outputRange = range;
+    return { inputRange, outputRange };
+  };
+  _animatedStyles(index, animatedValue, carouselProps) {
+    return {
+      opacity: animatedValue.interpolate({
+        inputRange: [2, 3],
+        outputRange: [1, 2],
+
+        extrapolate: 'clamp',
+      }),
+      transform: [
+        {
+          translateX: animatedValue.interpolate({
+            inputRange: [-3, -2, -1, 0, 1, 2, 3],
+            outputRange: [1.5 * smallImageSize, 0, 0, 0, 0, 0, -1.5 * smallImageSize],
+            extrapolate: 'clamp',
+          }),
+        },
+        {
+          scale: animatedValue.interpolate({
+            inputRange: [-3, -2, -1, 0, 1, 2, 3],
+            outputRange: [0, 0.5, 0.8, 1, 0.8, 0.5, 0],
+            extrapolate: 'clamp',
+          }),
+        },
+        {},
+      ],
+    };
+  }
+  snapToItem = (data) => {
+    this.FlatListRef?.snapToItem?.(data);
+  };
+  selectionAsync = () => {
+    if (this.props.enableCount.count < 5) {
+      AVService.enableHapticIfExist();
+      this.props.enableCount.count += 1;
+    }
+    this.props.haptics?.selectionAsync();
+  };
+
+  /**
+   * 
+   */
+  setLocalType = (downloadInfo) => {
+    //{"index": 43, "progress": 1}
+    const position = downloadInfo?.index;
+    const todoList = [...this.state.pasterList];   //浅拷贝一下
+    const list = todoList.map((item, key) => {
+      return key == position ? { ...item, isLocalRes: true } : item;
+    })
+    this.setState({
+      pasterList: list
+    });
+
+  };
+
+  render() {
+    const { pasterList, pasterSelectedIndex } = this.state;
+
+    let firstItem = pasterList.findIndex((i) => {
+      return this.props.facePasterInfo.id === i.id;
+    });
+    if (firstItem === -1) {
+      firstItem = 0;
+    }
+    if (!pasterList.length) return null;
+    return (
+      <View style={{ justifyContent: 'center', position: 'relative' }}>
+        <TopReset
+          {...this.props}
+          snapToItem={this.snapToItem}
+          scrollPos={this.scrollPos}
+          scaleAnimated={this.scaleAnimated}
+          pasterList={pasterList}
+        />
+        <Reanimated.View
+          style={{
+            transform: [
+              {
+                scale: interpolateNode(this.scaleAnimated, {
+                  inputRange: [0, 0.00001, 1],
+                  outputRange: [1, 0, 0],
+                  extrapolate: 'clamp',
+                }),
+              },
+            ],
+            zIndex: 200,
+          }}
+        >
+          <Carousel
+            ref={(flatList) => {
+              this.FlatListRef = flatList;
+            }}
+            lockScrollWhileSnapping={true}
+            snapToInterval={itemWidth}
+            impactAsync={this.selectionAsync}
+            enableMomentum={true}
+            scrollInterpolator={this._scrollInterpolator}
+            slideinterpolateNodedStyle={this._animatedStyles}
+            enableSnap={true}
+            data={pasterList}
+            decelerationRate={'normal'}
+            swipeThreshold={1}
+            firstItem={firstItem}
+            itemWidth={itemWidth}
+            inactiveSlideOpacity={1}
+            scrollPos={this.scrollPos}
+            sliderWidth={width}
+            slideStyle={{ justifyContent: 'center', alignItems: 'center' }}
+            contentContainerCustomStyle={{ height: 120, justifyContent: 'center', alignItems: 'center' }}
+            useScrollView={true}
+            onSnapToItem={(slideIndex = 0) => {
+              // this.props.setFacePasterInfo(pasterList[slideIndex]);
+              AVService.setFacePasterInfo(pasterList[slideIndex]);
+              this.setState({ pasterSelectedIndex: slideIndex });
+            }}
+            renderItem={(props) => <RenderItem {...props} snapToItem={this.snapToItem} />}
+          >
+
+            <RenderChildren
+              {...this.props}
+              setLocalType={this.setLocalType}
+              pasterList={pasterList}
+              pasterSelectedIndex={pasterSelectedIndex}
+              scrollPos={this.scrollPos}
+              longPress={this.longPress}
+              singlePress={this.singlePress}
+              startAnimate={this.startAnimate}
+              stopAnimate={this.stopAnimate}
+            />
+          </Carousel>
+        </Reanimated.View>
+
+        {/* TODOWUYQ */}
+        {this.state.recordType !== 0 &&
+          <CircleProgress scale={this.scaleAnimated} arcAngle={this.arcAngle} longPress={this.longPress}
+            singlePress={this.singlePress}
+            startAnimate={this.startAnimate}
+            stopAnimate={this.stopAnimate}
+            deleteLastMultiRecording={this.deleteLastMultiRecording}
+            finishMultiRecording={this.finishMultiRecording}
+            multiRecordAngle={this.state.multiRecordAngle}
+            recordType={this.state.recordType}
+          />
+        }
+      </View>
+    );
+  }
 }
-const ClMapStateToProps = state => ({
-    // facePasterInfo: state.shootStory.facePasterInfo,
+const ClMapStateToProps = (state) => ({
+  facePasterInfo: state.shootStory.facePasterInfo,
 });
-const ClMapDispatchToProps = dispatch => ({
-    setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
-
+const ClMapDispatchToProps = (dispatch) => ({
+  setFacePasterInfo: (params) => dispatch(setFacePasterInfo(params)),
 });
-export default connect(ClMapStateToProps, ClMapDispatchToProps)(CarouselWrapper)
+export default connect(ClMapStateToProps, ClMapDispatchToProps)(CarouselWrapper);
 const styles = StyleSheet.create({
-    bottomButtons: {
-        flex: 1,
-        overflow: "visible",
-        zIndex: 100
-    },
-    textStyle: {
-        color: 'white',
-        fontSize: 20,
-    },
-    ratioBestText: {
-        color: 'white',
-        fontSize: 18,
-    },
-    ratioText: {
-        color: '#ffc233',
-        fontSize: 18,
-    },
-    BottomBox: {
+  bottomButtons: {
+    flex: 1,
+    overflow: 'visible',
+    zIndex: 100,
+  },
+  textStyle: {
+    color: 'white',
+    fontSize: 20,
+  },
+  ratioBestText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  ratioText: {
+    color: '#ffc233',
+    fontSize: 18,
+  },
+  BottomBox: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
 
+  cameraContainer: {
+    ...Platform.select({
+      android: {
+        // position: 'absolute',
+        top: 0,
+        left: 0,
+        width,
+        height,
+      },
+      default: {
         flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-    },
-
-    cameraContainer: {
-        ...Platform.select({
-            android: {
-                // position: 'absolute',
-                top: 0,
-                left: 0,
-                width,
-                height,
-            },
-            default: {
-                flex: 1,
-                flexDirection: 'column',
-            },
-        }),
-    },
-    bottomButton: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-    },
-    bottomContainerGap: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        padding: 10,
-    },
-    gap: {
-        flex: 10,
         flexDirection: 'column',
-    },
+      },
+    }),
+  },
+  bottomButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  bottomContainerGap: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 10,
+  },
+  gap: {
+    flex: 10,
+    flexDirection: 'column',
+  },
 
-    videoTitle: {
-        fontSize: 13,
-        color: '#7E7E7E',
-        lineHeight: 18,
-        fontWeight: '500',
-        position: 'absolute',
-        right: 60,
-    },
-    snapshotTitle: {
-        fontSize: 13,
-        lineHeight: 18,
-        color: '#FFFFFF',
-    },
-    snapshotMuse: {
-        fontSize: 13,
-        lineHeight: 18,
-        color: '#FFFFFF',
-        marginHorizontal: 30,
-    },
-    switchScreen: {},
-    musicIcon: {
-        width: 28,
-        height: 28,
-    },
-    leftIconBox: {
-        position: 'absolute',
-        top: height * 0.35,
-        left: 20,
-        zIndex: 99,
-    },
-    beautifyIcon: {
-        width: 28,
-        height: 28,
-        marginTop: 30,
-    },
-    closeBox: {
-        position: 'absolute',
-        top: height * 0.05,
-        left: 20,
-        zIndex: 99,
-    },
-    closeIcon: {
-        width: 28,
-        height: 28,
-    },
-    beautifyBoxHead: {
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: 15,
-        paddingBottom: 26,
-    },
-    beautifyTitle: {
-        fontSize: 15,
-        fontWeight: '500',
-        color: '#fff',
-        lineHeight: 21,
-    },
-    beautyAdjustIcon: {
-        width: 20,
-        height: 16,
-    },
-    beautifyBoxContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    beautifySelect: {
-        width: 48,
-        height: 48,
-        backgroundColor: ' rgba(69, 69, 73, 0.7)',
-        borderRadius: 9,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    beautifySelectTitle: {
-        fontSize: 20,
-        fontWeight: '500',
-        color: '#fff',
-        lineHeight: 28,
-    },
-    beautifySelecin: {
-        borderWidth: 2,
-        borderColor: '#836BFF',
-    },
-    progress: {
-        margin: 10,
-    },
+  videoTitle: {
+    fontSize: 13,
+    color: '#7E7E7E',
+    lineHeight: 18,
+    fontWeight: '500',
+    position: 'absolute',
+    right: 60,
+  },
+  snapshotTitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#FFFFFF',
+  },
+  snapshotMuse: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#FFFFFF',
+    marginHorizontal: 30,
+  },
+  switchScreen: {},
+  musicIcon: {
+    width: 28,
+    height: 28,
+  },
+  leftIconBox: {
+    position: 'absolute',
+    top: height * 0.35,
+    left: 20,
+    zIndex: 99,
+  },
+  beautifyIcon: {
+    width: 28,
+    height: 28,
+    marginTop: 30,
+  },
+  closeBox: {
+    position: 'absolute',
+    top: height * 0.05,
+    left: 20,
+    zIndex: 99,
+  },
+  closeIcon: {
+    width: 28,
+    height: 28,
+  },
+  beautifyBoxHead: {
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 15,
+    paddingBottom: 26,
+  },
+  beautifyTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#fff',
+    lineHeight: 21,
+  },
+  beautyAdjustIcon: {
+    width: 20,
+    height: 16,
+  },
+  beautifyBoxContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  beautifySelect: {
+    width: 48,
+    height: 48,
+    backgroundColor: ' rgba(69, 69, 73, 0.7)',
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  beautifySelectTitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#fff',
+    lineHeight: 28,
+  },
+  beautifySelecin: {
+    borderWidth: 2,
+    borderColor: '#836BFF',
+  },
+  progress: {
+    margin: 10,
+  },
 
-    uploadBox: {
-        width: 130,
-        height: 40,
-        borderRadius: 22,
-        backgroundColor: '#fff',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    uploadTitle: {
-        fontWeight: '500',
-        fontSize: 13,
-        color: '#000',
-        lineHeight: 18,
-    },
-    UpdateBox: {
-        position: 'absolute',
-        zIndex: 99,
-        top: 20,
-    },
-    updateTopIcon: {
-        width: 40,
-        height: 40,
-        marginRight: 10,
-    },
-    filterLensSelectTitle: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#fff',
-        lineHeight: 18,
-    },
-    startShootAnnulus: {
-        backgroundColor: 'rgba(255,255,255,0.5)',
-        borderRadius: 122,
-        position: 'absolute',
-    },
-    captureButton: {
-        width: 49,
-        height: 49,
-        backgroundColor: '#fff',
-        borderRadius: 49,
-        position: 'absolute',
-    },
-    captureButtonContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        position: 'absolute',
-        bottom: 0,
-    },
-    captureButtonImage: {
-        position: 'absolute',
-        left: itemWidth * 2 + (itemWidth - circleSize) / 2,
-        zIndex: -11,
-        elevation: 1,
-        // top: -(circleSize - smallImageSize) / 2,
-    },
-    slider: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        zIndex: 99,
-        elevation: 10,
-    },
-    startShootBox: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-        left: captureIcon2,
-    },
+  uploadBox: {
+    width: 130,
+    height: 40,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadTitle: {
+    fontWeight: '500',
+    fontSize: 13,
+    color: '#000',
+    lineHeight: 18,
+  },
+  UpdateBox: {
+    position: 'absolute',
+    zIndex: 99,
+    top: 20,
+  },
+  updateTopIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+  },
+  filterLensSelectTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#fff',
+    lineHeight: 18,
+  },
+  startShootAnnulus: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 122,
+    position: 'absolute',
+  },
+  captureButton: {
+    width: 49,
+    height: 49,
+    backgroundColor: '#fff',
+    borderRadius: 49,
+    position: 'absolute',
+  },
+  captureButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 0,
+  },
+  captureButtonImage: {
+    position: 'absolute',
+    left: itemWidth * 2 + (itemWidth - circleSize) / 2,
+    zIndex: -11,
+    elevation: 1,
+    // top: -(circleSize - smallImageSize) / 2,
+  },
+  slider: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    display: 'flex',
+    zIndex: 99,
+    elevation: 10,
+  },
+  startShootBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    left: captureIcon2,
+  },
 
-    propStyle: {
-        backgroundColor: '#334',
-        opacity: 0.8,
-    },
-    clearIcon: {
-        width: 32,
-        height: 32,
-    },
-    clearBox: {
-        alignItems: "center",
-        position: "absolute",
-        zIndex: 1,
-        top: -32,
-        left: (width - 32) / 2
-    },
-    img:
-    {
-        width: smallImageSize,
-        height: smallImageSize,
-        borderRadius: smallImageSize
-    },
-    bigCircleBox: {
-        width: circleSize,
-        height: circleSize,
-        zIndex: 1,
-        borderRadius: circleSize,
-        borderWidth: 4,
-        borderColor: "white"
-    }
+  propStyle: {
+    backgroundColor: '#000',
+    opacity: 0.8,
+    position: 'relative'
+  },
+  clearIcon: {
+    width: 32,
+    height: 32,
+  },
+  clearBox: {
+    alignItems: 'center',
+    position: 'absolute',
+    zIndex: 1,
+    top: -32,
+    left: (width - 32) / 2,
+  },
+  img: {
+    width: smallImageSize,
+    height: smallImageSize,
+    borderRadius: smallImageSize,
+  },
+  bigCircleBox: {
+    width: circleSize,
+    height: circleSize,
+    zIndex: 1,
+    borderRadius: circleSize,
+    borderWidth: 4,
+    borderColor: 'white',
+  },
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
+    height: '100%'
+  },
 });

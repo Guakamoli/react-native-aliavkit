@@ -12,6 +12,13 @@ import java.util.Map;
 
 public class FileDownloaderModel implements Serializable {
 
+    /**
+     * 是否下载到了本地 0：否  1：是
+     */
+    public int isDbContain = 0;
+
+
+
     public final static String TASK_ID = "task_id";//主键
     public final static String ID = "id";//组id
     public final static String NAME = "name";//资源名称
@@ -19,7 +26,6 @@ public class FileDownloaderModel implements Serializable {
     public final static String URL = "url";
     public final static String PATH = "path";
     public final static String ISUNZIP = "isunzip";
-
     /**
      * imv
      */
@@ -44,9 +50,9 @@ public class FileDownloaderModel implements Serializable {
      * 字体
      */
     public final static String CNNAME = "cnname";
-//    public final static String LEVEL = "level";
+    //    public final static String LEVEL = "level";
     public final static String CATEGORY = "category";
-//    public final static String MD5 = "md5";
+    //    public final static String MD5 = "md5";
     public final static String BANNER = "banner";
     public final static String ICON = "icon";
 //    public final static String SORT = "sort";
@@ -457,7 +463,7 @@ public class FileDownloaderModel implements Serializable {
         }
         for (Map.Entry<String, String> entry : extFieldMap.entrySet()) {
             String key = entry.getKey();
-            if ( key == null ) {
+            if (key == null) {
                 continue;
             }
 
@@ -468,7 +474,7 @@ public class FileDownloaderModel implements Serializable {
     }
 
     public void putExtField(String key, String value) {
-        if ( key == null ) {
+        if (key == null) {
             return;
         }
         if (value == null) {
@@ -491,7 +497,7 @@ public class FileDownloaderModel implements Serializable {
         }
         for (Map.Entry<String, String> entry : extFieldMap.entrySet()) {
             String key = entry.getKey();
-            if ( key == null ) {
+            if (key == null) {
                 continue;
             }
             String value = cursor.getString(cursor.getColumnIndex(key));
@@ -506,5 +512,41 @@ public class FileDownloaderModel implements Serializable {
             return model.getTaskId() == getTaskId();
         }
         return false;
+    }
+
+    public int getIsDbContain() {
+        return isDbContain;
+    }
+
+    public void setIsDbContain(int isDbContain) {
+        this.isDbContain = isDbContain;
+    }
+
+    public int getIsunzip() {
+        return isunzip;
+    }
+
+    public int getSubqueffectype() {
+        return subqueffectype;
+    }
+
+    public void setSubqueffectype(int subqueffectype) {
+        this.subqueffectype = subqueffectype;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public ContentValues getExtFieldCv() {
+        return extFieldCv;
+    }
+
+    public void setExtFieldCv(ContentValues extFieldCv) {
+        this.extFieldCv = extFieldCv;
     }
 }

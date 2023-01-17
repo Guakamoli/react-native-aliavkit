@@ -19,6 +19,7 @@
 #import "AliyunPhotoLibraryManager.h"
 #import "ShortCut.h"
 #import "BeautyEngineManager.h"
+#import <AliyunVideoSDKPro/AliyunNativeParser.h>
 
 @implementation RCTConvert(CKCameraType)
 
@@ -84,11 +85,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 @property (nonatomic, strong) AliCameraAction *cameraAction;
 
+@property (nonatomic) NSString* filterPath;
 @property (nonatomic) NSUInteger normalBeautyLevel;
 @property (nonatomic, copy) RCTBubblingEventBlock onRecordingProgress;
 
 @property (nonatomic, strong) NSDictionary *facePasterInfo;
 @property (nonatomic, strong) NSDictionary *cameraStyle;
+@property (nonatomic, copy) NSDictionary *mediaInfo;
+@property (nonatomic) BOOL isStartPreview;
 @end
 
 @implementation CKCamera
@@ -102,11 +106,14 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+        [self destroyRecorder];
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    }else{
+        
     }
 }
 
@@ -120,7 +127,8 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
                 [self addSubview:self.cameraAction.cameraPreview];
             }
             [self.cameraAction startPreview];
-            [self.cameraAction deletePreviousEffectPaster];
+            [self.cameraAction addNotification];
+//            [self.cameraAction deletePreviousEffectPaster];
             [self setupDefault];
             [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
         }
@@ -131,9 +139,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
             [self.cameraAction stopRecordVideo:nil];
         }
         [self.cameraAction stopPreview];
-        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
-            [self.cameraAction.cameraPreview removeFromSuperview];
-        }
+        [self.cameraAction removeNotification];
+        [self destroyRecorder];
+        
+//        if ([self.subviews containsObject:self.cameraAction.cameraPreview]) {
+//            [self.cameraAction.cameraPreview removeFromSuperview];
+//        }
         _isPresented = NO;
         [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     }
@@ -149,6 +160,19 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 
 - (void)setupDefault
 {
+    CGSize outputSize = [RCTConvert CGSize:_mediaInfo[@"outputSize"]];
+    if (outputSize.width != 0 && outputSize.height != 0 ) {
+        self.cameraAction.mediaConfig.outputSize = outputSize;
+    }
+    if ([_mediaInfo objectForKey:@"minDuration"]) {
+        CGFloat minDuration = [RCTConvert CGFloat:_mediaInfo[@"minDuration"]];
+        self.cameraAction.mediaConfig.minDuration = minDuration;
+    }
+    if ([_mediaInfo objectForKey:@"maxDuration"]) {
+        CGFloat maxDuration = [RCTConvert CGFloat:_mediaInfo[@"maxDuration"]];
+        self.cameraAction.mediaConfig.maxDuration = maxDuration;
+    }
+    
     self.cameraAction.normalBeautyLevel = _normalBeautyLevel;
     [self changeCamera:_cameraType];
     if (self.cameraAction.devicePositon == AVCaptureDevicePositionBack) {
@@ -171,13 +195,46 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 }
 
 #pragma mark - Setter
+/*
+ {
+   "outputSize": { "width": 1080, "height": 1920 },
+   "minDuration": 0.5,
+   "maxDuration": 30.0
+ }
+ */
+- (void)setMediaInfo:(NSDictionary *)mediaInfo
+{
+    if (_mediaInfo != mediaInfo && ![mediaInfo isEqualToDictionary:@{}]) {
+        CGSize outputSize = [RCTConvert CGSize:mediaInfo[@"outputSize"]];
+        if (outputSize.width != 0 && outputSize.height != 0 ) {
+            self.cameraAction.mediaConfig.outputSize = outputSize;            
+        }
+        if ([mediaInfo objectForKey:@"minDuration"]) {
+            CGFloat minDuration = [RCTConvert CGFloat:mediaInfo[@"minDuration"]];
+            self.cameraAction.mediaConfig.minDuration = minDuration;
+        }
+        if ([mediaInfo objectForKey:@"maxDuration"]) {
+            CGFloat maxDuration = [RCTConvert CGFloat:mediaInfo[@"maxDuration"]];
+            self.cameraAction.mediaConfig.maxDuration = maxDuration;
+        }
+        _mediaInfo = mediaInfo;
+    }
+}
 
 - (void)setCameraStyle:(NSDictionary *)cameraStyle
 {
     if (cameraStyle != _cameraStyle && ![cameraStyle isEqualToDictionary:@{}]) {
-        CGFloat previewWidth = [[cameraStyle valueForKey:@"width"] floatValue];
-        CGFloat previewHeight = [[cameraStyle valueForKey:@"height"] floatValue];
+        CGFloat previewWidth = [[cameraStyle objectForKey:@"width"] floatValue];
+        CGFloat previewHeight = [[cameraStyle objectForKey:@"height"] floatValue];
         self.cameraAction = [[AliCameraAction alloc] initWithPreviewFrame:CGRectMake(0, 0, previewWidth, previewHeight)];
+    }
+}
+
+- (void)setFilterPath:(NSString*)filterPath
+{
+    if (filterPath != _filterPath) {
+        _filterPath = filterPath;
+        [self.cameraAction setFilterPath:filterPath];
     }
 }
 
@@ -195,6 +252,16 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         _cameraType = cameraType;
         [self changeCamera:cameraType];
     }
+}
+
+- (void)setIsStartPreview:(BOOL)startPreview
+{
+//    if (startPreview != _isStartPreview) {
+//        _isStartPreview = startPreview;
+//        if(startPreview){
+//            [self.cameraAction resumeCamera];
+//        }
+//    }
 }
 
 - (void)changeCamera:(AVCaptureDevicePosition)preferredPosition
@@ -268,12 +335,12 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
     AliyunPasterInfo *info = [[AliyunPasterInfo alloc] initWithDict:options];
     
     //handle for local resource
-    NSString *bundlePath = [options valueForKey:@"bundlePath"];
+    NSNumber *index = [options objectForKey:@"index"];
+    NSString *bundlePath = [options objectForKey:@"bundlePath"];
     if (bundlePath) {
         info = [[AliyunPasterInfo alloc] initWithBundleFile:bundlePath];
     }
-
-    [self.cameraAction prepearForAddPasterInfo:info];
+    [self.cameraAction prepearForAddPasterInfo:info index:index];
 }
 
 - (void)startRecording:(NSDictionary *)options
@@ -297,6 +364,10 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
 {
     [self.cameraAction stopRecordVideo:^(NSString *videoSavePath) {
         if (videoSavePath) {
+//            AliyunNativeParser *nativeParser = [[AliyunNativeParser alloc] initWithPath:videoSavePath];
+//            NSInteger frameWidth = nativeParser.getVideoWidth;
+//            NSInteger frameHeight = nativeParser.getVideoHeight;
+//            NSInteger bitRate = nativeParser.getVideoBitrate;
             onSuccess(videoSavePath);
         } else {
             onError(@"no path exist");
@@ -451,6 +522,46 @@ RCT_ENUM_CONVERTER(CKCameraZoomMode, (@{
         AVDLog(@"Error occured while writing image data to a temporary file: %@", error);
     }
     return temporaryFileURL;
+}
+
+-(void)destroyRecorder
+{
+    [self.cameraAction destroyRecorder];
+}
+
+- (void)resumeCamera
+{
+    [self.cameraAction resumeCamera];
+}
+
+- (void)pauseCamera
+{
+    [self.cameraAction pauseCamera];
+}
+
+- (void)startMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction startMultiRecording:resolve  reject:reject];
+}
+
+- (void)stopMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction stopMultiRecording:resolve  reject:reject];
+}
+
+- (void)finishMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction finishMultiRecording:resolve  reject:reject];
+}
+
+- (void)deleteLastMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteLastMultiRecording:resolve  reject:reject];
+}
+
+- (void)deleteAllMultiRecording:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    [self.cameraAction deleteAllMultiRecording:resolve  reject:reject];
 }
 
 @end

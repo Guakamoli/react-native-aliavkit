@@ -57,10 +57,11 @@ RCT_EXPORT_METHOD(getMusics:(NSDictionary *)musicRequest
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    NSString *songName = [musicRequest valueForKey:@"name"];
-    NSUInteger page = [[musicRequest valueForKey:@"page"] integerValue];
-    NSUInteger pageSize = [[musicRequest valueForKey:@"pageSize"] integerValue] ? : 10;
-    if ([songName isEqualToString:@"all-music"]) {
+    NSString *songName = [musicRequest objectForKey:@"name"];
+    NSUInteger page = [[musicRequest objectForKey:@"page"] integerValue];
+    NSUInteger pageSize = [[musicRequest objectForKey:@"pageSize"] integerValue] ? : 10;
+//    if ([songName isEqualToString:@"all-music"]) {
+    if(songName == nil || songName == NULL || [songName isKindOfClass:[NSNull class]] || songName.length == 0){
         if (self.musics.count == 0) {
             [self _requestJson:^(NSArray<RNMusicInfo *> *infos, NSError *error) {
                 if (error) {
