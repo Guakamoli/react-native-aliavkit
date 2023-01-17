@@ -29,15 +29,15 @@ ext {
     externalAliyunRace = 'com.aliyun.race:AliyunRace:1.2.0'
 
     //Aliyun SDK
-    externalAliyunVodUpload = 'com.aliyun.video.android:upload:1.6.1'
+    externalAliyunVodUpload = 'com.aliyun.video.android:upload:1.6.6'
     externalAlivcConan = 'com.alivc.conan:AlivcConan:1.0.5'
 
-    externalAlivcFFmpeg = 'com.aliyun.video.android:AlivcFFmpeg:4.3.1'
+    externalAlivcFFmpeg = 'com.aliyun.video.android:AlivcFFmpeg:4.3.6'
     externalAlivcCore = 'com.aliyun.video.android:core:1.2.2'
 
     //3.25.0
 //    externalSvideopro = 'com.aliyun.video.android:svideopro:3.25.+'
-    externalSvideopro = 'com.aliyun.video.android:svideopro:3.26.0'
+    externalSvideopro = 'com.aliyun.video.android:svideopro:3.34.0'
 
     //queen sdk
 //    externalAliyunQueen = 'com.aliyun.maliang.android:queen:1.2.0-official-pro'
