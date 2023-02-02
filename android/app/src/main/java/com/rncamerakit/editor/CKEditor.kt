@@ -26,7 +26,6 @@ import com.aliyun.svideosdk.editor.impl.AliyunEditorFactory
 import com.facebook.react.bridge.*
 import com.facebook.react.uimanager.ThemedReactContext
 import com.liulishuo.filedownloader.BaseDownloadTask
-import com.rncamerakit.BaseEventListener
 import com.rncamerakit.R
 import com.rncamerakit.RNAliavkitEventEmitter
 import com.rncamerakit.db.MusicFileBean
@@ -435,32 +434,32 @@ class CKEditor(val reactContext: ThemedReactContext) :
 
 
     private fun initLifecycle() {
-        BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
-            override fun onHostResume() {
-                super.onHostResume()
-                Log.e("AAA", "onHostResume()")
-                replay()
-                MediaPlayerManage.instance.resume()
-            }
+        // BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
+        //     override fun onHostResume() {
+        //         super.onHostResume()
+        //         Log.e("AAA", "onHostResume()")
+        //         replay()
+        //         MediaPlayerManage.instance.resume()
+        //     }
 
-            override fun onHostPause() {
-                super.onHostPause()
-                Log.e("AAA", "onHostPause()")
-                pause(null)
-                MediaPlayerManage.instance.pause()
-            }
+        //     override fun onHostPause() {
+        //         super.onHostPause()
+        //         Log.e("AAA", "onHostPause()")
+        //         pause(null)
+        //         MediaPlayerManage.instance.pause()
+        //     }
 
-            override fun onHostDestroy() {
-                super.onHostDestroy()
-                Log.e("AAA", "onHostDestroy()")
-                onRelease()
-            }
+        //     override fun onHostDestroy() {
+        //         super.onHostDestroy()
+        //         Log.e("AAA", "onHostDestroy()")
+        //         onRelease()
+        //     }
 
-            override fun onWindowFocusChange(hasFocus: Boolean) {
-                super.onWindowFocusChange(hasFocus)
-                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
-            }
-        })
+        //     override fun onWindowFocusChange(hasFocus: Boolean) {
+        //         super.onWindowFocusChange(hasFocus)
+        //         Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
+        //     }
+        // })
     }
 
 

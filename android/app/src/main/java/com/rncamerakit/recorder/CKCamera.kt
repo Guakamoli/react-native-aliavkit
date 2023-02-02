@@ -25,7 +25,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.manwei.libs.dialog.OnDialogListener
 import com.manwei.libs.utils.permission.PermissionsDialog
 import com.manwei.libs.utils.permission.RxPermissionUtils
-import com.rncamerakit.BaseEventListener
 import com.rncamerakit.editor.manager.ColorFilterManager
 import com.rncamerakit.recorder.manager.MediaPlayerManage
 import com.rncamerakit.recorder.manager.RecorderManage
@@ -278,33 +277,7 @@ class CKCamera(
 
     private var isOnHostPause = false
     private fun initLifecycle() {
-        BaseEventListener(reactContext, object : BaseEventListener.LifecycleEventListener() {
-            override fun onHostResume() {
-                super.onHostResume()
-//                Log.e("AAA", "onHostResume()")
-                if(isOnHostPause){
-                    resumeCamera()
-                }
-            }
 
-            override fun onHostPause() {
-                super.onHostPause()
-//                Log.e("AAA", "onHostPause()")
-                isOnHostPause = true
-                pauseCamera()
-            }
-
-            override fun onHostDestroy() {
-                super.onHostDestroy()
-//                Log.e("AAA", "onHostDestroy()")
-                onRelease()
-            }
-
-            override fun onWindowFocusChange(hasFocus: Boolean) {
-                super.onWindowFocusChange(hasFocus)
-//                Log.e("AAA", "onWindowFocusChange(hasFocus)：$hasFocus")
-            }
-        })
     }
 
     /**
