@@ -32,7 +32,7 @@ ext {
     externalAliyunVodUpload = 'com.aliyun.video.android:upload:1.6.1'
     externalAlivcConan = 'com.alivc.conan:AlivcConan:1.0.5'
 
-    externalAlivcFFmpeg = 'com.aliyun.video.android:AlivcFFmpeg:4.3.6'
+    externalAlivcFFmpeg = 'com.aliyun.video.android:AlivcFFmpeg:4.3.1'
     externalAlivcCore = 'com.aliyun.video.android:core:1.2.2'
 
     //3.25.0
